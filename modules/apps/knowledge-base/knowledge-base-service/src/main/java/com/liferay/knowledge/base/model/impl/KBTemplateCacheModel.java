@@ -14,14 +14,10 @@
 
 package com.liferay.knowledge.base.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.model.KBTemplate;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,16 +26,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing KBTemplate in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see KBTemplate
  * @generated
  */
 @ProviderType
-public class KBTemplateCacheModel implements CacheModel<KBTemplate>,
-	Externalizable {
+public class KBTemplateCacheModel
+	implements CacheModel<KBTemplate>, Externalizable {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -100,7 +98,7 @@ public class KBTemplateCacheModel implements CacheModel<KBTemplate>,
 		KBTemplateImpl kbTemplateImpl = new KBTemplateImpl();
 
 		if (uuid == null) {
-			kbTemplateImpl.setUuid(StringPool.BLANK);
+			kbTemplateImpl.setUuid("");
 		}
 		else {
 			kbTemplateImpl.setUuid(uuid);
@@ -112,7 +110,7 @@ public class KBTemplateCacheModel implements CacheModel<KBTemplate>,
 		kbTemplateImpl.setUserId(userId);
 
 		if (userName == null) {
-			kbTemplateImpl.setUserName(StringPool.BLANK);
+			kbTemplateImpl.setUserName("");
 		}
 		else {
 			kbTemplateImpl.setUserName(userName);
@@ -133,14 +131,14 @@ public class KBTemplateCacheModel implements CacheModel<KBTemplate>,
 		}
 
 		if (title == null) {
-			kbTemplateImpl.setTitle(StringPool.BLANK);
+			kbTemplateImpl.setTitle("");
 		}
 		else {
 			kbTemplateImpl.setTitle(title);
 		}
 
 		if (content == null) {
-			kbTemplateImpl.setContent(StringPool.BLANK);
+			kbTemplateImpl.setContent("");
 		}
 		else {
 			kbTemplateImpl.setContent(content);
@@ -178,10 +176,9 @@ public class KBTemplateCacheModel implements CacheModel<KBTemplate>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
@@ -196,7 +193,7 @@ public class KBTemplateCacheModel implements CacheModel<KBTemplate>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -206,14 +203,14 @@ public class KBTemplateCacheModel implements CacheModel<KBTemplate>,
 		objectOutput.writeLong(modifiedDate);
 
 		if (title == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(title);
 		}
 
 		if (content == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(content);
@@ -233,4 +230,5 @@ public class KBTemplateCacheModel implements CacheModel<KBTemplate>,
 	public String title;
 	public String content;
 	public long lastPublishDate;
+
 }

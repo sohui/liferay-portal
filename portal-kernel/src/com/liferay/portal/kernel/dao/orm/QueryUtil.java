@@ -42,7 +42,9 @@ public class QueryUtil {
 		Query query, Dialect dialect, int start, int end,
 		boolean unmodifiable) {
 
-		return list(query, dialect, start, end).iterator();
+		List<?> list = list(query, dialect, start, end);
+
+		return list.iterator();
 	}
 
 	public static List<?> list(
@@ -71,9 +73,8 @@ public class QueryUtil {
 			if (unmodifiable) {
 				return Collections.emptyList();
 			}
-			else {
-				return new ArrayList<>();
-			}
+
+			return new ArrayList<>();
 		}
 
 		if (dialect.supportsLimit()) {
@@ -117,9 +118,8 @@ public class QueryUtil {
 		if (unmodifiable) {
 			return Collections.unmodifiableList(list);
 		}
-		else {
-			return list;
-		}
+
+		return list;
 	}
 
 	public static List<?> randomList(
@@ -140,8 +140,6 @@ public class QueryUtil {
 			return list(query, dialect, ALL_POS, ALL_POS, true);
 		}
 
-		int[] scrollIds = RandomUtil.nextInts(total, num);
-
 		List<Object> list = new ArrayList<>();
 
 		DB db = DBManagerUtil.getDB();
@@ -156,8 +154,10 @@ public class QueryUtil {
 
 		ScrollableResults sr = query.scroll();
 
-		for (int i = 0; i < scrollIds.length; i++) {
-			if (sr.scroll(scrollIds[i])) {
+		int[] scrollIds = RandomUtil.nextInts(total, num);
+
+		for (int scrollId : scrollIds) {
+			if (sr.scroll(scrollId)) {
 				Object[] array = sr.get();
 
 				if (array.length == 1) {
@@ -174,9 +174,8 @@ public class QueryUtil {
 		if (unmodifiable) {
 			return Collections.unmodifiableList(list);
 		}
-		else {
-			return list;
-		}
+
+		return list;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(QueryUtil.class);

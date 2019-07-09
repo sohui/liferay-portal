@@ -14,11 +14,12 @@
 
 package com.liferay.portal.servlet;
 
-import com.liferay.portal.kernel.concurrent.ConcurrentHashSet;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.util.PropsValues;
 
+import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
@@ -34,14 +35,14 @@ import javax.servlet.http.HttpSessionListener;
  * </p>
  *
  * @author     Michael C. Han
- * @deprecated As of 7.0.0, with no direct replacement
+ * @deprecated As of Wilberforce (7.0.x), with no direct replacement
  */
 @Deprecated
 public class SharedSessionAttributeListener
 	implements HttpSessionAttributeListener, HttpSessionListener {
 
 	public SharedSessionAttributeListener() {
-		_sessionIds = new ConcurrentHashSet<>();
+		_sessionIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
 	}
 
 	@Override
@@ -56,9 +57,6 @@ public class SharedSessionAttributeListener
 			return;
 		}
 
-		SharedSessionAttributeCache sharedSessionAttributeCache =
-			SharedSessionAttributeCache.getInstance(session);
-
 		String name = event.getName();
 
 		if (ArrayUtil.contains(
@@ -66,6 +64,9 @@ public class SharedSessionAttributeListener
 
 			return;
 		}
+
+		SharedSessionAttributeCache sharedSessionAttributeCache =
+			SharedSessionAttributeCache.getInstance(session);
 
 		for (String sharedName : PropsValues.SESSION_SHARED_ATTRIBUTES) {
 			if (!name.startsWith(sharedName)) {

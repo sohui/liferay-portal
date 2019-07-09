@@ -1,0 +1,390 @@
+@component-name = "portal-staging"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Wiki";
+	property testray.main.component.name = "Staging";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		ProductMenu.gotoSite(site = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Staging Test Page");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			panel = "Site Administration",
+			portlet = "Staging");
+
+		Staging.activateStagingCP(siteName = "Site Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Site Name");
+		}
+	}
+
+	@priority = "4"
+	test AddWikiAndCreateContentWithStagingThenPublishAfterDelete {
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Wiki");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiPage.addFrontPagePG(wikiPageContent = "Wiki FrontPage Content");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiNavigator.gotoAllPagesPG();
+
+		for (var entryCount : list "1,2,3") {
+			WikiPage.addPG(
+				wikiPageContent = "Wiki Page${entryCount} Content",
+				wikiPageTitle = "Wiki Page${entryCount} Title");
+
+			Refresh();
+		}
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiNavigator.gotoAllPagesPG();
+
+		AssertElementPresent(locator1 = "WikiTable#ALL_PAGES_PAGE_2");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		for (var entryCount : list "1,2,3") {
+			WikiNavigator.gotoAllPagesPG();
+
+			WikiPage.deleteCP(wikiPageTitle = "Wiki Page${entryCount} Title");
+
+			WikiNavigator.gotoAllPagesPG();
+
+			WikiPage.viewNoPagePG(wikiPageTitle = "Wiki Page${entryCount} Title");
+		}
+
+		WikiPage.deletePG(wikiPageTitle = "FrontPage");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiNavigator.gotoAllPagesPG();
+
+		AssertElementNotPresent(locator1 = "WikiTable#ALL_PAGES_PAGE_2");
+	}
+
+	@description = "This is a use case for LPS-74621."
+	@priority = "3"
+	test CommentAndRateWikiFrontPageOnLiveSite {
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Wiki");
+
+		WikiPage.addFrontPagePG(wikiPageContent = "Wiki FrontPage Content");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiNavigator.gotoFrontPagePG();
+
+		WikiPage.viewFrontPagePG(
+			wikiPageContent = "Wiki FrontPage Content",
+			wikiPageTitle = "FrontPage");
+
+		WikiPage.rate4StarsPG(wikiPageTitle = "FrontPage");
+
+		BlogsEntryComment.add(entryComment = "Wiki FrontPage Comment");
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.viewAssetRatingPG(rating = "4");
+
+		AssetPublisherPortlet.viewAverageRatingPG(averageRating = "4");
+
+		BlogsEntryComment.viewPG(
+			commentCount = "1",
+			entryComment = "Wiki FrontPage Comment",
+			userFullName = "Test Test (You)");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiPage.viewFrontPagePG(
+			wikiPageContent = "Wiki FrontPage Content",
+			wikiPageTitle = "FrontPage");
+
+		Comments.viewCommentReadOnly();
+
+		Ratings.viewRatingWithStarsReadOnly();
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			panel = "Site Administration",
+			portlet = "Staging");
+
+		Staging.deactivateStagingCP(siteName = "Site Name");
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		LAR.exportPortlet(larFileName = "Wiki.portlet.lar");
+
+		JSONGroup.addGroup(groupName = "Second Site");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Second Site",
+			layoutName = "Wiki Page");
+
+		Navigator.openSiteURL(siteName = "Second Site");
+
+		Portlet.addPG(portletName = "Wiki");
+
+		Navigator.openSiteURL(siteName = "Second Site");
+
+		LAR.importPortlet(larFileName = "Wiki.portlet.lar");
+
+		Navigator.openSiteURL(siteName = "Second Site");
+
+		WikiPage.viewFrontPagePG(
+			viewWikiNode = "true",
+			wikiNodeName = "Main 2",
+			wikiPageContent = "Wiki FrontPage Content",
+			wikiPageTitle = "FrontPage");
+
+		AssetPublisherPortlet.viewAssetRatingPG(rating = "4");
+
+		AssetPublisherPortlet.viewAverageRatingPG(averageRating = "4");
+
+		BlogsEntryComment.viewPG(
+			commentCount = "1",
+			entryComment = "Wiki FrontPage Comment",
+			userFullName = "Test Test (You)");
+	}
+
+	@description = "This is a use case for LPS-73992."
+	@priority = "5"
+	test RemoveStagedWikiAttachment {
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Wiki");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiNavigator.gotoAllPagesPG();
+
+		WikiPage.addPG(
+			wikiPageContent = "Wiki Page Content",
+			wikiPageTitle = "Wiki Page Title");
+
+		WikiNavigator.gotoPG(wikiPageTitle = "Wiki Page Title");
+
+		WikiPage.addAttachmentViaPageEdit(
+			attachmentFileName = "Document_1.jpg",
+			wikiPageTitle = "Wiki Page Title");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiNavigator.gotoPG(wikiPageTitle = "Wiki Page Title");
+
+		WikiPage.viewPageWithAttachment(
+			attachmentFileName = "Document_1.jpg",
+			wikiPageContent = "Wiki Page Content",
+			wikiPageTitle = "Wiki Page Title");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiNavigator.gotoPG(wikiPageTitle = "Wiki Page Title");
+
+		WikiPage.removeAttachmentViaPageEdit(attachmentFileName = "Document_1.jpg");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		Staging.gotoPublishToLive();
+
+		Staging.publishToLive();
+
+		Navigator.gotoSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		WikiNavigator.gotoPG(wikiPageTitle = "Wiki Page Title");
+
+		WikiPage.viewPageNoAttachment(
+			attachmentFileName = "Document_1.jpg",
+			wikiPageContent = "Wiki Page Content",
+			wikiPageTitle = "Wiki Page Title");
+	}
+
+	@description = "This is a use case for LPS-73471."
+	@ignore = "true"
+	@priority = "5"
+	test RenameChildPageNameCP {
+		Navigator.gotoStagedSitePage(
+			pageName = "Staging Test Page",
+			siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Wiki");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		WikiPage.addCP(
+			wikiPageContent = "Wiki Page Content 1",
+			wikiPageTitle = "Wiki Page 1");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Wiki");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		WikiNavigator.gotoCP(wikiPageTitle = "Wiki Page 1");
+
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Add Child Page");
+
+		WikiEntry.addPageTitle(wikiPageTitle = "Child Page Title");
+
+		WikiEntry.addPageContent(wikiPageContent = "Child Page Content");
+
+		PortletEntry.publish();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Wiki");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		WikiNavigator.gotoCP(wikiPageTitle = "Child Page Title");
+
+		WikiPage.renameWikiPageCP(
+			wikiPageTitle = "Child Page Title",
+			wikiPageTitleRename = "Child Page Title Rename");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			panel = "Site Administration",
+			portlet = "Staging");
+
+		Staging.publishCustomPublication();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Wiki");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		WikiNavigator.gotoCP(wikiPageTitle = "Child Page Title");
+
+		WikiPage.renameWikiPageCP(
+			wikiPageTitle = "Child Page Title",
+			wikiPageTitleRename = "Child Page Title Rename 1");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			panel = "Site Administration",
+			portlet = "Staging");
+
+		Staging.publishCustomPublication();
+
+		ProductMenu.gotoLiveSite();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Wiki");
+
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
+
+		for (var wikiPageTitle : list "Child Page Title,Child Page Title Rename,Child Page Title Rename 1") {
+			LexiconEntry.viewEntryName(rowEntry = "${wikiPageTitle}");
+		}
+	}
+
+}

@@ -14,32 +14,35 @@
 
 package com.liferay.asset.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.NestedSetsTreeNodeModel;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the AssetCategory service. Represents a row in the &quot;AssetCategory&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see AssetCategoryModel
- * @see com.liferay.portlet.asset.model.impl.AssetCategoryImpl
- * @see com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.asset.model.impl.AssetCategoryImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.asset.model.impl.AssetCategoryImpl"
+)
 @ProviderType
-public interface AssetCategory extends AssetCategoryModel,
-	NestedSetsTreeNodeModel, PersistedModel {
+public interface AssetCategory
+	extends AssetCategoryModel, NestedSetsTreeNodeModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.asset.model.impl.AssetCategoryImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.asset.model.impl.AssetCategoryImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<AssetCategory, String> UUID_ACCESSOR = new Accessor<AssetCategory, String>() {
+	public static final Accessor<AssetCategory, String> UUID_ACCESSOR =
+		new Accessor<AssetCategory, String>() {
+
 			@Override
 			public String get(AssetCategory assetCategory) {
 				return assetCategory.getUuid();
@@ -54,9 +57,12 @@ public interface AssetCategory extends AssetCategoryModel,
 			public Class<AssetCategory> getTypeClass() {
 				return AssetCategory.class;
 			}
+
 		};
 
-	public static final Accessor<AssetCategory, Long> CATEGORY_ID_ACCESSOR = new Accessor<AssetCategory, Long>() {
+	public static final Accessor<AssetCategory, Long> CATEGORY_ID_ACCESSOR =
+		new Accessor<AssetCategory, Long>() {
+
 			@Override
 			public Long get(AssetCategory assetCategory) {
 				return assetCategory.getCategoryId();
@@ -71,9 +77,11 @@ public interface AssetCategory extends AssetCategoryModel,
 			public Class<AssetCategory> getTypeClass() {
 				return AssetCategory.class;
 			}
-		};
 
-	public static final Accessor<AssetCategory, String> NAME_ACCESSOR = new Accessor<AssetCategory, String>() {
+		};
+	public static final Accessor<AssetCategory, String> NAME_ACCESSOR =
+		new Accessor<AssetCategory, String>() {
+
 			@Override
 			public String get(AssetCategory assetCategory) {
 				return assetCategory.getName();
@@ -88,6 +96,7 @@ public interface AssetCategory extends AssetCategoryModel,
 			public Class<AssetCategory> getTypeClass() {
 				return AssetCategory.class;
 			}
+
 		};
 
 	public java.util.List<AssetCategory> getAncestors()
@@ -95,8 +104,12 @@ public interface AssetCategory extends AssetCategoryModel,
 
 	public AssetCategory getParentCategory();
 
-	public java.lang.String getPath(java.util.Locale locale)
+	public String getPath(java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public String getPath(java.util.Locale locale, boolean reverse)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public boolean isRootCategory();
+
 }

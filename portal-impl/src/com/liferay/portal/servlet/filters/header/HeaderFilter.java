@@ -17,7 +17,6 @@ package com.liferay.portal.servlet.filters.header;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -46,20 +45,20 @@ import javax.servlet.http.HttpSession;
  */
 public class HeaderFilter extends BasePortalFilter {
 
-	protected long getLastModified(HttpServletRequest request) {
-		String value = HttpUtil.getParameter(request.getQueryString(), "t");
+	protected long getLastModified(HttpServletRequest httpServletRequest) {
+		String value = httpServletRequest.getParameter("t");
 
 		if (Validator.isNull(value)) {
 			return -1;
 		}
 
-		return GetterUtil.getLong(value);
+		return GetterUtil.getLong(value) / 1000 * 1000;
 	}
 
 	@Override
 	protected void processFilter(
-			HttpServletRequest request, HttpServletResponse response,
-			FilterChain filterChain)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, FilterChain filterChain)
 		throws Exception {
 
 		FilterConfig filterConfig = getFilterConfig();
@@ -71,42 +70,49 @@ public class HeaderFilter extends BasePortalFilter {
 
 			if (!_requestHeaderIgnoreInitParams.contains(name)) {
 				_addHeader(
-					request, response, name,
+					httpServletRequest, httpServletResponse, name,
 					filterConfig.getInitParameter(name));
 			}
 		}
 
-		long lastModified = getLastModified(request);
+		long lastModified = getLastModified(httpServletRequest);
 
 		if (lastModified > 0) {
-			long ifModifiedSince = request.getDateHeader(
+			long ifModifiedSince = httpServletRequest.getDateHeader(
 				HttpHeaders.IF_MODIFIED_SINCE);
 
-			response.setDateHeader(HttpHeaders.LAST_MODIFIED, lastModified);
+			httpServletResponse.setDateHeader(
+				HttpHeaders.LAST_MODIFIED, lastModified);
 
 			if (lastModified <= ifModifiedSince) {
-				response.setDateHeader(
+				httpServletResponse.setDateHeader(
 					HttpHeaders.LAST_MODIFIED, ifModifiedSince);
-				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+				httpServletResponse.setStatus(
+					HttpServletResponse.SC_NOT_MODIFIED);
 
 				return;
 			}
 		}
 
 		processFilter(
-			HeaderFilter.class.getName(), request, response, filterChain);
+			HeaderFilter.class.getName(), httpServletRequest,
+			httpServletResponse, filterChain);
 	}
 
 	private void _addHeader(
-		HttpServletRequest request, HttpServletResponse response, String name,
-		String value) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, String name, String value) {
 
-		// LEP-5895 and LPS-15802
+		// LEP-5895, LPS-15802, LPS-69908
 
 		if (StringUtil.equalsIgnoreCase(name, HttpHeaders.CACHE_CONTROL)) {
-			if (PropsValues.WEB_SERVER_PROXY_LEGACY_MODE) {
-				if (_isNewSession(request)) {
-					String contextPath = request.getContextPath();
+			if (_isNewSession(httpServletRequest)) {
+				if (value.contains(HttpHeaders.CACHE_CONTROL_PUBLIC_VALUE)) {
+					return;
+				}
+
+				if (PropsValues.WEB_SERVER_PROXY_LEGACY_MODE) {
+					String contextPath = httpServletRequest.getContextPath();
 
 					if (contextPath.equals(PortalUtil.getPathContext())) {
 						return;
@@ -115,7 +121,7 @@ public class HeaderFilter extends BasePortalFilter {
 			}
 		}
 		else if (StringUtil.equalsIgnoreCase(name, HttpHeaders.EXPIRES)) {
-			if (_isNewSession(request)) {
+			if (_isNewSession(httpServletRequest)) {
 				return;
 			}
 
@@ -127,11 +133,11 @@ public class HeaderFilter extends BasePortalFilter {
 			}
 		}
 
-		response.addHeader(name, value);
+		httpServletResponse.addHeader(name, value);
 	}
 
-	private boolean _isNewSession(HttpServletRequest request) {
-		HttpSession session = request.getSession(false);
+	private boolean _isNewSession(HttpServletRequest httpServletRequest) {
+		HttpSession session = httpServletRequest.getSession(false);
 
 		if ((session == null) || session.isNew()) {
 			return true;

@@ -1,32 +1,26 @@
-<definition>
-	<command name="viewClusterStatusViaClusterHealthAPI">
-		<description message="Elasticsearch provides a Cluster Health API (http://localhost:9200/_cluster/health?pretty=true) to easily view the current status of the cluster." />
+definition {
 
-		<var name="numberOfNodesCounter" value="${numberOfNodes}" />
+	macro viewClusterStatus {
+		AssertTextPresent(
+			locator1 = "//pre",
+			value1 = "${clusterStatus}");
+	}
 
-		<while>
-			<not>
-				<equals arg1="${numberOfNodesCounter}" arg2="0" />
-			</not>
-			<then>
-				<var method="MathUtil#difference('${numberOfNodesCounter}', '1')" name="numberOfNodesCounter" />
+	@description = "Elasticsearch provides a Cluster Health API (http://localhost:9200/_cluster/health?pretty=true) to easily view the current status of the cluster."
+	macro viewClusterStatusViaClusterHealthAPI {
+		Navigator.openSpecificURL(url = "http://localhost:9200/_cluster/health?level=indices&amp;pretty");
 
-				<execute function="Open" locator1="http://localhost:9200/_cluster/health?level=indices&amp;pretty" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "//body",
+			value1 = "&quot;cluster_name&quot; : &quot;LiferayElasticsearchCluster&quot;");
 
-				<execute function="AssertLocation" value1="http://localhost:9200/_cluster/health?level=indices&amp;pretty" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="//body" value1="&quot;cluster_name&quot; : &quot;LiferayElasticsearchCluster&quot;" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="//body" value1="&quot;timed_out&quot; : false" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="//body" value1="&quot;number_of_nodes&quot; : ${numberOfNodes}" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="//body" value1="&quot;number_of_data_nodes&quot; : ${numberOfNodes}" />
-			</then>
-		</while>
-	</command>
+		AssertTextEquals.assertPartialText(
+			locator1 = "//body",
+			value1 = "&quot;number_of_nodes&quot; : ${numberOfNodes}");
 
-	<command name="viewReplicaAddedInConsole">
-		<execute function="AssertConsoleTextPresent" value1="added.*reason: zen-disco-receive" />
-	</command>
+		AssertTextEquals.assertPartialText(
+			locator1 = "//body",
+			value1 = "&quot;number_of_data_nodes&quot; : ${numberOfNodes}");
+	}
 
-	<command name="viewReplicaRemovedInConsole">
-		<execute function="AssertConsoleTextPresent" value1="removed.*reason: zen-disco-node_left" />
-	</command>
-</definition>
+}

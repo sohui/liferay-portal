@@ -14,7 +14,7 @@
 
 package com.liferay.portal.sharepoint.methods;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.sharepoint.Property;
 import com.liferay.portal.sharepoint.ResponseElement;
 import com.liferay.portal.sharepoint.SharepointRequest;
@@ -53,7 +53,7 @@ public class MoveDocumentMethodImpl extends BaseMethodImpl {
 
 		String newUrl = sharepointRequest.getParameterValue("newUrl");
 
-		newUrl = SharepointUtil.replaceBackSlashes(oldUrl);
+		newUrl = SharepointUtil.replaceBackSlashes(newUrl);
 
 		SharepointStorage storage = sharepointRequest.getSharepointStorage();
 

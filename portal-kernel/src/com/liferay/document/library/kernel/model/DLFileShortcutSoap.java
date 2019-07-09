@@ -14,23 +14,23 @@
 
 package com.liferay.document.library.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.documentlibrary.service.http.DLFileShortcutServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portlet.documentlibrary.service.http.DLFileShortcutServiceSoap
  * @generated
  */
 @ProviderType
 public class DLFileShortcutSoap implements Serializable {
+
 	public static DLFileShortcutSoap toSoapModel(DLFileShortcut model) {
 		DLFileShortcutSoap soapModel = new DLFileShortcutSoap();
 
@@ -46,7 +46,7 @@ public class DLFileShortcutSoap implements Serializable {
 		soapModel.setFolderId(model.getFolderId());
 		soapModel.setToFileEntryId(model.getToFileEntryId());
 		soapModel.setTreePath(model.getTreePath());
-		soapModel.setActive(model.getActive());
+		soapModel.setActive(model.isActive());
 		soapModel.setLastPublishDate(model.getLastPublishDate());
 		soapModel.setStatus(model.getStatus());
 		soapModel.setStatusByUserId(model.getStatusByUserId());
@@ -66,11 +66,14 @@ public class DLFileShortcutSoap implements Serializable {
 		return soapModels;
 	}
 
-	public static DLFileShortcutSoap[][] toSoapModels(DLFileShortcut[][] models) {
+	public static DLFileShortcutSoap[][] toSoapModels(
+		DLFileShortcut[][] models) {
+
 		DLFileShortcutSoap[][] soapModels = null;
 
 		if (models.length > 0) {
-			soapModels = new DLFileShortcutSoap[models.length][models[0].length];
+			soapModels =
+				new DLFileShortcutSoap[models.length][models[0].length];
 		}
 		else {
 			soapModels = new DLFileShortcutSoap[0][0];
@@ -83,8 +86,11 @@ public class DLFileShortcutSoap implements Serializable {
 		return soapModels;
 	}
 
-	public static DLFileShortcutSoap[] toSoapModels(List<DLFileShortcut> models) {
-		List<DLFileShortcutSoap> soapModels = new ArrayList<DLFileShortcutSoap>(models.size());
+	public static DLFileShortcutSoap[] toSoapModels(
+		List<DLFileShortcut> models) {
+
+		List<DLFileShortcutSoap> soapModels = new ArrayList<DLFileShortcutSoap>(
+			models.size());
 
 		for (DLFileShortcut model : models) {
 			soapModels.add(toSoapModel(model));
@@ -270,4 +276,5 @@ public class DLFileShortcutSoap implements Serializable {
 	private long _statusByUserId;
 	private String _statusByUserName;
 	private Date _statusDate;
+
 }

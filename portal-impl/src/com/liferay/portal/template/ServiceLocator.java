@@ -14,8 +14,6 @@
 
 package com.liferay.portal.template;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
@@ -23,6 +21,10 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
+
+import java.util.function.Function;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -40,7 +42,7 @@ public class ServiceLocator {
 		try {
 			Registry registry = RegistryUtil.getRegistry();
 
-			bean = registry.getService(serviceName);
+			bean = registry.callService(serviceName, Function.identity());
 
 			if (bean == null) {
 				bean = PortalBeanLocatorUtil.locate(

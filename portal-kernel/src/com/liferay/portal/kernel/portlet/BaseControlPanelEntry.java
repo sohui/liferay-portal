@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.LayoutConstants;
@@ -22,9 +23,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortletCategoryKeys;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.List;
 
@@ -50,46 +49,6 @@ public abstract class BaseControlPanelEntry implements ControlPanelEntry {
 
 		return hasPermissionImplicitlyGranted(
 			permissionChecker, group, portlet);
-	}
-
-	/**
-	 * @deprecated As of 6.2.0, with no direct replacement.<p>This method was
-	 *             originally defined to determine if a portlet should be
-	 *             displayed in the Control Panel. In this version, this method
-	 *             should always return <code>false</code> and remains only to
-	 *             preserve binary compatibility. This method will be
-	 *             permanently removed in a future version.</p><p>In lieu of
-	 *             this method, the Control Panel now uses {@link
-	 *             #hasAccessPermission} to determine if a portlet should be
-	 *             displayed in the Control Panel.</p>
-	 */
-	@Deprecated
-	@Override
-	public boolean isVisible(
-			PermissionChecker permissionChecker, Portlet portlet)
-		throws Exception {
-
-		return false;
-	}
-
-	/**
-	 * @deprecated As of 6.2.0, with no direct replacement.<p>This method was
-	 *             originally defined to determine if a portlet should be
-	 *             displayed in the Control Panel. In this version, this method
-	 *             should always return <code>false</code> and remains only to
-	 *             preserve binary compatibility. This method will be
-	 *             permanently removed in a future version.</p><p>In lieu of
-	 *             this method, the Control Panel now uses {@link
-	 *             #hasAccessPermission} to determine if a portlet should be
-	 *             displayed in the Control Panel.</p>
-	 */
-	@Deprecated
-	@Override
-	public boolean isVisible(
-			Portlet portlet, String category, ThemeDisplay themeDisplay)
-		throws Exception {
-
-		return false;
 	}
 
 	protected long getDefaultPlid(Group group, String category) {
@@ -141,12 +100,11 @@ public abstract class BaseControlPanelEntry implements ControlPanelEntry {
 			category = StringPool.BLANK;
 		}
 
-		if (category.startsWith(PortletCategoryKeys.SITE_ADMINISTRATION)) {
-			if (permissionChecker.isGroupAdmin(group.getGroupId()) &&
-				!group.isUser()) {
+		if (category.startsWith(PortletCategoryKeys.SITE_ADMINISTRATION) &&
+			permissionChecker.isGroupAdmin(group.getGroupId()) &&
+			!group.isUser()) {
 
-				return true;
-			}
+			return true;
 		}
 
 		long groupId = group.getGroupId();
@@ -155,7 +113,8 @@ public abstract class BaseControlPanelEntry implements ControlPanelEntry {
 			category.equals(PortletCategoryKeys.CONTROL_PANEL_CONFIGURATION) ||
 			category.equals(PortletCategoryKeys.CONTROL_PANEL_SITES) ||
 			category.equals(PortletCategoryKeys.CONTROL_PANEL_SYSTEM) ||
-			category.equals(PortletCategoryKeys.CONTROL_PANEL_USERS)) {
+			category.equals(PortletCategoryKeys.CONTROL_PANEL_USERS) ||
+			category.equals(PortletCategoryKeys.CONTROL_PANEL_WORKFLOW)) {
 
 			groupId = 0;
 		}
@@ -177,14 +136,6 @@ public abstract class BaseControlPanelEntry implements ControlPanelEntry {
 	protected boolean hasPermissionImplicitlyGranted(
 			PermissionChecker permissionChecker, Group group, Portlet portlet)
 		throws Exception {
-
-		String category = portlet.getControlPanelEntryCategory();
-
-		if ((category != null) &&
-			category.equals(PortletCategoryKeys.USER_MY_ACCOUNT)) {
-
-			return true;
-		}
 
 		return false;
 	}

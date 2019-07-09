@@ -14,7 +14,8 @@
 
 package com.liferay.taglib.ui;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.IncludeTag;
 
@@ -32,6 +33,146 @@ public class AppViewEntryTag extends IncludeTag {
 	@Override
 	public int doStartTag() {
 		return EVAL_BODY_INCLUDE;
+	}
+
+	public String getActionJsp() {
+		return _actionJsp;
+	}
+
+	public String getAssetCategoryClassName() {
+		return _assetCategoryClassName;
+	}
+
+	public long getAssetCategoryClassPK() {
+		return _assetCategoryClassPK;
+	}
+
+	public String getAssetTagClassName() {
+		return _assetTagClassName;
+	}
+
+	public long getAssetTagClassPK() {
+		return _assetTagClassPK;
+	}
+
+	public String getAuthor() {
+		return _author;
+	}
+
+	public String getClassTypeName() {
+		return _classTypeName;
+	}
+
+	public Date getCreateDate() {
+		return _createDate;
+	}
+
+	public String getCssClass() {
+		return _cssClass;
+	}
+
+	public Map<String, Object> getData() {
+		return _data;
+	}
+
+	public String getDescription() {
+		return _description;
+	}
+
+	public Date getDisplayDate() {
+		return _displayDate;
+	}
+
+	public String getDisplayStyle() {
+		return _displayStyle;
+	}
+
+	public Date getExpirationDate() {
+		return _expirationDate;
+	}
+
+	public long getGroupId() {
+		return _groupId;
+	}
+
+	public String getIconCssClass() {
+		return _iconCssClass;
+	}
+
+	public String getLatestApprovedVersion() {
+		return _latestApprovedVersion;
+	}
+
+	public String getLatestApprovedVersionAuthor() {
+		return _latestApprovedVersionAuthor;
+	}
+
+	public String getMarkupView() {
+		return _markupView;
+	}
+
+	public Date getModifiedDate() {
+		return _modifiedDate;
+	}
+
+	public Date getReviewDate() {
+		return _reviewDate;
+	}
+
+	public String getRowCheckerId() {
+		return _rowCheckerId;
+	}
+
+	public String getRowCheckerName() {
+		return _rowCheckerName;
+	}
+
+	public int getStatus() {
+		return _status;
+	}
+
+	public String getThumbnailDivStyle() {
+		return _thumbnailDivStyle;
+	}
+
+	public String getThumbnailSrc() {
+		return _thumbnailSrc;
+	}
+
+	public String getThumbnailStyle() {
+		return _thumbnailStyle;
+	}
+
+	public String getTitle() {
+		return _title;
+	}
+
+	public String getUrl() {
+		return _url;
+	}
+
+	public String getVersion() {
+		return _version;
+	}
+
+	public boolean isFolder() {
+		return _folder;
+	}
+
+	public boolean isLocked() {
+		return _locked;
+	}
+
+	public boolean isShortcut() {
+		return _shortcut;
+	}
+
+	public boolean isShowCheckbox() {
+		return _showCheckbox;
+	}
+
+	public boolean isShowLinkTitle() {
+		return _showLinkTitle;
 	}
 
 	public void setActionJsp(String actionJsp) {
@@ -184,6 +325,8 @@ public class AppViewEntryTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_actionJsp = null;
 		_actionJspServletContext = null;
 		_assetCategoryClassName = null;
@@ -205,6 +348,7 @@ public class AppViewEntryTag extends IncludeTag {
 		_latestApprovedVersion = null;
 		_latestApprovedVersionAuthor = null;
 		_locked = false;
+		_markupView = null;
 		_modifiedDate = null;
 		_reviewDate = null;
 		_rowCheckerId = null;
@@ -219,7 +363,6 @@ public class AppViewEntryTag extends IncludeTag {
 		_title = null;
 		_url = null;
 		_version = null;
-		_markupView = null;
 	}
 
 	protected ServletContext getActionJspServletContext() {
@@ -233,8 +376,9 @@ public class AppViewEntryTag extends IncludeTag {
 	@Override
 	protected String getPage() {
 		if (Validator.isNotNull(_markupView)) {
-			return "/html/taglib/ui/app_view_entry/" + _markupView + "/" +
-				_displayStyle + ".jsp";
+			return StringBundler.concat(
+				"/html/taglib/ui/app_view_entry/", _markupView, "/",
+				_displayStyle, ".jsp");
 		}
 
 		return "/html/taglib/ui/app_view_entry/" + _displayStyle + ".jsp";
@@ -246,70 +390,81 @@ public class AppViewEntryTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute("liferay-ui:app-view-entry:actionJsp", _actionJsp);
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:actionJsp", _actionJsp);
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:actionJspServletContext",
 			getActionJspServletContext());
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:assetCategoryClassName",
 			_assetCategoryClassName);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:assetCategoryClassPK",
 			_assetCategoryClassPK);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:assetTagClassName", _assetTagClassName);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:assetTagClassPK", _assetTagClassPK);
-		request.setAttribute("liferay-ui:app-view-entry:author", _author);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:author", _author);
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:classTypeName", _classTypeName);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:createDate", _createDate);
-		request.setAttribute("liferay-ui:app-view-entry:cssClass", _cssClass);
-		request.setAttribute("liferay-ui:app-view-entry:data", _data);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:cssClass", _cssClass);
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:data", _data);
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:description", _description);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:displayDate", _displayDate);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:displayStyle", _displayStyle);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:expirationDate", _expirationDate);
-		request.setAttribute("liferay-ui:app-view-entry:folder", _folder);
-		request.setAttribute("liferay-ui:app-view-entry:groupId", _groupId);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:folder", _folder);
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:groupId", _groupId);
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:iconCssClass", _iconCssClass);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:latestApprovedVersion",
 			_latestApprovedVersion);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:latestApprovedVersionAuthor",
 			_latestApprovedVersionAuthor);
-		request.setAttribute("liferay-ui:app-view-entry:locked", _locked);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:locked", _locked);
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:modifiedDate", _modifiedDate);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:reviewDate", _reviewDate);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:rowCheckerId", _rowCheckerId);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:rowCheckerName", _rowCheckerName);
-		request.setAttribute("liferay-ui:app-view-entry:shortcut", _shortcut);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:shortcut", _shortcut);
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:showCheckbox", _showCheckbox);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:showLinkTitle", _showLinkTitle);
-		request.setAttribute("liferay-ui:app-view-entry:status", _status);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:status", _status);
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:thumbnailDivStyle", _thumbnailDivStyle);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:thumbnailSrc", _thumbnailSrc);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:app-view-entry:thumbnailStyle", _thumbnailStyle);
-		request.setAttribute("liferay-ui:app-view-entry:title", _title);
-		request.setAttribute("liferay-ui:app-view-entry:version", _version);
-		request.setAttribute("liferay-ui:app-view-entry:url", _url);
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:title", _title);
+		httpServletRequest.setAttribute("liferay-ui:app-view-entry:url", _url);
+		httpServletRequest.setAttribute(
+			"liferay-ui:app-view-entry:version", _version);
 	}
 
 	private static final boolean _CLEAN_UP_SET_ATTRIBUTES = true;

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.Order;
 
 /**
@@ -21,14 +22,25 @@ import com.liferay.portal.kernel.dao.orm.Order;
  */
 public class OrderImpl implements Order {
 
-	public OrderImpl(org.hibernate.criterion.Order criterion) {
-		_criterion = criterion;
+	public OrderImpl(org.hibernate.criterion.Order order) {
+		_order = order;
 	}
 
 	public org.hibernate.criterion.Order getWrappedOrder() {
-		return _criterion;
+		return _order;
 	}
 
-	private final org.hibernate.criterion.Order _criterion;
+	@Override
+	public String toString() {
+		StringBundler sb = new StringBundler(3);
+
+		sb.append("{_order=");
+		sb.append(String.valueOf(_order));
+		sb.append("}");
+
+		return sb.toString();
+	}
+
+	private final org.hibernate.criterion.Order _order;
 
 }

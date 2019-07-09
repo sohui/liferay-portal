@@ -28,6 +28,13 @@ public interface Html {
 
 	public String escape(String text);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by
+	 *			   {@link #escapeAttribute(String)}, {@link #escapeCSS(String)},
+	 *			   {@link #escapeJS(String)}, {@link #escape(String)},
+	 *			   {@link #escapeURL(String)}
+	 */
+	@Deprecated
 	public String escape(String text, int mode);
 
 	public String escapeAttribute(String attribute);
@@ -53,12 +60,6 @@ public interface Html {
 	public String getAUICompatibleId(String text);
 
 	public String render(String html);
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public String replaceMsWordCharacters(String text);
 
 	public String replaceNewLine(String html);
 

@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.search.generic;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.BaseQueryImpl;
 import com.liferay.portal.kernel.search.TermRangeQuery;
 import com.liferay.portal.kernel.search.query.QueryVisitor;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringBundler;
 
 /**
  * @author Raymond Augé
@@ -69,10 +69,17 @@ public class TermRangeQueryImpl
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(7);
+		StringBundler sb = new StringBundler(11);
 
+		sb.append("{className=");
+
+		Class<?> clazz = getClass();
+
+		sb.append(clazz.getSimpleName());
+
+		sb.append(", field=");
 		sb.append(_field);
-		sb.append(CharPool.COLON);
+		sb.append(", range=");
 
 		if (_includesLower) {
 			sb.append(CharPool.OPEN_BRACKET);
@@ -103,6 +110,8 @@ public class TermRangeQueryImpl
 		else {
 			sb.append(CharPool.CLOSE_CURLY_BRACE);
 		}
+
+		sb.append("}");
 
 		return sb.toString();
 	}

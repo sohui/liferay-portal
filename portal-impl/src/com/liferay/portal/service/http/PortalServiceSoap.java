@@ -14,20 +14,20 @@
 
 package com.liferay.portal.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.PortalServiceUtil;
 
 import java.rmi.RemoteException;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the SOAP utility for the
- * {@link PortalServiceUtil} service utility. The
- * static methods of this class calls the same methods of the service utility.
- * However, the signatures are different because it is difficult for SOAP to
- * support certain types.
+ * <code>PortalServiceUtil</code> service
+ * utility. The static methods of this class call the same methods of the
+ * service utility. However, the signatures are different because it is
+ * difficult for SOAP to support certain types.
  *
  * <p>
  * The benefits of using the SOAP utility is that it is cross platform
@@ -48,15 +48,14 @@ import java.rmi.RemoteException;
  *
  * @author Brian Wing Shun Chan
  * @see PortalServiceHttp
- * @see PortalServiceUtil
  * @generated
  */
 @ProviderType
 public class PortalServiceSoap {
-	public static java.lang.String getAutoDeployDirectory()
-		throws RemoteException {
+
+	public static String getAutoDeployDirectory() throws RemoteException {
 		try {
-			java.lang.String returnValue = PortalServiceUtil.getAutoDeployDirectory();
+			String returnValue = PortalServiceUtil.getAutoDeployDirectory();
 
 			return returnValue;
 		}
@@ -80,9 +79,9 @@ public class PortalServiceSoap {
 		}
 	}
 
-	public static java.lang.String getVersion() throws RemoteException {
+	public static String getVersion() throws RemoteException {
 		try {
-			java.lang.String returnValue = PortalServiceUtil.getVersion();
+			String returnValue = PortalServiceUtil.getVersion();
 
 			return returnValue;
 		}
@@ -93,8 +92,9 @@ public class PortalServiceSoap {
 		}
 	}
 
-	public static void testAddClassName_Rollback(
-		java.lang.String classNameValue) throws RemoteException {
+	public static void testAddClassName_Rollback(String classNameValue)
+		throws RemoteException {
+
 		try {
 			PortalServiceUtil.testAddClassName_Rollback(classNameValue);
 		}
@@ -105,8 +105,9 @@ public class PortalServiceSoap {
 		}
 	}
 
-	public static void testAddClassName_Success(java.lang.String classNameValue)
+	public static void testAddClassName_Success(String classNameValue)
 		throws RemoteException {
+
 		try {
 			PortalServiceUtil.testAddClassName_Success(classNameValue);
 		}
@@ -117,10 +118,15 @@ public class PortalServiceSoap {
 		}
 	}
 
-	public static void testAddClassNameAndTestTransactionPortletBar_PortalRollback(
-		java.lang.String transactionPortletBarText) throws RemoteException {
+	public static void
+			testAddClassNameAndTestTransactionPortletBar_PortalRollback(
+				String transactionPortletBarText)
+		throws RemoteException {
+
 		try {
-			PortalServiceUtil.testAddClassNameAndTestTransactionPortletBar_PortalRollback(transactionPortletBarText);
+			PortalServiceUtil.
+				testAddClassNameAndTestTransactionPortletBar_PortalRollback(
+					transactionPortletBarText);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -129,10 +135,15 @@ public class PortalServiceSoap {
 		}
 	}
 
-	public static void testAddClassNameAndTestTransactionPortletBar_PortletRollback(
-		java.lang.String transactionPortletBarText) throws RemoteException {
+	public static void
+			testAddClassNameAndTestTransactionPortletBar_PortletRollback(
+				String transactionPortletBarText)
+		throws RemoteException {
+
 		try {
-			PortalServiceUtil.testAddClassNameAndTestTransactionPortletBar_PortletRollback(transactionPortletBarText);
+			PortalServiceUtil.
+				testAddClassNameAndTestTransactionPortletBar_PortletRollback(
+					transactionPortletBarText);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -142,9 +153,13 @@ public class PortalServiceSoap {
 	}
 
 	public static void testAddClassNameAndTestTransactionPortletBar_Success(
-		java.lang.String transactionPortletBarText) throws RemoteException {
+			String transactionPortletBarText)
+		throws RemoteException {
+
 		try {
-			PortalServiceUtil.testAddClassNameAndTestTransactionPortletBar_Success(transactionPortletBarText);
+			PortalServiceUtil.
+				testAddClassNameAndTestTransactionPortletBar_Success(
+					transactionPortletBarText);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -155,6 +170,7 @@ public class PortalServiceSoap {
 
 	public static void testAutoSyncHibernateSessionStateOnTxCreation()
 		throws RemoteException {
+
 		try {
 			PortalServiceUtil.testAutoSyncHibernateSessionStateOnTxCreation();
 		}
@@ -214,4 +230,5 @@ public class PortalServiceSoap {
 	}
 
 	private static Log _log = LogFactoryUtil.getLog(PortalServiceSoap.class);
+
 }

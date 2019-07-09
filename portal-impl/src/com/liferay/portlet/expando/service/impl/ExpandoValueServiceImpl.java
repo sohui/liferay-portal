@@ -17,13 +17,14 @@ package com.liferay.portlet.expando.service.impl;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoValue;
 import com.liferay.expando.kernel.service.permission.ExpandoColumnPermissionUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceMode;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.expando.service.base.ExpandoValueServiceBaseImpl;
 
@@ -124,9 +125,8 @@ public class ExpandoValueServiceImpl extends ExpandoValueServiceBaseImpl {
 			return expandoValueLocalService.getData(
 				companyId, className, tableName, columnName, classPK);
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
@@ -157,11 +157,7 @@ public class ExpandoValueServiceImpl extends ExpandoValueServiceBaseImpl {
 			return JSONFactoryUtil.createJSONObject(data);
 		}
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-		jsonObject.put("data", data);
-
-		return jsonObject;
+		return JSONUtil.put("data", data);
 	}
 
 }

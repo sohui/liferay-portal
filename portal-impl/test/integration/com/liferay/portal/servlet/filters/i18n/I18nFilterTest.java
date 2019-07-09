@@ -30,8 +30,6 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.Globals;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -141,8 +139,7 @@ public class I18nFilterTest {
 		String prependI18nLanguageId = getPrependI18nLanguageId(
 			3, null, LocaleUtil.US, LocaleUtil.SPAIN);
 
-		Assert.assertEquals(
-			LocaleUtil.toLanguageId(LocaleUtil.SPAIN), prependI18nLanguageId);
+		Assert.assertNull(prependI18nLanguageId);
 	}
 
 	@Test
@@ -162,7 +159,8 @@ public class I18nFilterTest {
 		String prependI18nLanguageId = getPrependI18nLanguageId(
 			3, null, LocaleUtil.SPAIN, LocaleUtil.US);
 
-		Assert.assertNull(prependI18nLanguageId);
+		Assert.assertEquals(
+			LocaleUtil.toLanguageId(LocaleUtil.SPAIN), prependI18nLanguageId);
 	}
 
 	@Test
@@ -172,7 +170,8 @@ public class I18nFilterTest {
 		String prependI18nLanguageId = getPrependI18nLanguageId(
 			3, null, LocaleUtil.SPAIN, null);
 
-		Assert.assertNull(prependI18nLanguageId);
+		Assert.assertEquals(
+			LocaleUtil.toLanguageId(LocaleUtil.SPAIN), prependI18nLanguageId);
 	}
 
 	@Test
@@ -193,7 +192,7 @@ public class I18nFilterTest {
 
 		HttpSession session = _mockHttpServletRequest.getSession();
 
-		session.setAttribute(Globals.LOCALE_KEY, sessionLocale);
+		session.setAttribute(WebKeys.LOCALE, sessionLocale);
 
 		if (userLocale != null) {
 			User user = UserTestUtil.addUser(

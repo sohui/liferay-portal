@@ -60,7 +60,7 @@ public class PortalClassLoaderFilter
 
 			FilterChain contextClassLoaderFilterChain =
 				(FilterChain)ProxyUtil.newProxyInstance(
-					contextClassLoader, new Class[] {FilterChain.class},
+					contextClassLoader, new Class<?>[] {FilterChain.class},
 					new ClassLoaderBeanHandler(
 						filterChain, contextClassLoader));
 
@@ -96,10 +96,12 @@ public class PortalClassLoaderFilter
 
 	@Override
 	public boolean isFilterEnabled(
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		if (_liferayFilter != null) {
-			return _liferayFilter.isFilterEnabled(request, response);
+			return _liferayFilter.isFilterEnabled(
+				httpServletRequest, httpServletResponse);
 		}
 
 		return true;

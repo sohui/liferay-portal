@@ -14,12 +14,12 @@
 
 package com.liferay.portal.deploy.hot;
 
+import com.liferay.petra.io.StreamUtil;
 import com.liferay.portal.kernel.deploy.hot.BaseHotDeployListener;
 import com.liferay.portal.kernel.deploy.hot.HotDeployEvent;
 import com.liferay.portal.kernel.deploy.hot.HotDeployException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.social.kernel.model.SocialAchievement;
 import com.liferay.social.kernel.model.SocialActivityCounterDefinition;
@@ -75,17 +75,18 @@ public class SocialHotDeployListener extends BaseHotDeployListener {
 			_log.debug("Invoking deploy for " + servletContextName);
 		}
 
-		String[] xmls = new String[] {
-			HttpUtil.URLtoString(
-				servletContext.getResource("/WEB-INF/liferay-social.xml"))
+		String[] xmls = {
+			StreamUtil.toString(
+				servletContext.getResourceAsStream(
+					"/WEB-INF/liferay-social.xml"))
 		};
 
 		if (xmls[0] == null) {
 			return;
 		}
 
-		if (_log.isInfoEnabled()) {
-			_log.info("Registering social for " + servletContextName);
+		if (_log.isDebugEnabled()) {
+			_log.debug("Registering social for " + servletContextName);
 		}
 
 		List<Object> objects = SocialConfigurationUtil.read(
@@ -110,7 +111,7 @@ public class SocialHotDeployListener extends BaseHotDeployListener {
 			_log.debug("Invoking undeploy for " + servletContextName);
 		}
 
-		List<Object> objects = (List<Object>)_objects.get(servletContextName);
+		List<Object> objects = _objects.remove(servletContextName);
 
 		if (objects == null) {
 			return;
@@ -157,6 +158,6 @@ public class SocialHotDeployListener extends BaseHotDeployListener {
 	private static final Log _log = LogFactoryUtil.getLog(
 		SocialHotDeployListener.class);
 
-	private static final Map<String, Object> _objects = new HashMap<>();
+	private static final Map<String, List<Object>> _objects = new HashMap<>();
 
 }

@@ -35,39 +35,39 @@ public class JSONPortletResponseUtil {
 
 	public static void writeJSON(
 			PortletRequest portletRequest, MimeResponse mimeResponse,
-			Object json)
+			Object jsonObj)
 		throws IOException {
 
 		mimeResponse.setContentType(_getContentType(portletRequest));
 
-		PortletResponseUtil.write(mimeResponse, json.toString());
+		PortletResponseUtil.write(mimeResponse, jsonObj.toString());
 
 		mimeResponse.flushBuffer();
 	}
 
 	public static void writeJSON(
 			PortletRequest portletRequest, PortletResponse portletResponse,
-			Object json)
+			Object jsonObj)
 		throws IOException {
 
-		HttpServletResponse response = PortalUtil.getHttpServletResponse(
-			portletResponse);
+		HttpServletResponse httpServletResponse =
+			PortalUtil.getHttpServletResponse(portletResponse);
 
-		response.setContentType(_getContentType(portletRequest));
+		httpServletResponse.setContentType(_getContentType(portletRequest));
 
-		ServletResponseUtil.write(response, json.toString());
+		ServletResponseUtil.write(httpServletResponse, jsonObj.toString());
 
-		response.flushBuffer();
+		httpServletResponse.flushBuffer();
 	}
 
 	private static String _getContentType(PortletRequest portletRequest) {
 		String contentType = ContentTypes.APPLICATION_JSON;
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			portletRequest);
+		HttpServletRequest httpServletRequest =
+			PortalUtil.getHttpServletRequest(portletRequest);
 
-		if (BrowserSnifferUtil.isIe(request)) {
-			contentType = ContentTypes.TEXT_HTML;
+		if (BrowserSnifferUtil.isIe(httpServletRequest)) {
+			contentType = ContentTypes.TEXT_PLAIN;
 		}
 
 		return contentType;

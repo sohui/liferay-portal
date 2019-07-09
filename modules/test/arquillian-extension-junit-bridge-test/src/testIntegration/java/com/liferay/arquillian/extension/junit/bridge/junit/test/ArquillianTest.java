@@ -14,19 +14,30 @@
 
 package com.liferay.arquillian.extension.junit.bridge.junit.test;
 
-import com.liferay.arquillian.extension.junit.bridge.junit.test.dependencies.BeforeAfterClassTestItem;
-import com.liferay.arquillian.extension.junit.bridge.junit.test.dependencies.ClassRuleTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.AssumeClassRuleTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.AssumeTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.BeforeAfterClassTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.BeforeAfterTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.ClassRuleTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.ExpectedExceptionTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.IgnoreTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.NoExpectedExceptionTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.NotSerializableExceptionTestItem;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.NotSerializableExceptionTestItem.UnserializableException;
+import com.liferay.arquillian.extension.junit.bridge.junit.test.item.RuleTestItem;
 import com.liferay.portal.kernel.test.junit.BridgeJUnitTestRunner;
-import com.liferay.portal.kernel.test.junit.BridgeJUnitTestRunner.BridgeRunListener;
 
 import java.io.IOException;
+import java.io.NotSerializableException;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
+import org.junit.runner.notification.Failure;
 import org.junit.runners.model.TestClass;
 
 /**
@@ -36,10 +47,44 @@ import org.junit.runners.model.TestClass;
 public class ArquillianTest {
 
 	@Test
+	public void testAssume() throws IOException {
+		Result result = BridgeJUnitTestRunner.runBridgeTests(
+			new BridgeJUnitTestRunner.BridgeRunListener(ArquillianTest.class),
+			AssumeTestItem.class);
+
+		assertResult(result, AssumeTestItem.class);
+	}
+
+	@Test
+	public void testAssumeClassRule() {
+		Result result = BridgeJUnitTestRunner.runBridgeTests(
+			new BridgeJUnitTestRunner.BridgeRunListener(ArquillianTest.class),
+			AssumeClassRuleTestItem.class);
+
+		assertResult(result, AssumeClassRuleTestItem.class);
+	}
+
+	@Test
+	public void testBeforeAfter() throws IOException {
+		try {
+			Result result = BridgeJUnitTestRunner.runBridgeTests(
+				new BridgeJUnitTestRunner.BridgeRunListener(
+					ArquillianTest.class),
+				BeforeAfterTestItem.class);
+
+			assertResult(result, BeforeAfterTestItem.class);
+		}
+		finally {
+			BeforeAfterTestItem.assertAndTearDown();
+		}
+	}
+
+	@Test
 	public void testBeforeAfterClass() throws IOException {
 		try {
 			Result result = BridgeJUnitTestRunner.runBridgeTests(
-				new BridgeRunListener(ArquillianTest.class),
+				new BridgeJUnitTestRunner.BridgeRunListener(
+					ArquillianTest.class),
 				BeforeAfterClassTestItem.class);
 
 			assertResult(result, BeforeAfterClassTestItem.class);
@@ -53,7 +98,8 @@ public class ArquillianTest {
 	public void testClassRule() throws IOException {
 		try {
 			Result result = BridgeJUnitTestRunner.runBridgeTests(
-				new BridgeRunListener(ArquillianTest.class),
+				new BridgeJUnitTestRunner.BridgeRunListener(
+					ArquillianTest.class),
 				ClassRuleTestItem.class);
 
 			assertResult(result, ClassRuleTestItem.class);
@@ -63,12 +109,107 @@ public class ArquillianTest {
 		}
 	}
 
+	@Test
+	public void testExpectedException() throws IOException {
+		Result result = BridgeJUnitTestRunner.runBridgeTests(
+			new BridgeJUnitTestRunner.BridgeRunListener(ArquillianTest.class),
+			ExpectedExceptionTestItem.class);
+
+		assertResult(result, ExpectedExceptionTestItem.class);
+	}
+
+	@Test
+	public void testIgnore() throws IOException {
+		try {
+			Result result = BridgeJUnitTestRunner.runBridgeTests(
+				new BridgeJUnitTestRunner.BridgeRunListener(
+					ArquillianTest.class),
+				IgnoreTestItem.class);
+
+			Assert.assertEquals(1, result.getIgnoreCount());
+			Assert.assertEquals(0, result.getFailureCount());
+		}
+		finally {
+			IgnoreTestItem.assertAndTearDown();
+		}
+	}
+
+	@Test
+	public void testNoExpectedException() {
+		AtomicReference<Throwable> throwableContainer = new AtomicReference<>();
+
+		BridgeJUnitTestRunner.runBridgeTests(
+			new BridgeJUnitTestRunner.BridgeRunListener(ArquillianTest.class) {
+
+				@Override
+				public void testFailure(Failure failure) {
+					throwableContainer.set(failure.getException());
+				}
+
+			},
+			NoExpectedExceptionTestItem.class);
+
+		Throwable throwable = throwableContainer.get();
+
+		Assert.assertNotNull(throwable);
+
+		Assert.assertEquals(AssertionError.class, throwable.getClass());
+
+		Assert.assertEquals(
+			"Expected test to throw " + IOException.class,
+			throwable.getMessage());
+	}
+
+	@Test
+	public void testNotSerializableException() {
+		AtomicReference<Throwable> throwableContainer = new AtomicReference<>();
+
+		BridgeJUnitTestRunner.runBridgeTests(
+			new BridgeJUnitTestRunner.BridgeRunListener(ArquillianTest.class) {
+
+				@Override
+				public void testFailure(Failure failure) {
+					throwableContainer.set(failure.getException());
+				}
+
+			},
+			NotSerializableExceptionTestItem.class);
+
+		Throwable throwable = throwableContainer.get();
+
+		Assert.assertEquals(
+			NotSerializableException.class, throwable.getClass());
+
+		Throwable cause = throwable.getCause();
+
+		Assert.assertEquals(
+			UnserializableException.class.getName() + ": " +
+				NotSerializableExceptionTestItem.class.getName(),
+			cause.getMessage());
+	}
+
+	@Test
+	public void testRule() throws IOException {
+		try {
+			Result result = BridgeJUnitTestRunner.runBridgeTests(
+				new BridgeJUnitTestRunner.BridgeRunListener(
+					ArquillianTest.class),
+				RuleTestItem.class);
+
+			assertResult(result, RuleTestItem.class);
+		}
+		finally {
+			RuleTestItem.assertAndTearDown();
+		}
+	}
+
 	protected void assertResult(Result result, Class<?>... testClasses) {
 		Assert.assertEquals(0, result.getFailureCount());
 
 		List<?> failures = result.getFailures();
 
-		Assert.assertTrue(failures.isEmpty());
+		Assert.assertTrue(failures.toString(), failures.isEmpty());
+
 		Assert.assertEquals(0, result.getIgnoreCount());
 
 		int runCount = 0;

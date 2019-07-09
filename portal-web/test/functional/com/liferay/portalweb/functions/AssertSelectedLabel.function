@@ -1,13 +1,16 @@
-<definition default="assertSelectedLabel">
-	<command name="assertSelectedLabel">
-		<execute function="WaitForSPARefresh" />
+@default = "assertSelectedLabel"
+definition {
 
-		<execute selenium="waitForVisible" />
+	function assertSelectedLabel {
+		WaitForSPARefresh();
 
-		<execute selenium="assertSelectedLabel" />
+		selenium.waitForVisible();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.assertSelectedLabel();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

@@ -14,7 +14,7 @@
 
 package com.liferay.announcements.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -22,35 +22,80 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface AnnouncementsEntryFinder {
-	public int countByScope(long userId, long classNameId, long[] classPKs,
+
+	public int countByScope(
+		long companyId, long userId, long classNameId, long[] classPKs,
 		int displayDateMonth, int displayDateDay, int displayDateYear,
 		int displayDateHour, int displayDateMinute, int expirationDateMonth,
 		int expirationDateDay, int expirationDateYear, int expirationDateHour,
 		int expirationDateMinute, boolean alert, int flagValue);
 
-	public int countByScopes(long userId,
-		java.util.LinkedHashMap<java.lang.Long, long[]> scopes,
-		int displayDateMonth, int displayDateDay, int displayDateYear,
-		int displayDateHour, int displayDateMinute, int expirationDateMonth,
-		int expirationDateDay, int expirationDateYear, int expirationDateHour,
-		int expirationDateMinute, boolean alert, int flagValue);
-
-	public java.util.List<com.liferay.announcements.kernel.model.AnnouncementsEntry> findByDisplayDate(
-		java.util.Date displayDateLT, java.util.Date displayDateGT);
-
-	public java.util.List<com.liferay.announcements.kernel.model.AnnouncementsEntry> findByScope(
+	public int countByScope(
 		long userId, long classNameId, long[] classPKs, int displayDateMonth,
 		int displayDateDay, int displayDateYear, int displayDateHour,
 		int displayDateMinute, int expirationDateMonth, int expirationDateDay,
 		int expirationDateYear, int expirationDateHour,
-		int expirationDateMinute, boolean alert, int flagValue, int start,
-		int end);
+		int expirationDateMinute, boolean alert, int flagValue);
 
-	public java.util.List<com.liferay.announcements.kernel.model.AnnouncementsEntry> findByScopes(
-		long userId, java.util.LinkedHashMap<java.lang.Long, long[]> scopes,
+	public int countByScopes(
+		long userId, java.util.LinkedHashMap<Long, long[]> scopes,
 		int displayDateMonth, int displayDateDay, int displayDateYear,
 		int displayDateHour, int displayDateMinute, int expirationDateMonth,
 		int expirationDateDay, int expirationDateYear, int expirationDateHour,
-		int expirationDateMinute, boolean alert, int flagValue, int start,
-		int end);
+		int expirationDateMinute, boolean alert, int flagValue);
+
+	public int countByScopes(
+		long companyId, long userId,
+		java.util.LinkedHashMap<Long, long[]> scopes, int displayDateMonth,
+		int displayDateDay, int displayDateYear, int displayDateHour,
+		int displayDateMinute, int expirationDateMonth, int expirationDateDay,
+		int expirationDateYear, int expirationDateHour,
+		int expirationDateMinute, boolean alert, int flagValue);
+
+	public java.util.List
+		<com.liferay.announcements.kernel.model.AnnouncementsEntry>
+			findByDisplayDate(
+				java.util.Date displayDateLT, java.util.Date displayDateGT);
+
+	public java.util.List
+		<com.liferay.announcements.kernel.model.AnnouncementsEntry> findByScope(
+			long companyId, long userId, long classNameId, long[] classPKs,
+			int displayDateMonth, int displayDateDay, int displayDateYear,
+			int displayDateHour, int displayDateMinute, int expirationDateMonth,
+			int expirationDateDay, int expirationDateYear,
+			int expirationDateHour, int expirationDateMinute, boolean alert,
+			int flagValue, int start, int end);
+
+	public java.util.List
+		<com.liferay.announcements.kernel.model.AnnouncementsEntry> findByScope(
+			long userId, long classNameId, long[] classPKs,
+			int displayDateMonth, int displayDateDay, int displayDateYear,
+			int displayDateHour, int displayDateMinute, int expirationDateMonth,
+			int expirationDateDay, int expirationDateYear,
+			int expirationDateHour, int expirationDateMinute, boolean alert,
+			int flagValue, int start, int end);
+
+	public java.util.List
+		<com.liferay.announcements.kernel.model.AnnouncementsEntry>
+			findByScopes(
+				long userId, java.util.LinkedHashMap<Long, long[]> scopes,
+				int displayDateMonth, int displayDateDay, int displayDateYear,
+				int displayDateHour, int displayDateMinute,
+				int expirationDateMonth, int expirationDateDay,
+				int expirationDateYear, int expirationDateHour,
+				int expirationDateMinute, boolean alert, int flagValue,
+				int start, int end);
+
+	public java.util.List
+		<com.liferay.announcements.kernel.model.AnnouncementsEntry>
+			findByScopes(
+				long companyId, long userId,
+				java.util.LinkedHashMap<Long, long[]> scopes,
+				int displayDateMonth, int displayDateDay, int displayDateYear,
+				int displayDateHour, int displayDateMinute,
+				int expirationDateMonth, int expirationDateDay,
+				int expirationDateYear, int expirationDateHour,
+				int expirationDateMinute, boolean alert, int flagValue,
+				int start, int end);
+
 }

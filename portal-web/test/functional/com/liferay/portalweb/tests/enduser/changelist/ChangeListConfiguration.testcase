@@ -1,0 +1,124 @@
+@component-name = "portal-staging"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Change Lists";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@description = "Change list cannot be enabled when staging is turned on"
+	@priority = "5"
+	test CannotEnableChangeListWhenStagingIsTurnedOn {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			panel = "Site Administration",
+			portlet = "Staging");
+
+		Staging.activateStagingCP(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Change Lists",
+			panel = "Control Panel",
+			portlet = "Settings");
+
+		Alert.viewWarningSpecific(warningMessage = "Staging is enabled for at least one site in the current virtual instance. Staging and change lists cannot be used together.");
+	}
+
+	@description = "Check Supported Content Types"
+	@priority = "4"
+	test CheckSupportedContentTypes {
+		ProductMenu.gotoPortlet(
+			category = "Change Lists",
+			panel = "Control Panel",
+			portlet = "Settings");
+
+		for (var changeListContentType : list "Web Content") {
+			var key_changeListContentType = "${changeListContentType}";
+
+			AssertHTMLSourceTextPresent(
+				locator1 = "ChangeListSettings#SUPPORTED_CONTENT_TYPES",
+				value1 = "${changeListContentType}");
+		}
+
+	}
+
+	@description = "Enable Change List and go to Overview"
+	@priority = "5"
+	test EnableChangeListAndGoToOverview {
+		property portal.acceptance = "true";
+
+		ProductMenu.gotoPortlet(
+			category = "Change Lists",
+			panel = "Control Panel",
+			portlet = "Settings");
+
+		ChangeList.enableChangeList(gotoOverview = "true");
+
+		AssertTextEquals(
+			locator1 = "ChangeList#OVERVIEW_PAGE_TITLE",
+			value1 = "Select Change List");
+
+		AssertElementPresent(
+			locator1 = "ChangeList#PRODUCTION_CARD_TITLE",
+			value1 = "Work on Production");
+
+		AssertElementPresent(locator1 = "ChangeList#INDICATOR");
+
+		ChangeList.viewNoStagingMenuitemsNotAvailable();
+
+		ChangeList.viewWarningOnSiteExportImport(portletName = "Export");
+
+		ChangeList.viewWarningOnSiteExportImport(portletName = "Import");
+
+		ChangeList.viewWarningOnPortletExport(portletName = "Web Content");
+
+		ChangeList.viewWarningOnPortletImport(portletName = "Web Content");
+
+		ProductMenu.gotoPortlet(
+			category = "Change Lists",
+			panel = "Control Panel",
+			portlet = "Settings");
+
+		ChangeList.disableChangeList();
+
+		AssertElementPresent(locator1 = "ChangeListSettings#DISABLED_SAVE_AND_GO_TO_OVERVIEW_BUTTON");
+
+		AssertElementNotPresent(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
+	}
+
+	@description = "Enable and Disable Change List"
+	@priority = "5"
+	test EnableDisableChangeList {
+		ProductMenu.gotoPortlet(
+			category = "Change Lists",
+			panel = "Control Panel",
+			portlet = "Settings");
+
+		ChangeList.enableChangeList();
+
+		ProductMenu.gotoPortlet(
+			category = "Change Lists",
+			panel = "Control Panel",
+			portlet = "Settings");
+
+		ChangeList.disableChangeList();
+
+		AssertElementPresent(locator1 = "ChangeListSettings#DISABLED_SAVE_AND_GO_TO_OVERVIEW_BUTTON");
+	}
+
+}

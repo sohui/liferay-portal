@@ -25,8 +25,10 @@ import java.util.Map;
  * Manages a list resource block IDs and the actions that can be performed on
  * the resources in each.
  *
- * @author Connor McKay
+ * @author     Connor McKay
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class ResourceBlockIdsBag implements Serializable {
 
 	public void addResourceBlockId(long resourceBlockId, long actionIdsLong) {
@@ -63,9 +65,8 @@ public class ResourceBlockIdsBag implements Serializable {
 		if ((getActionIds(resourceBlockId) & actionIdsLong) == actionIdsLong) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private final Map<Long, Long> _permissions = new HashMap<>();

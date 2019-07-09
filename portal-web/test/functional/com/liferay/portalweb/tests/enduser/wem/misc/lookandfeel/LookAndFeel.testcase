@@ -1,0 +1,88 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Look And Feel";
+	property testray.main.component.name = "Look And Feel";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "5"
+	test ConfigureCustomStylesViaLookAndFeelPG {
+		property testray.component.names = "Training";
+
+		Portlet.addPG(portletName = "Sign In");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Sign In",
+			portletOption = "Look and Feel Configuration");
+
+		IFrame.selectConfigurationFrame();
+
+		Portlet.configureCustomStylesViaLookandfeelPG();
+
+		PortletEntry.save();
+
+		Navigator.openURL();
+
+		Portlet.viewCustomStylesViaLookandfeelPG();
+
+		Portlet.addPG(portletName = "Web Content Display");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Web Content Display",
+			portletOption = "Look and Feel Configuration");
+
+		IFrame.selectConfigurationFrame();
+
+		Portlet.configureApplicationDecoratorViaLookandfeelPG(applicationDecorator = "Decorate");
+
+		Button.clickCancel();
+
+		Navigator.openURL();
+
+		Portlet.viewApplicationDecorator(decorator = "Borderless");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Web Content Display",
+			portletOption = "Look and Feel Configuration");
+
+		IFrame.selectConfigurationFrame();
+
+		Portlet.selectApplicationDecorator(decorator = "Decorate");
+
+		PortletEntry.save();
+
+		Navigator.openURL();
+
+		Portlet.viewApplicationDecorator(decorator = "Decorate");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Web Content Display",
+			portletOption = "Look and Feel Configuration");
+
+		IFrame.selectConfigurationFrame();
+
+		Portlet.selectApplicationDecorator(decorator = "Barebone");
+
+		PortletEntry.save();
+
+		Navigator.openURL();
+
+		Portlet.viewApplicationDecorator(decorator = "Barebone");
+	}
+
+}

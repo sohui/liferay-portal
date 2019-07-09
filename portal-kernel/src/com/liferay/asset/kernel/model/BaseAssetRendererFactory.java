@@ -14,30 +14,32 @@
 
 package com.liferay.asset.kernel.model;
 
-import com.liferay.asset.kernel.NoSuchClassTypeException;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.PortletBag;
+import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
@@ -72,8 +74,14 @@ public abstract class BaseAssetRendererFactory<T>
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public AssetRenderer<T> getAssetRenderer(long groupId, String urlTitle)
+		throws PortalException {
+
+		return null;
+	}
+
+	@Override
+	public AssetRenderer<T> getAssetRenderer(T entry, int type)
 		throws PortalException {
 
 		return null;
@@ -89,6 +97,9 @@ public abstract class BaseAssetRendererFactory<T>
 		return PortalUtil.getClassNameId(getClassName());
 	}
 
+	/**
+	 * @deprecated As of Wilberforce (7.0.x)
+	 */
 	@Deprecated
 	@Override
 	public Tuple getClassTypeFieldName(
@@ -110,6 +121,9 @@ public abstract class BaseAssetRendererFactory<T>
 		return null;
 	}
 
+	/**
+	 * @deprecated As of Wilberforce (7.0.x)
+	 */
 	@Deprecated
 	@Override
 	public List<Tuple> getClassTypeFieldNames(
@@ -132,6 +146,9 @@ public abstract class BaseAssetRendererFactory<T>
 		return tuples;
 	}
 
+	/**
+	 * @deprecated As of Wilberforce (7.0.x)
+	 */
 	@Deprecated
 	@Override
 	public int getClassTypeFieldNamesCount(long classTypeId, Locale locale)
@@ -149,6 +166,9 @@ public abstract class BaseAssetRendererFactory<T>
 		return new NullClassTypeReader();
 	}
 
+	/**
+	 * @deprecated As of Wilberforce (7.0.x)
+	 */
 	@Deprecated
 	@Override
 	public Map<Long, String> getClassTypes(long[] groupIds, Locale locale)
@@ -174,7 +194,7 @@ public abstract class BaseAssetRendererFactory<T>
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -194,11 +214,36 @@ public abstract class BaseAssetRendererFactory<T>
 
 	@Override
 	public String getTypeName(Locale locale) {
-		return ResourceActionsUtil.getModelResource(locale, getClassName());
+		String modelResourceNamePrefix =
+			ResourceActionsUtil.getModelResourceNamePrefix();
+
+		String key = modelResourceNamePrefix.concat(getClassName());
+
+		String value = LanguageUtil.get(locale, key, null);
+
+		String portletId = getPortletId();
+
+		if ((value == null) && (portletId != null)) {
+			PortletBag portletBag = PortletBagPool.get(portletId);
+
+			ResourceBundle resourceBundle = portletBag.getResourceBundle(
+				locale);
+
+			if (resourceBundle != null) {
+				value = ResourceBundleUtil.getString(resourceBundle, key);
+			}
+		}
+
+		if (value == null) {
+			value = getClassName();
+		}
+
+		return value;
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getTypeName(Locale)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getTypeName(Locale)}
 	 */
 	@Deprecated
 	@Override
@@ -211,6 +256,9 @@ public abstract class BaseAssetRendererFactory<T>
 		return getTypeName(locale);
 	}
 
+	/**
+	 * @deprecated As of Wilberforce (7.0.x)
+	 */
 	@Deprecated
 	@Override
 	public PortletURL getURLAdd(
@@ -222,7 +270,6 @@ public abstract class BaseAssetRendererFactory<T>
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public PortletURL getURLAdd(
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse, long classTypeId)
@@ -232,7 +279,6 @@ public abstract class BaseAssetRendererFactory<T>
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public PortletURL getURLView(
 			LiferayPortletResponse liferayPortletResponse,
 			WindowState windowState)
@@ -249,6 +295,9 @@ public abstract class BaseAssetRendererFactory<T>
 		return false;
 	}
 
+	/**
+	 * @deprecated As of Wilberforce (7.0.x)
+	 */
 	@Deprecated
 	@Override
 	public boolean hasClassTypeFieldNames(long classTypeId, Locale locale)
@@ -279,15 +328,11 @@ public abstract class BaseAssetRendererFactory<T>
 			return true;
 		}
 
-		Portlet portlet = PortletLocalServiceUtil.getPortletById(
+		Portlet portlet = PortletLocalServiceUtil.fetchPortletById(
 			companyId, getPortletId());
 
 		if (portlet == null) {
-			portlet = PortletLocalServiceUtil.getPortletById(getPortletId());
-		}
-
-		if (portlet == null) {
-			return false;
+			return true;
 		}
 
 		return portlet.isActive();
@@ -374,23 +419,5 @@ public abstract class BaseAssetRendererFactory<T>
 	private boolean _searchable;
 	private boolean _selectable = true;
 	private boolean _supportsClassTypes;
-
-	private static class NullClassTypeReader implements ClassTypeReader {
-
-		@Override
-		public List<ClassType> getAvailableClassTypes(
-			long[] groupIds, Locale locale) {
-
-			return Collections.emptyList();
-		}
-
-		@Override
-		public ClassType getClassType(long classTypeId, Locale locale)
-			throws PortalException {
-
-			throw new NoSuchClassTypeException();
-		}
-
-	}
 
 }

@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.servlet;
 
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class ServletContextUtil {
 	public static final String PATH_WEB_INF = "/WEB-INF";
 
 	public static final String URI_ATTRIBUTE =
-		ServletContextUtil.class.getName().concat(".rootURI");
+		ServletContextUtil.class.getName() + ".rootURI";
 
 	public static Set<String> getClassNames(ServletContext servletContext)
 		throws IOException {
@@ -75,7 +75,10 @@ public class ServletContextUtil {
 		if (cache) {
 			lastModifiedCacheKey = ServletContextUtil.class.getName();
 			lastModifiedCacheKey = lastModifiedCacheKey.concat(
-				StringPool.PERIOD).concat(path);
+				StringPool.PERIOD
+			).concat(
+				path
+			);
 
 			Long lastModified = (Long)servletContext.getAttribute(
 				lastModifiedCacheKey);

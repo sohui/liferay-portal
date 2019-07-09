@@ -20,6 +20,9 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Iván Zaera
  */
@@ -32,8 +35,23 @@ public class ConfigurationBeanSettings
 
 		super(parentSettings);
 
+		if (locationVariableResolver == null) {
+			throw new NullPointerException(
+				"Location variable resolver is null");
+		}
+
+		if (configurationBean == null) {
+			throw new NullPointerException("Configuration bean is null");
+		}
+
 		_locationVariableResolver = locationVariableResolver;
 		_configurationBean = configurationBean;
+
+		Class<?> clazz = configurationBean.getClass();
+
+		for (Method method : clazz.getMethods()) {
+			_methods.put(method.getName(), method);
+		}
 	}
 
 	@Override
@@ -47,7 +65,9 @@ public class ConfigurationBeanSettings
 		String value = null;
 
 		if (object instanceof LocalizedValuesMap) {
-			value = ((LocalizedValuesMap)object).getDefaultValue();
+			LocalizedValuesMap localizedValuesMap = (LocalizedValuesMap)object;
+
+			value = localizedValuesMap.getDefaultValue();
 		}
 		else {
 			value = object.toString();
@@ -72,19 +92,14 @@ public class ConfigurationBeanSettings
 	}
 
 	private Object _getProperty(String key) {
-		if (_configurationBean == null) {
-			return null;
-		}
-
-		Class<?> clazz = _configurationBean.getClass();
-
 		try {
-			Method method = clazz.getMethod(key);
+			Method method = _methods.get(key);
+
+			if (method == null) {
+				return null;
+			}
 
 			return method.invoke(_configurationBean);
-		}
-		catch (NoSuchMethodException nsme) {
-			return null;
 		}
 		catch (InvocationTargetException ite) {
 			throw new SystemException("Unable to read property " + key, ite);
@@ -96,5 +111,6 @@ public class ConfigurationBeanSettings
 
 	private final Object _configurationBean;
 	private final LocationVariableResolver _locationVariableResolver;
+	private final Map<String, Method> _methods = new HashMap<>();
 
 }

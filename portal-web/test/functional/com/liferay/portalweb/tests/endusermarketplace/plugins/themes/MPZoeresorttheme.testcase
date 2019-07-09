@@ -1,29 +1,30 @@
-<definition component-name="portal-plugins-deployment">
-	<property name="testray.main.component.name" value="Plugin Installer" />
+@component-name = "portal-plugins-deployment"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	property testray.main.component.name = "Plugin Installer";
 
-	<command name="ZoeResortThemeSmoke" priority="4">
-		<property name="theme.plugins.includes" value="zoe-resort-theme" />
+	setUp {
+		User.firstLoginPG();
+	}
 
-		<var name="appName" value="Zoe Resort" />
+	@priority = "4"
+	test ZoeResortThemeSmoke {
+		property theme.plugins.includes = "zoe-resort-theme";
+		var appName = "Zoe Resort";
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="App Manager" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "App Manager");
 
-		<execute macro="AppManager#uninstallAppCP">
-			<var name="appName" value="${appName}" />
-		</execute>
+		AppManager.uninstallAppCP(appName = "${appName}");
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="App Manager" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "App Manager");
 
-		<execute macro="AppManager#viewUninstallAppCP">
-			<var name="appName" value="${appName}" />
-		</execute>
-	</command>
-</definition>
+		AppManager.viewUninstallAppCP(appName = "${appName}");
+	}
+
+}

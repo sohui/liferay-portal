@@ -51,19 +51,6 @@ public interface WorkflowHandler<T> {
 
 	public String getIconCssClass();
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public String getIconPath(LiferayPortletRequest liferayPortletRequest);
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSummary(long,
-	 *             PortletRequest, PortletResponse)}
-	 */
-	@Deprecated
-	public String getSummary(long classPK, Locale locale);
-
 	public String getSummary(
 		long classPK, PortletRequest portletRequest,
 		PortletResponse portletResponse);
@@ -94,8 +81,8 @@ public interface WorkflowHandler<T> {
 		throws PortalException;
 
 	public boolean include(
-		long classPK, HttpServletRequest request, HttpServletResponse response,
-		String template);
+		long classPK, HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, String template);
 
 	public boolean isAssetTypeSearchable();
 

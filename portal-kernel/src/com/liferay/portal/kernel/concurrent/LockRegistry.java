@@ -19,8 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class LockRegistry {
 
 	public static ReentrantLock allocateLock(String groupName, String key) {
@@ -68,7 +70,7 @@ public class LockRegistry {
 	}
 
 	public static void freeAllLock(boolean unlock) {
-		if (unlock == true) {
+		if (unlock) {
 			for (Map<String, ReentrantLock> lockGroup :
 					_lockGroupMap.values()) {
 
@@ -97,7 +99,7 @@ public class LockRegistry {
 			return null;
 		}
 
-		if (unlock == true) {
+		if (unlock) {
 			for (ReentrantLock lock : lockGroup.values()) {
 				lock.unlock();
 			}
@@ -155,8 +157,8 @@ public class LockRegistry {
 
 	private static final Object _dummyValue = new Object();
 	private static final ConcurrentHashMap
-		<String, ConcurrentHashMap<String, ReentrantLock>>
-			_lockGroupMap = new ConcurrentHashMap<>();
+		<String, ConcurrentHashMap<String, ReentrantLock>> _lockGroupMap =
+			new ConcurrentHashMap<>();
 	private static final Map<String, Object> _prematureLockReleases =
 		new ConcurrentHashMap<>();
 

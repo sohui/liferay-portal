@@ -14,12 +14,17 @@
 
 package com.liferay.source.formatter.dependencies;
 
+import com.liferay.petra.json.web.service.client.JSONWebServiceInvocationException;
+import com.liferay.petra.json.web.service.client.JSONWebServiceSerializeException;
+import com.liferay.petra.json.web.service.client.JSONWebServiceTransportException;
 import com.liferay.portal.kernel.portlet.LiferayPortlet;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.List;
 
 import javax.portlet.Portlet;
+
+import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -53,7 +58,6 @@ public class IncorrectWhitespace {
 		String s9 = s5;
 
 		if (isGif()) {
-			return;
 		}
 	}
 
@@ -62,6 +66,7 @@ public class IncorrectWhitespace {
 	 */
 	public void method2() {
 		String s1= "test";
+		// Comment
 		String s2 = "hello ,world";
 		String s3 = "hello\" ,world";
 		String s4 = "hello\\\" ,world";
@@ -80,10 +85,14 @@ public class IncorrectWhitespace {
 		}
 
 		for(int i = 1;i < 10 ; i++) {
-			String [] stringArray1 = new String[]{"test1"};
-			String [] stringArray2 = new String[]{
-				"test1", "test2", "test3", "test4", "test5", "test6"
-			};
+			String [] stringArray1 = {"test1"};
+		}
+
+		for (int i = i;
+			i < s2.indexOf("Hello World Hello World Hello World Hello World");
+			i++) {
+
+			s1 = "test";
 		}
 
 		List <String> list = null;
@@ -106,6 +115,52 @@ public class IncorrectWhitespace {
 	public void method5(String ... strings) {
 	}
 
+	public void method6(String testString) {
+		testString =_trim(testString);
+	}
+
+	public List<String> method7(List<String> list1, List<String> list2) {
+		List<String> newList = new ArrayList<>();
+
+		for (String s: list1) {
+			newList.add(s);
+		}
+
+		String test = "Hello World";
+		for (String s :list2) {
+			newList.add(s);
+		}
+
+		for (String s : StringUtil.split(test, ':')) {
+			newList.add(s);
+		}
+
+		return newList;
+	}
+
+	public void testMethod8(String s1, String s2, String s3)
+		throws JSONWebServiceInvocationException,
+			JSONWebServiceTransportException {
+	}
+
+	public void testMethod9(String s1, String s2, String s3)
+		throws JSONWebServiceInvocationException,
+				JSONWebServiceTransportException {
+	}
+
+	public void testMethod10(String s1, String s2, String s3)
+		throws JSONWebServiceInvocationException,
+			   JSONWebServiceSerializeException,
+			JSONWebServiceTransportException {
+	}
+
+	protected Map
+		<String,
+		Map
+			<String,
+			Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>>
+				mappings;
+
 	protected class SubClass1 {
 
 	}
@@ -114,6 +169,10 @@ public class IncorrectWhitespace {
 		protected void method1() {
 		}
 
+	}
+
+	private String _trim(String s) {
+		return StringUtil.trim(s);
 	}
 
 	private class SubClass3

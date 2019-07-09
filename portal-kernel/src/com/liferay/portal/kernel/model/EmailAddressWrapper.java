@@ -14,20 +14,14 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -39,20 +33,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class EmailAddressWrapper implements EmailAddress,
-	ModelWrapper<EmailAddress> {
+public class EmailAddressWrapper
+	extends BaseModelWrapper<EmailAddress>
+	implements EmailAddress, ModelWrapper<EmailAddress> {
+
 	public EmailAddressWrapper(EmailAddress emailAddress) {
-		_emailAddress = emailAddress;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return EmailAddress.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return EmailAddress.class.getName();
+		super(emailAddress);
 	}
 
 	@Override
@@ -71,7 +57,7 @@ public class EmailAddressWrapper implements EmailAddress,
 		attributes.put("classPK", getClassPK());
 		attributes.put("address", getAddress());
 		attributes.put("typeId", getTypeId());
-		attributes.put("primary", getPrimary());
+		attributes.put("primary", isPrimary());
 
 		return attributes;
 	}
@@ -157,480 +143,351 @@ public class EmailAddressWrapper implements EmailAddress,
 		}
 	}
 
+	/**
+	 * Returns the address of this email address.
+	 *
+	 * @return the address of this email address
+	 */
 	@Override
-	public CacheModel<EmailAddress> toCacheModel() {
-		return _emailAddress.toCacheModel();
+	public String getAddress() {
+		return model.getAddress();
 	}
 
+	/**
+	 * Returns the fully qualified class name of this email address.
+	 *
+	 * @return the fully qualified class name of this email address
+	 */
 	@Override
-	public EmailAddress toEscapedModel() {
-		return new EmailAddressWrapper(_emailAddress.toEscapedModel());
+	public String getClassName() {
+		return model.getClassName();
 	}
 
+	/**
+	 * Returns the class name ID of this email address.
+	 *
+	 * @return the class name ID of this email address
+	 */
 	@Override
-	public EmailAddress toUnescapedModel() {
-		return new EmailAddressWrapper(_emailAddress.toUnescapedModel());
+	public long getClassNameId() {
+		return model.getClassNameId();
+	}
+
+	/**
+	 * Returns the class pk of this email address.
+	 *
+	 * @return the class pk of this email address
+	 */
+	@Override
+	public long getClassPK() {
+		return model.getClassPK();
+	}
+
+	/**
+	 * Returns the company ID of this email address.
+	 *
+	 * @return the company ID of this email address
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the create date of this email address.
+	 *
+	 * @return the create date of this email address
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the email address ID of this email address.
+	 *
+	 * @return the email address ID of this email address
+	 */
+	@Override
+	public long getEmailAddressId() {
+		return model.getEmailAddressId();
+	}
+
+	/**
+	 * Returns the modified date of this email address.
+	 *
+	 * @return the modified date of this email address
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this email address.
+	 *
+	 * @return the mvcc version of this email address
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
+	 * Returns the primary of this email address.
+	 *
+	 * @return the primary of this email address
+	 */
+	@Override
+	public boolean getPrimary() {
+		return model.getPrimary();
+	}
+
+	/**
+	 * Returns the primary key of this email address.
+	 *
+	 * @return the primary key of this email address
+	 */
+	@Override
+	public long getPrimaryKey() {
+		return model.getPrimaryKey();
 	}
 
 	@Override
 	public ListType getType()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _emailAddress.getType();
+
+		return model.getType();
 	}
 
 	/**
-	* Returns the primary of this email address.
-	*
-	* @return the primary of this email address
-	*/
-	@Override
-	public boolean getPrimary() {
-		return _emailAddress.getPrimary();
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _emailAddress.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _emailAddress.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _emailAddress.isNew();
-	}
-
-	/**
-	* Returns <code>true</code> if this email address is primary.
-	*
-	* @return <code>true</code> if this email address is primary; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isPrimary() {
-		return _emailAddress.isPrimary();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _emailAddress.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(EmailAddress emailAddress) {
-		return _emailAddress.compareTo(emailAddress);
-	}
-
-	@Override
-	public int hashCode() {
-		return _emailAddress.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _emailAddress.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new EmailAddressWrapper((EmailAddress)_emailAddress.clone());
-	}
-
-	/**
-	* Returns the address of this email address.
-	*
-	* @return the address of this email address
-	*/
-	@Override
-	public java.lang.String getAddress() {
-		return _emailAddress.getAddress();
-	}
-
-	/**
-	* Returns the fully qualified class name of this email address.
-	*
-	* @return the fully qualified class name of this email address
-	*/
-	@Override
-	public java.lang.String getClassName() {
-		return _emailAddress.getClassName();
-	}
-
-	/**
-	* Returns the user name of this email address.
-	*
-	* @return the user name of this email address
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _emailAddress.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this email address.
-	*
-	* @return the user uuid of this email address
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _emailAddress.getUserUuid();
-	}
-
-	/**
-	* Returns the uuid of this email address.
-	*
-	* @return the uuid of this email address
-	*/
-	@Override
-	public java.lang.String getUuid() {
-		return _emailAddress.getUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _emailAddress.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _emailAddress.toXmlString();
-	}
-
-	/**
-	* Returns the create date of this email address.
-	*
-	* @return the create date of this email address
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _emailAddress.getCreateDate();
-	}
-
-	/**
-	* Returns the modified date of this email address.
-	*
-	* @return the modified date of this email address
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _emailAddress.getModifiedDate();
-	}
-
-	/**
-	* Returns the class name ID of this email address.
-	*
-	* @return the class name ID of this email address
-	*/
-	@Override
-	public long getClassNameId() {
-		return _emailAddress.getClassNameId();
-	}
-
-	/**
-	* Returns the class p k of this email address.
-	*
-	* @return the class p k of this email address
-	*/
-	@Override
-	public long getClassPK() {
-		return _emailAddress.getClassPK();
-	}
-
-	/**
-	* Returns the company ID of this email address.
-	*
-	* @return the company ID of this email address
-	*/
-	@Override
-	public long getCompanyId() {
-		return _emailAddress.getCompanyId();
-	}
-
-	/**
-	* Returns the email address ID of this email address.
-	*
-	* @return the email address ID of this email address
-	*/
-	@Override
-	public long getEmailAddressId() {
-		return _emailAddress.getEmailAddressId();
-	}
-
-	/**
-	* Returns the mvcc version of this email address.
-	*
-	* @return the mvcc version of this email address
-	*/
-	@Override
-	public long getMvccVersion() {
-		return _emailAddress.getMvccVersion();
-	}
-
-	/**
-	* Returns the primary key of this email address.
-	*
-	* @return the primary key of this email address
-	*/
-	@Override
-	public long getPrimaryKey() {
-		return _emailAddress.getPrimaryKey();
-	}
-
-	/**
-	* Returns the type ID of this email address.
-	*
-	* @return the type ID of this email address
-	*/
+	 * Returns the type ID of this email address.
+	 *
+	 * @return the type ID of this email address
+	 */
 	@Override
 	public long getTypeId() {
-		return _emailAddress.getTypeId();
+		return model.getTypeId();
 	}
 
 	/**
-	* Returns the user ID of this email address.
-	*
-	* @return the user ID of this email address
-	*/
+	 * Returns the user ID of this email address.
+	 *
+	 * @return the user ID of this email address
+	 */
 	@Override
 	public long getUserId() {
-		return _emailAddress.getUserId();
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user name of this email address.
+	 *
+	 * @return the user name of this email address
+	 */
+	@Override
+	public String getUserName() {
+		return model.getUserName();
+	}
+
+	/**
+	 * Returns the user uuid of this email address.
+	 *
+	 * @return the user uuid of this email address
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the uuid of this email address.
+	 *
+	 * @return the uuid of this email address
+	 */
+	@Override
+	public String getUuid() {
+		return model.getUuid();
+	}
+
+	/**
+	 * Returns <code>true</code> if this email address is primary.
+	 *
+	 * @return <code>true</code> if this email address is primary; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isPrimary() {
+		return model.isPrimary();
 	}
 
 	@Override
 	public void persist() {
-		_emailAddress.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets the address of this email address.
-	*
-	* @param address the address of this email address
-	*/
+	 * Sets the address of this email address.
+	 *
+	 * @param address the address of this email address
+	 */
 	@Override
-	public void setAddress(java.lang.String address) {
-		_emailAddress.setAddress(address);
+	public void setAddress(String address) {
+		model.setAddress(address);
 	}
 
 	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_emailAddress.setCachedModel(cachedModel);
-	}
-
-	@Override
-	public void setClassName(java.lang.String className) {
-		_emailAddress.setClassName(className);
+	public void setClassName(String className) {
+		model.setClassName(className);
 	}
 
 	/**
-	* Sets the class name ID of this email address.
-	*
-	* @param classNameId the class name ID of this email address
-	*/
+	 * Sets the class name ID of this email address.
+	 *
+	 * @param classNameId the class name ID of this email address
+	 */
 	@Override
 	public void setClassNameId(long classNameId) {
-		_emailAddress.setClassNameId(classNameId);
+		model.setClassNameId(classNameId);
 	}
 
 	/**
-	* Sets the class p k of this email address.
-	*
-	* @param classPK the class p k of this email address
-	*/
+	 * Sets the class pk of this email address.
+	 *
+	 * @param classPK the class pk of this email address
+	 */
 	@Override
 	public void setClassPK(long classPK) {
-		_emailAddress.setClassPK(classPK);
+		model.setClassPK(classPK);
 	}
 
 	/**
-	* Sets the company ID of this email address.
-	*
-	* @param companyId the company ID of this email address
-	*/
+	 * Sets the company ID of this email address.
+	 *
+	 * @param companyId the company ID of this email address
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_emailAddress.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this email address.
-	*
-	* @param createDate the create date of this email address
-	*/
+	 * Sets the create date of this email address.
+	 *
+	 * @param createDate the create date of this email address
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_emailAddress.setCreateDate(createDate);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the email address ID of this email address.
-	*
-	* @param emailAddressId the email address ID of this email address
-	*/
+	 * Sets the email address ID of this email address.
+	 *
+	 * @param emailAddressId the email address ID of this email address
+	 */
 	@Override
 	public void setEmailAddressId(long emailAddressId) {
-		_emailAddress.setEmailAddressId(emailAddressId);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_emailAddress.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_emailAddress.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_emailAddress.setExpandoBridgeAttributes(serviceContext);
+		model.setEmailAddressId(emailAddressId);
 	}
 
 	/**
-	* Sets the modified date of this email address.
-	*
-	* @param modifiedDate the modified date of this email address
-	*/
+	 * Sets the modified date of this email address.
+	 *
+	 * @param modifiedDate the modified date of this email address
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_emailAddress.setModifiedDate(modifiedDate);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the mvcc version of this email address.
-	*
-	* @param mvccVersion the mvcc version of this email address
-	*/
+	 * Sets the mvcc version of this email address.
+	 *
+	 * @param mvccVersion the mvcc version of this email address
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_emailAddress.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_emailAddress.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets whether this email address is primary.
-	*
-	* @param primary the primary of this email address
-	*/
+	 * Sets whether this email address is primary.
+	 *
+	 * @param primary the primary of this email address
+	 */
 	@Override
 	public void setPrimary(boolean primary) {
-		_emailAddress.setPrimary(primary);
+		model.setPrimary(primary);
 	}
 
 	/**
-	* Sets the primary key of this email address.
-	*
-	* @param primaryKey the primary key of this email address
-	*/
+	 * Sets the primary key of this email address.
+	 *
+	 * @param primaryKey the primary key of this email address
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_emailAddress.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_emailAddress.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the type ID of this email address.
-	*
-	* @param typeId the type ID of this email address
-	*/
+	 * Sets the type ID of this email address.
+	 *
+	 * @param typeId the type ID of this email address
+	 */
 	@Override
 	public void setTypeId(long typeId) {
-		_emailAddress.setTypeId(typeId);
+		model.setTypeId(typeId);
 	}
 
 	/**
-	* Sets the user ID of this email address.
-	*
-	* @param userId the user ID of this email address
-	*/
+	 * Sets the user ID of this email address.
+	 *
+	 * @param userId the user ID of this email address
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_emailAddress.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user name of this email address.
-	*
-	* @param userName the user name of this email address
-	*/
+	 * Sets the user name of this email address.
+	 *
+	 * @param userName the user name of this email address
+	 */
 	@Override
-	public void setUserName(java.lang.String userName) {
-		_emailAddress.setUserName(userName);
+	public void setUserName(String userName) {
+		model.setUserName(userName);
 	}
 
 	/**
-	* Sets the user uuid of this email address.
-	*
-	* @param userUuid the user uuid of this email address
-	*/
+	 * Sets the user uuid of this email address.
+	 *
+	 * @param userUuid the user uuid of this email address
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_emailAddress.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets the uuid of this email address.
-	*
-	* @param uuid the uuid of this email address
-	*/
+	 * Sets the uuid of this email address.
+	 *
+	 * @param uuid the uuid of this email address
+	 */
 	@Override
-	public void setUuid(java.lang.String uuid) {
-		_emailAddress.setUuid(uuid);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof EmailAddressWrapper)) {
-			return false;
-		}
-
-		EmailAddressWrapper emailAddressWrapper = (EmailAddressWrapper)obj;
-
-		if (Objects.equals(_emailAddress, emailAddressWrapper._emailAddress)) {
-			return true;
-		}
-
-		return false;
+	public void setUuid(String uuid) {
+		model.setUuid(uuid);
 	}
 
 	@Override
 	public StagedModelType getStagedModelType() {
-		return _emailAddress.getStagedModelType();
+		return model.getStagedModelType();
 	}
 
 	@Override
-	public EmailAddress getWrappedModel() {
-		return _emailAddress;
+	protected EmailAddressWrapper wrap(EmailAddress emailAddress) {
+		return new EmailAddressWrapper(emailAddress);
 	}
 
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _emailAddress.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _emailAddress.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_emailAddress.resetOriginalValues();
-	}
-
-	private final EmailAddress _emailAddress;
 }

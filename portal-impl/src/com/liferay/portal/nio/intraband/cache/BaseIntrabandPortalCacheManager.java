@@ -41,6 +41,10 @@ public abstract class BaseIntrabandPortalCacheManager
 		_portalCaches.clear();
 	}
 
+	public PortalCache<K, V> fetchPortalCache(String portalCacheName) {
+		return _portalCaches.get(portalCacheName);
+	}
+
 	@Override
 	public PortalCache<K, V> getPortalCache(String portalCacheName) {
 		return getPortalCache(portalCacheName, false);
@@ -69,9 +73,8 @@ public abstract class BaseIntrabandPortalCacheManager
 	}
 
 	private static final Class<? extends PortalCache<?, ?>> _STUB_CLASS =
-		(Class<? extends PortalCache<?, ?>>)
-			IntrabandProxyUtil.getStubClass(
-				PortalCache.class, PortalCache.class.getName());
+		(Class<? extends PortalCache<?, ?>>)IntrabandProxyUtil.getStubClass(
+			PortalCache.class, PortalCache.class.getName());
 
 	private final Map<String, PortalCache<K, V>> _portalCaches =
 		new ConcurrentHashMap<>();

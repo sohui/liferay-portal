@@ -14,6 +14,7 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.Projection;
 
 /**
@@ -31,7 +32,13 @@ public class ProjectionImpl implements Projection {
 
 	@Override
 	public String toString() {
-		return _projection.toString();
+		StringBundler sb = new StringBundler(3);
+
+		sb.append("{_projection=");
+		sb.append(String.valueOf(_projection));
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	private final org.hibernate.criterion.Projection _projection;

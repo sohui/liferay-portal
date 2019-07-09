@@ -14,11 +14,12 @@
 
 package com.liferay.portal.tools;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.xml.SAXReaderFactory;
@@ -29,6 +30,7 @@ import de.hunsicker.jalopy.storage.Convention;
 import de.hunsicker.jalopy.storage.ConventionKeys;
 import de.hunsicker.jalopy.storage.Environment;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -69,6 +71,10 @@ import org.dom4j.io.SAXReader;
 public class ToolsUtil {
 
 	public static final String AUTHOR = "Brian Wing Shun Chan";
+
+	public static final int PLUGINS_MAX_DIR_LEVEL = 3;
+
+	public static final int PORTAL_MAX_DIR_LEVEL = 7;
 
 	public static String getContent(String fileName) throws Exception {
 		Document document = _getContentDocument(fileName);
@@ -135,9 +141,8 @@ public class ToolsUtil {
 			throw new IllegalArgumentException(
 				"The namespace element is required");
 		}
-		else {
-			rootElement.add(namespaceElement);
-		}
+
+		rootElement.add(namespaceElement);
 
 		_addElements(rootElement, entityElements);
 
@@ -148,6 +153,44 @@ public class ToolsUtil {
 		}
 
 		return document.asXML();
+	}
+
+	public static int getLevel(String s) {
+		return getLevel(
+			s, new String[] {StringPool.OPEN_PARENTHESIS},
+			new String[] {StringPool.CLOSE_PARENTHESIS}, 0);
+	}
+
+	public static int getLevel(
+		String s, String increaseLevelString, String decreaseLevelString) {
+
+		return getLevel(
+			s, new String[] {increaseLevelString},
+			new String[] {decreaseLevelString}, 0);
+	}
+
+	public static int getLevel(
+		String s, String[] increaseLevelStrings,
+		String[] decreaseLevelStrings) {
+
+		return getLevel(s, increaseLevelStrings, decreaseLevelStrings, 0);
+	}
+
+	public static int getLevel(
+		String s, String[] increaseLevelStrings, String[] decreaseLevelStrings,
+		int startLevel) {
+
+		int level = startLevel;
+
+		for (String increaseLevelString : increaseLevelStrings) {
+			level = _adjustLevel(level, s, increaseLevelString, 1);
+		}
+
+		for (String decreaseLevelString : decreaseLevelStrings) {
+			level = _adjustLevel(level, s, decreaseLevelString, -1);
+		}
+
+		return level;
 	}
 
 	public static String getPackagePath(File file) {
@@ -168,6 +211,12 @@ public class ToolsUtil {
 	}
 
 	public static boolean isInsideQuotes(String s, int pos) {
+		return isInsideQuotes(s, pos, true);
+	}
+
+	public static boolean isInsideQuotes(
+		String s, int pos, boolean allowEscapedQuotes) {
+
 		int start = s.lastIndexOf(CharPool.NEW_LINE, pos);
 
 		if (start == -1) {
@@ -192,21 +241,26 @@ public class ToolsUtil {
 
 			if (insideQuotes) {
 				if (c == delimeter) {
-					int precedingBackSlashCount = 0;
-
-					for (int j = (i - 1); j >= 0; j--) {
-						if (line.charAt(j) == CharPool.BACK_SLASH) {
-							precedingBackSlashCount += 1;
-						}
-						else {
-							break;
-						}
-					}
-
-					if ((precedingBackSlashCount == 0) ||
-						((precedingBackSlashCount % 2) == 0)) {
-
+					if (!allowEscapedQuotes) {
 						insideQuotes = false;
+					}
+					else {
+						int precedingBackSlashCount = 0;
+
+						for (int j = i - 1; j >= 0; j--) {
+							if (line.charAt(j) == CharPool.BACK_SLASH) {
+								precedingBackSlashCount += 1;
+							}
+							else {
+								break;
+							}
+						}
+
+						if ((precedingBackSlashCount == 0) ||
+							((precedingBackSlashCount % 2) == 0)) {
+
+							insideQuotes = false;
+						}
 					}
 				}
 			}
@@ -224,7 +278,7 @@ public class ToolsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #stripFullyQualifiedClassNames(String, String)}
 	 */
 	@Deprecated
@@ -251,101 +305,103 @@ public class ToolsUtil {
 			return content;
 		}
 
-		Pattern pattern1 = Pattern.compile(
-			"\n(.*)" + StringUtil.replace(packagePath, CharPool.PERIOD, "\\.") +
-				"\\.([A-Z]\\w+)\\W");
+		String afterImportsContent = null;
 
-		outerLoop:
-		while (true) {
-			Matcher matcher1 = pattern1.matcher(content);
+		int pos = content.lastIndexOf("\nimport ");
 
-			while (matcher1.find()) {
-				String lineStart = StringUtil.trimLeading(matcher1.group(1));
+		if (pos == -1) {
+			afterImportsContent = content;
+		}
+		else {
+			pos = content.indexOf("\n", pos + 1);
 
-				if (lineStart.startsWith("import ") ||
-					lineStart.contains("//") ||
-					isInsideQuotes(content, matcher1.start(2))) {
-
-					continue;
-				}
-
-				String className = matcher1.group(2);
-
-				Pattern pattern2 = Pattern.compile(
-					"import [\\w.]+\\." + className + ";");
-
-				Matcher matcher2 = pattern2.matcher(imports);
-
-				if (matcher2.find()) {
-					continue;
-				}
-
-				content = StringUtil.replaceFirst(
-					content, packagePath + ".", StringPool.BLANK,
-					matcher1.start());
-
-				continue outerLoop;
-			}
-
-			break;
+			afterImportsContent = content.substring(pos);
 		}
 
-		UnsyncBufferedReader unsyncBufferedReader = new UnsyncBufferedReader(
-			new UnsyncStringReader(imports));
+		afterImportsContent = _stripFullyQualifiedClassNames(
+			imports, afterImportsContent, packagePath);
+		afterImportsContent = _stripFullyQualifiedClassNames(
+			imports, afterImportsContent, "java.lang");
 
-		String line = null;
+		try (UnsyncBufferedReader unsyncBufferedReader =
+				new UnsyncBufferedReader(new UnsyncStringReader(imports))) {
 
-		while ((line = unsyncBufferedReader.readLine()) != null) {
-			int x = line.indexOf("import ");
+			String line = null;
 
-			if (x == -1) {
-				continue;
-			}
+			while ((line = unsyncBufferedReader.readLine()) != null) {
+				int x = line.indexOf("import ");
 
-			String importPackageAndClassName = line.substring(
-				x + 7, line.lastIndexOf(StringPool.SEMICOLON));
+				if (x == -1) {
+					continue;
+				}
 
-			if (importPackageAndClassName.contains(StringPool.STAR)) {
-				continue;
-			}
+				String importPackageAndClassName = line.substring(
+					x + 7, line.lastIndexOf(StringPool.SEMICOLON));
 
-			Pattern pattern3 = Pattern.compile(
-				"\n(.*)(" +
-					StringUtil.replace(importPackageAndClassName, ".", "\\.") +
-						")\\W");
+				if (importPackageAndClassName.contains(StringPool.STAR)) {
+					continue;
+				}
 
-			outerLoop:
-			while (true) {
-				Matcher matcher3 = pattern3.matcher(content);
+				while (true) {
+					x = afterImportsContent.indexOf(
+						importPackageAndClassName, x + 1);
 
-				while (matcher3.find()) {
-					String lineStart = StringUtil.trimLeading(
-						matcher3.group(1));
+					if (x == -1) {
+						break;
+					}
 
-					if (lineStart.startsWith("import ") ||
-						lineStart.contains("//") ||
-						isInsideQuotes(content, matcher3.start(2))) {
+					char previousChar = afterImportsContent.charAt(x - 1);
+
+					if (Character.isLetterOrDigit(previousChar) ||
+						(previousChar == CharPool.PERIOD)) {
 
 						continue;
 					}
 
+					char nextChar = afterImportsContent.charAt(
+						x + importPackageAndClassName.length());
+
+					if (Character.isLetterOrDigit(nextChar)) {
+						continue;
+					}
+
+					int y = afterImportsContent.lastIndexOf(
+						CharPool.NEW_LINE, x);
+
+					if (y == -1) {
+						y = 0;
+					}
+
+					String s = afterImportsContent.substring(y, x + 1);
+
+					if (isInsideQuotes(s, x - y)) {
+						continue;
+					}
+
+					s = StringUtil.trim(s);
+
+					if (s.startsWith("//")) {
+						continue;
+					}
+
+					int z = importPackageAndClassName.lastIndexOf(
+						StringPool.PERIOD);
+
 					String importClassName =
-						importPackageAndClassName.substring(
-							importPackageAndClassName.lastIndexOf(
-								StringPool.PERIOD) + 1);
+						importPackageAndClassName.substring(z + 1);
 
-					content = StringUtil.replaceFirst(
-						content, importPackageAndClassName, importClassName,
-						matcher3.start());
-
-					continue outerLoop;
+					afterImportsContent = StringUtil.replaceFirst(
+						afterImportsContent, importPackageAndClassName,
+						importClassName, x);
 				}
-
-				break;
 			}
-		}
 
-		return content;
+			if (pos == -1) {
+				return afterImportsContent;
+			}
+
+			return content.substring(0, pos) + afterImportsContent;
+		}
 	}
 
 	public static void writeFile(
@@ -360,7 +416,43 @@ public class ToolsUtil {
 			Map<String, Object> jalopySettings, Set<String> modifiedFileNames)
 		throws IOException {
 
-		String packagePath = getPackagePath(file);
+		writeFile(
+			file, content, null, author, jalopySettings, modifiedFileNames,
+			null);
+	}
+
+	public static void writeFile(
+			File file, String content, String author,
+			Map<String, Object> jalopySettings, Set<String> modifiedFileNames,
+			String packagePath)
+		throws IOException {
+
+		writeFile(
+			file, content, null, author, jalopySettings, modifiedFileNames,
+			packagePath);
+	}
+
+	public static void writeFile(
+			File file, String content, String author,
+			Set<String> modifiedFileNames)
+		throws IOException {
+
+		writeFile(file, content, author, null, modifiedFileNames);
+	}
+
+	public static void writeFile(
+			File file, String content, String header, String author,
+			Map<String, Object> jalopySettings, Set<String> modifiedFileNames,
+			String packagePath)
+		throws IOException {
+
+		if (!file.exists()) {
+			_write(file, StringPool.BLANK);
+		}
+
+		if (Validator.isNull(packagePath)) {
+			packagePath = getPackagePath(file);
+		}
 
 		String className = file.getName();
 
@@ -370,10 +462,6 @@ public class ToolsUtil {
 
 		content = importsFormatter.format(content, packagePath, className);
 
-		File tempFile = new File(_TMP_DIR, "ServiceBuilder.temp");
-
-		_write(tempFile, content);
-
 		// Beautify
 
 		StringBuffer sb = new StringBuffer();
@@ -381,7 +469,8 @@ public class ToolsUtil {
 		Jalopy jalopy = new Jalopy();
 
 		jalopy.setFileFormat(FileFormat.UNIX);
-		jalopy.setInput(tempFile);
+		jalopy.setInput(
+			new ByteArrayInputStream(content.getBytes()), file.getPath());
 		jalopy.setOutput(sb);
 
 		File jalopyXmlFile = new File("tools/jalopy.xml");
@@ -424,11 +513,20 @@ public class ToolsUtil {
 
 		env.set("author", author);
 
+		// Fail on format error
+
+		boolean failOnFormatError = MapUtil.getBoolean(
+			jalopySettings, "failOnFormatError");
+
 		// File name
 
 		env.set("fileName", file.getName());
 
 		Convention convention = Convention.getInstance();
+
+		if (Validator.isNotNull(header)) {
+			convention.put(ConventionKeys.HEADER_TEXT, header);
+		}
 
 		String classMask = "/**\n * @author $author$\n*/";
 
@@ -440,7 +538,7 @@ public class ToolsUtil {
 			ConventionKeys.COMMENT_JAVADOC_TEMPLATE_INTERFACE,
 			env.interpolate(classMask));
 
-		jalopy.format();
+		boolean formatSuccess = jalopy.format();
 
 		String newContent = sb.toString();
 
@@ -450,8 +548,7 @@ public class ToolsUtil {
 			"(?m)^[ \t]*((?:package|import) .*;)\\s*^[ \t]*/\\*\\*",
 			"$1\n\n/**");
 
-		/*
-		// Remove blank lines after try {
+		/*// Remove blank lines after try {
 
 		newContent = StringUtil.replace(newContent, "try {\n\n", "try {\n");
 
@@ -465,20 +562,14 @@ public class ToolsUtil {
 
 		// Add space to last }
 
-		newContent = newContent.substring(0, newContent.length() - 2) + "\n\n}";
-		*/
+		newContent =
+			newContent.substring(0, newContent.length() - 2) + "\n\n}";*/
 
 		writeFileRaw(file, newContent, modifiedFileNames);
 
-		tempFile.deleteOnExit();
-	}
-
-	public static void writeFile(
-			File file, String content, String author,
-			Set<String> modifiedFileNames)
-		throws IOException {
-
-		writeFile(file, content, author, null, modifiedFileNames);
+		if (failOnFormatError && !formatSuccess) {
+			throw new IOException("Unable to beautify " + file);
+		}
 	}
 
 	public static void writeFileRaw(
@@ -506,6 +597,49 @@ public class ToolsUtil {
 
 			element.add(childElement);
 		}
+	}
+
+	private static int _adjustLevel(
+		int level, String text, String s, int diff) {
+
+		boolean multiLineComment = false;
+
+		forLoop:
+		for (String line : StringUtil.splitLines(text)) {
+			line = StringUtil.trim(line);
+
+			if (line.startsWith("/*")) {
+				multiLineComment = true;
+			}
+
+			if (multiLineComment) {
+				if (line.endsWith("*/")) {
+					multiLineComment = false;
+				}
+
+				continue;
+			}
+
+			if (line.startsWith("//") || line.startsWith("*")) {
+				continue;
+			}
+
+			int x = -1;
+
+			while (true) {
+				x = line.indexOf(s, x + 1);
+
+				if (x == -1) {
+					continue forLoop;
+				}
+
+				if (!isInsideQuotes(line, x)) {
+					level += diff;
+				}
+			}
+		}
+
+		return level;
 	}
 
 	private static Document _getContentDocument(String fileName)
@@ -579,6 +713,50 @@ public class ToolsUtil {
 		return url;
 	}
 
+	private static String _stripFullyQualifiedClassNames(
+		String imports, String afterImportsContent, String packagePath) {
+
+		Pattern pattern1 = Pattern.compile(
+			"\n(.*)" + StringUtil.replace(packagePath, CharPool.PERIOD, "\\.") +
+				"\\.([A-Z]\\w+)\\W");
+
+		outerLoop:
+		while (true) {
+			Matcher matcher1 = pattern1.matcher(afterImportsContent);
+
+			while (matcher1.find()) {
+				String lineStart = StringUtil.trimLeading(matcher1.group(1));
+
+				if (lineStart.contains("//") ||
+					isInsideQuotes(afterImportsContent, matcher1.start(2))) {
+
+					continue;
+				}
+
+				String className = matcher1.group(2);
+
+				Pattern pattern2 = Pattern.compile(
+					"import [\\w.]+\\." + className + ";");
+
+				Matcher matcher2 = pattern2.matcher(imports);
+
+				if (matcher2.find()) {
+					continue;
+				}
+
+				afterImportsContent = StringUtil.replaceFirst(
+					afterImportsContent, packagePath + ".", StringPool.BLANK,
+					matcher1.start());
+
+				continue outerLoop;
+			}
+
+			break;
+		}
+
+		return afterImportsContent;
+	}
+
 	private static void _write(File file, String s) throws IOException {
 		Path path = file.toPath();
 
@@ -586,7 +764,5 @@ public class ToolsUtil {
 
 		Files.write(path, s.getBytes(StandardCharsets.UTF_8));
 	}
-
-	private static final String _TMP_DIR = System.getProperty("java.io.tmpdir");
 
 }

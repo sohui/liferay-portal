@@ -14,31 +14,34 @@
 
 package com.liferay.social.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the SocialActivitySet service. Represents a row in the &quot;SocialActivitySet&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see SocialActivitySetModel
- * @see com.liferay.portlet.social.model.impl.SocialActivitySetImpl
- * @see com.liferay.portlet.social.model.impl.SocialActivitySetModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.social.model.impl.SocialActivitySetImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.social.model.impl.SocialActivitySetImpl"
+)
 @ProviderType
-public interface SocialActivitySet extends SocialActivitySetModel, PersistedModel {
+public interface SocialActivitySet
+	extends PersistedModel, SocialActivitySetModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.social.model.impl.SocialActivitySetImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.social.model.impl.SocialActivitySetImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<SocialActivitySet, Long> ACTIVITY_SET_ID_ACCESSOR =
-		new Accessor<SocialActivitySet, Long>() {
+	public static final Accessor<SocialActivitySet, Long>
+		ACTIVITY_SET_ID_ACCESSOR = new Accessor<SocialActivitySet, Long>() {
+
 			@Override
 			public Long get(SocialActivitySet socialActivitySet) {
 				return socialActivitySet.getActivitySetId();
@@ -53,5 +56,7 @@ public interface SocialActivitySet extends SocialActivitySetModel, PersistedMode
 			public Class<SocialActivitySet> getTypeClass() {
 				return SocialActivitySet.class;
 			}
+
 		};
+
 }

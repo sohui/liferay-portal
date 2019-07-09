@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter;
 
-import java.io.File;
+import java.io.IOException;
 
 import java.util.List;
 
@@ -24,23 +24,15 @@ import java.util.List;
 public class SHSourceProcessor extends BaseSourceProcessor {
 
 	@Override
-	public String[] getIncludes() {
-		return _INCLUDES;
-	}
-
-	@Override
-	protected String doFormat(
-			File file, String fileName, String absolutePath, String content)
-		throws Exception {
-
-		return content;
-	}
-
-	@Override
-	protected List<String> doGetFileNames() throws Exception {
+	protected List<String> doGetFileNames() throws IOException {
 		return getFileNames(new String[0], getIncludes());
 	}
 
-	private static final String[] _INCLUDES = new String[] {"**/*.sh"};
+	@Override
+	protected String[] doGetIncludes() {
+		return _INCLUDES;
+	}
+
+	private static final String[] _INCLUDES = {"**/*.sh"};
 
 }

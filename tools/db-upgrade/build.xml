@@ -3,7 +3,10 @@
 <project basedir="." default="upgrade" name="db-upgrade">
 	<target name="upgrade">
 		<path id="lib.classpath">
-			<fileset dir="lib" includes="*.jar" />
+			<fileset
+				dir="lib"
+				includes="*.jar"
+			/>
 		</path>
 
 		<java
@@ -17,7 +20,6 @@
 			<jvmarg value="-Duser.country=US" />
 			<jvmarg value="-Duser.language=en" />
 			<jvmarg value="-Duser.timezone=GMT" />
-			<jvmarg value="-XX:MaxPermSize=256m" />
 		</java>
 	</target>
 </project>

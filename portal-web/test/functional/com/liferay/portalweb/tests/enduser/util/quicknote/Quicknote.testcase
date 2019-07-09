@@ -1,51 +1,41 @@
-<definition component-name="portal-util-misc">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Util" />
+@component-name = "portal-util-misc"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Util";
 
-		<execute macro="User#firstLoginPG" />
+	setUp {
+		TestCase.setUpPortalInstance();
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Quick Note Page" />
-		</execute>
+		User.firstLoginPG();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Quick Note Page" />
-		</execute>
-	</set-up>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		SitePages.addPublicPage(pageName = "Quick Note Page");
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-		</if>
-	</tear-down>
+		Navigator.gotoPage(pageName = "Quick Note Page");
+	}
 
-	<command name="AddQuickNote" priority="2">
-		<var name="portletName" value="Quick Note" />
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		<execute function="Click#clickAtSidebarClickAtWaitForScript" locator1="ControlMenu#ADD" value1="Add" />
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
 
-		<execute macro="Panel#expandSidebarApplicationsPanel" />
+	@ignore = "true"
+	@priority = "2"
+	test AddQuickNote {
+		Portlet.addPG(portletName = "Quick Note");
 
-		<execute function="Type#sendKeysApplicationSearch" locator1="NavBar#APPLICATION_SEARCH_FIELD" value1="${portletName}" />
+		Navigator.gotoPage(pageName = "Quick Note Page");
 
-		<var name="portletLocator" value="//span[@data-title=&quot;${portletName}&quot; and contains(@class,'add-content-item')]" />
+		QuickNote.addPG(noteContent = "Test Note Content");
+	}
 
-		<execute function="AssertClick#pauseMakeVisibleAssertTextEqualsClickAt" locator1="${portletLocator}" value1="Add" />
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Quick Note Page" />
-		</execute>
-
-		<execute macro="QuickNote#addPG">
-			<var name="noteContent" value="Test Note Content" />
-		</execute>
-	</command>
-</definition>
+}

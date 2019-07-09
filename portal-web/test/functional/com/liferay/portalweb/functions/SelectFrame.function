@@ -1,35 +1,83 @@
-<definition default="selectFrame">
-	<command name="selectFrame">
-		<if>
-			<contains string="${locator1}" substring="/iframe" />
-			<then>
-				<execute selenium="waitForVisible" />
+@default = "selectFrame"
+definition {
 
-				<execute selenium="mouseOver" />
+	function selectFrame {
+		if (contains("${locator1}", "/iframe")) {
+			selenium.waitForVisible();
 
-				<execute selenium="selectFrame" />
+			selenium.mouseOver();
 
-				<execute argument1="//div[contains(@class,'overlaymask') and not(contains(@class,'hidden'))]//div[contains(@class,'loadingmask-message')]" selenium="waitForElementNotPresent" />
+			selenium.waitForElementPresent(
+				"${locator1}/../div[contains(@class,'overlaymask-hidden')]"
+			);
 
-				<execute selenium="assertJavaScriptErrors" />
+			selenium.selectFrame();
 
-				<execute selenium="assertLiferayErrors" />
-			</then>
-			<else>
-				<execute function="SelectFrame#selectFrameTop" />
-			</else>
-		</if>
+			selenium.waitForElementPresent("//body");
 
-		<execute function="WaitForSPARefresh" />
-	</command>
+			selenium.assertJavaScriptErrors();
 
-	<command name="selectFrameTop">
-		<execute argument1="relative=top" selenium="selectFrame" />
+			selenium.assertLiferayErrors();
+		}
+		else {
+			SelectFrame.selectFrameTop();
+		}
 
-		<execute selenium="assertJavaScriptErrors" />
+		WaitForSPARefresh();
+	}
 
-		<execute selenium="assertLiferayErrors" />
+	function selectFrameNoLoading {
+		if (contains("${locator1}", "/iframe")) {
+			selenium.waitForVisible();
 
-		<execute function="WaitForSPARefresh" />
-	</command>
-</definition>
+			selenium.mouseOver();
+
+			selenium.selectFrame();
+
+			selenium.assertJavaScriptErrors();
+
+			selenium.assertLiferayErrors();
+		}
+		else {
+			SelectFrame.selectFrameTop();
+		}
+
+		WaitForSPARefresh();
+	}
+
+	function selectFrameTop {
+		selenium.selectFrame("relative=top");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+
+		WaitForSPARefresh();
+	}
+
+	function selectSecondFrame {
+		if (contains("${locator1}", "/iframe")) {
+			selenium.waitForVisible();
+
+			selenium.mouseOver();
+
+			selenium.waitForElementPresent(
+				"xpath=(//div[contains(@class,'overlaymask-hidden')])[2]"
+			);
+
+			selenium.selectFrame();
+
+			selenium.waitForElementPresent("//body");
+
+			selenium.assertJavaScriptErrors();
+
+			selenium.assertLiferayErrors();
+		}
+		else {
+			SelectFrame.selectFrameTop();
+		}
+
+		WaitForSPARefresh();
+	}
+
+}

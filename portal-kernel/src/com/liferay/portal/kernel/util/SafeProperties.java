@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
+
 import java.util.Properties;
 
 /**
@@ -59,9 +61,8 @@ public class SafeProperties extends Properties {
 		if (key == null) {
 			return null;
 		}
-		else {
-			return super.remove(key);
-		}
+
+		return super.remove(key);
 	}
 
 	private static String _decode(String value) {

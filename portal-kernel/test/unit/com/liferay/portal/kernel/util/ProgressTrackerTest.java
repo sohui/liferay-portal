@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -110,11 +112,8 @@ public class ProgressTrackerTest {
 	}
 
 	protected ProgressTracker getAttribute(String status) {
-		ProgressTracker progressTracker =
-			(ProgressTracker)_mockHttpSession.getAttribute(
-				status + ProgressTrackerTest.class.getName());
-
-		return progressTracker;
+		return (ProgressTracker)_mockHttpSession.getAttribute(
+			status + ProgressTrackerTest.class.getName());
 	}
 
 	private MockHttpSession _mockHttpSession;

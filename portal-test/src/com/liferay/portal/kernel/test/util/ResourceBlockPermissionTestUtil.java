@@ -18,7 +18,7 @@ import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ResourceBlockPermission;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.ResourceBlockLocalServiceUtil;
 import com.liferay.portal.kernel.service.ResourceBlockPermissionLocalServiceUtil;
@@ -31,8 +31,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Alberto Chaparro
+ * @author     Alberto Chaparro
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class ResourceBlockPermissionTestUtil {
 
 	public static ResourceBlockPermission addResourceBlockPermission(

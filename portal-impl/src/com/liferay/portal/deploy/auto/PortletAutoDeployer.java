@@ -14,15 +14,13 @@
 
 package com.liferay.portal.deploy.auto;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.deploy.DeployUtil;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployer;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.tools.deploy.PortletDeployer;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
 
 import java.util.ArrayList;
@@ -37,34 +35,28 @@ public class PortletAutoDeployer
 
 	public PortletAutoDeployer() {
 		try {
-			baseDir = PrefsPropsUtil.getString(
-				PropsKeys.AUTO_DEPLOY_DEPLOY_DIR,
-				PropsValues.AUTO_DEPLOY_DEPLOY_DIR);
+			baseDir = PropsValues.AUTO_DEPLOY_DEPLOY_DIR;
 			destDir = DeployUtil.getAutoDeployDestDir();
 			appServerType = ServerDetector.getServerId();
-			auiTaglibDTD = DeployUtil.getResourcePath("liferay-aui.tld");
+			auiTaglibDTD = DeployUtil.getResourcePath(
+				tempDirPaths, "liferay-aui.tld");
 			portletTaglibDTD = DeployUtil.getResourcePath(
-				"liferay-portlet.tld");
+				tempDirPaths, "liferay-portlet.tld");
 			portletExtTaglibDTD = DeployUtil.getResourcePath(
-				"liferay-portlet-ext.tld");
+				tempDirPaths, "liferay-portlet-ext.tld");
 			securityTaglibDTD = DeployUtil.getResourcePath(
-				"liferay-security.tld");
-			themeTaglibDTD = DeployUtil.getResourcePath("liferay-theme.tld");
-			uiTaglibDTD = DeployUtil.getResourcePath("liferay-ui.tld");
-			utilTaglibDTD = DeployUtil.getResourcePath("liferay-util.tld");
-			unpackWar = PrefsPropsUtil.getBoolean(
-				PropsKeys.AUTO_DEPLOY_UNPACK_WAR,
-				PropsValues.AUTO_DEPLOY_UNPACK_WAR);
+				tempDirPaths, "liferay-security.tld");
+			themeTaglibDTD = DeployUtil.getResourcePath(
+				tempDirPaths, "liferay-theme.tld");
+			uiTaglibDTD = DeployUtil.getResourcePath(
+				tempDirPaths, "liferay-ui.tld");
+			utilTaglibDTD = DeployUtil.getResourcePath(
+				tempDirPaths, "liferay-util.tld");
+			unpackWar = PropsValues.AUTO_DEPLOY_UNPACK_WAR;
 			filePattern = StringPool.BLANK;
-			jbossPrefix = PrefsPropsUtil.getString(
-				PropsKeys.AUTO_DEPLOY_JBOSS_PREFIX,
-				PropsValues.AUTO_DEPLOY_JBOSS_PREFIX);
-			tomcatLibDir = PrefsPropsUtil.getString(
-				PropsKeys.AUTO_DEPLOY_TOMCAT_LIB_DIR,
-				PropsValues.AUTO_DEPLOY_TOMCAT_LIB_DIR);
-			wildflyPrefix = PrefsPropsUtil.getString(
-				PropsKeys.AUTO_DEPLOY_WILDFLY_PREFIX,
-				PropsValues.AUTO_DEPLOY_WILDFLY_PREFIX);
+			jbossPrefix = PropsValues.AUTO_DEPLOY_JBOSS_PREFIX;
+			tomcatLibDir = PropsValues.AUTO_DEPLOY_TOMCAT_LIB_DIR;
+			wildflyPrefix = PropsValues.AUTO_DEPLOY_WILDFLY_PREFIX;
 
 			List<String> jars = new ArrayList<>();
 

@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.servlet;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 import java.io.IOException;
 
@@ -36,8 +36,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class PortalDelegatorServlet extends HttpServlet {
 
-	public static void addDelegate(String subContext, HttpServlet delegate) {
-		if (subContext == null) {
+	public static void addDelegate(String subcontext, HttpServlet delegate) {
+		if (subcontext == null) {
 			throw new IllegalArgumentException();
 		}
 
@@ -45,26 +45,27 @@ public class PortalDelegatorServlet extends HttpServlet {
 			throw new IllegalArgumentException();
 		}
 
-		_delegates.put(subContext, delegate);
+		_delegates.put(subcontext, delegate);
 	}
 
-	public static void removeDelegate(String subContext) {
-		if (subContext == null) {
+	public static void removeDelegate(String subcontext) {
+		if (subcontext == null) {
 			throw new IllegalArgumentException();
 		}
 
-		_delegates.remove(subContext);
+		_delegates.remove(subcontext);
 	}
 
 	@Override
 	public void service(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
-		String uri = request.getPathInfo();
+		String uri = httpServletRequest.getPathInfo();
 
 		if ((uri == null) || (uri.length() == 0)) {
-			response.sendError(
+			httpServletResponse.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"Path information is not specified");
 
@@ -74,7 +75,7 @@ public class PortalDelegatorServlet extends HttpServlet {
 		String[] paths = uri.split(StringPool.SLASH);
 
 		if (paths.length < 2) {
-			response.sendError(
+			httpServletResponse.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"Path " + uri + " is invalid");
 
@@ -84,7 +85,7 @@ public class PortalDelegatorServlet extends HttpServlet {
 		HttpServlet delegate = _delegates.get(paths[1]);
 
 		if (delegate == null) {
-			response.sendError(
+			httpServletResponse.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"No servlet registred for context " + paths[1]);
 
@@ -102,7 +103,7 @@ public class PortalDelegatorServlet extends HttpServlet {
 
 			currentThread.setContextClassLoader(delegateClassLoader);
 
-			delegate.service(request, response);
+			delegate.service(httpServletRequest, httpServletResponse);
 		}
 		finally {
 			currentThread.setContextClassLoader(contextClassLoader);

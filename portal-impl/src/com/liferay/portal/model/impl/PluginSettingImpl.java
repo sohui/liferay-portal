@@ -17,8 +17,8 @@ package com.liferay.portal.model.impl;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.PluginSetting;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -37,7 +37,7 @@ public class PluginSettingImpl extends PluginSettingBaseImpl {
 		setPluginId(pluginSetting.getPluginId());
 		setPluginType(pluginSetting.getPluginType());
 		setRoles(pluginSetting.getRoles());
-		setActive(pluginSetting.getActive());
+		setActive(pluginSetting.isActive());
 	}
 
 	/**
@@ -91,7 +91,8 @@ public class PluginSettingImpl extends PluginSettingBaseImpl {
 			}
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error(
+				"Unable to check if user " + userId + " has permission", e);
 		}
 
 		return false;
@@ -107,8 +108,8 @@ public class PluginSettingImpl extends PluginSettingBaseImpl {
 	 */
 	@Override
 	public boolean hasRoleWithName(String roleName) {
-		for (int i = 0; i < _rolesArray.length; i++) {
-			if (StringUtil.equalsIgnoreCase(_rolesArray[i], roleName)) {
+		for (String curRoleName : _rolesArray) {
+			if (StringUtil.equalsIgnoreCase(curRoleName, roleName)) {
 				return true;
 			}
 		}

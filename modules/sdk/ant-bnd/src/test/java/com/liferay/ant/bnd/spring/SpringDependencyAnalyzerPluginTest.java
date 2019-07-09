@@ -20,15 +20,18 @@ import aQute.bnd.osgi.Resource;
 
 import aQute.lib.io.IO;
 
-import java.net.URL;
+import com.liferay.ant.bnd.spring.bean.SampleBean;
+import com.liferay.ant.bnd.spring.filter.FilterSampleBean;
+import com.liferay.petra.io.StreamUtil;
+import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
+import com.liferay.petra.io.unsync.UnsyncByteArrayOutputStream;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.InputStream;
 
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,11 +43,7 @@ public class SpringDependencyAnalyzerPluginTest {
 
 	@Test
 	public void testDependenciesDefinedInFileAndAnnotation() throws Exception {
-		JarResource jarResource = new JarResource(
-			"dependencies/META-INF/spring/context.dependencies",
-			"META-INF/spring/context.dependencies");
-
-		Jar jar = analyze(Arrays.asList(_PACKAGE_NAME_BEAN), jarResource);
+		Jar jar = analyze(SampleBean.class, "1.0.0.1", "bar.foo.Dependency");
 
 		Resource resource = jar.getResource(
 			"OSGI-INF/context/context.dependencies");
@@ -58,7 +57,7 @@ public class SpringDependencyAnalyzerPluginTest {
 
 	@Test
 	public void testDependenciesDefinedOnlyInAnnotation() throws Exception {
-		Jar jar = analyze(Arrays.asList(_PACKAGE_NAME_BEAN));
+		Jar jar = analyze(SampleBean.class, "1.0.0.1", null);
 
 		Resource resource = jar.getResource(
 			"OSGI-INF/context/context.dependencies");
@@ -74,7 +73,7 @@ public class SpringDependencyAnalyzerPluginTest {
 	public void testDependenciesDefinedOnlyInAnnotationWithFilterString()
 		throws Exception {
 
-		Jar jar = analyze(Arrays.asList(_PACKAGE_NAME_FILTER));
+		Jar jar = analyze(FilterSampleBean.class, "1.0.0.1", null);
 
 		Resource resource = jar.getResource(
 			"OSGI-INF/context/context.dependencies");
@@ -86,12 +85,24 @@ public class SpringDependencyAnalyzerPluginTest {
 	}
 
 	@Test
-	public void testDependenciesDefinedOnlyInFile() throws Exception {
-		JarResource jarResource = new JarResource(
-			"dependencies/META-INF/spring/context.dependencies",
-			"META-INF/spring/context.dependencies");
+	public void testDependenciesDefinedOnlyInAnnotationWithRequireSchemaRange()
+		throws Exception {
 
-		Jar jar = analyze(Collections.<String>emptyList(), jarResource);
+		Jar jar = analyze(SampleBean.class, "[1.0.0,1.1.0)", null);
+
+		Resource resource = jar.getResource(
+			"OSGI-INF/context/context.dependencies");
+
+		String value = read(resource);
+
+		value = value.replace("\r\n", "\n");
+
+		Assert.assertEquals(_RELEASE_INFO + "java.lang.String\n", value);
+	}
+
+	@Test
+	public void testDependenciesDefinedOnlyInFile() throws Exception {
+		Jar jar = analyze(null, "1.0.0.1", "bar.foo.Dependency");
 
 		Resource resource = jar.getResource(
 			"OSGI-INF/context/context.dependencies");
@@ -103,11 +114,7 @@ public class SpringDependencyAnalyzerPluginTest {
 
 	@Test
 	public void testEmptyDependencies() throws Exception {
-		JarResource jarResource = new JarResource(
-			"dependencies/META-INF/spring/empty.dependencies",
-			"META-INF/spring/context.dependencies");
-
-		Jar jar = analyze(Collections.<String>emptyList(), jarResource);
+		Jar jar = analyze(null, "1.0.0.1", "");
 
 		Resource resource = jar.getResource(
 			"OSGI-INF/context/context.dependencies");
@@ -117,44 +124,68 @@ public class SpringDependencyAnalyzerPluginTest {
 		Assert.assertEquals(_RELEASE_INFO, value);
 	}
 
-	protected Jar analyze(List<String> packages, JarResource... jarResources)
+	protected Jar analyze(
+			Class<?> clazz, String requireSchemaVersion,
+			String dependenciesContent)
 		throws Exception {
 
-		JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class);
+		try (UnsyncByteArrayOutputStream ubaos =
+				new UnsyncByteArrayOutputStream()) {
 
-		for (String pkg : packages) {
-			javaArchive.addPackages(true, pkg);
+			try (ZipOutputStream zos = new ZipOutputStream(ubaos)) {
+				if (clazz != null) {
+					String name = clazz.getName();
+
+					name = name.replace(CharPool.PERIOD, CharPool.SLASH);
+
+					name = name.concat(".class");
+
+					zos.putNextEntry(new ZipEntry(name));
+
+					try (InputStream in = clazz.getResourceAsStream(
+							"/" + name)) {
+
+						StreamUtil.transfer(in, zos, false);
+					}
+
+					zos.closeEntry();
+				}
+
+				if (dependenciesContent != null) {
+					zos.putNextEntry(
+						new ZipEntry("META-INF/spring/context.dependencies"));
+
+					zos.write(dependenciesContent.getBytes(StringPool.UTF8));
+
+					zos.closeEntry();
+				}
+			}
+
+			Analyzer analyzer = new Analyzer();
+
+			analyzer.setBundleSymbolicName("test.bundle");
+			analyzer.setBundleVersion("1.0.0");
+			analyzer.setProperty(
+				"Liferay-Require-SchemaVersion", requireSchemaVersion);
+			analyzer.setProperty(
+				"-liferay-spring-dependency", ServiceReference.class.getName());
+
+			Jar jar = new Jar(
+				"Spring Context Dependency Test",
+				new UnsyncByteArrayInputStream(
+					ubaos.unsafeGetByteArray(), 0, ubaos.size()));
+
+			analyzer.setJar(jar);
+
+			analyzer.analyze();
+
+			SpringDependencyAnalyzerPlugin springDependencyAnalyzerPlugin =
+				new SpringDependencyAnalyzerPlugin();
+
+			springDependencyAnalyzerPlugin.analyzeJar(analyzer);
+
+			return jar;
 		}
-
-		for (JarResource jarResource : jarResources) {
-			javaArchive.addAsResource(
-				jarResource.getURL(), jarResource.getTarget());
-		}
-
-		Analyzer analyzer = new Analyzer();
-
-		analyzer.setBundleSymbolicName("test.bundle");
-		analyzer.setBundleVersion("1.0.0");
-		analyzer.setProperty("Liferay-Require-SchemaVersion", "1.0.0.1");
-		analyzer.setProperty(
-			"-liferay-spring-dependency", ServiceReference.class.getName());
-
-		ZipExporter zipExporter = javaArchive.as(ZipExporter.class);
-
-		Jar jar = new Jar(
-			"Spring Context Dependency Test",
-			zipExporter.exportAsInputStream());
-
-		analyzer.setJar(jar);
-
-		analyzer.analyze();
-
-		SpringDependencyAnalyzerPlugin springDependencyAnalyzerPlugin =
-			new SpringDependencyAnalyzerPlugin();
-
-		springDependencyAnalyzerPlugin.analyzeJar(analyzer);
-
-		return jar;
 	}
 
 	protected String read(Resource resource) throws Exception {
@@ -163,37 +194,11 @@ public class SpringDependencyAnalyzerPluginTest {
 		return value.replace("\r\n", "\n");
 	}
 
-	private static final String _PACKAGE_NAME_BEAN =
-		"com.liferay.ant.bnd.spring.bean";
-
-	private static final String _PACKAGE_NAME_FILTER =
-		"com.liferay.ant.bnd.spring.filter";
-
 	private static final String _RELEASE_INFO =
 		"com.liferay.portal.kernel.model.Release " +
 			"(&(release.bundle.symbolic.name=test.bundle)" +
-				"(release.schema.version=1.0.0.1))\n";
-
-	private static final class JarResource {
-
-		public JarResource(String resourceName, String target) {
-			_resourceName = resourceName;
-			_target = target;
-		}
-
-		public String getTarget() {
-			return _target;
-		}
-
-		public URL getURL() {
-			Class<?> clazz = getClass();
-
-			return clazz.getResource(_resourceName);
-		}
-
-		private final String _resourceName;
-		private final String _target;
-
-	}
+				"(&(release.schema.version>=1.0.0)" +
+					"(!(release.schema.version>=1.1.0)))" +
+						"(|(!(release.state=*))(release.state=0)))\n";
 
 }

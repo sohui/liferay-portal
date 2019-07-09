@@ -14,8 +14,6 @@
 
 package com.liferay.portal.service.base;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -40,12 +38,11 @@ import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.AddressPersistence;
 import com.liferay.portal.kernel.service.persistence.ContactPersistence;
 import com.liferay.portal.kernel.service.persistence.EmailAddressPersistence;
-import com.liferay.portal.kernel.service.persistence.OrganizationFinder;
-import com.liferay.portal.kernel.service.persistence.OrganizationPersistence;
 import com.liferay.portal.kernel.service.persistence.PhonePersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
 import com.liferay.portal.kernel.service.persistence.WebsitePersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
@@ -54,6 +51,8 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.sql.DataSource;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the base implementation for the contact local service.
@@ -64,16 +63,17 @@ import javax.sql.DataSource;
  *
  * @author Brian Wing Shun Chan
  * @see com.liferay.portal.service.impl.ContactLocalServiceImpl
- * @see com.liferay.portal.kernel.service.ContactLocalServiceUtil
  * @generated
  */
 @ProviderType
-public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
+public abstract class ContactLocalServiceBaseImpl
+	extends BaseLocalServiceImpl
 	implements ContactLocalService, IdentifiableOSGiService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link com.liferay.portal.kernel.service.ContactLocalServiceUtil} to access the contact local service.
+	 * Never modify or reference this class directly. Use <code>ContactLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.ContactLocalServiceUtil</code>.
 	 */
 
 	/**
@@ -97,6 +97,7 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @return the new contact
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public Contact createContact(long contactId) {
 		return contactPersistence.create(contactId);
 	}
@@ -130,8 +131,8 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	public DynamicQuery dynamicQuery() {
 		Class<?> clazz = getClass();
 
-		return DynamicQueryFactoryUtil.forClass(Contact.class,
-			clazz.getClassLoader());
+		return DynamicQueryFactoryUtil.forClass(
+			Contact.class, clazz.getClassLoader());
 	}
 
 	/**
@@ -149,7 +150,7 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.ContactModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ContactModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -158,16 +159,18 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @return the range of matching rows
 	 */
 	@Override
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end) {
-		return contactPersistence.findWithDynamicQuery(dynamicQuery, start, end);
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end) {
+
+		return contactPersistence.findWithDynamicQuery(
+			dynamicQuery, start, end);
 	}
 
 	/**
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.ContactModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ContactModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -177,10 +180,12 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @return the ordered range of matching rows
 	 */
 	@Override
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end, OrderByComparator<T> orderByComparator) {
-		return contactPersistence.findWithDynamicQuery(dynamicQuery, start,
-			end, orderByComparator);
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end,
+		OrderByComparator<T> orderByComparator) {
+
+		return contactPersistence.findWithDynamicQuery(
+			dynamicQuery, start, end, orderByComparator);
 	}
 
 	/**
@@ -202,9 +207,11 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @return the number of rows matching the dynamic query
 	 */
 	@Override
-	public long dynamicQueryCount(DynamicQuery dynamicQuery,
-		Projection projection) {
-		return contactPersistence.countWithDynamicQuery(dynamicQuery, projection);
+	public long dynamicQueryCount(
+		DynamicQuery dynamicQuery, Projection projection) {
+
+		return contactPersistence.countWithDynamicQuery(
+			dynamicQuery, projection);
 	}
 
 	@Override
@@ -226,7 +233,8 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 
 	@Override
 	public ActionableDynamicQuery getActionableDynamicQuery() {
-		ActionableDynamicQuery actionableDynamicQuery = new DefaultActionableDynamicQuery();
+		ActionableDynamicQuery actionableDynamicQuery =
+			new DefaultActionableDynamicQuery();
 
 		actionableDynamicQuery.setBaseLocalService(contactLocalService);
 		actionableDynamicQuery.setClassLoader(getClassLoader());
@@ -238,10 +246,14 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	}
 
 	@Override
-	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
-		IndexableActionableDynamicQuery indexableActionableDynamicQuery = new IndexableActionableDynamicQuery();
+	public IndexableActionableDynamicQuery
+		getIndexableActionableDynamicQuery() {
 
-		indexableActionableDynamicQuery.setBaseLocalService(contactLocalService);
+		IndexableActionableDynamicQuery indexableActionableDynamicQuery =
+			new IndexableActionableDynamicQuery();
+
+		indexableActionableDynamicQuery.setBaseLocalService(
+			contactLocalService);
 		indexableActionableDynamicQuery.setClassLoader(getClassLoader());
 		indexableActionableDynamicQuery.setModelClass(Contact.class);
 
@@ -252,6 +264,7 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 
 	protected void initActionableDynamicQuery(
 		ActionableDynamicQuery actionableDynamicQuery) {
+
 		actionableDynamicQuery.setBaseLocalService(contactLocalService);
 		actionableDynamicQuery.setClassLoader(getClassLoader());
 		actionableDynamicQuery.setModelClass(Contact.class);
@@ -265,12 +278,14 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
+
 		return contactLocalService.deleteContact((Contact)persistedModel);
 	}
 
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
+
 		return contactPersistence.findByPrimaryKey(primaryKeyObj);
 	}
 
@@ -278,7 +293,7 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * Returns a range of all the contacts.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.ContactModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.ContactModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of contacts
@@ -326,7 +341,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 *
 	 * @param contactLocalService the contact local service
 	 */
-	public void setContactLocalService(ContactLocalService contactLocalService) {
+	public void setContactLocalService(
+		ContactLocalService contactLocalService) {
+
 		this.contactLocalService = contactLocalService;
 	}
 
@@ -353,7 +370,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 *
 	 * @return the counter local service
 	 */
-	public com.liferay.counter.kernel.service.CounterLocalService getCounterLocalService() {
+	public com.liferay.counter.kernel.service.CounterLocalService
+		getCounterLocalService() {
+
 		return counterLocalService;
 	}
 
@@ -363,7 +382,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @param counterLocalService the counter local service
 	 */
 	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService counterLocalService) {
+		com.liferay.counter.kernel.service.CounterLocalService
+			counterLocalService) {
+
 		this.counterLocalService = counterLocalService;
 	}
 
@@ -372,7 +393,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 *
 	 * @return the address local service
 	 */
-	public com.liferay.portal.kernel.service.AddressLocalService getAddressLocalService() {
+	public com.liferay.portal.kernel.service.AddressLocalService
+		getAddressLocalService() {
+
 		return addressLocalService;
 	}
 
@@ -382,7 +405,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @param addressLocalService the address local service
 	 */
 	public void setAddressLocalService(
-		com.liferay.portal.kernel.service.AddressLocalService addressLocalService) {
+		com.liferay.portal.kernel.service.AddressLocalService
+			addressLocalService) {
+
 		this.addressLocalService = addressLocalService;
 	}
 
@@ -409,7 +434,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 *
 	 * @return the email address local service
 	 */
-	public com.liferay.portal.kernel.service.EmailAddressLocalService getEmailAddressLocalService() {
+	public com.liferay.portal.kernel.service.EmailAddressLocalService
+		getEmailAddressLocalService() {
+
 		return emailAddressLocalService;
 	}
 
@@ -419,7 +446,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @param emailAddressLocalService the email address local service
 	 */
 	public void setEmailAddressLocalService(
-		com.liferay.portal.kernel.service.EmailAddressLocalService emailAddressLocalService) {
+		com.liferay.portal.kernel.service.EmailAddressLocalService
+			emailAddressLocalService) {
+
 		this.emailAddressLocalService = emailAddressLocalService;
 	}
 
@@ -439,63 +468,8 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 */
 	public void setEmailAddressPersistence(
 		EmailAddressPersistence emailAddressPersistence) {
+
 		this.emailAddressPersistence = emailAddressPersistence;
-	}
-
-	/**
-	 * Returns the organization local service.
-	 *
-	 * @return the organization local service
-	 */
-	public com.liferay.portal.kernel.service.OrganizationLocalService getOrganizationLocalService() {
-		return organizationLocalService;
-	}
-
-	/**
-	 * Sets the organization local service.
-	 *
-	 * @param organizationLocalService the organization local service
-	 */
-	public void setOrganizationLocalService(
-		com.liferay.portal.kernel.service.OrganizationLocalService organizationLocalService) {
-		this.organizationLocalService = organizationLocalService;
-	}
-
-	/**
-	 * Returns the organization persistence.
-	 *
-	 * @return the organization persistence
-	 */
-	public OrganizationPersistence getOrganizationPersistence() {
-		return organizationPersistence;
-	}
-
-	/**
-	 * Sets the organization persistence.
-	 *
-	 * @param organizationPersistence the organization persistence
-	 */
-	public void setOrganizationPersistence(
-		OrganizationPersistence organizationPersistence) {
-		this.organizationPersistence = organizationPersistence;
-	}
-
-	/**
-	 * Returns the organization finder.
-	 *
-	 * @return the organization finder
-	 */
-	public OrganizationFinder getOrganizationFinder() {
-		return organizationFinder;
-	}
-
-	/**
-	 * Sets the organization finder.
-	 *
-	 * @param organizationFinder the organization finder
-	 */
-	public void setOrganizationFinder(OrganizationFinder organizationFinder) {
-		this.organizationFinder = organizationFinder;
 	}
 
 	/**
@@ -503,7 +477,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 *
 	 * @return the phone local service
 	 */
-	public com.liferay.portal.kernel.service.PhoneLocalService getPhoneLocalService() {
+	public com.liferay.portal.kernel.service.PhoneLocalService
+		getPhoneLocalService() {
+
 		return phoneLocalService;
 	}
 
@@ -514,6 +490,7 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 */
 	public void setPhoneLocalService(
 		com.liferay.portal.kernel.service.PhoneLocalService phoneLocalService) {
+
 		this.phoneLocalService = phoneLocalService;
 	}
 
@@ -540,7 +517,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 *
 	 * @return the user local service
 	 */
-	public com.liferay.portal.kernel.service.UserLocalService getUserLocalService() {
+	public com.liferay.portal.kernel.service.UserLocalService
+		getUserLocalService() {
+
 		return userLocalService;
 	}
 
@@ -551,6 +530,7 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 */
 	public void setUserLocalService(
 		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
+
 		this.userLocalService = userLocalService;
 	}
 
@@ -595,7 +575,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 *
 	 * @return the website local service
 	 */
-	public com.liferay.portal.kernel.service.WebsiteLocalService getWebsiteLocalService() {
+	public com.liferay.portal.kernel.service.WebsiteLocalService
+		getWebsiteLocalService() {
+
 		return websiteLocalService;
 	}
 
@@ -605,7 +587,9 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @param websiteLocalService the website local service
 	 */
 	public void setWebsiteLocalService(
-		com.liferay.portal.kernel.service.WebsiteLocalService websiteLocalService) {
+		com.liferay.portal.kernel.service.WebsiteLocalService
+			websiteLocalService) {
+
 		this.websiteLocalService = websiteLocalService;
 	}
 
@@ -628,8 +612,8 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register("com.liferay.portal.kernel.model.Contact",
-			contactLocalService);
+		persistedModelLocalServiceRegistry.register(
+			"com.liferay.portal.kernel.model.Contact", contactLocalService);
 	}
 
 	public void destroy() {
@@ -669,8 +653,8 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 			sql = db.buildSQL(sql);
 			sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource,
-					sql);
+			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(
+				dataSource, sql);
 
 			sqlUpdate.update();
 		}
@@ -681,38 +665,66 @@ public abstract class ContactLocalServiceBaseImpl extends BaseLocalServiceImpl
 
 	@BeanReference(type = ContactLocalService.class)
 	protected ContactLocalService contactLocalService;
+
 	@BeanReference(type = ContactPersistence.class)
 	protected ContactPersistence contactPersistence;
-	@BeanReference(type = com.liferay.counter.kernel.service.CounterLocalService.class)
-	protected com.liferay.counter.kernel.service.CounterLocalService counterLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.AddressLocalService.class)
-	protected com.liferay.portal.kernel.service.AddressLocalService addressLocalService;
+
+	@BeanReference(
+		type = com.liferay.counter.kernel.service.CounterLocalService.class
+	)
+	protected com.liferay.counter.kernel.service.CounterLocalService
+		counterLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.AddressLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.AddressLocalService
+		addressLocalService;
+
 	@BeanReference(type = AddressPersistence.class)
 	protected AddressPersistence addressPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.EmailAddressLocalService.class)
-	protected com.liferay.portal.kernel.service.EmailAddressLocalService emailAddressLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.EmailAddressLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.EmailAddressLocalService
+		emailAddressLocalService;
+
 	@BeanReference(type = EmailAddressPersistence.class)
 	protected EmailAddressPersistence emailAddressPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.OrganizationLocalService.class)
-	protected com.liferay.portal.kernel.service.OrganizationLocalService organizationLocalService;
-	@BeanReference(type = OrganizationPersistence.class)
-	protected OrganizationPersistence organizationPersistence;
-	@BeanReference(type = OrganizationFinder.class)
-	protected OrganizationFinder organizationFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.PhoneLocalService.class)
-	protected com.liferay.portal.kernel.service.PhoneLocalService phoneLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.PhoneLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.PhoneLocalService
+		phoneLocalService;
+
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserLocalService.class)
-	protected com.liferay.portal.kernel.service.UserLocalService userLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserLocalService
+		userLocalService;
+
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
+
 	@BeanReference(type = UserFinder.class)
 	protected UserFinder userFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.WebsiteLocalService.class)
-	protected com.liferay.portal.kernel.service.WebsiteLocalService websiteLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.WebsiteLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.WebsiteLocalService
+		websiteLocalService;
+
 	@BeanReference(type = WebsitePersistence.class)
 	protected WebsitePersistence websitePersistence;
+
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
+	protected PersistedModelLocalServiceRegistry
+		persistedModelLocalServiceRegistry;
+
 }

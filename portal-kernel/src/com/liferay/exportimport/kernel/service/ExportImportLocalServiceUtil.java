@@ -14,239 +14,304 @@
 
 package com.liferay.exportimport.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the local service utility for ExportImport. This utility wraps
- * {@link com.liferay.portlet.exportimport.service.impl.ExportImportLocalServiceImpl} and is the
- * primary access point for service operations in application layer code running
+ * <code>com.liferay.portlet.exportimport.service.impl.ExportImportLocalServiceImpl</code> and
+ * is an access point for service operations in application layer code running
  * on the local server. Methods of this service will not have security checks
  * based on the propagated JAAS credentials because this service can only be
  * accessed from within the same VM.
  *
  * @author Brian Wing Shun Chan
  * @see ExportImportLocalService
- * @see com.liferay.portlet.exportimport.service.base.ExportImportLocalServiceBaseImpl
- * @see com.liferay.portlet.exportimport.service.impl.ExportImportLocalServiceImpl
  * @generated
  */
 @ProviderType
 public class ExportImportLocalServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portlet.exportimport.service.impl.ExportImportLocalServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.ExportImportLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.exportimport.kernel.lar.MissingReferences validateImportLayoutsFile(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.File file)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .validateImportLayoutsFile(exportImportConfiguration, file);
-	}
-
-	public static com.liferay.exportimport.kernel.lar.MissingReferences validateImportLayoutsFile(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.InputStream inputStream)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .validateImportLayoutsFile(exportImportConfiguration,
-			inputStream);
-	}
-
-	public static com.liferay.exportimport.kernel.lar.MissingReferences validateImportPortletInfo(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.File file)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .validateImportPortletInfo(exportImportConfiguration, file);
-	}
-
-	public static com.liferay.exportimport.kernel.lar.MissingReferences validateImportPortletInfo(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.InputStream inputStream)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .validateImportPortletInfo(exportImportConfiguration,
-			inputStream);
-	}
-
 	public static java.io.File exportLayoutsAsFile(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration)
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		return getService().exportLayoutsAsFile(exportImportConfiguration);
 	}
 
-	public static java.io.File exportPortletInfoAsFile(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration)
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
+	public static java.io.File exportLayoutsAsFile(
+			long userId, long groupId, boolean privateLayout,
+			java.util.Map<String, String[]> parameterMap)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().exportLayoutsAsFile(
+			userId, groupId, privateLayout, parameterMap);
+	}
+
+	public static long exportLayoutsAsFileInBackground(
+			long userId,
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().exportLayoutsAsFileInBackground(
+			userId, exportImportConfiguration);
+	}
+
+	public static long exportLayoutsAsFileInBackground(
+			long userId, long exportImportConfigurationId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().exportLayoutsAsFileInBackground(
+			userId, exportImportConfigurationId);
+	}
+
+	public static java.io.File exportPortletInfoAsFile(
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
 		return getService().exportPortletInfoAsFile(exportImportConfiguration);
 	}
 
+	public static long exportPortletInfoAsFileInBackground(
+			long userId,
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().exportPortletInfoAsFileInBackground(
+			userId, exportImportConfiguration);
+	}
+
+	public static long exportPortletInfoAsFileInBackground(
+			long userId, long exportImportConfigurationId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().exportPortletInfoAsFileInBackground(
+			userId, exportImportConfigurationId);
+	}
+
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static long exportLayoutsAsFileInBackground(long userId,
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .exportLayoutsAsFileInBackground(userId,
-			exportImportConfiguration);
-	}
-
-	public static long exportLayoutsAsFileInBackground(long userId,
-		long exportImportConfigurationId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .exportLayoutsAsFileInBackground(userId,
-			exportImportConfigurationId);
-	}
-
-	public static long exportPortletInfoAsFileInBackground(long userId,
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .exportPortletInfoAsFileInBackground(userId,
-			exportImportConfiguration);
-	}
-
-	public static long exportPortletInfoAsFileInBackground(long userId,
-		long exportImportConfigurationId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .exportPortletInfoAsFileInBackground(userId,
-			exportImportConfigurationId);
-	}
-
-	public static long importLayoutsInBackground(long userId,
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.File file)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .importLayoutsInBackground(userId,
-			exportImportConfiguration, file);
-	}
-
-	public static long importLayoutsInBackground(long userId,
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.InputStream inputStream)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .importLayoutsInBackground(userId,
-			exportImportConfiguration, inputStream);
-	}
-
-	public static long importLayoutsInBackground(long userId,
-		long exportImportConfigurationId, java.io.File file)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .importLayoutsInBackground(userId,
-			exportImportConfigurationId, file);
-	}
-
-	public static long importLayoutsInBackground(long userId,
-		long exportImportConfigurationId, java.io.InputStream inputStream)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .importLayoutsInBackground(userId,
-			exportImportConfigurationId, inputStream);
-	}
-
-	public static long importPortletInfoInBackground(long userId,
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.File file)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .importPortletInfoInBackground(userId,
-			exportImportConfiguration, file);
-	}
-
-	public static long importPortletInfoInBackground(long userId,
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.InputStream inputStream)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .importPortletInfoInBackground(userId,
-			exportImportConfiguration, inputStream);
-	}
-
-	public static long importPortletInfoInBackground(long userId,
-		long exportImportConfigurationId, java.io.File file)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .importPortletInfoInBackground(userId,
-			exportImportConfigurationId, file);
-	}
-
-	public static long importPortletInfoInBackground(long userId,
-		long exportImportConfigurationId, java.io.InputStream inputStream)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .importPortletInfoInBackground(userId,
-			exportImportConfigurationId, inputStream);
-	}
-
 	public static void importLayouts(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.File file)
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().importLayouts(exportImportConfiguration, file);
 	}
 
 	public static void importLayouts(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.InputStream inputStream)
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.InputStream inputStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().importLayouts(exportImportConfiguration, inputStream);
 	}
 
-	public static void importLayoutsDataDeletions(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.File file)
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
+	public static void importLayouts(
+			long userId, long groupId, boolean privateLayout,
+			java.util.Map<String, String[]> parameterMap, java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService().importLayoutsDataDeletions(exportImportConfiguration, file);
+
+		getService().importLayouts(
+			userId, groupId, privateLayout, parameterMap, file);
+	}
+
+	public static void importLayoutsDataDeletions(
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().importLayoutsDataDeletions(
+			exportImportConfiguration, file);
+	}
+
+	public static long importLayoutsInBackground(
+			long userId,
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().importLayoutsInBackground(
+			userId, exportImportConfiguration, file);
+	}
+
+	public static long importLayoutsInBackground(
+			long userId,
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.InputStream inputStream)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().importLayoutsInBackground(
+			userId, exportImportConfiguration, inputStream);
+	}
+
+	public static long importLayoutsInBackground(
+			long userId, long exportImportConfigurationId, java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().importLayoutsInBackground(
+			userId, exportImportConfigurationId, file);
+	}
+
+	public static long importLayoutsInBackground(
+			long userId, long exportImportConfigurationId,
+			java.io.InputStream inputStream)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().importLayoutsInBackground(
+			userId, exportImportConfigurationId, inputStream);
 	}
 
 	public static void importPortletDataDeletions(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.File file)
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService().importPortletDataDeletions(exportImportConfiguration, file);
+
+		getService().importPortletDataDeletions(
+			exportImportConfiguration, file);
 	}
 
 	public static void importPortletInfo(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.File file)
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.File file)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().importPortletInfo(exportImportConfiguration, file);
 	}
 
 	public static void importPortletInfo(
-		com.liferay.exportimport.kernel.model.ExportImportConfiguration exportImportConfiguration,
-		java.io.InputStream inputStream)
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.InputStream inputStream)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().importPortletInfo(exportImportConfiguration, inputStream);
+	}
+
+	public static long importPortletInfoInBackground(
+			long userId,
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().importPortletInfoInBackground(
+			userId, exportImportConfiguration, file);
+	}
+
+	public static long importPortletInfoInBackground(
+			long userId,
+			com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				exportImportConfiguration,
+			java.io.InputStream inputStream)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().importPortletInfoInBackground(
+			userId, exportImportConfiguration, inputStream);
+	}
+
+	public static long importPortletInfoInBackground(
+			long userId, long exportImportConfigurationId, java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().importPortletInfoInBackground(
+			userId, exportImportConfigurationId, file);
+	}
+
+	public static long importPortletInfoInBackground(
+			long userId, long exportImportConfigurationId,
+			java.io.InputStream inputStream)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().importPortletInfoInBackground(
+			userId, exportImportConfigurationId, inputStream);
+	}
+
+	public static com.liferay.exportimport.kernel.lar.MissingReferences
+			validateImportLayoutsFile(
+				com.liferay.exportimport.kernel.model.ExportImportConfiguration
+					exportImportConfiguration,
+				java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().validateImportLayoutsFile(
+			exportImportConfiguration, file);
+	}
+
+	public static com.liferay.exportimport.kernel.lar.MissingReferences
+			validateImportLayoutsFile(
+				com.liferay.exportimport.kernel.model.ExportImportConfiguration
+					exportImportConfiguration,
+				java.io.InputStream inputStream)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().validateImportLayoutsFile(
+			exportImportConfiguration, inputStream);
+	}
+
+	public static com.liferay.exportimport.kernel.lar.MissingReferences
+			validateImportPortletInfo(
+				com.liferay.exportimport.kernel.model.ExportImportConfiguration
+					exportImportConfiguration,
+				java.io.File file)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().validateImportPortletInfo(
+			exportImportConfiguration, file);
+	}
+
+	public static com.liferay.exportimport.kernel.lar.MissingReferences
+			validateImportPortletInfo(
+				com.liferay.exportimport.kernel.model.ExportImportConfiguration
+					exportImportConfiguration,
+				java.io.InputStream inputStream)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().validateImportPortletInfo(
+			exportImportConfiguration, inputStream);
 	}
 
 	public static ExportImportLocalService getService() {
 		if (_service == null) {
-			_service = (ExportImportLocalService)PortalBeanLocatorUtil.locate(ExportImportLocalService.class.getName());
-
-			ReferenceRegistry.registerReference(ExportImportLocalServiceUtil.class,
-				"_service");
+			_service = (ExportImportLocalService)PortalBeanLocatorUtil.locate(
+				ExportImportLocalService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static ExportImportLocalService _service;
+
 }

@@ -18,12 +18,17 @@ import java.io.Serializable;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Shuyang Zhou
  */
+@ProviderType
 public interface Trigger extends Serializable {
 
 	public Date getEndDate();
+
+	public Date getFireDateAfter(Date date);
 
 	public String getGroupName();
 

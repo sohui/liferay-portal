@@ -17,7 +17,7 @@ package com.liferay.portal.kernel.backgroundtask;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.io.File;
 import java.io.Serializable;
@@ -148,8 +148,8 @@ public class BackgroundTaskManagerUtil {
 		return _backgroundTaskManager.getBackgroundTask(backgroundTaskId);
 	}
 
-	public static List<BackgroundTask>
-		getBackgroundTasks(long groupId, int status) {
+	public static List<BackgroundTask> getBackgroundTasks(
+		long groupId, int status) {
 
 		return _backgroundTaskManager.getBackgroundTasks(groupId, status);
 	}
@@ -245,6 +245,16 @@ public class BackgroundTaskManagerUtil {
 	}
 
 	public static List<BackgroundTask> getBackgroundTasks(
+		long[] groupIds, String name, String[] taskExecutorClassNames,
+		int start, int end,
+		OrderByComparator<BackgroundTask> orderByComparator) {
+
+		return _backgroundTaskManager.getBackgroundTasks(
+			groupIds, name, taskExecutorClassNames, start, end,
+			orderByComparator);
+	}
+
+	public static List<BackgroundTask> getBackgroundTasks(
 		String taskExecutorClassName, int status) {
 
 		return _backgroundTaskManager.getBackgroundTasks(
@@ -272,6 +282,23 @@ public class BackgroundTaskManagerUtil {
 
 		return _backgroundTaskManager.getBackgroundTasks(
 			taskExecutorClassNames, status, start, end, orderByComparator);
+	}
+
+	public static List<BackgroundTask> getBackgroundTasksByDuration(
+		long[] groupIds, String[] taskExecutorClassName, boolean completed,
+		int start, int end, boolean orderByType) {
+
+		return _backgroundTaskManager.getBackgroundTasksByDuration(
+			groupIds, taskExecutorClassName, completed, start, end,
+			orderByType);
+	}
+
+	public static List<BackgroundTask> getBackgroundTasksByDuration(
+		long[] groupIds, String[] taskExecutorClassName, int start, int end,
+		boolean orderByType) {
+
+		return _backgroundTaskManager.getBackgroundTasksByDuration(
+			groupIds, taskExecutorClassName, start, end, orderByType);
 	}
 
 	public static int getBackgroundTasksCount(
@@ -346,6 +373,13 @@ public class BackgroundTaskManagerUtil {
 			groupIds, name, taskExecutorClassName, completed);
 	}
 
+	public static int getBackgroundTasksCount(
+		long[] groupIds, String name, String[] taskExecutorClassNames) {
+
+		return _backgroundTaskManager.getBackgroundTasksCount(
+			groupIds, name, taskExecutorClassNames);
+	}
+
 	public static String getBackgroundTaskStatusJSON(long backgroundTaskId) {
 		return _backgroundTaskManager.getBackgroundTaskStatusJSON(
 			backgroundTaskId);
@@ -359,7 +393,9 @@ public class BackgroundTaskManagerUtil {
 		_backgroundTaskManager.triggerBackgroundTask(backgroundTaskId);
 	}
 
-	private static final BackgroundTaskManager _backgroundTaskManager =
-		ProxyFactory.newServiceTrackedInstance(BackgroundTaskManager.class);
+	private static volatile BackgroundTaskManager _backgroundTaskManager =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			BackgroundTaskManager.class, BackgroundTaskManagerUtil.class,
+			"_backgroundTaskManager", false);
 
 }

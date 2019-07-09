@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 
 import java.util.HashMap;
@@ -22,23 +23,26 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author Shinn Lok
+ * @author     Shinn Lok
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class SearchContainerReference {
 
 	public SearchContainerReference(
-		HttpServletRequest request, String namespace) {
+		HttpServletRequest httpServletRequest, String namespace) {
 
 		_namespace = namespace;
 
-		request.setAttribute(WebKeys.SEARCH_CONTAINER_REFERENCE, this);
+		httpServletRequest.setAttribute(
+			WebKeys.SEARCH_CONTAINER_REFERENCE, this);
 	}
 
-	public String getId(HttpServletRequest request) {
-		return getId(request, SearchContainer.DEFAULT_VAR);
+	public String getId(HttpServletRequest httpServletRequest) {
+		return getId(httpServletRequest, SearchContainer.DEFAULT_VAR);
 	}
 
-	public String getId(HttpServletRequest request, String var) {
+	public String getId(HttpServletRequest httpServletRequest, String var) {
 		if (_searchContainers == null) {
 			return StringPool.BLANK;
 		}
@@ -49,7 +53,7 @@ public class SearchContainerReference {
 			return StringPool.BLANK;
 		}
 
-		return searchContainer.getId(request, _namespace);
+		return searchContainer.getId(httpServletRequest, _namespace);
 	}
 
 	public void register(SearchContainer<?> searchContainer) {

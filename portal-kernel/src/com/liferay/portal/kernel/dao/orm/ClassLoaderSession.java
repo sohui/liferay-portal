@@ -14,9 +14,6 @@
 
 package com.liferay.portal.kernel.dao.orm;
 
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
-import com.liferay.portal.kernel.security.pacl.NotPrivileged;
-
 import java.io.Serializable;
 
 import java.sql.Connection;
@@ -24,8 +21,9 @@ import java.sql.Connection;
 /**
  * @author Shuyang Zhou
  * @author Brian Wing Shun Chan
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
-@DoPrivileged
+@Deprecated
 public class ClassLoaderSession implements Session {
 
 	public ClassLoaderSession(Session session, ClassLoader classLoader) {
@@ -33,7 +31,6 @@ public class ClassLoaderSession implements Session {
 		_classLoader = classLoader;
 	}
 
-	@NotPrivileged
 	@Override
 	public void clear() throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -54,7 +51,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public Connection close() throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -75,7 +71,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public boolean contains(Object object) throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -225,7 +220,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public void delete(Object object) throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -246,7 +240,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public void evict(Object object) throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -267,7 +260,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public void flush() throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -288,7 +280,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public Object get(Class<?> clazz, Serializable id) throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -309,7 +300,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public Object get(Class<?> clazz, Serializable id, LockMode lockMode)
 		throws ORMException {
@@ -332,7 +322,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public Object getWrappedSession() throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -353,7 +342,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public boolean isDirty() throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -374,7 +362,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public Object load(Class<?> clazz, Serializable id) throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -395,7 +382,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public Object merge(Object object) throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -416,7 +402,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public Serializable save(Object object) throws ORMException {
 		Thread currentThread = Thread.currentThread();
@@ -437,7 +422,6 @@ public class ClassLoaderSession implements Session {
 		}
 	}
 
-	@NotPrivileged
 	@Override
 	public void saveOrUpdate(Object object) throws ORMException {
 		Thread currentThread = Thread.currentThread();

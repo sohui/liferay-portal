@@ -14,7 +14,7 @@
  */
 --%>
 
-<%@ include file="/html/taglib/init.jsp" %>
+<%@ include file="/html/common/init.jsp" %>
 
 <%
 boolean author = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:user-display:author"));
@@ -25,14 +25,9 @@ boolean showUserDetails = GetterUtil.getBoolean((String)request.getAttribute("li
 boolean showUserName = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:user-display:showUserName"));
 String url = (String)request.getAttribute("liferay-ui:user-display:url");
 User userDisplay = (User)request.getAttribute("liferay-ui:user-display:user");
-String userIconCssClass = (String)request.getAttribute("liferay-ui:user-display:userIconCssClass");
 String userName = GetterUtil.getString((String)request.getAttribute("liferay-ui:user-display:userName"));
 
 if (author) {
 	imageCssClass += " author";
-}
-
-if (Validator.isNull(url) && (userDisplay != null)) {
-	url = userDisplay.getDisplayURL(themeDisplay);
 }
 %>

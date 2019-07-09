@@ -20,8 +20,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class BatchablePipe<K, V> {
 
 	public boolean put(IncreasableEntry<K, V> increasableEntry) {

@@ -1,40 +1,43 @@
-<definition>
-	<command name="_openComments">
-		<if>
-			<condition function="IsElementNotPresent#isNotVisible" locator1="Comments#COMMENT_FIELD" />
-			<then>
-				<execute function="AssertClick" locator1="MyWorkflowTasksTask#COMMENTS" value1="Comments" />
-			</then>
-		</if>
-	</command>
+definition {
 
-	<command name="_viewBody">
-		<var name="key_entryComment" value="${workflowComment}" />
+	macro _openComments {
+		if (IsElementNotPresent.isNotVisible(locator1 = "Comments#COMMENT_FIELD")) {
+			AssertClick(
+				locator1 = "MyWorkflowTasksTask#COMMENTS",
+				value1 = "Comments");
+		}
+	}
 
-		<execute function="AssertTextEquals" locator1="Comments#COMMENT_BODY_SPECIFIC" value1="${workflowComment}" />
-	</command>
+	macro _viewBody {
+		var key_entryComment = "${workflowComment}";
 
-	<command name="add">
-		<execute macro="WorkflowComment#_openComments" />
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_SPECIFIC",
+			value1 = "${workflowComment}");
+	}
 
-		<execute macro="PageComment#reply">
-			<var name="commentBody" value="${workflowComment}" />
-		</execute>
+	macro add {
+		WorkflowComment._openComments();
 
-		<execute macro="WorkflowComment#_openComments" />
+		PageComment.reply(commentBody = "${workflowComment}");
 
-		<execute macro="Alert#viewSuccessMessage" />
+		WorkflowComment._openComments();
 
-		<execute macro="WorkflowComment#_viewBody">
-			<var name="workflowComment" value="${workflowComment}" />
-		</execute>
-	</command>
+		Alert.viewSuccessMessage();
 
-	<command name="view">
-		<execute macro="WorkflowComment#_openComments" />
+		WorkflowComment._viewBody(workflowComment = "${workflowComment}");
+	}
 
-		<execute macro="WorkflowComment#_viewBody">
-			<var name="workflowComment" value="${workflowComment}" />
-		</execute>
-	</command>
-</definition>
+	macro view {
+		WorkflowComment._openComments();
+
+		WorkflowComment._viewBody(workflowComment = "${workflowComment}");
+	}
+
+	macro viewCommentsNotPresent {
+		WorkflowComment._openComments();
+
+		AssertElementNotPresent(locator1 = "Comments#COMMENT_BODY");
+	}
+
+}

@@ -1,39 +1,33 @@
-<definition>
-	<command name="deleteEntry">
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+definition {
 
-		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
+	macro deleteEntry {
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
 
-		<execute function="Click" locator1="WikiTable#ALL_PAGES_VERTICAL_ELLIPSIS" value1="${wikiPageTitle}" />
+		var key_wikiPageTitle = "${wikiPageTitle}";
 
-		<execute macro="PortletEntry#clickMoveToRecycleBin" />
-	</command>
+		Click(
+			locator1 = "WikiTable#ALL_PAGES_VERTICAL_ELLIPSIS",
+			value1 = "${wikiPageTitle}");
 
-	<command name="restoreEntry">
-		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
+		PortletEntry.clickMoveToRecycleBin();
+	}
 
-		<execute function="Click" locator1="WikiTable#ALL_PAGES_VERTICAL_ELLIPSIS" value1="${wikiPageTitle}" />
+	macro viewEntry {
+		var key_wikiPageTitle = "${wikiPageTitle}";
 
-		<execute function="AssertClick" locator1="MenuItem#RESTORE" value1="Restore" />
-	</command>
+		AssertTextEquals(
+			locator1 = "WikiTable#ALL_PAGES_WIKI_PAGE_TITLE",
+			value1 = "${wikiPageTitle}");
 
-	<command name="viewEntry">
-		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
+		AssertTextEquals(
+			locator1 = "WikiTable#ALL_PAGES_STATUS",
+			value1 = "${draftStatus}");
+	}
 
-		<execute function="AssertTextEquals" locator1="WikiTable#ALL_PAGES_WIKI_PAGE_TITLE" value1="${wikiPageTitle}" />
-		<execute function="AssertTextEquals" locator1="WikiTable#ALL_PAGES_STATUS" value1="${draftStatus}" />
-	</command>
+	macro viewNoEntry {
+		var key_wikiPageTitle = "${wikiPageTitle}";
 
-	<command name="viewNode">
-		<var name="key_wikiNodeName" value="${wikiNodeName}" />
+		AssertElementNotPresent(locator1 = "WikiTable#ALL_PAGES_WIKI_PAGE_TITLE");
+	}
 
-		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_WIKI_NAME" value1="${wikiNodeName}" />
-		<execute function="AssertTextEquals" locator1="Wiki#NODE_TABLE_NUMBER_OF_PAGES" value1="${numberOfWikiPages}" />
-	</command>
-
-	<command name="viewNoEntry">
-		<var name="key_wikiPageTitle" value="${wikiPageTitle}" />
-
-		<execute function="AssertElementNotPresent" locator1="WikiTable#ALL_PAGES_WIKI_PAGE_TITLE" value1="${wikiPageTitle}" />
-	</command>
-</definition>
+}

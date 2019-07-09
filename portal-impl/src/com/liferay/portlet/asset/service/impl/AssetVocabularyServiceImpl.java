@@ -17,6 +17,7 @@ package com.liferay.portlet.asset.service.impl;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.model.AssetVocabularyDisplay;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
@@ -28,7 +29,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.asset.service.base.AssetVocabularyServiceBaseImpl;
-import com.liferay.portlet.asset.service.permission.AssetPermission;
+import com.liferay.portlet.asset.service.permission.AssetCategoriesPermission;
 import com.liferay.portlet.asset.service.permission.AssetVocabularyPermission;
 import com.liferay.portlet.asset.util.AssetUtil;
 import com.liferay.util.dao.orm.CustomSQLUtil;
@@ -57,7 +58,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		AssetPermission.check(
+		AssetCategoriesPermission.check(
 			getPermissionChecker(), groupId, ActionKeys.ADD_VOCABULARY);
 
 		return assetVocabularyLocalService.addVocabulary(
@@ -70,7 +71,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 			long groupId, String title, ServiceContext serviceContext)
 		throws PortalException {
 
-		AssetPermission.check(
+		AssetCategoriesPermission.check(
 			getPermissionChecker(), groupId, ActionKeys.ADD_VOCABULARY);
 
 		return assetVocabularyLocalService.addVocabulary(
@@ -139,7 +140,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -190,21 +191,9 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 			long groupId, boolean createDefaultVocabulary)
 		throws PortalException {
 
-		List<AssetVocabulary> vocabularies =
-			assetVocabularyPersistence.filterFindByGroupId(groupId);
-
-		if (!vocabularies.isEmpty() || !createDefaultVocabulary) {
-			return vocabularies;
-		}
-
-		vocabularies = new ArrayList<>();
-
-		AssetVocabulary vocabulary =
-			assetVocabularyLocalService.addDefaultVocabulary(groupId);
-
-		vocabularies.add(vocabulary);
-
-		return vocabularies;
+		return getGroupVocabularies(
+			groupId, createDefaultVocabulary, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
 	}
 
 	@Override
@@ -223,7 +212,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 		int count = assetVocabularyLocalService.getGroupVocabulariesCount(
 			new long[] {groupId});
 
-		if (count> 0) {
+		if (count > 0) {
 			return vocabularies;
 		}
 
@@ -286,7 +275,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 		int total = 0;
 
 		if (Validator.isNotNull(name)) {
-			name = (CustomSQLUtil.keywords(name))[0];
+			name = CustomSQLUtil.keywords(name)[0];
 
 			vocabularies = getGroupVocabularies(groupId, name, start, end, obc);
 			total = getGroupVocabulariesCount(groupId, name);
@@ -321,7 +310,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             AssetUtil#filterVocabularyIds(PermissionChecker, long[])}
 	 */
 	@Deprecated
@@ -403,7 +392,7 @@ public class AssetVocabularyServiceImpl extends AssetVocabularyServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	protected List<AssetVocabulary> filterVocabularies(

@@ -14,9 +14,12 @@
 
 package com.liferay.portal.security.auth;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.AccessControlContext;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifier;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierConfiguration;
@@ -24,7 +27,6 @@ import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierResult;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
@@ -58,8 +60,11 @@ public class AuthVerifierPipeline {
 		String simpleClassName = StringUtil.extractLast(
 			className, StringPool.PERIOD);
 
-		return PropsKeys.AUTH_VERIFIER.concat(simpleClassName).concat(
-			StringPool.PERIOD);
+		return PropsKeys.AUTH_VERIFIER.concat(
+			simpleClassName
+		).concat(
+			StringPool.PERIOD
+		);
 	}
 
 	public static AuthVerifierResult verifyRequest(
@@ -87,11 +92,12 @@ public class AuthVerifierPipeline {
 
 		AuthVerifierResult authVerifierResult = new AuthVerifierResult();
 
-		authVerifierResult.setState(AuthVerifierResult.State.SUCCESS);
+		authVerifierResult.setState(AuthVerifierResult.State.UNSUCCESSFUL);
 
-		HttpServletRequest request = accessControlContext.getRequest();
+		HttpServletRequest httpServletRequest =
+			accessControlContext.getRequest();
 
-		long companyId = PortalUtil.getCompanyId(request);
+		long companyId = PortalUtil.getCompanyId(httpServletRequest);
 
 		long defaultUserId = UserLocalServiceUtil.getDefaultUserId(companyId);
 
@@ -103,14 +109,15 @@ public class AuthVerifierPipeline {
 	private List<AuthVerifierConfiguration> _getAuthVerifierConfigurations(
 		AccessControlContext accessControlContext) {
 
-		HttpServletRequest request = accessControlContext.getRequest();
+		HttpServletRequest httpServletRequest =
+			accessControlContext.getRequest();
 
 		List<AuthVerifierConfiguration> authVerifierConfigurations =
 			new ArrayList<>();
 
-		String requestURI = request.getRequestURI();
+		String requestURI = httpServletRequest.getRequestURI();
 
-		String contextPath = request.getContextPath();
+		String contextPath = httpServletRequest.getContextPath();
 
 		requestURI = requestURI.substring(contextPath.length());
 
@@ -175,10 +182,10 @@ public class AuthVerifierPipeline {
 		while (iterator.hasNext() && !merge) {
 			String settingsKey = iterator.next();
 
-			if (settingsKey.startsWith(authVerifierSettingsKey)) {
-				if (settings.get(settingsKey) instanceof String) {
-					merge = true;
-				}
+			if (settingsKey.startsWith(authVerifierSettingsKey) &&
+				(settings.get(settingsKey) instanceof String)) {
+
+				merge = true;
 			}
 		}
 
@@ -279,6 +286,34 @@ public class AuthVerifierPipeline {
 			if (authVerifierResult.getState() !=
 					AuthVerifierResult.State.NOT_APPLICABLE) {
 
+				User user = UserLocalServiceUtil.fetchUser(
+					authVerifierResult.getUserId());
+
+				if ((user == null) || !user.isActive()) {
+					if (_log.isDebugEnabled()) {
+						Class<?> authVerifierClass = authVerifier.getClass();
+
+						if (user == null) {
+							_log.debug(
+								StringBundler.concat(
+									"Auth verifier ",
+									authVerifierClass.getName(),
+									" returned null user",
+									authVerifierResult.getUserId()));
+						}
+						else {
+							_log.debug(
+								StringBundler.concat(
+									"Auth verifier ",
+									authVerifierClass.getName(),
+									" returned inactive user",
+									authVerifierResult.getUserId()));
+						}
+					}
+
+					continue;
+				}
+
 				Map<String, Object> settings = _mergeSettings(
 					properties, authVerifierResult.getSettings());
 
@@ -305,8 +340,8 @@ public class AuthVerifierPipeline {
 		_serviceTracker;
 
 	private class AuthVerifierTrackerCustomizer
-		implements
-			ServiceTrackerCustomizer<AuthVerifier, AuthVerifierConfiguration> {
+		implements ServiceTrackerCustomizer
+			<AuthVerifier, AuthVerifierConfiguration> {
 
 		@Override
 		public AuthVerifierConfiguration addingService(
@@ -345,25 +380,15 @@ public class AuthVerifierPipeline {
 			ServiceReference<AuthVerifier> serviceReference,
 			AuthVerifierConfiguration authVerifierConfiguration) {
 
-			AuthVerifierConfiguration newAuthVerifierConfiguration =
-				new AuthVerifierConfiguration();
+			_authVerifierConfigurations.remove(authVerifierConfiguration);
 
-			newAuthVerifierConfiguration.setAuthVerifier(
-				authVerifierConfiguration.getAuthVerifier());
-			newAuthVerifierConfiguration.setAuthVerifierClassName(
-				authVerifierConfiguration.getAuthVerifierClassName());
-			newAuthVerifierConfiguration.setProperties(
+			authVerifierConfiguration.setProperties(
 				_loadProperties(
 					serviceReference,
 					authVerifierConfiguration.getAuthVerifierClassName()));
 
-			if (_authVerifierConfigurations.remove(authVerifierConfiguration)) {
-				if (!_validate(authVerifierConfiguration)) {
-					return;
-				}
-
-				_authVerifierConfigurations.add(
-					0, newAuthVerifierConfiguration);
+			if (_validate(authVerifierConfiguration)) {
+				_authVerifierConfigurations.add(0, authVerifierConfiguration);
 			}
 		}
 

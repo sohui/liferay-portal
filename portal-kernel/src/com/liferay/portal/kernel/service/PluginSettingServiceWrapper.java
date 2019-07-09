@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides a wrapper for {@link PluginSettingService}.
@@ -24,30 +24,33 @@ import aQute.bnd.annotation.ProviderType;
  * @generated
  */
 @ProviderType
-public class PluginSettingServiceWrapper implements PluginSettingService,
-	ServiceWrapper<PluginSettingService> {
+public class PluginSettingServiceWrapper
+	implements PluginSettingService, ServiceWrapper<PluginSettingService> {
+
 	public PluginSettingServiceWrapper(
 		PluginSettingService pluginSettingService) {
+
 		_pluginSettingService = pluginSettingService;
+	}
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	@Override
+	public String getOSGiServiceIdentifier() {
+		return _pluginSettingService.getOSGiServiceIdentifier();
 	}
 
 	@Override
 	public com.liferay.portal.kernel.model.PluginSetting updatePluginSetting(
-		long companyId, java.lang.String pluginId, java.lang.String pluginType,
-		java.lang.String roles, boolean active)
+			long companyId, String pluginId, String pluginType, String roles,
+			boolean active)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _pluginSettingService.updatePluginSetting(companyId, pluginId,
-			pluginType, roles, active);
-	}
 
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
-		return _pluginSettingService.getOSGiServiceIdentifier();
+		return _pluginSettingService.updatePluginSetting(
+			companyId, pluginId, pluginType, roles, active);
 	}
 
 	@Override
@@ -61,4 +64,5 @@ public class PluginSettingServiceWrapper implements PluginSettingService,
 	}
 
 	private PluginSettingService _pluginSettingService;
+
 }

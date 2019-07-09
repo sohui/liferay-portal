@@ -14,6 +14,7 @@
 
 package com.liferay.gradle.plugins.lang.builder;
 
+import com.liferay.gradle.plugins.lang.builder.internal.util.StringUtil;
 import com.liferay.gradle.util.FileUtil;
 import com.liferay.gradle.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
@@ -22,14 +23,17 @@ import com.liferay.lang.builder.LangBuilderArgs;
 import java.io.File;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.Optional;
+import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
@@ -37,14 +41,30 @@ import org.gradle.api.tasks.Optional;
 public class BuildLangTask extends JavaExec {
 
 	public BuildLangTask() {
+		setExcludedLanguageIds((Object[])LangBuilderArgs.EXCLUDED_LANGUAGE_IDS);
 		setMain("com.liferay.lang.builder.LangBuilder");
+	}
+
+	public BuildLangTask excludedLanguageIds(Iterable<?> excludedLanguageIds) {
+		GUtil.addToCollection(_excludedLanguageIds, excludedLanguageIds);
+
+		return this;
+	}
+
+	public BuildLangTask excludedLanguageIds(Object... excludedLanguageIds) {
+		return excludedLanguageIds(Arrays.asList(excludedLanguageIds));
 	}
 
 	@Override
 	public void exec() {
-		setArgs(getCompleteArgs());
+		setArgs(_getCompleteArgs());
 
 		super.exec();
+	}
+
+	@Input
+	public Set<?> getExcludedLanguageIds() {
+		return _excludedLanguageIds;
 	}
 
 	@Input
@@ -57,32 +77,30 @@ public class BuildLangTask extends JavaExec {
 		return GradleUtil.toString(_langFileName);
 	}
 
-	@InputFile
+	@Input
 	@Optional
-	public File getPortalLanguagePropertiesFile() {
-		return GradleUtil.toFile(getProject(), _portalLanguagePropertiesFile);
+	public String getTranslateSubscriptionKey() {
+		return GradleUtil.toString(_translateSubscriptionKey);
 	}
 
 	@Input
-	@Optional
-	public String getTranslateClientId() {
-		return GradleUtil.toString(_translateClientId);
-	}
-
-	@Input
-	@Optional
-	public String getTranslateClientSecret() {
-		return GradleUtil.toString(_translateClientSecret);
-	}
-
-	@Input
-	public boolean isPlugin() {
-		return _plugin;
+	public boolean isTitleCapitalization() {
+		return _titleCapitalization;
 	}
 
 	@Input
 	public boolean isTranslate() {
 		return _translate;
+	}
+
+	public void setExcludedLanguageIds(Iterable<?> excludedLanguageIds) {
+		_excludedLanguageIds.clear();
+
+		excludedLanguageIds(excludedLanguageIds);
+	}
+
+	public void setExcludedLanguageIds(Object... excludedLanguageIds) {
+		setExcludedLanguageIds(Arrays.asList(excludedLanguageIds));
 	}
 
 	public void setLangDir(Object langDir) {
@@ -93,54 +111,35 @@ public class BuildLangTask extends JavaExec {
 		_langFileName = langFileName;
 	}
 
-	public void setPlugin(boolean plugin) {
-		_plugin = plugin;
-	}
-
-	public void setPortalLanguagePropertiesFile(
-		Object portalLanguagePropertiesFile) {
-
-		_portalLanguagePropertiesFile = portalLanguagePropertiesFile;
+	public void setTitleCapitalization(boolean titleCapitalization) {
+		_titleCapitalization = titleCapitalization;
 	}
 
 	public void setTranslate(boolean translate) {
 		_translate = translate;
 	}
 
-	public void setTranslateClientId(Object translateClientId) {
-		_translateClientId = translateClientId;
+	public void setTranslateSubscriptionKey(Object translateSubscriptionKey) {
+		_translateSubscriptionKey = translateSubscriptionKey;
 	}
 
-	public void setTranslateClientSecret(Object translateClientSecret) {
-		_translateClientSecret = translateClientSecret;
-	}
-
-	protected List<String> getCompleteArgs() {
+	private List<String> _getCompleteArgs() {
 		List<String> args = new ArrayList<>(getArgs());
 
 		args.add(
 			"lang.dir=" + FileUtil.relativize(getLangDir(), getWorkingDir()));
+		args.add(
+			"lang.excluded.language.ids=" +
+				StringUtil.merge(getExcludedLanguageIds(), ","));
 		args.add("lang.file=" + getLangFileName());
-		args.add("lang.plugin=" + isPlugin());
-
-		File portalLanguagePropertiesFile = getPortalLanguagePropertiesFile();
-
-		if (portalLanguagePropertiesFile != null) {
-			args.add(
-				"lang.portal.language.properties.file=" +
-					FileUtil.relativize(
-						getPortalLanguagePropertiesFile(), getWorkingDir()));
-		}
+		args.add("lang.title.capitalization=" + isTitleCapitalization());
 
 		boolean translate = isTranslate();
 
 		if (translate) {
-			String translateClientId = getTranslateClientId();
-			String translateClientSecret = getTranslateClientSecret();
+			String translateSubscriptionKey = getTranslateSubscriptionKey();
 
-			if (Validator.isNull(translateClientId) ||
-				Validator.isNull(translateClientSecret)) {
-
+			if (Validator.isNull(translateSubscriptionKey)) {
 				if (_logger.isWarnEnabled()) {
 					_logger.warn(
 						"Translation is disabled because credentials are not " +
@@ -150,9 +149,9 @@ public class BuildLangTask extends JavaExec {
 				translate = false;
 			}
 			else {
-				args.add("lang.translate.client.id=" + translateClientId);
 				args.add(
-					"lang.translate.client.secret=" + translateClientSecret);
+					"lang.translate.subscription.key=" +
+						translateSubscriptionKey);
 			}
 		}
 
@@ -164,12 +163,11 @@ public class BuildLangTask extends JavaExec {
 	private static final Logger _logger = Logging.getLogger(
 		BuildLangTask.class);
 
+	private Set<Object> _excludedLanguageIds = new LinkedHashSet<>();
 	private Object _langDir;
 	private Object _langFileName = LangBuilderArgs.LANG_FILE_NAME;
-	private boolean _plugin = LangBuilderArgs.PLUGIN;
-	private Object _portalLanguagePropertiesFile;
+	private boolean _titleCapitalization = LangBuilderArgs.TITLE_CAPITALIZATION;
 	private boolean _translate = LangBuilderArgs.TRANSLATE;
-	private Object _translateClientId;
-	private Object _translateClientSecret;
+	private Object _translateSubscriptionKey;
 
 }

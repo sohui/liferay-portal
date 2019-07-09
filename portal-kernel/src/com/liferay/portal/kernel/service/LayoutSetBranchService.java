@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -27,6 +25,8 @@ import com.liferay.portal.kernel.transaction.Transactional;
 
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for LayoutSetBranch. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -34,47 +34,50 @@ import java.util.List;
  *
  * @author Brian Wing Shun Chan
  * @see LayoutSetBranchServiceUtil
- * @see com.liferay.portal.service.base.LayoutSetBranchServiceBaseImpl
- * @see com.liferay.portal.service.impl.LayoutSetBranchServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface LayoutSetBranchService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link LayoutSetBranchServiceUtil} to access the layout set branch remote service. Add custom service methods to {@link com.liferay.portal.service.impl.LayoutSetBranchServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link LayoutSetBranchServiceUtil} to access the layout set branch remote service. Add custom service methods to <code>com.liferay.portal.service.impl.LayoutSetBranchServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public LayoutSetBranch addLayoutSetBranch(long groupId,
-		boolean privateLayout, java.lang.String name,
-		java.lang.String description, boolean master,
-		long copyLayoutSetBranchId, ServiceContext serviceContext)
+	public LayoutSetBranch addLayoutSetBranch(
+			long groupId, boolean privateLayout, String name,
+			String description, boolean master, long copyLayoutSetBranchId,
+			ServiceContext serviceContext)
 		throws PortalException;
-
-	public LayoutSetBranch mergeLayoutSetBranch(long layoutSetBranchId,
-		long mergeLayoutSetBranchId, ServiceContext serviceContext)
-		throws PortalException;
-
-	public LayoutSetBranch updateLayoutSetBranch(long groupId,
-		long layoutSetBranchId, java.lang.String name,
-		java.lang.String description, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<LayoutSetBranch> getLayoutSetBranches(long groupId,
-		boolean privateLayout);
 
 	public void deleteLayoutSetBranch(long layoutSetBranchId)
 		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<LayoutSetBranch> getLayoutSetBranches(
+		long groupId, boolean privateLayout);
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
+
+	public LayoutSetBranch mergeLayoutSetBranch(
+			long layoutSetBranchId, long mergeLayoutSetBranchId,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	public LayoutSetBranch updateLayoutSetBranch(
+			long groupId, long layoutSetBranchId, String name,
+			String description, ServiceContext serviceContext)
+		throws PortalException;
+
 }

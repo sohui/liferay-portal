@@ -15,7 +15,6 @@
 package com.liferay.push.notifications.service.persistence.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
@@ -24,31 +23,20 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.TransactionalTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-
+import com.liferay.portal.test.rule.TransactionalTestRule;
 import com.liferay.push.notifications.exception.NoSuchDeviceException;
 import com.liferay.push.notifications.model.PushNotificationsDevice;
 import com.liferay.push.notifications.service.PushNotificationsDeviceLocalServiceUtil;
 import com.liferay.push.notifications.service.persistence.PushNotificationsDevicePersistence;
 import com.liferay.push.notifications.service.persistence.PushNotificationsDeviceUtil;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.junit.runner.RunWith;
 
 import java.io.Serializable;
 
@@ -60,16 +48,28 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 /**
  * @generated
  */
 @RunWith(Arquillian.class)
 public class PushNotificationsDevicePersistenceTest {
+
 	@ClassRule
 	@Rule
-	public static final AggregateTestRule aggregateTestRule = new AggregateTestRule(new LiferayIntegrationTestRule(),
-			PersistenceTestRule.INSTANCE,
-			new TransactionalTestRule(Propagation.REQUIRED));
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(), PersistenceTestRule.INSTANCE,
+			new TransactionalTestRule(
+				Propagation.REQUIRED,
+				"com.liferay.push.notifications.service"));
 
 	@Before
 	public void setUp() {
@@ -82,7 +82,8 @@ public class PushNotificationsDevicePersistenceTest {
 
 	@After
 	public void tearDown() throws Exception {
-		Iterator<PushNotificationsDevice> iterator = _pushNotificationsDevices.iterator();
+		Iterator<PushNotificationsDevice> iterator =
+			_pushNotificationsDevices.iterator();
 
 		while (iterator.hasNext()) {
 			_persistence.remove(iterator.next());
@@ -95,7 +96,8 @@ public class PushNotificationsDevicePersistenceTest {
 	public void testCreate() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		PushNotificationsDevice pushNotificationsDevice = _persistence.create(pk);
+		PushNotificationsDevice pushNotificationsDevice = _persistence.create(
+			pk);
 
 		Assert.assertNotNull(pushNotificationsDevice);
 
@@ -104,11 +106,14 @@ public class PushNotificationsDevicePersistenceTest {
 
 	@Test
 	public void testRemove() throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice = addPushNotificationsDevice();
+		PushNotificationsDevice newPushNotificationsDevice =
+			addPushNotificationsDevice();
 
 		_persistence.remove(newPushNotificationsDevice);
 
-		PushNotificationsDevice existingPushNotificationsDevice = _persistence.fetchByPrimaryKey(newPushNotificationsDevice.getPrimaryKey());
+		PushNotificationsDevice existingPushNotificationsDevice =
+			_persistence.fetchByPrimaryKey(
+				newPushNotificationsDevice.getPrimaryKey());
 
 		Assert.assertNull(existingPushNotificationsDevice);
 	}
@@ -122,7 +127,10 @@ public class PushNotificationsDevicePersistenceTest {
 	public void testUpdateExisting() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		PushNotificationsDevice newPushNotificationsDevice = _persistence.create(pk);
+		PushNotificationsDevice newPushNotificationsDevice =
+			_persistence.create(pk);
+
+		newPushNotificationsDevice.setCompanyId(RandomTestUtil.nextLong());
 
 		newPushNotificationsDevice.setUserId(RandomTestUtil.nextLong());
 
@@ -132,56 +140,70 @@ public class PushNotificationsDevicePersistenceTest {
 
 		newPushNotificationsDevice.setToken(RandomTestUtil.randomString());
 
-		_pushNotificationsDevices.add(_persistence.update(
-				newPushNotificationsDevice));
+		_pushNotificationsDevices.add(
+			_persistence.update(newPushNotificationsDevice));
 
-		PushNotificationsDevice existingPushNotificationsDevice = _persistence.findByPrimaryKey(newPushNotificationsDevice.getPrimaryKey());
+		PushNotificationsDevice existingPushNotificationsDevice =
+			_persistence.findByPrimaryKey(
+				newPushNotificationsDevice.getPrimaryKey());
 
-		Assert.assertEquals(existingPushNotificationsDevice.getPushNotificationsDeviceId(),
+		Assert.assertEquals(
+			existingPushNotificationsDevice.getPushNotificationsDeviceId(),
 			newPushNotificationsDevice.getPushNotificationsDeviceId());
-		Assert.assertEquals(existingPushNotificationsDevice.getUserId(),
+		Assert.assertEquals(
+			existingPushNotificationsDevice.getCompanyId(),
+			newPushNotificationsDevice.getCompanyId());
+		Assert.assertEquals(
+			existingPushNotificationsDevice.getUserId(),
 			newPushNotificationsDevice.getUserId());
-		Assert.assertEquals(Time.getShortTimestamp(
+		Assert.assertEquals(
+			Time.getShortTimestamp(
 				existingPushNotificationsDevice.getCreateDate()),
 			Time.getShortTimestamp(newPushNotificationsDevice.getCreateDate()));
-		Assert.assertEquals(existingPushNotificationsDevice.getPlatform(),
+		Assert.assertEquals(
+			existingPushNotificationsDevice.getPlatform(),
 			newPushNotificationsDevice.getPlatform());
-		Assert.assertEquals(existingPushNotificationsDevice.getToken(),
+		Assert.assertEquals(
+			existingPushNotificationsDevice.getToken(),
 			newPushNotificationsDevice.getToken());
 	}
 
 	@Test
 	public void testCountByToken() throws Exception {
-		_persistence.countByToken(StringPool.BLANK);
+		_persistence.countByToken("");
 
-		_persistence.countByToken(StringPool.NULL);
+		_persistence.countByToken("null");
 
 		_persistence.countByToken((String)null);
 	}
 
 	@Test
 	public void testCountByU_P() throws Exception {
-		_persistence.countByU_P(RandomTestUtil.nextLong(), StringPool.BLANK);
+		_persistence.countByU_P(RandomTestUtil.nextLong(), "");
 
-		_persistence.countByU_P(0L, StringPool.NULL);
+		_persistence.countByU_P(0L, "null");
 
 		_persistence.countByU_P(0L, (String)null);
 	}
 
 	@Test
 	public void testCountByU_PArrayable() throws Exception {
-		_persistence.countByU_P(new long[] { RandomTestUtil.nextLong(), 0L },
+		_persistence.countByU_P(
+			new long[] {RandomTestUtil.nextLong(), 0L},
 			RandomTestUtil.randomString());
 	}
 
 	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice = addPushNotificationsDevice();
+		PushNotificationsDevice newPushNotificationsDevice =
+			addPushNotificationsDevice();
 
-		PushNotificationsDevice existingPushNotificationsDevice = _persistence.findByPrimaryKey(newPushNotificationsDevice.getPrimaryKey());
+		PushNotificationsDevice existingPushNotificationsDevice =
+			_persistence.findByPrimaryKey(
+				newPushNotificationsDevice.getPrimaryKey());
 
-		Assert.assertEquals(existingPushNotificationsDevice,
-			newPushNotificationsDevice);
+		Assert.assertEquals(
+			existingPushNotificationsDevice, newPushNotificationsDevice);
 	}
 
 	@Test(expected = NoSuchDeviceException.class)
@@ -193,31 +215,38 @@ public class PushNotificationsDevicePersistenceTest {
 
 	@Test
 	public void testFindAll() throws Exception {
-		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			getOrderByComparator());
+		_persistence.findAll(
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
-	protected OrderByComparator<PushNotificationsDevice> getOrderByComparator() {
-		return OrderByComparatorFactoryUtil.create("PushNotificationsDevice",
-			"pushNotificationsDeviceId", true, "userId", true, "createDate",
-			true, "platform", true, "token", true);
+	protected OrderByComparator<PushNotificationsDevice>
+		getOrderByComparator() {
+
+		return OrderByComparatorFactoryUtil.create(
+			"PushNotificationsDevice", "pushNotificationsDeviceId", true,
+			"companyId", true, "userId", true, "createDate", true, "platform",
+			true, "token", true);
 	}
 
 	@Test
 	public void testFetchByPrimaryKeyExisting() throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice = addPushNotificationsDevice();
+		PushNotificationsDevice newPushNotificationsDevice =
+			addPushNotificationsDevice();
 
-		PushNotificationsDevice existingPushNotificationsDevice = _persistence.fetchByPrimaryKey(newPushNotificationsDevice.getPrimaryKey());
+		PushNotificationsDevice existingPushNotificationsDevice =
+			_persistence.fetchByPrimaryKey(
+				newPushNotificationsDevice.getPrimaryKey());
 
-		Assert.assertEquals(existingPushNotificationsDevice,
-			newPushNotificationsDevice);
+		Assert.assertEquals(
+			existingPushNotificationsDevice, newPushNotificationsDevice);
 	}
 
 	@Test
 	public void testFetchByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		PushNotificationsDevice missingPushNotificationsDevice = _persistence.fetchByPrimaryKey(pk);
+		PushNotificationsDevice missingPushNotificationsDevice =
+			_persistence.fetchByPrimaryKey(pk);
 
 		Assert.assertNull(missingPushNotificationsDevice);
 	}
@@ -225,21 +254,27 @@ public class PushNotificationsDevicePersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereAllPrimaryKeysExist()
 		throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice1 = addPushNotificationsDevice();
-		PushNotificationsDevice newPushNotificationsDevice2 = addPushNotificationsDevice();
+
+		PushNotificationsDevice newPushNotificationsDevice1 =
+			addPushNotificationsDevice();
+		PushNotificationsDevice newPushNotificationsDevice2 =
+			addPushNotificationsDevice();
 
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
 		primaryKeys.add(newPushNotificationsDevice1.getPrimaryKey());
 		primaryKeys.add(newPushNotificationsDevice2.getPrimaryKey());
 
-		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(2, pushNotificationsDevices.size());
-		Assert.assertEquals(newPushNotificationsDevice1,
+		Assert.assertEquals(
+			newPushNotificationsDevice1,
 			pushNotificationsDevices.get(
 				newPushNotificationsDevice1.getPrimaryKey()));
-		Assert.assertEquals(newPushNotificationsDevice2,
+		Assert.assertEquals(
+			newPushNotificationsDevice2,
 			pushNotificationsDevices.get(
 				newPushNotificationsDevice2.getPrimaryKey()));
 	}
@@ -247,6 +282,7 @@ public class PushNotificationsDevicePersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereNoPrimaryKeysExist()
 		throws Exception {
+
 		long pk1 = RandomTestUtil.nextLong();
 
 		long pk2 = RandomTestUtil.nextLong();
@@ -256,7 +292,8 @@ public class PushNotificationsDevicePersistenceTest {
 		primaryKeys.add(pk1);
 		primaryKeys.add(pk2);
 
-		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertTrue(pushNotificationsDevices.isEmpty());
 	}
@@ -264,7 +301,9 @@ public class PushNotificationsDevicePersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereSomePrimaryKeysExist()
 		throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice = addPushNotificationsDevice();
+
+		PushNotificationsDevice newPushNotificationsDevice =
+			addPushNotificationsDevice();
 
 		long pk = RandomTestUtil.nextLong();
 
@@ -273,37 +312,41 @@ public class PushNotificationsDevicePersistenceTest {
 		primaryKeys.add(newPushNotificationsDevice.getPrimaryKey());
 		primaryKeys.add(pk);
 
-		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(1, pushNotificationsDevices.size());
-		Assert.assertEquals(newPushNotificationsDevice,
+		Assert.assertEquals(
+			newPushNotificationsDevice,
 			pushNotificationsDevices.get(
 				newPushNotificationsDevice.getPrimaryKey()));
 	}
 
 	@Test
-	public void testFetchByPrimaryKeysWithNoPrimaryKeys()
-		throws Exception {
+	public void testFetchByPrimaryKeysWithNoPrimaryKeys() throws Exception {
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
-		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertTrue(pushNotificationsDevices.isEmpty());
 	}
 
 	@Test
-	public void testFetchByPrimaryKeysWithOnePrimaryKey()
-		throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice = addPushNotificationsDevice();
+	public void testFetchByPrimaryKeysWithOnePrimaryKey() throws Exception {
+		PushNotificationsDevice newPushNotificationsDevice =
+			addPushNotificationsDevice();
 
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
 		primaryKeys.add(newPushNotificationsDevice.getPrimaryKey());
 
-		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, PushNotificationsDevice> pushNotificationsDevices =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(1, pushNotificationsDevices.size());
-		Assert.assertEquals(newPushNotificationsDevice,
+		Assert.assertEquals(
+			newPushNotificationsDevice,
 			pushNotificationsDevices.get(
 				newPushNotificationsDevice.getPrimaryKey()));
 	}
@@ -312,16 +355,22 @@ public class PushNotificationsDevicePersistenceTest {
 	public void testActionableDynamicQuery() throws Exception {
 		final IntegerWrapper count = new IntegerWrapper();
 
-		ActionableDynamicQuery actionableDynamicQuery = PushNotificationsDeviceLocalServiceUtil.getActionableDynamicQuery();
+		ActionableDynamicQuery actionableDynamicQuery =
+			PushNotificationsDeviceLocalServiceUtil.getActionableDynamicQuery();
 
-		actionableDynamicQuery.setPerformActionMethod(new ActionableDynamicQuery.PerformActionMethod<PushNotificationsDevice>() {
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod
+				<PushNotificationsDevice>() {
+
 				@Override
 				public void performAction(
 					PushNotificationsDevice pushNotificationsDevice) {
+
 					Assert.assertNotNull(pushNotificationsDevice);
 
 					count.increment();
 				}
+
 			});
 
 		actionableDynamicQuery.performActions();
@@ -330,56 +379,62 @@ public class PushNotificationsDevicePersistenceTest {
 	}
 
 	@Test
-	public void testDynamicQueryByPrimaryKeyExisting()
-		throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice = addPushNotificationsDevice();
+	public void testDynamicQueryByPrimaryKeyExisting() throws Exception {
+		PushNotificationsDevice newPushNotificationsDevice =
+			addPushNotificationsDevice();
 
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(PushNotificationsDevice.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			PushNotificationsDevice.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.add(RestrictionsFactoryUtil.eq(
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
 				"pushNotificationsDeviceId",
 				newPushNotificationsDevice.getPushNotificationsDeviceId()));
 
-		List<PushNotificationsDevice> result = _persistence.findWithDynamicQuery(dynamicQuery);
+		List<PushNotificationsDevice> result =
+			_persistence.findWithDynamicQuery(dynamicQuery);
 
 		Assert.assertEquals(1, result.size());
 
 		PushNotificationsDevice existingPushNotificationsDevice = result.get(0);
 
-		Assert.assertEquals(existingPushNotificationsDevice,
-			newPushNotificationsDevice);
+		Assert.assertEquals(
+			existingPushNotificationsDevice, newPushNotificationsDevice);
 	}
 
 	@Test
 	public void testDynamicQueryByPrimaryKeyMissing() throws Exception {
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(PushNotificationsDevice.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			PushNotificationsDevice.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.add(RestrictionsFactoryUtil.eq(
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
 				"pushNotificationsDeviceId", RandomTestUtil.nextLong()));
 
-		List<PushNotificationsDevice> result = _persistence.findWithDynamicQuery(dynamicQuery);
+		List<PushNotificationsDevice> result =
+			_persistence.findWithDynamicQuery(dynamicQuery);
 
 		Assert.assertEquals(0, result.size());
 	}
 
 	@Test
-	public void testDynamicQueryByProjectionExisting()
-		throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice = addPushNotificationsDevice();
+	public void testDynamicQueryByProjectionExisting() throws Exception {
+		PushNotificationsDevice newPushNotificationsDevice =
+			addPushNotificationsDevice();
 
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(PushNotificationsDevice.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			PushNotificationsDevice.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.setProjection(ProjectionFactoryUtil.property(
-				"pushNotificationsDeviceId"));
+		dynamicQuery.setProjection(
+			ProjectionFactoryUtil.property("pushNotificationsDeviceId"));
 
-		Object newPushNotificationsDeviceId = newPushNotificationsDevice.getPushNotificationsDeviceId();
+		Object newPushNotificationsDeviceId =
+			newPushNotificationsDevice.getPushNotificationsDeviceId();
 
-		dynamicQuery.add(RestrictionsFactoryUtil.in(
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.in(
 				"pushNotificationsDeviceId",
-				new Object[] { newPushNotificationsDeviceId }));
+				new Object[] {newPushNotificationsDeviceId}));
 
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -387,21 +442,22 @@ public class PushNotificationsDevicePersistenceTest {
 
 		Object existingPushNotificationsDeviceId = result.get(0);
 
-		Assert.assertEquals(existingPushNotificationsDeviceId,
-			newPushNotificationsDeviceId);
+		Assert.assertEquals(
+			existingPushNotificationsDeviceId, newPushNotificationsDeviceId);
 	}
 
 	@Test
 	public void testDynamicQueryByProjectionMissing() throws Exception {
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(PushNotificationsDevice.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			PushNotificationsDevice.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.setProjection(ProjectionFactoryUtil.property(
-				"pushNotificationsDeviceId"));
+		dynamicQuery.setProjection(
+			ProjectionFactoryUtil.property("pushNotificationsDeviceId"));
 
-		dynamicQuery.add(RestrictionsFactoryUtil.in(
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.in(
 				"pushNotificationsDeviceId",
-				new Object[] { RandomTestUtil.nextLong() }));
+				new Object[] {RandomTestUtil.nextLong()}));
 
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -410,23 +466,32 @@ public class PushNotificationsDevicePersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		PushNotificationsDevice newPushNotificationsDevice = addPushNotificationsDevice();
+		PushNotificationsDevice newPushNotificationsDevice =
+			addPushNotificationsDevice();
 
 		_persistence.clearCache();
 
-		PushNotificationsDevice existingPushNotificationsDevice = _persistence.findByPrimaryKey(newPushNotificationsDevice.getPrimaryKey());
+		PushNotificationsDevice existingPushNotificationsDevice =
+			_persistence.findByPrimaryKey(
+				newPushNotificationsDevice.getPrimaryKey());
 
-		Assert.assertTrue(Objects.equals(
+		Assert.assertTrue(
+			Objects.equals(
 				existingPushNotificationsDevice.getToken(),
-				ReflectionTestUtil.invoke(existingPushNotificationsDevice,
-					"getOriginalToken", new Class<?>[0])));
+				ReflectionTestUtil.invoke(
+					existingPushNotificationsDevice, "getOriginalToken",
+					new Class<?>[0])));
 	}
 
 	protected PushNotificationsDevice addPushNotificationsDevice()
 		throws Exception {
+
 		long pk = RandomTestUtil.nextLong();
 
-		PushNotificationsDevice pushNotificationsDevice = _persistence.create(pk);
+		PushNotificationsDevice pushNotificationsDevice = _persistence.create(
+			pk);
+
+		pushNotificationsDevice.setCompanyId(RandomTestUtil.nextLong());
 
 		pushNotificationsDevice.setUserId(RandomTestUtil.nextLong());
 
@@ -436,13 +501,15 @@ public class PushNotificationsDevicePersistenceTest {
 
 		pushNotificationsDevice.setToken(RandomTestUtil.randomString());
 
-		_pushNotificationsDevices.add(_persistence.update(
-				pushNotificationsDevice));
+		_pushNotificationsDevices.add(
+			_persistence.update(pushNotificationsDevice));
 
 		return pushNotificationsDevice;
 	}
 
-	private List<PushNotificationsDevice> _pushNotificationsDevices = new ArrayList<PushNotificationsDevice>();
+	private List<PushNotificationsDevice> _pushNotificationsDevices =
+		new ArrayList<PushNotificationsDevice>();
 	private PushNotificationsDevicePersistence _persistence;
 	private ClassLoader _dynamicQueryClassLoader;
+
 }

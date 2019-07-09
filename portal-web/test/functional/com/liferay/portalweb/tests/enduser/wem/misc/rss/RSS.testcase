@@ -1,0 +1,613 @@
+@component-name = "portal-rss"
+definition {
+
+	property osgi.module.configuration.file.names = "com.liferay.rss.web.internal.configuration.RSSWebCacheConfiguration.config";
+	property osgi.module.configurations = "com.liferay.portlet.display-category=&quot;category.cms&quot;";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "RSS";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addBlankCP(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Site Page Name");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Page.tearDownCP(site = "Liferay");
+
+			Site.tearDownCP();
+		}
+	}
+
+	@priority = "3"
+	test AddFeedBetweenFeeds {
+		property testray.component.names = "RSS";
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Technology",
+			feedType = "file",
+			feedUrlLink = "Technology.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			buttonRowIndexNumber = "1",
+			feedRowIndexNumber = "1",
+			feedTitle = "Latimes &gt; Technology News",
+			feedType = "file",
+			feedUrlLink = "rss2.0.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			buttonRowIndexNumber = "1",
+			feedRowIndexNumber = "2",
+			feedTitle = "Reuters &gt; Sports News",
+			feedType = "file",
+			feedUrlLink = "reuters_sports_news.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		for (var feedTitle : list "Technology,Reuters > Sports News,Latimes > Technology News") {
+			RSSPortlet.viewDisplayFeedTitle(feedTitle = "${feedTitle}");
+		}
+	}
+
+	@priority = "4"
+	test AddFeedWithWrongUrl {
+		property testray.component.names = "RSS";
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "General Announcement",
+			feedUrlLink = "www.theverge.com/rss/index.xml");
+
+		RSSPortlet.viewWarningMessageDisplay(errorMessage = "The following are invalid URLs: www.theverge.com/rss/index.xml.");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		RSSPortlet.viewDeleteFeed(feedTitle = "General Announcement");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "General Announcement",
+			feedType = "file",
+			feedUrlLink = "theverge.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		RSSPortlet.viewDisplayFeedTitle(feedTitle = "General Announcement");
+	}
+
+	@priority = "5"
+	test AddRSSFeed {
+		property portal.acceptance = "true";
+		property testray.component.names = "RSS";
+
+		Navigator.gotoPage(pageName = "Home");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Page Name");
+
+		Navigator.gotoPage(pageName = "Page Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		RSSPortlet.viewPortletConfigurationInfo();
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Latimes &gt; Technology News",
+			feedType = "file",
+			feedUrlLink = "rss2.0.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoPage(pageName = "Page Name");
+
+		RSSPortlet.viewDisplayFeedTitle(feedTitle = "Latimes &gt; Technology News");
+	}
+
+	@priority = "3"
+	test ChangeDefaultToNavigationDisplay {
+		property testray.component.names = "RSS";
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Technology",
+			feedType = "file",
+			feedUrlLink = "Technology.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.configureFeedDisplayStyle(feedDisplayStyle = "Navigation");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		RSSPortlet.viewNavigationDisplayFeedTitle(feedTitle = "Technology");
+	}
+
+	@priority = "3"
+	test ChangeOrderOfRSSFeeds {
+		property testray.component.names = "RSS";
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Technology",
+			feedType = "file",
+			feedUrlLink = "Technology.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			buttonRowIndexNumber = "1",
+			feedRowIndexNumber = "1",
+			feedTitle = "NBA",
+			feedType = "file",
+			feedUrlLink = "nba.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.viewPG(
+			feedRowIndexNumber = "0",
+			feedTitle = "Technology",
+			rowIndexNumber = "1");
+
+		RSSPortlet.viewPG(
+			feedRowIndexNumber = "1",
+			feedTitle = "NBA",
+			rowIndexNumber = "2");
+
+		RSSPortlet.changeFeedsOrder(
+			fromRowNumber = "1",
+			rowLocation = "Title",
+			toRowNumber = "2");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.viewPG(
+			feedRowIndexNumber = "0",
+			feedTitle = "NBA",
+			rowIndexNumber = "1");
+
+		RSSPortlet.viewPG(
+			feedRowIndexNumber = "1",
+			feedTitle = "Technology",
+			rowIndexNumber = "2");
+	}
+
+	@priority = "4"
+	test DeleteFeedFromRSS {
+		property testray.component.names = "RSS";
+
+		Navigator.gotoPage(pageName = "Home");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Page Name");
+
+		Navigator.gotoPage(pageName = "Page Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Latimes &gt; Technology News",
+			feedType = "file",
+			feedUrlLink = "rss2.0.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoPage(pageName = "Page Name");
+
+		RSSPortlet.viewDisplayFeedTitle(feedTitle = "Latimes &gt; Technology News");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.deleteFeed(buttonRowIndexNumber = "1");
+
+		PortletEntry.save();
+
+		Navigator.gotoPage(pageName = "Page Name");
+
+		RSSPortlet.viewDeleteFeed(feedTitle = "Latimes &gt; Technology News");
+	}
+
+	@priority = "3"
+	test DisabledFeedTitle {
+		property testray.component.names = "RSS";
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.viewSpecificPG(portletName = "RSS Publisher");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Technology",
+			feedType = "file",
+			feedUrlLink = "Technology.xml");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		RSSPortlet.viewDisplayFeedTitle(feedTitle = "Technology");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.disableShowFeedTitle();
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		RSSPortlet.viewNoFeedTitle(feedTitle = "Technology");
+	}
+
+	@ignore = "true"
+	@priority = "3"
+	test EnableRSSFeedFromAssetpublisher {
+		property test.name.skip.portal.instance = "RSS#EnableRSSFeedFromAssetpublisher";
+		property testray.component.names = "Asset Publisher,RSS";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Site Page Name 2");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name 2",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		WebContent.addPGViaAP(
+			webContentContent = "This is the web content test for rss feed",
+			webContentTitle = "Web Content Title");
+
+		Portlet.gotoPortletOptions(
+			portletName = "Asset Publisher",
+			portletOption = "Configuration");
+
+		AssetPublisherPortlet.enableRSSSubscription();
+
+		Button.clickSave();
+
+		IFrame.selectTopFrame();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name 2",
+			siteName = "Site Name");
+
+		var rssFeedUrl = selenium.getAttribute("//div[@class='subscribe-action']/span/a[contains(@href,'asset_publisher')]@href");
+		var rssFeedUrl = StringUtil.replace("${rssFeedUrl}", "localhost", "127.0.0.1");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Web Asset Publisher",
+			feedUrlLink = "${rssFeedUrl}");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		RSSPortlet.viewDisplayFeedTitle(feedTitle = "Web Asset Publisher");
+
+		RSSPortlet.openFeed(
+			feedTitle = "Asset Publisher",
+			siteName = "${siteName}");
+
+		AssetPublisherPortlet.viewAssetPG(
+			assetContent = "This is the web content test for rss feed",
+			assetTitle = "Web Content Title");
+	}
+
+	@priority = "4"
+	test RemoveRSSPortlet {
+		property testray.component.names = "RSS";
+
+		Navigator.gotoPage(pageName = "Home");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Page Name");
+
+		Navigator.gotoPage(pageName = "Page Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Portlet.viewSpecificPG(portletName = "RSS Publisher");
+
+		RSSPortlet.viewPortletConfigurationInfo();
+
+		Portlet.deletePG(portletName = "RSS Publisher");
+
+		Navigator.gotoPage(pageName = "Page Name");
+
+		Portlet.viewNoSpecificPG(portletName = "RSS Publisher");
+	}
+
+	@priority = "4"
+	test UpdateRSSFeedViaAssetpublisher {
+		property test.name.skip.portal.instance = "RSS#UpdateRSSFeedViaAssetpublisher";
+		property testray.component.names = "Asset Publisher,RSS";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "RSS",
+			configurationName = "Cache",
+			configurationScope = "System Scope");
+
+		RSSPortlet.updateFeedTime(feedTime = "1");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Asset Publisher Page");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "RSS Publisher");
+
+		Navigator.gotoSitePage(
+			pageName = "Asset Publisher Page",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		WebContent.addPGViaAP(
+			webContentContent = "This is the web content test for rss feed",
+			webContentTitle = "Web Content Title");
+
+		AssetPublisherPortlet.configureDisplaySettings(displaySettings = "Subscribe");
+
+		AssetPublisherPortlet.enableRSSSubscription();
+
+		Button.clickSave();
+
+		IFrame.selectTopFrame();
+
+		Navigator.gotoSitePage(
+			pageName = "Asset Publisher Page",
+			siteName = "Site Name");
+
+		var rssFeedUrl = selenium.getAttribute("//div[@class='subscribe-action']/span/a[contains(@href,'asset_publisher')]@href");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		Portlet.gotoPortletOptions(
+			portletName = "RSS Publisher",
+			portletOption = "Configuration");
+
+		RSSPortlet.addFeed(
+			feedRowIndexNumber = "0",
+			feedTitle = "Web Asset Publisher",
+			feedUrlLink = "${rssFeedUrl}");
+
+		PortletEntry.save();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page Name",
+			siteName = "Site Name");
+
+		RSSPortlet.viewDisplayFeedTitle(feedTitle = "Web Asset Publisher");
+
+		RSSPortlet.viewUpdateFeedTitle(feedHeading = "Web Content Title");
+
+		Navigator.gotoSitePage(
+			pageName = "Asset Publisher Page",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.gotoEditAssetPG(assetTitle = "Web Content Title");
+
+		WebContent.addCP(
+			webContentContent = "This is the updated version of web content test for rss feed",
+			webContentTitle = "Web Content Title Updated Feed");
+
+		Button.clickPublish();
+
+		IFrame.selectTopFrame();
+
+		RSSPortlet.viewUpdateFeedTitle(
+			feedHeading = "Web Content Title Updated Feed",
+			pageName = "Site Page Name",
+			updateFeed = "true");
+
+		RSSPortlet.viewDisplayFeedTitle(feedTitle = "Web Asset Publisher");
+	}
+
+}

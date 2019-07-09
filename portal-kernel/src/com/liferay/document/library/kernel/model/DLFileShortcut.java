@@ -14,33 +14,35 @@
 
 package com.liferay.document.library.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.model.TreeModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the DLFileShortcut service. Represents a row in the &quot;DLFileShortcut&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see DLFileShortcutModel
- * @see com.liferay.portlet.documentlibrary.model.impl.DLFileShortcutImpl
- * @see com.liferay.portlet.documentlibrary.model.impl.DLFileShortcutModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.documentlibrary.model.impl.DLFileShortcutImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.documentlibrary.model.impl.DLFileShortcutImpl"
+)
 @ProviderType
-public interface DLFileShortcut extends DLFileShortcutModel, PersistedModel,
-	TreeModel {
+public interface DLFileShortcut
+	extends DLFileShortcutModel, PersistedModel, TreeModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.documentlibrary.model.impl.DLFileShortcutImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.documentlibrary.model.impl.DLFileShortcutImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<DLFileShortcut, Long> FILE_SHORTCUT_ID_ACCESSOR =
-		new Accessor<DLFileShortcut, Long>() {
+	public static final Accessor<DLFileShortcut, Long>
+		FILE_SHORTCUT_ID_ACCESSOR = new Accessor<DLFileShortcut, Long>() {
+
 			@Override
 			public Long get(DLFileShortcut dlFileShortcut) {
 				return dlFileShortcut.getFileShortcutId();
@@ -55,22 +57,25 @@ public interface DLFileShortcut extends DLFileShortcutModel, PersistedModel,
 			public Class<DLFileShortcut> getTypeClass() {
 				return DLFileShortcut.class;
 			}
+
 		};
 
 	@Override
-	public java.lang.String buildTreePath()
+	public String buildTreePath()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public DLFolder getDLFolder()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public com.liferay.portal.kernel.repository.model.FileVersion getFileVersion()
+	public com.liferay.portal.kernel.repository.model.FileVersion
+			getFileVersion()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public com.liferay.portal.kernel.repository.model.Folder getFolder()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getToTitle();
+	public String getToTitle();
 
 	public boolean isInHiddenFolder();
+
 }

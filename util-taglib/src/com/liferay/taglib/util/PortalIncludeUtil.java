@@ -37,38 +37,37 @@ public class PortalIncludeUtil {
 			PageContext pageContext, HTMLRenderer htmlRenderer)
 		throws IOException, ServletException {
 
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
-		HttpServletResponse response =
-			(HttpServletResponse)pageContext.getResponse();
 
 		htmlRenderer.renderHTML(
-			request, new PipingServletResponse(response, pageContext.getOut()));
+			httpServletRequest,
+			PipingServletResponse.createPipingServletResponse(pageContext));
 	}
 
 	public static void include(PageContext pageContext, String path)
 		throws IOException, ServletException {
 
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
-		HttpServletResponse response =
-			(HttpServletResponse)pageContext.getResponse();
 
-		ServletContext servletContext = (ServletContext)request.getAttribute(
-			WebKeys.CTX);
+		ServletContext servletContext =
+			(ServletContext)httpServletRequest.getAttribute(WebKeys.CTX);
 
 		RequestDispatcher requestDispatcher =
 			DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
 				servletContext, path);
 
 		requestDispatcher.include(
-			request, new PipingServletResponse(response, pageContext.getOut()));
+			httpServletRequest,
+			PipingServletResponse.createPipingServletResponse(pageContext));
 	}
 
 	public interface HTMLRenderer {
 
 		public void renderHTML(
-				HttpServletRequest request, HttpServletResponse response)
+				HttpServletRequest httpServletRequest,
+				HttpServletResponse httpServletResponse)
 			throws IOException, ServletException;
 
 	}

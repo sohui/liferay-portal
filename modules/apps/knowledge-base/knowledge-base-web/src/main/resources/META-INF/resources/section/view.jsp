@@ -18,6 +18,9 @@
 
 <%
 KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, renderResponse, templatePath);
+
+String[] kbArticlesSections = kbSectionPortletInstanceConfiguration.kbArticlesSections();
+String kbArticleDisplayStyle = kbSectionPortletInstanceConfiguration.kbArticleDisplayStyle();
 %>
 
 <c:choose>
@@ -27,14 +30,14 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 		</liferay-portlet:renderURL>
 
 		<liferay-ui:search-container
-			searchContainer="<%= new KBArticleSearch(renderRequest, iteratorURL) %>"
+			searchContainer="<%= new KBObjectsSearch(renderRequest, iteratorURL) %>"
 			total="<%= KBArticleServiceUtil.getSectionsKBArticlesCount(scopeGroupId, kbArticlesSections, WorkflowConstants.STATUS_APPROVED) %>"
 		>
 			<liferay-ui:search-container-results
 				results="<%= KBArticleServiceUtil.getSectionsKBArticles(scopeGroupId, kbArticlesSections, WorkflowConstants.STATUS_APPROVED, searchContainer.getStart(), searchContainer.getEnd(), searchContainer.getOrderByComparator()) %>"
 			/>
 
-			<c:if test="<%= showKBArticlesSectionsTitle %>">
+			<c:if test="<%= kbSectionPortletInstanceConfiguration.showKBArticlesSectionsTitle() %>">
 
 				<%
 				List<String> titles = new ArrayList<String>();
@@ -47,7 +50,7 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 				%>
 
 				<div class="kb-articles-sections-title">
-					<%= StringUtil.merge(titles, StringPool.COMMA_AND_SPACE) %>
+					<%= HtmlUtil.escape(StringUtil.merge(titles, StringPool.COMMA_AND_SPACE)) %>
 				</div>
 			</c:if>
 
@@ -71,7 +74,7 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 						<liferay-ui:icon
 							iconCssClass="icon-file-alt"
 							label="<%= true %>"
-							message="<%= kbArticle.getTitle() %>"
+							message="<%= HtmlUtil.escape(kbArticle.getTitle()) %>"
 							method="get"
 							url="<%= viewKBArticleURL.toString() %>"
 						/>
@@ -81,7 +84,7 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 						<div class="kb-article-content">
 							<c:choose>
 								<c:when test='<%= kbArticleDisplayStyle.equals("abstract") && Validator.isNotNull(kbArticle.getDescription()) %>'>
-									<%= kbArticle.getDescription() %>
+									<%= HtmlUtil.escape(kbArticle.getDescription()) %>
 								</c:when>
 								<c:when test='<%= kbArticleDisplayStyle.equals("abstract") %>'>
 									<%= StringUtil.shorten(HtmlUtil.extractText(kbArticle.getContent()), 500) %>
@@ -96,9 +99,11 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 
 			</div>
 
-			<c:if test="<%= showKBArticlesPagination && (total > searchContainer.getDelta()) %>">
+			<c:if test="<%= kbSectionPortletInstanceConfiguration.showKBArticlesPagination() && (total > searchContainer.getDelta()) %>">
 				<div class="taglib-search-iterator-page-iterator-bottom">
-					<liferay-ui:search-paginator searchContainer="<%= searchContainer %>" />
+					<liferay-ui:search-paginator
+						searchContainer="<%= searchContainer %>"
+					/>
 				</div>
 			</c:if>
 		</liferay-ui:search-container>
@@ -110,7 +115,7 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 		%>
 
 		<div class="alert alert-info">
-			<%= LanguageUtil.format(request, "please-input-a-list-of-comma-delimited-words-for-portlet-property-x-to-enable-this-portlet", "admin.kb.article.sections", false) %>
+			<%= LanguageUtil.get(resourceBundle, "please-configure-the-list-of-available-sections-in-system-settings-collaboration-knowledge-base-to-enable-this-widget") %>
 		</div>
 	</c:otherwise>
 </c:choose>

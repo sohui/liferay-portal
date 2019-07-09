@@ -30,7 +30,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Runs Liferay Javadoc Formatter to format files.
  *
  * @author Andrea Di Giorgi
- * @goal format-javadoc
+ * @goal format
  */
 public class FormatJavadocMojo extends AbstractMojo {
 
@@ -91,16 +91,6 @@ public class FormatJavadocMojo extends AbstractMojo {
 	 */
 	public void setLimits(String limits) {
 		_javadocFormatterArgs.setLimits(limits);
-	}
-
-	/**
-	 * @parameter
-	 */
-	public void setLowestSupportedJavaVersion(
-		double lowestSupportedJavaVersion) {
-
-		_javadocFormatterArgs.setLowestSupportedJavaVersion(
-			lowestSupportedJavaVersion);
 	}
 
 	/**

@@ -16,6 +16,7 @@ package com.liferay.portal.webdav.methods;
 
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.webdav.WebDAVRequest;
+import com.liferay.portal.kernel.webdav.WebDAVStorage;
 import com.liferay.portal.kernel.webdav.methods.Method;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,18 +29,21 @@ public class OptionsMethodImpl implements Method {
 
 	@Override
 	public int process(WebDAVRequest webDAVRequest) {
-		HttpServletResponse response = webDAVRequest.getHttpServletResponse();
+		HttpServletResponse httpServletResponse =
+			webDAVRequest.getHttpServletResponse();
 
-		if (webDAVRequest.getWebDAVStorage().isSupportsClassTwo()) {
-			response.addHeader("DAV", "1,2");
+		WebDAVStorage webDAVStorage = webDAVRequest.getWebDAVStorage();
+
+		if (webDAVStorage.isSupportsClassTwo()) {
+			httpServletResponse.addHeader("DAV", "1,2");
 		}
 		else {
-			response.addHeader("DAV", "1");
+			httpServletResponse.addHeader("DAV", "1");
 		}
 
-		response.addHeader(
+		httpServletResponse.addHeader(
 			"Allow", StringUtil.merge(Method.SUPPORTED_METHOD_NAMES));
-		response.addHeader("MS-Author-Via", "DAV");
+		httpServletResponse.addHeader("MS-Author-Via", "DAV");
 
 		return HttpServletResponse.SC_OK;
 	}

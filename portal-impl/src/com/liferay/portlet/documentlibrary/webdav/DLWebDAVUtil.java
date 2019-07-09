@@ -14,10 +14,10 @@
 
 package com.liferay.portlet.documentlibrary.webdav;
 
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.util.PropsValues;
 
 /**
@@ -31,9 +31,13 @@ public class DLWebDAVUtil {
 	}
 
 	public static String escapeURLTitle(String title) {
-		return HttpUtil.encodeURL(escapeRawTitle(title), true);
+		return URLCodec.encodeURL(escapeRawTitle(title), true);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static String getRepresentableTitle(String title, int i) {
 		return StringUtil.replace(
 			title, PropsValues.DL_WEBDAV_SUBSTITUTION_CHAR,

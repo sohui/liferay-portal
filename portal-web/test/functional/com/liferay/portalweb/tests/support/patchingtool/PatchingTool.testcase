@@ -1,0 +1,56 @@
+@component-name = "support-qa"
+definition {
+
+	property deploy.latest.marketplace.app.disabled = "true";
+	property portal.fixpack.release = "true";
+	property test.ignore.tomcat.ext.environment = "true";
+	property testray.main.component.name = "Patching Tool";
+	var testBuildFixPackZipURL = PropsUtil.get("test.build.fix.pack.zip.url");
+	var testBuildFixPackZipURLPrevious = PropsUtil.get("test.build.fix.pack.zip.url.previous");
+
+	setUp {
+		SignIn.signInTestSetup();
+	}
+
+	@description = "Ensures that a fix pack can be reverted."
+	@priority = "5"
+	test RevertFixPack {
+		property skip.install-patch = "true";
+		property test.name.skip.portal.instance = "PatchingTool#RevertFixPack";
+
+		SignOut.signOut();
+
+		Portlet.shutdownServer();
+
+		PatchingTool.installPatch(patchFileZipURL = "${testBuildFixPackZipURL}");
+
+		Portlet.startServer(
+			deleteLiferayHome = "true",
+			keepCachedAppServerData = "true");
+
+		SignIn.signIn();
+
+		SignOut.signOut();
+
+		Portlet.shutdownServer();
+
+		PatchingTool.uninstallPatches();
+
+		PatchingTool.installPatch(patchFileZipURL = "${testBuildFixPackZipURLPrevious}");
+
+		Portlet.startServer(
+			deleteLiferayHome = "true",
+			keepCachedAppServerData = "true");
+
+		SignIn.signIn();
+
+		GogoShell.openGogoShellAdmin();
+
+		GogoShell.executeCommand(commandName = "system:check");
+
+		for (var outputContent : list "Declarative Service Soft Circular Dependency Checker check result: No issues were found,Declarative Service Unsatisfied Component Checker check result: No issues were found,Spring Extender Unavailable Component Checker check result: No issues were found") {
+			GogoShell.viewOutput(outputContent = "${outputContent}");
+		}
+	}
+
+}

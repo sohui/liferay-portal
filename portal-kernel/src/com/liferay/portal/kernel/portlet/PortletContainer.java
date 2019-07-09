@@ -24,32 +24,49 @@ import javax.portlet.Event;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Shuyang Zhou
+ * @author Neil Griffin
  */
+@ProviderType
 public interface PortletContainer {
 
-	public void preparePortlet(HttpServletRequest request, Portlet portlet)
+	public void preparePortlet(
+			HttpServletRequest httpServletRequest, Portlet portlet)
 		throws PortletContainerException;
 
 	public ActionResult processAction(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet)
 		throws PortletContainerException;
 
 	public List<Event> processEvent(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet, Layout layout, Event event)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet,
+			Layout layout, Event event)
 		throws PortletContainerException;
 
+	public void processPublicRenderParameters(
+		HttpServletRequest httpServletRequest, Layout layout);
+
+	public void processPublicRenderParameters(
+		HttpServletRequest httpServletRequest, Layout layout, Portlet portlet);
+
 	public void render(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet)
+		throws PortletContainerException;
+
+	public void renderHeaders(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet)
 		throws PortletContainerException;
 
 	public void serveResource(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet)
 		throws PortletContainerException;
 
 }

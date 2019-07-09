@@ -14,54 +14,180 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
-import com.liferay.taglib.util.LexiconUtil;
-import com.liferay.taglib.util.TagResourceBundleUtil;
 
-import java.util.ResourceBundle;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.jsp.JspWriter;
 
 /**
  * @author Eudaldo Alonso
  */
 public class UserPortraitTag extends IncludeTag {
 
+	public static String getUserPortraitHTML(
+		String cssClass, String size, User user, ThemeDisplay themeDisplay) {
+
+		String portraitURL = _getPortraitURL(user, themeDisplay);
+
+		if (Validator.isNull(portraitURL)) {
+			StringBundler sb = new StringBundler(13);
+
+			sb.append("<span class=\"sticker sticker-circle sticker-light ");
+
+			if (Validator.isNotNull(size)) {
+				sb.append(_getSizeCssClass(size));
+				sb.append(CharPool.SPACE);
+			}
+
+			sb.append("user-icon-color-");
+			sb.append((user == null) ? 0 : (user.getUserId() % 10));
+			sb.append(CharPool.SPACE);
+			sb.append(cssClass);
+			sb.append("\"><span class=\"inline-item\">");
+			sb.append("<svg class=\"lexicon-icon\">");
+			sb.append("<use href=\"");
+			sb.append(themeDisplay.getPathThemeImages());
+			sb.append("/lexicon/icons.svg#user\" /></svg>");
+			sb.append("</span></span>");
+
+			return sb.toString();
+		}
+
+		StringBundler sb = new StringBundler(8);
+
+		sb.append("<span class=\"rounded-circle sticker sticker-primary ");
+
+		if (Validator.isNotNull(size)) {
+			sb.append(_getSizeCssClass(size));
+			sb.append(CharPool.SPACE);
+		}
+
+		sb.append(cssClass);
+		sb.append("\"><span class=\"sticker-overlay\">");
+		sb.append("<img alt=\"thumbnail\" class=\"img-fluid\" src=\"");
+		sb.append(portraitURL);
+		sb.append("\" /></span></span>");
+
+		return sb.toString();
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replace by {@link
+	 *             #getUserPortraitHTML(String, String, User, ThemeDisplay)}
+	 */
+	@Deprecated
+	public static String getUserPortraitHTML(
+		String cssClass, Supplier<String> userPortraitURLSupplier) {
+
+		StringBundler sb = new StringBundler(7);
+
+		sb.append("<span class=\"sticker sticker-circle sticker-light ");
+		sb.append(cssClass);
+		sb.append("\">");
+		sb.append("<span class=\"sticker-overlay\">");
+		sb.append("<img alt=\"\" class=\"sticker-img\" src=\"");
+		sb.append(HtmlUtil.escape(userPortraitURLSupplier.get()));
+		sb.append("\"></span></span>");
+
+		return sb.toString();
+	}
+
+	public static String getUserPortraitHTML(
+		String cssClass, User user, ThemeDisplay themeDisplay) {
+
+		return getUserPortraitHTML(cssClass, null, user, themeDisplay);
+	}
+
+	public String getCssClass() {
+		return _cssClass;
+	}
+
+	public String getSize() {
+		return _size;
+	}
+
+	public User getUser() {
+		return _user;
+	}
+
+	public long getUserId() {
+		if (_user == null) {
+			return 0;
+		}
+
+		return _user.getUserId();
+	}
+
+	@Override
+	public int processEndTag() throws Exception {
+		JspWriter jspWriter = pageContext.getOut();
+
+		User user = getUser();
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		String userPortraitHTML = getUserPortraitHTML(
+			_cssClass, _size, user, themeDisplay);
+
+		jspWriter.write(userPortraitHTML);
+
+		return EVAL_PAGE;
+	}
+
 	public void setCssClass(String cssClass) {
 		_cssClass = cssClass;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
+	@SuppressWarnings("unused")
 	public void setImageCssClass(String imageCssClass) {
-		_imageCssClass = imageCssClass;
+	}
+
+	public void setSize(String size) {
+		_size = size;
+	}
+
+	public void setUser(User user) {
+		_user = user;
 	}
 
 	public void setUserId(long userId) {
-		_userId = userId;
+		_user = UserLocalServiceUtil.fetchUser(userId);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
+	@SuppressWarnings("unused")
 	public void setUserName(String userName) {
-		_userName = userName;
 	}
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_cssClass = StringPool.BLANK;
-		_imageCssClass = StringPool.BLANK;
-		_userId = 0;
-		_userName = StringPool.BLANK;
+		_size = StringPool.BLANK;
+		_user = null;
 	}
 
 	@Override
@@ -69,74 +195,45 @@ public class UserPortraitTag extends IncludeTag {
 		return _PAGE;
 	}
 
-	protected User getUser() {
-		return UserLocalServiceUtil.fetchUser(_userId);
-	}
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
+	protected String getPortraitURL(User user) {
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
 
-	protected String getUserInitials(User user) {
-		if (user != null) {
-			return user.getInitials();
-		}
-
-		String userName = _userName;
-
-		if (Validator.isNull(userName)) {
-			ResourceBundle resourceBundle =
-				TagResourceBundleUtil.getResourceBundle(pageContext);
-
-			userName = LanguageUtil.get(resourceBundle, "user");
-		}
-
-		String[] userNames = StringUtil.split(userName, StringPool.SPACE);
-
-		if (userNames.length > 1) {
-			userNames = ArrayUtil.subset(userNames, 0, 2);
-		}
-
-		StringBundler sb = new StringBundler(userNames.length);
-
-		for (String curUserName : userNames) {
-			sb.append(
-				StringUtil.toUpperCase(StringUtil.shorten(curUserName, 1)));
-		}
-
-		return sb.toString();
+		return _getPortraitURL(user, themeDisplay);
 	}
 
 	@Override
 	protected boolean isCleanUpSetAttributes() {
-		return true;
+		return false;
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute(
-			"liferay-ui:user-portrait:colorCssClass",
-			LexiconUtil.getUserColorCssClass(getUser()));
-		request.setAttribute("liferay-ui:user-portrait:cssClass", _cssClass);
-		request.setAttribute(
-			"liferay-ui:user-portrait:imageCssClass", _imageCssClass);
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+	}
 
-		User user = getUser();
+	private static String _getPortraitURL(
+		User user, ThemeDisplay themeDisplay) {
 
-		if ((user != null) && (user.getPortraitId() > 0)) {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-			try {
-				request.setAttribute(
-					"liferay-ui:user-portrait:portraitURL",
-					user.getPortraitURL(themeDisplay));
+		try {
+			if ((user == null) || (user.getPortraitId() == 0)) {
+				return null;
 			}
-			catch (PortalException pe) {
-				_log.error(pe);
-			}
+
+			return user.getPortraitURL(themeDisplay);
 		}
+		catch (PortalException pe) {
+			_log.error(pe, pe);
 
-		request.setAttribute("liferay-ui:user-portrait:user", user);
-		request.setAttribute(
-			"liferay-ui:user-portrait:userInitials", getUserInitials(user));
-		request.setAttribute("liferay-ui:user-portrait:userName", _userName);
+			return null;
+		}
+	}
+
+	private static String _getSizeCssClass(String size) {
+		return "sticker-" + size;
 	}
 
 	private static final String _PAGE =
@@ -145,9 +242,8 @@ public class UserPortraitTag extends IncludeTag {
 	private static final Log _log = LogFactoryUtil.getLog(
 		UserPortraitTag.class);
 
-	private String _cssClass;
-	private String _imageCssClass;
-	private long _userId;
-	private String _userName;
+	private String _cssClass = StringPool.BLANK;
+	private String _size = StringPool.BLANK;
+	private User _user;
 
 }

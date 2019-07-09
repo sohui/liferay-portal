@@ -14,7 +14,7 @@
 
 package com.liferay.taglib.util;
 
-import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.portlet.LiferayPortletContext;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.AggregateResourceBundleLoader;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -41,18 +41,17 @@ import javax.servlet.jsp.PageContext;
 public class TagResourceBundleUtil {
 
 	public static ResourceBundle getResourceBundle(
-		HttpServletRequest request, Locale locale) {
+		HttpServletRequest httpServletRequest, Locale locale) {
 
 		ResourceBundleLoader resourceBundleLoader = getResourceBundleLoader(
-			request);
+			httpServletRequest);
 
 		if (resourceBundleLoader != null) {
-			return resourceBundleLoader.loadResourceBundle(
-				LanguageUtil.getLanguageId(locale));
+			return resourceBundleLoader.loadResourceBundle(locale);
 		}
 
 		ResourceBundle portletResourceBundle = getPortletResourceBundle(
-			request, locale);
+			httpServletRequest, locale);
 
 		ResourceBundle portalResourceBundle = PortalUtil.getResourceBundle(
 			locale);
@@ -65,24 +64,25 @@ public class TagResourceBundleUtil {
 		ResourceBundle resourceBundle =
 			(ResourceBundle)pageContext.getAttribute("resourceBundle");
 
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
 
-		Locale locale = PortalUtil.getLocale(request);
+		Locale locale = PortalUtil.getLocale(httpServletRequest);
 
 		if (resourceBundle != null) {
 			return new AggregateResourceBundle(
 				resourceBundle, PortalUtil.getResourceBundle(locale));
 		}
 
-		return getResourceBundle(request, locale);
+		return getResourceBundle(httpServletRequest, locale);
 	}
 
 	protected static ResourceBundle getPortletResourceBundle(
-		HttpServletRequest request, Locale locale) {
+		HttpServletRequest httpServletRequest, Locale locale) {
 
-		PortletConfig portletConfig = (PortletConfig)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_CONFIG);
+		PortletConfig portletConfig =
+			(PortletConfig)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_CONFIG);
 
 		if (portletConfig != null) {
 			return portletConfig.getResourceBundle(locale);
@@ -92,14 +92,15 @@ public class TagResourceBundleUtil {
 	}
 
 	protected static ResourceBundleLoader getResourceBundleLoader(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
 		ResourceBundleLoader resourceBundleLoader =
-			(ResourceBundleLoader)request.getAttribute(
+			(ResourceBundleLoader)httpServletRequest.getAttribute(
 				WebKeys.RESOURCE_BUNDLE_LOADER);
 
 		if (resourceBundleLoader == null) {
-			ServletContext servletContext = request.getServletContext();
+			ServletContext servletContext =
+				httpServletRequest.getServletContext();
 
 			String servletContextName = servletContext.getServletContextName();
 
@@ -111,16 +112,35 @@ public class TagResourceBundleUtil {
 				ResourceBundleLoaderUtil.
 					getResourceBundleLoaderByServletContextName(
 						servletContextName);
+
+			PortletConfig portletConfig =
+				(PortletConfig)httpServletRequest.getAttribute(
+					JavaConstants.JAVAX_PORTLET_CONFIG);
+
+			if (portletConfig != null) {
+				LiferayPortletContext liferayPortletContext =
+					(LiferayPortletContext)portletConfig.getPortletContext();
+
+				ServletContext portletServletContext =
+					liferayPortletContext.getServletContext();
+
+				String portletServletContextName =
+					portletServletContext.getServletContextName();
+
+				if (servletContextName.equals(portletServletContextName)) {
+					resourceBundleLoader =
+						locale -> portletConfig.getResourceBundle(locale);
+				}
+			}
 		}
 
 		if (resourceBundleLoader == null) {
 			return null;
 		}
-		else {
-			return new AggregateResourceBundleLoader(
-				resourceBundleLoader,
-				ResourceBundleLoaderUtil.getPortalResourceBundleLoader());
-		}
+
+		return new AggregateResourceBundleLoader(
+			resourceBundleLoader,
+			ResourceBundleLoaderUtil.getPortalResourceBundleLoader());
 	}
 
 	private static final ResourceBundle _emptyResourceBundle =

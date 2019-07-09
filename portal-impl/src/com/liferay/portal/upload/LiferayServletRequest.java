@@ -26,10 +26,10 @@ import javax.servlet.http.HttpServletRequestWrapper;
  */
 public class LiferayServletRequest extends HttpServletRequestWrapper {
 
-	public LiferayServletRequest(HttpServletRequest request) {
-		super(request);
+	public LiferayServletRequest(HttpServletRequest httpServletRequest) {
+		super(httpServletRequest);
 
-		_request = request;
+		_httpServletRequest = httpServletRequest;
 	}
 
 	public void cleanUp() {
@@ -41,7 +41,7 @@ public class LiferayServletRequest extends HttpServletRequestWrapper {
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
 		if (_lis == null) {
-			_lis = new LiferayInputStream(_request);
+			_lis = new LiferayInputStream(_httpServletRequest);
 		}
 
 		if (_finishedReadingOriginalStream) {
@@ -56,9 +56,8 @@ public class LiferayServletRequest extends HttpServletRequestWrapper {
 
 			return _cachedInputStream;
 		}
-		else {
-			return _lis;
-		}
+
+		return _lis;
 	}
 
 	public void setFinishedReadingOriginalStream(
@@ -69,7 +68,7 @@ public class LiferayServletRequest extends HttpServletRequestWrapper {
 
 	private ServletInputStream _cachedInputStream;
 	private boolean _finishedReadingOriginalStream;
+	private final HttpServletRequest _httpServletRequest;
 	private LiferayInputStream _lis;
-	private final HttpServletRequest _request;
 
 }

@@ -122,7 +122,8 @@ public class SPIAgentFactoryUtilTest {
 			ReflectionTestUtil.getFieldValue(
 				SPIAgentFactoryUtil.class, "_spiAgentClasses");
 
-		Assert.assertEquals(2, spiAgentClasses.size());
+		Assert.assertEquals(
+			spiAgentClasses.toString(), 2, spiAgentClasses.size());
 		Assert.assertSame(
 			BadMockSPIAgent.class,
 			spiAgentClasses.get(BadMockSPIAgent.class.getName()));
@@ -135,10 +136,13 @@ public class SPIAgentFactoryUtilTest {
 		Set<String> spiAgentClassNames =
 			SPIAgentFactoryUtil.getSPIAgentClassNames();
 
-		Assert.assertEquals(2, spiAgentClassNames.size());
+		Assert.assertEquals(
+			spiAgentClassNames.toString(), 2, spiAgentClassNames.size());
 		Assert.assertTrue(
+			spiAgentClassNames.toString(),
 			spiAgentClassNames.contains(BadMockSPIAgent.class.getName()));
 		Assert.assertTrue(
+			spiAgentClassNames.toString(),
 			spiAgentClassNames.contains(MockSPIAgent.class.getName()));
 
 		// Individual unregister and register
@@ -172,28 +176,32 @@ public class SPIAgentFactoryUtilTest {
 		}
 
 		@Override
-		public HttpServletRequest prepareRequest(HttpServletRequest request) {
+		public HttpServletRequest prepareRequest(
+			HttpServletRequest httpServletRequest) {
+
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public HttpServletResponse prepareResponse(
-			HttpServletRequest request, HttpServletResponse response) {
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse) {
 
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public void service(
-			HttpServletRequest request, HttpServletResponse response) {
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse) {
 
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public void transferResponse(
-			HttpServletRequest request, HttpServletResponse response,
-			Exception e) {
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Exception e) {
 
 			throw new UnsupportedOperationException();
 		}

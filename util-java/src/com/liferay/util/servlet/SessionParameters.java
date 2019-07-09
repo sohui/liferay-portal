@@ -14,8 +14,8 @@
 
 package com.liferay.util.servlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 
@@ -39,8 +39,10 @@ public class SessionParameters {
 	public static final boolean USE_SESSION_PARAMETERS = GetterUtil.getBoolean(
 		SystemProperties.get(SessionParameters.class.getName()), true);
 
-	public static String get(HttpServletRequest request, String parameter) {
-		return get(request.getSession(), parameter);
+	public static String get(
+		HttpServletRequest httpServletRequest, String parameter) {
+
+		return get(httpServletRequest.getSession(), parameter);
 	}
 
 	public static String get(HttpSession session, String parameter) {

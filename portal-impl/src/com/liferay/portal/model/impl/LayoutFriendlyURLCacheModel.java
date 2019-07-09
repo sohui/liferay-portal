@@ -14,14 +14,11 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.LayoutFriendlyURL;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,16 +27,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing LayoutFriendlyURL in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see LayoutFriendlyURL
  * @generated
  */
 @ProviderType
-public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL>,
-	Externalizable, MVCCModel {
+public class LayoutFriendlyURLCacheModel
+	implements CacheModel<LayoutFriendlyURL>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -50,10 +49,13 @@ public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL
 			return false;
 		}
 
-		LayoutFriendlyURLCacheModel layoutFriendlyURLCacheModel = (LayoutFriendlyURLCacheModel)obj;
+		LayoutFriendlyURLCacheModel layoutFriendlyURLCacheModel =
+			(LayoutFriendlyURLCacheModel)obj;
 
-		if ((layoutFriendlyURLId == layoutFriendlyURLCacheModel.layoutFriendlyURLId) &&
-				(mvccVersion == layoutFriendlyURLCacheModel.mvccVersion)) {
+		if ((layoutFriendlyURLId ==
+				layoutFriendlyURLCacheModel.layoutFriendlyURLId) &&
+			(mvccVersion == layoutFriendlyURLCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -116,12 +118,13 @@ public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL
 
 	@Override
 	public LayoutFriendlyURL toEntityModel() {
-		LayoutFriendlyURLImpl layoutFriendlyURLImpl = new LayoutFriendlyURLImpl();
+		LayoutFriendlyURLImpl layoutFriendlyURLImpl =
+			new LayoutFriendlyURLImpl();
 
 		layoutFriendlyURLImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
-			layoutFriendlyURLImpl.setUuid(StringPool.BLANK);
+			layoutFriendlyURLImpl.setUuid("");
 		}
 		else {
 			layoutFriendlyURLImpl.setUuid(uuid);
@@ -133,7 +136,7 @@ public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL
 		layoutFriendlyURLImpl.setUserId(userId);
 
 		if (userName == null) {
-			layoutFriendlyURLImpl.setUserName(StringPool.BLANK);
+			layoutFriendlyURLImpl.setUserName("");
 		}
 		else {
 			layoutFriendlyURLImpl.setUserName(userName);
@@ -157,14 +160,14 @@ public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL
 		layoutFriendlyURLImpl.setPrivateLayout(privateLayout);
 
 		if (friendlyURL == null) {
-			layoutFriendlyURLImpl.setFriendlyURL(StringPool.BLANK);
+			layoutFriendlyURLImpl.setFriendlyURL("");
 		}
 		else {
 			layoutFriendlyURLImpl.setFriendlyURL(friendlyURL);
 		}
 
 		if (languageId == null) {
-			layoutFriendlyURLImpl.setLanguageId(StringPool.BLANK);
+			layoutFriendlyURLImpl.setLanguageId("");
 		}
 		else {
 			layoutFriendlyURLImpl.setLanguageId(languageId);
@@ -207,12 +210,11 @@ public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
@@ -227,7 +229,7 @@ public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -241,14 +243,14 @@ public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL
 		objectOutput.writeBoolean(privateLayout);
 
 		if (friendlyURL == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(friendlyURL);
 		}
 
 		if (languageId == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(languageId);
@@ -271,4 +273,5 @@ public class LayoutFriendlyURLCacheModel implements CacheModel<LayoutFriendlyURL
 	public String friendlyURL;
 	public String languageId;
 	public long lastPublishDate;
+
 }

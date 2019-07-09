@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.lang.HashUtil;
 import com.liferay.portal.kernel.comment.Comment;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.util.HashUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,27 +100,11 @@ public class SearchResult {
 		return HashUtil.hash(hash, _className);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public void setClassName(String className) {
-		_className = className;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public void setClassPK(long classPK) {
-		_classPK = classPK;
-	}
-
 	public void setSummary(Summary summary) {
 		_summary = summary;
 	}
 
-	private String _className;
+	private final String _className;
 	private long _classPK;
 	private final List<RelatedSearchResult<Comment>>
 		_commentRelatedSearchResults = new ArrayList<>();

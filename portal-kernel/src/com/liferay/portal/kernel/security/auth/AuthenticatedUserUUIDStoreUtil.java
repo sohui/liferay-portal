@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.security.auth;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
- * @author Michael C. Han
- * @author Raymond Augé
+ * @author     Michael C. Han
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class AuthenticatedUserUUIDStoreUtil {
 
 	public static boolean exists(String userUUID) {
@@ -27,9 +27,6 @@ public class AuthenticatedUserUUIDStoreUtil {
 	}
 
 	public static AuthenticatedUserUUIDStore getAuthenticatedUserUUIDStore() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			AuthenticatedUserUUIDStoreUtil.class);
-
 		return _authenticatedUserUUIDStore;
 	}
 
@@ -43,8 +40,6 @@ public class AuthenticatedUserUUIDStoreUtil {
 
 	public void setAuthenticatedUserUUIDStore(
 		AuthenticatedUserUUIDStore authenticatedUserUUIDStore) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_authenticatedUserUUIDStore = authenticatedUserUUIDStore;
 	}

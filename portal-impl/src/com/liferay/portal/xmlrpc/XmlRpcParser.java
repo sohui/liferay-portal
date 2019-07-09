@@ -14,11 +14,11 @@
 
 package com.liferay.portal.xmlrpc;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.xmlrpc.Response;
 import com.liferay.portal.kernel.xmlrpc.XmlRpcException;
@@ -80,6 +80,7 @@ public class XmlRpcParser {
 			xmlStreamReader.next();
 
 			String methodName = xmlStreamReader.getText();
+
 			List<Object> arguments = new ArrayList<>();
 
 			xmlStreamReader.nextTag();
@@ -277,12 +278,12 @@ public class XmlRpcParser {
 			sb.append(value.toString());
 			sb.append("</string>");
 		}
-		else if ((value instanceof Integer) || (value instanceof Short)) {
+		else if (value instanceof Integer || value instanceof Short) {
 			sb.append("<i4>");
 			sb.append(value.toString());
 			sb.append("</i4>");
 		}
-		else if ((value instanceof Double) || (value instanceof Float)) {
+		else if (value instanceof Double || value instanceof Float) {
 			sb.append("<double>");
 			sb.append(value.toString());
 			sb.append("</double>");

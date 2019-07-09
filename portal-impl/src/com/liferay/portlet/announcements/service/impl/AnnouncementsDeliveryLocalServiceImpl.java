@@ -16,6 +16,7 @@ package com.liferay.portlet.announcements.service.impl;
 
 import com.liferay.announcements.kernel.model.AnnouncementsDelivery;
 import com.liferay.announcements.kernel.model.AnnouncementsEntryConstants;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -56,8 +57,9 @@ public class AnnouncementsDeliveryLocalServiceImpl
 		catch (SystemException se) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Add failed, fetch {userId=" + userId + ", type=" + type +
-						"}");
+					StringBundler.concat(
+						"Add failed, fetch {userId=", userId, ", type=", type,
+						"}"));
 			}
 
 			delivery = announcementsDeliveryPersistence.fetchByU_T(
@@ -142,19 +144,32 @@ public class AnnouncementsDeliveryLocalServiceImpl
 
 	@Override
 	public AnnouncementsDelivery updateDelivery(
-			long userId, String type, boolean email, boolean sms,
-			boolean website)
+			long userId, String type, boolean email, boolean sms)
 		throws PortalException {
 
 		AnnouncementsDelivery delivery = getUserDelivery(userId, type);
 
 		delivery.setEmail(email);
 		delivery.setSms(sms);
-		delivery.setWebsite(website);
+		delivery.setWebsite(true);
 
 		announcementsDeliveryPersistence.update(delivery);
 
 		return delivery;
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #updateDelivery(long, String, boolean, boolean)}
+	 */
+	@Deprecated
+	@Override
+	public AnnouncementsDelivery updateDelivery(
+			long userId, String type, boolean email, boolean sms,
+			boolean website)
+		throws PortalException {
+
+		return updateDelivery(userId, type, email, sms);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

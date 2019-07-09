@@ -1,79 +1,114 @@
-import com.liferay.gradle.util.FileUtil
+import aQute.bnd.osgi.Domain
+
+import com.liferay.gradle.plugins.tasks.ExecuteBndTask
 import com.liferay.gradle.util.copy.RenameDependencyClosure
 
-import org.dm.gradle.plugins.bundle.JarBuilder
+import org.gradle.util.GUtil
 
-task buildSystemPackagesExtraManifest
 task copySystemPackagesExtraLibs(type: Copy)
 task copySystemPackagesExtraManifest(type: Copy)
 
-File systemPackagesExtraBndFile = file("system.packages.extra.bnd")
+String buildProfile = System.properties["build.profile"]
+
 File systemPackagesExtraManifestFile = file("system.packages.extra.mf")
 
-buildSystemPackagesExtraManifest {
-	dependsOn classes
-	dependsOn copySystemPackagesExtraLibs
+if (!System.getenv("JENKINS_HOME") || !systemPackagesExtraManifestFile.exists()) {
+	systemPackagesExtraManifestFile = new File(buildDir, "system.packages.extra.mf")
 
-	doLast {
-		JarBuilder jarBuilder = bundle.jarBuilderFactory.create()
+	task buildSystemPackagesExtraManifest(type: ExecuteBndTask)
 
-		jarBuilder.withBase projectDir
+	buildSystemPackagesExtraManifest {
+		classpath = files()
 
-		Map<String, String> properties = liferayOSGi.bundleDefaultInstructions
+		dependsOn classes
+		dependsOn copySystemPackagesExtraLibs
 
-		properties["-include"] = relativePath(systemPackagesExtraBndFile)
+		outputFile = systemPackagesExtraManifestFile
 
-		jarBuilder.withClasspath new File[0]
-		jarBuilder.withName "system.packages.extra"
-		jarBuilder.withProperties properties
-		jarBuilder.withResources new File[0]
-		jarBuilder.withSourcepath sourceSets.main.allSource.srcDirs
-		jarBuilder.withTrace false
-		jarBuilder.withVersion project.version
+		properties liferayOSGi.bundleDefaultInstructions
 
-		systemPackagesExtraManifestFile.withOutputStream {
-			jarBuilder.writeManifestTo it
+		property "-check", "IMPORTS"
+		property "-fixupmessages.liferay.services", "This bundle contains Liferay services"
+		property "-include", "system.packages.extra.bnd"
+
+		property "Bundle-SymbolicName", {
+			Properties bndProperties = GUtil.loadProperties(file("system.packages.extra.bnd"))
+
+			bndProperties.getProperty("Bundle-SymbolicName")
 		}
+
+		property "Bundle-Version", {
+			project.version
+		}
+
+		property "Provide-Capability", {
+			File portalImplJarFile = configurations.compileOnly.find {
+				it.name.startsWith "com.liferay.portal.impl-"
+			}
+
+			Domain portalImplJarDomain = Domain.domain(portalImplJarFile)
+
+			portalImplJarDomain.provideCapability.toString()
+		}
+
+		resourceDirs = files()
+		sourceDirs = files(sourceSets.main.allSource.srcDirs.findAll { it.directory })
+		writeManifest = true
 	}
+
+	jar {
+		dependsOn buildSystemPackagesExtraManifest
+	}
+}
+else {
+	logger.lifecycle "Reusing file {}.", systemPackagesExtraManifestFile.absolutePath
+}
+
+bundle {
+	String systemPackagesExtraManifestPath = relativePath(systemPackagesExtraManifestFile)
+
+	instruction "system.packages.extra.manifest.file", systemPackagesExtraManifestPath.replace(File.separatorChar, '/' as char)
 }
 
 copySystemPackagesExtraLibs {
-	from configurations.provided
+	from configurations.compileOnly
 	into "lib"
-	rename new RenameDependencyClosure(project, configurations.provided.name)
-}
-
-copySystemPackagesExtraManifest {
-	if (!FileUtil.isUpToDate(project, systemPackagesExtraBndFile, systemPackagesExtraManifestFile)) {
-		dependsOn buildSystemPackagesExtraManifest
-	}
-
-	from systemPackagesExtraManifestFile
-	into "tmp/META-INF"
-
-	rename {
-		"MANIFEST.MF"
-	}
+	rename new RenameDependencyClosure(project, configurations.compileOnly.name)
 }
 
 dependencies {
-	provided group: "biz.aQute.bnd", name: "biz.aQute.bndlib", version: "3.1.0"
-	provided group: "com.liferay", name: "com.liferay.osgi.service.tracker.collections", version: "2.0.0"
-	provided group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
-	provided group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
-	provided group: "javax.servlet", name: "javax.servlet-api", version: "3.0.1"
-	provided group: "org.osgi", name: "org.osgi.core", version: "6.0.0"
-	provided group: "org.springframework", name: "spring-beans", version: "4.1.9.RELEASE"
-	provided group: "org.springframework", name: "spring-context", version: "4.1.9.RELEASE"
-	provided group: "org.springframework", name: "spring-core", version: "4.1.9.RELEASE"
-	provided project(":core:jaxws-osgi-bridge")
-	provided project(":core:portal-app-license-api")
-	provided project(":core:registry-api")
-	provided project(":core:registry-impl")
-}
-
-jar {
-	dependsOn copySystemPackagesExtraManifest
+	compileOnly group: "biz.aQute.bnd", name: "biz.aQute.bnd.annotation", version: "4.2.0"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.9"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.9"
+	compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.9"
+	compileOnly group: "com.liferay", name: "org.eclipse.osgi", version: "3.13.0.LIFERAY-PATCHED-6"
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly group: "javax.servlet", name: "javax.servlet-api", version: "3.0.1"
+	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
+	compileOnly group: "org.springframework", name: "spring-beans", version: "4.1.9.RELEASE"
+	compileOnly group: "org.springframework", name: "spring-context", version: "4.1.9.RELEASE"
+	compileOnly group: "org.springframework", name: "spring-core", version: "4.1.9.RELEASE"
+	compileOnly project(":apps:petra:petra-content")
+	compileOnly project(":apps:petra:petra-encryptor")
+	compileOnly project(":apps:petra:petra-log4j")
+	compileOnly project(":apps:petra:petra-mail")
+	compileOnly project(":apps:petra:petra-xml")
+	compileOnly project(":core:jaxws-osgi-bridge")
+	compileOnly project(":core:osgi-service-tracker-collections")
+	compileOnly project(":core:petra:petra-concurrent")
+	compileOnly project(":core:petra:petra-executor")
+	compileOnly project(":core:petra:petra-function")
+	compileOnly project(":core:petra:petra-io")
+	compileOnly project(":core:petra:petra-lang")
+	compileOnly project(":core:petra:petra-memory")
+	compileOnly project(":core:petra:petra-nio")
+	compileOnly project(":core:petra:petra-process")
+	compileOnly project(":core:petra:petra-reflect")
+	compileOnly project(":core:petra:petra-string")
+	compileOnly project(":core:portal-app-license-api")
+	compileOnly project(":core:registry-api")
+	compileOnly project(":core:registry-impl")
 }
 
 liferay {

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.log.Log;
@@ -22,8 +24,8 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import java.io.IOException;
 
 import java.util.HashMap;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * <p>
@@ -75,14 +77,13 @@ public class UnicodeProperties extends HashMap<String, String> {
 	}
 
 	public String getProperty(String key, String defaultValue) {
-		String value = getProperty(key);
+		String value = get(key);
 
 		if (value == null) {
 			return defaultValue;
 		}
-		else {
-			return value;
-		}
+
+		return value;
 	}
 
 	public boolean isSafe() {
@@ -94,26 +95,13 @@ public class UnicodeProperties extends HashMap<String, String> {
 			return;
 		}
 
-		UnsyncBufferedReader unsyncBufferedReader = null;
+		try (UnsyncBufferedReader unsyncBufferedReader =
+				new UnsyncBufferedReader(new UnsyncStringReader(props))) {
 
-		try {
-			unsyncBufferedReader = new UnsyncBufferedReader(
-				new UnsyncStringReader(props));
+			String line = null;
 
-			String line = unsyncBufferedReader.readLine();
-
-			while (line != null) {
+			while ((line = unsyncBufferedReader.readLine()) != null) {
 				put(line);
-				line = unsyncBufferedReader.readLine();
-			}
-		}
-		finally {
-			if (unsyncBufferedReader != null) {
-				try {
-					unsyncBufferedReader.close();
-				}
-				catch (Exception e) {
-				}
 			}
 		}
 	}
@@ -121,22 +109,23 @@ public class UnicodeProperties extends HashMap<String, String> {
 	public void put(String line) {
 		line = line.trim();
 
-		if (!_isComment(line)) {
-			int pos = line.indexOf(CharPool.EQUAL);
+		if (_isComment(line)) {
+			return;
+		}
 
-			if (pos != -1) {
-				String key = line.substring(0, pos).trim();
-				String value = line.substring(pos + 1).trim();
+		int pos = line.indexOf(CharPool.EQUAL);
 
-				if (_safe) {
-					value = _decode(value);
-				}
+		if (pos == -1) {
+			_log.error("Invalid property on line " + line);
+		}
+		else {
+			String value = StringUtil.trim(line.substring(pos + 1));
 
-				setProperty(key, value);
+			if (_safe) {
+				value = _decode(value);
 			}
-			else {
-				_log.error("Invalid property on line " + line);
-			}
+
+			setProperty(StringUtil.trim(line.substring(0, pos)), value);
 		}
 	}
 
@@ -147,49 +136,42 @@ public class UnicodeProperties extends HashMap<String, String> {
 		}
 
 		if (value == null) {
-			return remove(key);
+			return super.remove(key);
 		}
-
-		_length += key.length() + value.length() + 2;
 
 		return super.put(key, value);
 	}
 
 	@Override
+	public void putAll(Map<? extends String, ? extends String> map) {
+		for (Map.Entry<? extends String, ? extends String> entry :
+				map.entrySet()) {
+
+			put(entry.getKey(), entry.getValue());
+		}
+	}
+
+	@Override
 	public String remove(Object key) {
-		if ((key == null) || !containsKey(key)) {
+		if (key == null) {
 			return null;
 		}
 
-		String keyString = (String)key;
-
-		String value = super.remove(key);
-
-		_length -= keyString.length() + value.length() + 2;
-
-		return value;
+		return super.remove(key);
 	}
 
 	public String setProperty(String key, String value) {
 		return put(key, value);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #toString}
-	 */
-	@Deprecated
-	public String toSortedString() {
-		return toString();
-	}
-
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder(_length);
+		StringBundler sb = new StringBundler(4 * size());
 
-		Set<String> keys = new TreeSet<>(keySet());
+		Map<String, String> treeMap = new TreeMap<>(this);
 
-		for (String key : keys) {
-			String value = get(key);
+		for (Map.Entry<String, String> entry : treeMap.entrySet()) {
+			String value = entry.getValue();
 
 			if (Validator.isNull(value)) {
 				continue;
@@ -199,7 +181,7 @@ public class UnicodeProperties extends HashMap<String, String> {
 				value = _encode(value);
 			}
 
-			sb.append(key);
+			sb.append(entry.getKey());
 			sb.append(StringPool.EQUAL);
 			sb.append(value);
 			sb.append(StringPool.NEW_LINE);
@@ -208,8 +190,12 @@ public class UnicodeProperties extends HashMap<String, String> {
 		return sb.toString();
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected int getToStringLength() {
-		return _length;
+		return -1;
 	}
 
 	private static String _decode(String value) {
@@ -218,20 +204,16 @@ public class UnicodeProperties extends HashMap<String, String> {
 	}
 
 	private static String _encode(String value) {
+		String encodedValue = StringUtil.replace(
+			value, StringPool.RETURN_NEW_LINE, _SAFE_NEWLINE_CHARACTER);
+
 		return StringUtil.replace(
-			value,
-			new String[] {
-				StringPool.RETURN_NEW_LINE, StringPool.NEW_LINE,
-				StringPool.RETURN
-			},
-			new String[] {
-				_SAFE_NEWLINE_CHARACTER, _SAFE_NEWLINE_CHARACTER,
-				_SAFE_NEWLINE_CHARACTER
-			});
+			encodedValue, new char[] {CharPool.NEW_LINE, CharPool.RETURN},
+			new String[] {_SAFE_NEWLINE_CHARACTER, _SAFE_NEWLINE_CHARACTER});
 	}
 
 	private boolean _isComment(String line) {
-		if ((line.length() == 0) || line.startsWith(StringPool.POUND)) {
+		if (line.isEmpty() || (line.charAt(0) == CharPool.POUND)) {
 			return true;
 		}
 
@@ -244,7 +226,6 @@ public class UnicodeProperties extends HashMap<String, String> {
 	private static final Log _log = LogFactoryUtil.getLog(
 		UnicodeProperties.class);
 
-	private int _length;
 	private final boolean _safe;
 
 }

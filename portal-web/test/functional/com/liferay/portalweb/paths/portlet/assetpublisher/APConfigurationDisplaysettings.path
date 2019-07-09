@@ -9,16 +9,6 @@
 </thead>
 <tbody>
 <tr>
-	<td>DISPLAY_TEMPLATE_SELECT</td>
-	<td>//select[contains(@id,'displayStyle')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ABSTRACT_LENGTH_SELECT</td>
-	<td>//select[contains(@id,'abstractLength')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ASSET_LINK_BEHAVIOR_SELECT</td>
 	<td>//select[contains(@id,'assetLinkBehavior')]</td>
 	<td></td>
@@ -77,7 +67,7 @@
 <!--SHOW_METADATA-->
 <tr>
 	<td>SHOW_METADATA_CURRENT_FIELD_SELECT</td>
-	<td>//select[contains(@id,'currentMetadataFields')]</td>
+	<td>//select[contains(@id,'currentMetadataFields')]/option[contains(.,'${metadataFieldList}')]</td>
 	<td></td>
 </tr>
 <tr>

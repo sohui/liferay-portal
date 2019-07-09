@@ -22,9 +22,12 @@ import java.net.URL;
 
 import java.util.Set;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Joseph Shum
  */
+@ProviderType
 public interface PortalCacheManager<K extends Serializable, V> {
 
 	public static final String PORTAL_CACHE_MANAGER_NAME =
@@ -38,11 +41,17 @@ public interface PortalCacheManager<K extends Serializable, V> {
 
 	public void destroy();
 
+	public PortalCache<K, V> fetchPortalCache(String portalCacheName);
+
 	public PortalCache<K, V> getPortalCache(String portalCacheName)
 		throws PortalCacheException;
 
 	public PortalCache<K, V> getPortalCache(
 			String portalCacheName, boolean blocking)
+		throws PortalCacheException;
+
+	public PortalCache<K, V> getPortalCache(
+			String portalCacheName, boolean blocking, boolean mvcc)
 		throws PortalCacheException;
 
 	public Set<PortalCacheManagerListener> getPortalCacheManagerListeners();
@@ -51,8 +60,17 @@ public interface PortalCacheManager<K extends Serializable, V> {
 
 	public boolean isClusterAware();
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #reconfigurePortalCaches(URL, ClassLoader)}
+	 */
+	@Deprecated
 	@Proxy
 	public void reconfigurePortalCaches(URL configurationURL);
+
+	@Proxy
+	public void reconfigurePortalCaches(
+		URL configurationURL, ClassLoader classLoader);
 
 	public boolean registerPortalCacheManagerListener(
 		PortalCacheManagerListener portalCacheManagerListener);

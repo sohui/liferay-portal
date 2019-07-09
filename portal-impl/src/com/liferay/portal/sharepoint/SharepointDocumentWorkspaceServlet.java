@@ -14,6 +14,7 @@
 
 package com.liferay.portal.sharepoint;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -28,7 +29,6 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.xml.Document;
@@ -43,6 +43,7 @@ import java.util.List;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  * @author Bruno Farache
@@ -51,16 +52,19 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				request.getHeader(HttpHeaders.USER_AGENT) + " " +
-					request.getMethod() + " " + request.getRequestURI());
+				StringBundler.concat(
+					httpServletRequest.getHeader(HttpHeaders.USER_AGENT), " ",
+					httpServletRequest.getMethod(), " ",
+					httpServletRequest.getRequestURI()));
 		}
 
 		try {
-			getDwsMetaDataResponse(request, response);
+			getDwsMetaDataResponse(httpServletRequest, httpServletResponse);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -68,7 +72,8 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 	}
 
 	protected void getDwsMetaDataResponse(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		StringBundler sb = new StringBundler(12);
@@ -81,7 +86,7 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 		sb.append("http://schemas.microsoft.com/sharepoint/soap/dws/\">");
 		sb.append("<GetDwsMetaDataResult>");
 
-		String results = getResults(request);
+		String results = getResults(httpServletRequest);
 
 		int pos = results.indexOf("\n");
 
@@ -99,13 +104,15 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 		sb.append("</SOAP-ENV:Body>");
 		sb.append("</SOAP-ENV:Envelope>");
 
-		response.setContentType(ContentTypes.TEXT_XML_UTF8);
+		httpServletResponse.setContentType(ContentTypes.TEXT_XML_UTF8);
 
-		ServletResponseUtil.write(response, sb.toString());
+		ServletResponseUtil.write(httpServletResponse, sb.toString());
 	}
 
-	protected String getResults(HttpServletRequest request) throws Exception {
-		String xml = StringUtil.read(request.getInputStream());
+	protected String getResults(HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		String xml = StringUtil.read(httpServletRequest.getInputStream());
 
 		String documentName = null;
 
@@ -147,20 +154,32 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 
 		Element root = doc.addElement("Results");
 
-		String url =
-			"http://" + request.getLocalAddr() + ":" + request.getServerPort() +
-				"/sharepoint";
+		String url = StringBundler.concat(
+			"http://", httpServletRequest.getLocalAddr(), ":",
+			httpServletRequest.getServerPort(), "/sharepoint");
 
-		root.addElement("SubscribeUrl").setText(url);
+		Element subscribeUrlEl = root.addElement("SubscribeUrl");
+
+		subscribeUrlEl.setText(url);
+
 		root.addElement("MtgInstance");
-		root.addElement("SettingUrl").setText(url);
-		root.addElement("PermsUrl").setText(url);
-		root.addElement("UserInfoUrl").setText(url);
+
+		Element settingUrlEl = root.addElement("SettingUrl");
+
+		settingUrlEl.setText(url);
+
+		Element permsUrlEl = root.addElement("PermsUrl");
+
+		permsUrlEl.setText(url);
+
+		Element userInfoUrlEl = root.addElement("UserInfoUrl");
+
+		userInfoUrlEl.setText(url);
 
 		Element rolesEl = root.addElement("Roles");
 
 		List<Role> roles = RoleLocalServiceUtil.getRoles(
-			PortalUtil.getCompanyId(request));
+			PortalUtil.getCompanyId(httpServletRequest));
 
 		for (Role role : roles) {
 			ResponseElement responseElement = new RoleResponseElement(role);
@@ -218,7 +237,9 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 
 			listInfoEl.addAttribute("Name", "Links");
 
-			listInfoEl.addElement("Moderated").setText(String.valueOf(false));
+			Element moderatedEl = listInfoEl.addElement("Moderated");
+
+			moderatedEl.setText(Boolean.FALSE.toString());
 
 			Element listPermissionsEl = listInfoEl.addElement(
 				"ListPermissions");
@@ -240,18 +261,37 @@ public class SharepointDocumentWorkspaceServlet extends HttpServlet {
 			permissionsEl.addElement("ManageWeb");
 		}
 
-		root.addElement("HasUniquePerm").setText(String.valueOf(true));
-		root.addElement("WorkspaceType").setText("DWS");
-		root.addElement("IsADMode").setText(String.valueOf(false));
-		root.addElement("DocUrl").setText(documentName);
-		root.addElement("Minimal").setText(String.valueOf(true));
+		Element hasUniquePermEl = root.addElement("HasUniquePerm");
+
+		hasUniquePermEl.setText(Boolean.TRUE.toString());
+
+		Element workspaceTypeEl = root.addElement("WorkspaceType");
+
+		workspaceTypeEl.setText("DWS");
+
+		Element isADModeEl = root.addElement("IsADMode");
+
+		isADModeEl.setText(Boolean.FALSE.toString());
+
+		Element docUrlEl = root.addElement("DocUrl");
+
+		docUrlEl.setText(documentName);
+
+		Element minimalEl = root.addElement("Minimal");
+
+		minimalEl.setText(Boolean.TRUE.toString());
 
 		Element resultsEl = root.addElement("Results");
 
-		resultsEl.addElement("Title").setText(group.getDescriptiveName());
+		Element titleElement = resultsEl.addElement("Title");
+
+		titleElement.setText(group.getDescriptiveName());
+
 		resultsEl.addElement("LastUpdate");
 
-		User user = (User)request.getSession().getAttribute(WebKeys.USER);
+		HttpSession session = httpServletRequest.getSession();
+
+		User user = (User)session.getAttribute(WebKeys.USER);
 
 		ResponseElement responseElement = new MemberResponseElement(
 			user, false);

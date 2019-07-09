@@ -22,7 +22,9 @@ import com.liferay.portal.kernel.util.Validator;
 
 /**
  * @author Adolfo Pérez
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public class ModelValidatorUtil {
 
 	public static final <T> ModelValidator<T> compose(
@@ -66,6 +68,13 @@ public class ModelValidatorUtil {
 				public void validate(FileContentReference fileContentReference)
 					throws PortalException {
 
+					if ((fileContentReference.getFileEntryId() != 0) &&
+						Validator.isNull(
+							fileContentReference.getSourceFileName())) {
+
+						return;
+					}
+
 					DLValidatorUtil.validateFileExtension(
 						fileContentReference.getSourceFileName());
 
@@ -84,7 +93,7 @@ public class ModelValidatorUtil {
 				public void validate(FileContentReference fileContentReference)
 					throws PortalException {
 
-					if (!Validator.isNull(
+					if (Validator.isNotNull(
 							fileContentReference.getSourceFileName())) {
 
 						DLValidatorUtil.validateFileName(

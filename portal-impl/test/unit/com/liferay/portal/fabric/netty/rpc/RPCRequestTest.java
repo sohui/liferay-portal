@@ -14,9 +14,10 @@
 
 package com.liferay.portal.fabric.netty.rpc;
 
+import com.liferay.petra.concurrent.DefaultNoticeableFuture;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.fabric.netty.NettyTestUtil;
-import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
@@ -168,7 +169,8 @@ public class RPCRequestTest {
 		RPCRequest<String> rpcRequest = new RPCRequest<>(_ID, rpcCallable);
 
 		Assert.assertEquals(
-			"{id=" + _ID + ", rpcCallable=" + rpcCallable.toString() + "}",
+			StringBundler.concat(
+				"{id=", _ID, ", rpcCallable=", rpcCallable.toString(), "}"),
 			rpcRequest.toString());
 	}
 
@@ -205,7 +207,7 @@ public class RPCRequestTest {
 			_syncThrowable = syncThrowable;
 			_cancel = cancel;
 			_asyncThrowable = asyncThrowable;
-			_RESULT = result;
+			_result = result;
 		}
 
 		@Override
@@ -224,7 +226,7 @@ public class RPCRequestTest {
 				defaultNoticeableFuture.setException(_asyncThrowable);
 			}
 			else {
-				defaultNoticeableFuture.set(_RESULT);
+				defaultNoticeableFuture.set(_result);
 			}
 
 			return defaultNoticeableFuture;
@@ -232,10 +234,9 @@ public class RPCRequestTest {
 
 		private static final long serialVersionUID = 1L;
 
-		private final String _RESULT;
-
 		private final Throwable _asyncThrowable;
 		private final boolean _cancel;
+		private final String _result;
 		private final Throwable _syncThrowable;
 
 	}

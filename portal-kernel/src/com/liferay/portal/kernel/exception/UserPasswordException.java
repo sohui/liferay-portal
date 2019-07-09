@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.exception;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 import java.util.Date;
 import java.util.List;
@@ -25,57 +25,13 @@ import java.util.List;
  */
 public class UserPasswordException extends PortalException {
 
-	@Deprecated
-	public static final int PASSWORD_ALREADY_USED = 1;
-
-	@Deprecated
-	public static final int PASSWORD_CONTAINS_TRIVIAL_WORDS = 2;
-
-	@Deprecated
-	public static final int PASSWORD_INVALID = 3;
-
-	@Deprecated
-	public static final int PASSWORD_LENGTH = 4;
-
-	@Deprecated
-	public static final int PASSWORD_NOT_CHANGEABLE = 5;
-
-	@Deprecated
-	public static final int PASSWORD_SAME_AS_CURRENT = 6;
-
-	@Deprecated
-	public static final int PASSWORD_TOO_TRIVIAL = 8;
-
-	@Deprecated
-	public static final int PASSWORD_TOO_YOUNG = 9;
-
-	@Deprecated
-	public static final int PASSWORDS_DO_NOT_MATCH = 10;
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by the inner classes
-	 */
-	@Deprecated
-	public UserPasswordException(int type) {
-		_type = type;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by the inner classes
-	 */
-	@Deprecated
-	public int getType() {
-		return _type;
-	}
-
 	public static class MustBeLonger extends UserPasswordException {
 
 		public MustBeLonger(long userId, int minLength) {
 			super(
 				String.format(
 					"Password for user %s must be at least %s characters",
-					userId, minLength),
-				PASSWORD_LENGTH);
+					userId, minLength));
 
 			this.minLength = minLength;
 			this.userId = userId;
@@ -95,8 +51,7 @@ public class UserPasswordException extends PortalException {
 			super(
 				String.format(
 					"Password must comply with model listeners: " +
-						modelListenerException.getMessage()),
-				PASSWORD_INVALID);
+						modelListenerException.getMessage()));
 
 			this.userId = userId;
 			this.modelListenerException = modelListenerException;
@@ -110,9 +65,7 @@ public class UserPasswordException extends PortalException {
 	public static class MustComplyWithRegex extends UserPasswordException {
 
 		public MustComplyWithRegex(long userId, String regex) {
-			super(
-				String.format("Password must comply with regex: " + regex),
-				PASSWORD_INVALID);
+			super(String.format("Password must comply with regex: " + regex));
 
 			this.regex = regex;
 			this.userId = userId;
@@ -123,12 +76,83 @@ public class UserPasswordException extends PortalException {
 
 	}
 
+	public static class MustHaveMoreAlphanumeric extends UserPasswordException {
+
+		public MustHaveMoreAlphanumeric(long minAlphanumeric) {
+			super(
+				String.format(
+					"Password must have at least %s alphanumeric characters",
+					minAlphanumeric));
+
+			this.minAlphanumeric = minAlphanumeric;
+		}
+
+		public final long minAlphanumeric;
+
+	}
+
+	public static class MustHaveMoreLowercase extends UserPasswordException {
+
+		public MustHaveMoreLowercase(long minLowercase) {
+			super(
+				String.format(
+					"Password must have at least %s lowercase characters",
+					minLowercase));
+
+			this.minLowercase = minLowercase;
+		}
+
+		public final long minLowercase;
+
+	}
+
+	public static class MustHaveMoreNumbers extends UserPasswordException {
+
+		public MustHaveMoreNumbers(long minNumbers) {
+			super(
+				String.format(
+					"Password must have at least %s numbers", minNumbers));
+
+			this.minNumbers = minNumbers;
+		}
+
+		public final long minNumbers;
+
+	}
+
+	public static class MustHaveMoreSymbols extends UserPasswordException {
+
+		public MustHaveMoreSymbols(long minSymbols) {
+			super(
+				String.format(
+					"Password must have at least %s symbols", minSymbols));
+
+			this.minSymbols = minSymbols;
+		}
+
+		public final long minSymbols;
+
+	}
+
+	public static class MustHaveMoreUppercase extends UserPasswordException {
+
+		public MustHaveMoreUppercase(long minUppercase) {
+			super(
+				String.format(
+					"Password must have at least %s uppercase characters",
+					minUppercase));
+
+			this.minUppercase = minUppercase;
+		}
+
+		public final long minUppercase;
+
+	}
+
 	public static class MustMatch extends UserPasswordException {
 
 		public MustMatch(long userId) {
-			super(
-				String.format("Passwords for user %s must match", userId),
-				PASSWORDS_DO_NOT_MATCH);
+			super(String.format("Passwords for user %s must match", userId));
 
 			this.userId = userId;
 		}
@@ -143,8 +167,7 @@ public class UserPasswordException extends PortalException {
 			super(
 				String.format(
 					"Password for user %s does not match the current password",
-					userId),
-				PASSWORD_INVALID);
+					userId));
 
 			this.userId = userId;
 		}
@@ -160,8 +183,7 @@ public class UserPasswordException extends PortalException {
 				String.format(
 					"Password for user %s must not be changed under the " +
 						"current password policy",
-					userId),
-				PASSWORD_NOT_CHANGEABLE);
+					userId));
 
 			this.userId = userId;
 		}
@@ -176,8 +198,7 @@ public class UserPasswordException extends PortalException {
 			super(
 				String.format(
 					"Password for user %s must not be changed until %s", userId,
-					changeableDate),
-				PASSWORD_TOO_YOUNG);
+					changeableDate));
 
 			this.userId = userId;
 			this.changeableDate = changeableDate;
@@ -195,8 +216,7 @@ public class UserPasswordException extends PortalException {
 				String.format(
 					"Password for user %s must not be equal to their current " +
 						"password",
-					userId),
-				PASSWORD_SAME_AS_CURRENT);
+					userId));
 
 			this.userId = userId;
 		}
@@ -209,8 +229,7 @@ public class UserPasswordException extends PortalException {
 
 		public MustNotBeNull(long userId) {
 			super(
-				String.format("Password for user %s must not be null", userId),
-				PASSWORD_INVALID);
+				String.format("Password for user %s must not be null", userId));
 
 			this.userId = userId;
 		}
@@ -224,8 +243,7 @@ public class UserPasswordException extends PortalException {
 		public MustNotBeRecentlyUsed(long userId) {
 			super(
 				String.format(
-					"Password for user %s was used too recently", userId),
-				PASSWORD_ALREADY_USED);
+					"Password for user %s was used too recently", userId));
 
 			this.userId = userId;
 		}
@@ -239,8 +257,7 @@ public class UserPasswordException extends PortalException {
 		public MustNotBeTrivial(long userId) {
 			super(
 				String.format(
-					"Password for user %s must not be too trivial", userId),
-				PASSWORD_TOO_TRIVIAL);
+					"Password for user %s must not be too trivial", userId));
 
 			this.userId = userId;
 		}
@@ -259,8 +276,7 @@ public class UserPasswordException extends PortalException {
 				String.format(
 					"Password for user %s must not contain dictionary words " +
 						"such as: %s",
-					userId, _getDictionaryWordsString(dictionaryWords)),
-				PASSWORD_CONTAINS_TRIVIAL_WORDS);
+					userId, _getDictionaryWordsString(dictionaryWords)));
 
 			this.userId = userId;
 			this.dictionaryWords = dictionaryWords;
@@ -284,12 +300,8 @@ public class UserPasswordException extends PortalException {
 			StringPool.TRIPLE_PERIOD;
 	}
 
-	private UserPasswordException(String message, int type) {
+	private UserPasswordException(String message) {
 		super(message);
-
-		_type = type;
 	}
-
-	private final int _type;
 
 }

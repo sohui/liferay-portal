@@ -468,18 +468,16 @@ public class ChannelImpl extends BaseChannelImpl {
 		Map<String, NotificationEvent> unconfirmedNotificationEvents =
 			_getUnconfirmedNotificationEvents();
 
-		List<NotificationEvent> notificationEvents =
-			new ArrayList<NotificationEvent>(
-				notificationEventsSet.size() +
-					unconfirmedNotificationEvents.size());
+		List<NotificationEvent> notificationEvents = new ArrayList<>(
+			notificationEventsSet.size() +
+				unconfirmedNotificationEvents.size());
 
 		for (NotificationEvent notificationEvent : notificationEventsSet) {
 			if (isRemoveNotificationEvent(notificationEvent, currentTime)) {
 				break;
 			}
-			else {
-				notificationEvents.add(notificationEvent);
-			}
+
+			notificationEvents.add(notificationEvent);
 		}
 
 		if (flush) {
@@ -625,9 +623,8 @@ public class ChannelImpl extends BaseChannelImpl {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private TreeSet<NotificationEvent> _getNotificationEvents() {

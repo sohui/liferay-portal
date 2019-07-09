@@ -14,14 +14,13 @@
 
 package com.liferay.push.notifications.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.push.notifications.constants.PushNotificationsDestinationNames;
 import com.liferay.push.notifications.model.PushNotificationsDevice;
@@ -41,13 +40,15 @@ import org.osgi.framework.FrameworkUtil;
  * @author Silvio Santos
  * @author Bruno Farache
  */
-@ProviderType
 public class PushNotificationsDeviceLocalServiceImpl
 	extends PushNotificationsDeviceLocalServiceBaseImpl {
 
 	@Override
 	public PushNotificationsDevice addPushNotificationsDevice(
-		long userId, String platform, String token) {
+			long userId, String platform, String token)
+		throws PortalException {
+
+		User user = userLocalService.getUser(userId);
 
 		long pushNotificationsDeviceId = counterLocalService.increment();
 
@@ -55,7 +56,8 @@ public class PushNotificationsDeviceLocalServiceImpl
 			pushNotificationsDevicePersistence.create(
 				pushNotificationsDeviceId);
 
-		pushNotificationsDevice.setUserId(userId);
+		pushNotificationsDevice.setCompanyId(user.getCompanyId());
+		pushNotificationsDevice.setUserId(user.getUserId());
 		pushNotificationsDevice.setCreateDate(new Date());
 		pushNotificationsDevice.setPlatform(platform);
 		pushNotificationsDevice.setToken(token);
@@ -67,15 +69,15 @@ public class PushNotificationsDeviceLocalServiceImpl
 
 	@Override
 	public void afterPropertiesSet() {
+		super.afterPropertiesSet();
+
 		Bundle bundle = FrameworkUtil.getBundle(
 			PushNotificationsDeviceLocalServiceImpl.class);
 
-		BundleContext _bundleContext = bundle.getBundleContext();
+		BundleContext bundleContext = bundle.getBundleContext();
 
-		_serviceTrackerMap = ServiceTrackerMapFactory.singleValueMap(
-			_bundleContext, PushNotificationsSender.class, "platform");
-
-		_serviceTrackerMap.open();
+		_serviceTrackerMap = ServiceTrackerMapFactory.openSingleValueMap(
+			bundleContext, PushNotificationsSender.class, "platform");
 	}
 
 	@Override
@@ -92,6 +94,8 @@ public class PushNotificationsDeviceLocalServiceImpl
 
 	@Override
 	public void destroy() {
+		super.destroy();
+
 		_serviceTrackerMap.close();
 	}
 

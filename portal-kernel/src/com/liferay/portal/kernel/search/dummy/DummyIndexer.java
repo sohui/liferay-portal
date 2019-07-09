@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search.dummy;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Hits;
@@ -23,10 +24,8 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Collection;
-import java.util.Locale;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -47,15 +46,6 @@ public class DummyIndexer implements Indexer<Object> {
 	@Override
 	public String getClassName() {
 		return StringPool.BLANK;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSearchClassNames}
-	 */
-	@Deprecated
-	@Override
-	public String[] getClassNames() {
-		return new String[0];
 	}
 
 	@Override
@@ -80,15 +70,6 @@ public class DummyIndexer implements Indexer<Object> {
 		return new IndexerPostProcessor[0];
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getClassName}
-	 */
-	@Deprecated
-	@Override
-	public String getPortletId() {
-		return StringPool.BLANK;
-	}
-
 	@Override
 	public String[] getSearchClassNames() {
 		return new String[0];
@@ -107,18 +88,6 @@ public class DummyIndexer implements Indexer<Object> {
 	@Override
 	public String getSortField(String orderByCol, int sortType) {
 		return StringPool.BLANK;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSummary(Document, String,
-	 *             PortletRequest, PortletResponse)}
-	 */
-	@Deprecated
-	@Override
-	public Summary getSummary(
-		Document document, Locale locale, String snippet) {
-
-		return null;
 	}
 
 	@Override
@@ -181,7 +150,7 @@ public class DummyIndexer implements Indexer<Object> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #postProcessContextBooleanFilter(BooleanFilter,
 	 *             SearchContext)}
 	 */
@@ -198,7 +167,7 @@ public class DummyIndexer implements Indexer<Object> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #postProcessSearchQuery(BooleanQuery, BooleanFilter,
 	 *             SearchContext)}
 	 */

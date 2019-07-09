@@ -1,35 +1,41 @@
-<definition component-name="portal-test-plugins">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Test Plugins" />
-	<property name="portlet.plugins.includes" value="test-event-portlet" />
+@component-name = "portal-test-plugins"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Test Plugins";
+	property portlet.plugins.includes = "test-event-portlet";
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+	setUp {
+		User.firstLoginPG();
+	}
 
-	<command name="ViewEvent" priority="4">
-		<execute macro="Page#add">
-			<var name="pageName" value="Test Event Page" />
-		</execute>
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Event Consumer" />
-		</execute>
+	@priority = "4"
+	test ViewEvent {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Event Page" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Test Event Page");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Event Producer" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Event Page");
 
-		<execute function="Click" locator1="TestEventProducer#EVENT_PRODUCER_PORTLET_LINK" />
+		Portlet.addPG(portletName = "Event Consumer");
 
-		<execute function="AssertTextEquals" locator1="TestEventConsumer#EVENT_CONSUMER_PORTLET_BODY" value1="PASSED" />
-	</command>
-</definition>
+		Navigator.gotoPage(pageName = "Test Event Page");
+
+		Portlet.addPG(portletName = "Event Producer");
+
+		Click(locator1 = "TestEventProducer#EVENT_PRODUCER_PORTLET_LINK");
+
+		AssertTextEquals(
+			locator1 = "TestEventConsumer#EVENT_CONSUMER_PORTLET_BODY",
+			value1 = "PASSED");
+	}
+
+}

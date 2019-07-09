@@ -44,15 +44,15 @@ public abstract class BaseConnectionPoolMetrics
 	protected abstract String getPoolName();
 
 	protected void initializeConnectionPool() {
-		LazyConnectionDataSourceProxy lazyConnectionDataSourceProxy =
-			(LazyConnectionDataSourceProxy)PortalBeanLocatorUtil.locate(
-				"counterDataSource");
-
 		Object dataSource = getDataSource();
 
 		if (dataSource == null) {
 			return;
 		}
+
+		LazyConnectionDataSourceProxy lazyConnectionDataSourceProxy =
+			(LazyConnectionDataSourceProxy)PortalBeanLocatorUtil.locate(
+				"counterDataSource");
 
 		if (dataSource.equals(
 				lazyConnectionDataSourceProxy.getTargetDataSource())) {
@@ -85,9 +85,14 @@ public abstract class BaseConnectionPoolMetrics
 					DefaultDynamicDataSourceTargetSource) {
 
 				try {
+					DefaultDynamicDataSourceTargetSource
+						defaultDynamicDataSourceTargetSource =
+							(DefaultDynamicDataSourceTargetSource)
+								targetDataSource;
+
 					Object readDataSource =
-						((DefaultDynamicDataSourceTargetSource)
-							targetDataSource).getReadDataSource();
+						defaultDynamicDataSourceTargetSource.
+							getReadDataSource();
 
 					if (dataSource.equals(readDataSource)) {
 						_name = "readDataSource";
@@ -96,8 +101,8 @@ public abstract class BaseConnectionPoolMetrics
 					}
 
 					Object writeDataSource =
-						((DefaultDynamicDataSourceTargetSource)
-							targetDataSource).getWriteDataSource();
+						defaultDynamicDataSourceTargetSource.
+							getWriteDataSource();
 
 					if (dataSource.equals(writeDataSource)) {
 						_name = "writeDataSource";

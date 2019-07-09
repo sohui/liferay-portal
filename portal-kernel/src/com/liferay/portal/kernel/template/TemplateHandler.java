@@ -14,13 +14,13 @@
 
 package com.liferay.portal.kernel.template;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.xml.Element;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Juan Fernández
@@ -35,6 +35,12 @@ public interface TemplateHandler {
 	 */
 	public String getClassName();
 
+	/**
+	 * Returns the map of name/value pairs of the objects that should be
+	 * injected into the context.
+	 *
+	 * @return the objects that should be injected into the context
+	 */
 	public Map<String, Object> getCustomContextObjects();
 
 	/**
@@ -150,6 +156,12 @@ public interface TemplateHandler {
 			long classPK, String language, Locale locale)
 		throws Exception;
 
+	/**
+	 * Returns <code>true</code> if the entity is a display template handler.
+	 *
+	 * @return <code>true</code> if the entity is a display template handler;
+	 *         <code>false</code> otherwise
+	 */
 	public boolean isDisplayTemplateHandler();
 
 }

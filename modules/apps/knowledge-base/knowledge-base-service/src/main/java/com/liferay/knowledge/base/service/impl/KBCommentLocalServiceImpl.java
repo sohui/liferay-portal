@@ -14,18 +14,16 @@
 
 package com.liferay.knowledge.base.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.configuration.KBGroupServiceConfiguration;
 import com.liferay.knowledge.base.constants.AdminActivityKeys;
 import com.liferay.knowledge.base.constants.KBCommentConstants;
 import com.liferay.knowledge.base.constants.KBConstants;
 import com.liferay.knowledge.base.exception.KBCommentContentException;
+import com.liferay.knowledge.base.internal.util.AdminSubscriptionSenderFactory;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBComment;
 import com.liferay.knowledge.base.model.KBTemplate;
 import com.liferay.knowledge.base.service.base.KBCommentLocalServiceBaseImpl;
-import com.liferay.knowledge.base.service.util.AdminSubscriptionSender;
 import com.liferay.knowledge.base.util.comparator.KBCommentCreateDateComparator;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -53,11 +51,11 @@ import java.text.DateFormat;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author Peter Shin
  */
-@ProviderType
 public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 
 	@Override
@@ -68,7 +66,7 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 
 		// KB comment
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 		long groupId = serviceContext.getScopeGroupId();
 		Date now = new Date();
 
@@ -181,6 +179,14 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 
 	@Override
 	public List<KBComment> getKBComments(
+		long groupId, int status, int start, int end,
+		OrderByComparator<KBComment> obc) {
+
+		return kbCommentPersistence.findByG_S(groupId, status, start, end, obc);
+	}
+
+	@Override
+	public List<KBComment> getKBComments(
 		long groupId, int start, int end, OrderByComparator<KBComment> obc) {
 
 		return kbCommentPersistence.findByGroupId(groupId, start, end, obc);
@@ -201,11 +207,20 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 	public List<KBComment> getKBComments(
 		String className, long classPK, int status, int start, int end) {
 
+		return getKBComments(
+			className, classPK, status, start, end,
+			new KBCommentCreateDateComparator());
+	}
+
+	@Override
+	public List<KBComment> getKBComments(
+		String className, long classPK, int status, int start, int end,
+		OrderByComparator<KBComment> obc) {
+
 		long classNameId = classNameLocalService.getClassNameId(className);
 
 		return kbCommentPersistence.findByC_C_S(
-			classNameId, classPK, status, start, end,
-			new KBCommentCreateDateComparator());
+			classNameId, classPK, status, start, end, obc);
 	}
 
 	@Override
@@ -338,19 +353,16 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 		int status, KBGroupServiceConfiguration kbGroupServiceConfiguration) {
 
 		if (status == KBCommentConstants.STATUS_COMPLETED) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionResolvedBody();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionResolvedBody();
 		}
 		else if (status == KBCommentConstants.STATUS_IN_PROGRESS) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionInProgressBody();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionInProgressBody();
 		}
 		else if (status == KBCommentConstants.STATUS_NEW) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionReceivedBody();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionReceivedBody();
 		}
 		else {
 			throw new IllegalArgumentException(
@@ -362,19 +374,16 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 		int status, KBGroupServiceConfiguration kbGroupServiceConfiguration) {
 
 		if (status == KBCommentConstants.STATUS_COMPLETED) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionResolvedSubject();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionResolvedSubject();
 		}
 		else if (status == KBCommentConstants.STATUS_IN_PROGRESS) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionInProgressSubject();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionInProgressSubject();
 		}
 		else if (status == KBCommentConstants.STATUS_NEW) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionReceivedSubject();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionReceivedSubject();
 		}
 		else {
 			throw new IllegalArgumentException(
@@ -414,23 +423,19 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 		int status, KBGroupServiceConfiguration kbGroupServiceConfiguration) {
 
 		if (status == KBCommentConstants.STATUS_COMPLETED) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionResolvedEnabled();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionResolvedEnabled();
 		}
 		else if (status == KBCommentConstants.STATUS_IN_PROGRESS) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionInProgressEnabled();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionInProgressEnabled();
 		}
 		else if (status == KBCommentConstants.STATUS_NEW) {
-			return
-				kbGroupServiceConfiguration.
-					emailKBArticleSuggestionReceivedEnabled();
+			return kbGroupServiceConfiguration.
+				emailKBArticleSuggestionReceivedEnabled();
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected void notifySubscribers(
@@ -464,8 +469,9 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 				"src=\"" + serviceContext.getPortalURL() + "/"
 			});
 
-		SubscriptionSender subscriptionSender = new AdminSubscriptionSender(
-			kbArticle, serviceContext);
+		SubscriptionSender subscriptionSender =
+			AdminSubscriptionSenderFactory.createSubscriptionSender(
+				kbArticle, serviceContext);
 
 		subscriptionSender.setBody(body);
 		subscriptionSender.setCompanyId(kbArticle.getCompanyId());
@@ -473,14 +479,15 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 			"[$ARTICLE_CONTENT$]", kbArticleContent, false);
 		subscriptionSender.setContextAttribute(
 			"[$COMMENT_CONTENT$]", kbComment.getContent(), false);
-		subscriptionSender.setContextAttribute(
-			"[$COMMENT_CREATE_DATE$]",
-			_getFormattedKBCommentCreateDate(kbComment, serviceContext), false);
 		subscriptionSender.setContextCreatorUserPrefix("ARTICLE");
 		subscriptionSender.setCreatorUserId(kbArticle.getUserId());
 		subscriptionSender.setCurrentUserId(userId);
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
+		subscriptionSender.setLocalizedContextAttributeWithFunction(
+			"[$COMMENT_CREATE_DATE$]",
+			locale -> _getFormattedKBCommentCreateDate(kbComment, locale),
+			false);
 		subscriptionSender.setMailId("kb_article", kbArticle.getKbArticleId());
 		subscriptionSender.setPortletId(serviceContext.getPortletId());
 		subscriptionSender.setReplyToAddress(fromAddress);
@@ -516,7 +523,7 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 			}
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error("Unable to put title", e);
 		}
 	}
 
@@ -530,10 +537,9 @@ public class KBCommentLocalServiceImpl extends KBCommentLocalServiceBaseImpl {
 	protected ConfigurationProvider configurationProvider;
 
 	private String _getFormattedKBCommentCreateDate(
-		KBComment kbComment, ServiceContext serviceContext) {
+		KBComment kbComment, Locale locale) {
 
-		DateFormat dateFormat = DateFormatFactoryUtil.getDate(
-			serviceContext.getLocale());
+		DateFormat dateFormat = DateFormatFactoryUtil.getDate(locale);
 
 		return dateFormat.format(kbComment.getCreateDate());
 	}

@@ -14,7 +14,10 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import java.util.List;
 import java.util.Map;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Contains a list of the available routes and handles conversion of URLs to
@@ -40,6 +43,7 @@ import java.util.Map;
  * @see    Route
  * @see    DefaultFriendlyURLMapper
  */
+@ProviderType
 public interface Router {
 
 	/**
@@ -49,6 +53,8 @@ public interface Router {
 	 * @return the generated route
 	 */
 	public Route addRoute(String pattern);
+
+	public List<Route> getRoutes();
 
 	/**
 	 * Generates a URL from the parameter map using the available routes.

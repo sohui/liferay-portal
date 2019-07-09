@@ -1,37 +1,102 @@
-<definition>
-	<var name="validationErrorMessage" value="This field is required." />
+definition {
 
-	<command name="gotoFormPage">
-		<var name="key_formPageName" value="${formPageName}" />
+	var validationErrorMessage = "This field is required.";
 
-		<execute function="AssertClick" locator1="FormPortlet#FORM_PAGE" value1="${formPageName}" />
-	</command>
+	macro changeLocale {
+		Click(locator1 = "FormPortlet#LOCALIZATION_BUTTON");
 
-	<command name="nextPage">
-		<execute function="AssertClick" locator1="Button#NEXT" value1="Next" />
+		Click(
+			key_locale = "${locale}",
+			locator1 = "FormPortlet#LOCALIZATION_OPTION");
+	}
 
-		<var name="key_formPageName" value="${formPageCurrent}" />
+	macro clickNextPage {
+		AssertClick(
+			locator1 = "Button#NEXT",
+			value1 = "Next");
+	}
 
-		<execute function="AssertTextEquals" locator1="FormPortlet#FORM_PAGE_INACTIVE" value1="${formPageCurrent}" />
+	macro clickSubmit {
+		AssertClick(
+			locator1 = "Button#MAIN_CONTENT_SUBMIT",
+			value1 = "Submit");
+	}
 
-		<var name="key_formPageName" value="${formPageNext}" />
+	macro nextPage {
+		AssertClick(
+			locator1 = "Button#NEXT",
+			value1 = "Next");
 
-		<execute function="AssertTextEquals" locator1="FormPortlet#FORM_PAGE_ACTIVE" value1="${formPageNext}" />
-	</command>
+		var key_formPageName = "${formPageCurrent}";
 
-	<command name="submit">
-		<execute function="Click" locator1="FormPortlet#FORM_CONTENT" />
+		AssertTextEquals(
+			locator1 = "FormPortlet#FORM_PAGE_INACTIVE",
+			value1 = "${formPageCurrent}");
 
-		<execute function="AssertClick" locator1="Button#SUBMIT" value1="Submit" />
+		var key_formPageName = "${formPageNext}";
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		AssertTextEquals(
+			locator1 = "FormPortlet#FORM_PAGE_ACTIVE",
+			value1 = "${formPageNext}");
+	}
 
-	<command name="submitWithValidationError">
-		<execute function="Click" locator1="FormPortlet#FORM_CONTENT" />
+	macro previousPage {
+		Click(locator1 = "Button#PREVIOUS");
+	}
 
-		<execute function="AssertClick" locator1="Button#SUBMIT" value1="Submit" />
+	macro submit {
+		if (IsElementPresent(locator1 = "FormPortlet#PORTLET_CONTENT")) {
+			Click(locator1 = "FormPortlet#PORTLET_CONTENT");
+		}
+		else {
+			Click(locator1 = "Form#PUBLISH_URL_FORM_PAGE");
 
-		<execute function="AssertTextEquals" locator1="Message#ERROR_FORM_FIELD_REQUIRED" value1="${validationErrorMessage}" />
-	</command>
-</definition>
+			Click(locator1 = "Form#PUBLISH_URL_FORM_PAGE");
+		}
+
+		FormPortlet.clickSubmit();
+	}
+
+	macro submitLocalizedSuccessfully {
+		AssertClick(
+			locator1 = "Button#MAIN_CONTENT_SUBMIT",
+			value1 = "${buttonName}");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro submitSuccessfully {
+		FormPortlet.submit();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro submitWithError {
+		FormPortlet.submit();
+
+		Alert.viewErrorMessage(errorMessage = "${errorMessage}");
+	}
+
+	macro submitWithValidationError {
+		FormPortlet.submit();
+
+		AssertTextEquals(
+			locator1 = "Message#ERROR_FORM_FIELD_REQUIRED",
+			value1 = "${validationErrorMessage}");
+	}
+
+	macro viewSuccessPage {
+		var key_successPageTitle = "${successPageTitle}";
+
+		AssertTextEquals(
+			locator1 = "FormPortlet#SUCCESS_PAGE_TITLE",
+			value1 = "${successPageTitle}");
+
+		var key_successPageDescription = "${successPageDescription}";
+
+		AssertTextEquals(
+			locator1 = "FormPortlet#SUCCESS_PAGE_DESCRIPTION",
+			value1 = "${successPageDescription}");
+	}
+
+}

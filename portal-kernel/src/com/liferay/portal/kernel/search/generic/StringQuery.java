@@ -14,10 +14,21 @@
 
 package com.liferay.portal.kernel.search.generic;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.BaseQueryImpl;
 import com.liferay.portal.kernel.search.Query;
+import com.liferay.portal.kernel.search.query.QueryVisitor;
 
 /**
+ * Provides support for parsing raw, human readable query syntax. No
+ * transformation is made on user input.
+ *
+ * <p>
+ * The actual query syntax and any further processing are dependent on your
+ * search engine's implementation details. Consult your search provider's
+ * documentation for more information.
+ * </p>
+ *
  * @author Bruno Farache
  */
 public class StringQuery extends BaseQueryImpl implements Query {
@@ -26,13 +37,30 @@ public class StringQuery extends BaseQueryImpl implements Query {
 		_query = query;
 	}
 
+	@Override
+	public <T> T accept(QueryVisitor<T> queryVisitor) {
+		return queryVisitor.visitQuery(this);
+	}
+
 	public String getQuery() {
 		return _query;
 	}
 
 	@Override
 	public String toString() {
-		return _query;
+		StringBundler sb = new StringBundler(5);
+
+		sb.append("{className=");
+
+		Class<?> clazz = getClass();
+
+		sb.append(clazz.getSimpleName());
+
+		sb.append(", query=");
+		sb.append(_query);
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	private final String _query;

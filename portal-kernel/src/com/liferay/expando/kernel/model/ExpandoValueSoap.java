@@ -14,22 +14,22 @@
 
 package com.liferay.expando.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.expando.service.http.ExpandoValueServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portlet.expando.service.http.ExpandoValueServiceSoap
  * @generated
  */
 @ProviderType
 public class ExpandoValueSoap implements Serializable {
+
 	public static ExpandoValueSoap toSoapModel(ExpandoValue model) {
 		ExpandoValueSoap soapModel = new ExpandoValueSoap();
 
@@ -73,7 +73,8 @@ public class ExpandoValueSoap implements Serializable {
 	}
 
 	public static ExpandoValueSoap[] toSoapModels(List<ExpandoValue> models) {
-		List<ExpandoValueSoap> soapModels = new ArrayList<ExpandoValueSoap>(models.size());
+		List<ExpandoValueSoap> soapModels = new ArrayList<ExpandoValueSoap>(
+			models.size());
 
 		for (ExpandoValue model : models) {
 			soapModels.add(toSoapModel(model));
@@ -165,4 +166,5 @@ public class ExpandoValueSoap implements Serializable {
 	private long _classNameId;
 	private long _classPK;
 	private String _data;
+
 }

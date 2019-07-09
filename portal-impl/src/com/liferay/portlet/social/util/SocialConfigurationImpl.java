@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.social.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -128,8 +129,7 @@ public class SocialConfigurationImpl implements SocialConfiguration {
 	public String[] getActivityModelNames() {
 		Set<String> activityModelNames = _activityDefinitions.keySet();
 
-		return activityModelNames.toArray(
-			new String[activityModelNames.size()]);
+		return activityModelNames.toArray(new String[0]);
 	}
 
 	@Override
@@ -492,8 +492,9 @@ public class SocialConfigurationImpl implements SocialConfiguration {
 		if (activityCounterDefinition.getOwnerType() == 0) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Invalid owner type " + ownerType + " for model " +
-						activityDefinition.getModelName());
+					StringBundler.concat(
+						"Invalid owner type ", ownerType, " for model ",
+						activityDefinition.getModelName()));
 			}
 
 			return;

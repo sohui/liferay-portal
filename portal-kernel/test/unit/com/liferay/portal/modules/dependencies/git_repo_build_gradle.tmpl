@@ -7,11 +7,9 @@ buildscript {
 		mavenLocal()
 
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "[$REPOSITORY_URL$]"
 		}
 	}
 }
 
-configure(subprojects.findAll {!it.childProjects}) {
-	apply plugin: "com.liferay.defaults.plugin"
-}
+apply plugin: "com.liferay.root.defaults.plugin"

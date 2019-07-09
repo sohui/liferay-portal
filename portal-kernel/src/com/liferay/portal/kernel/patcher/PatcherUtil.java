@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.patcher;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.io.File;
 
 import java.util.Properties;
@@ -43,8 +41,6 @@ public class PatcherUtil {
 	}
 
 	public static Patcher getPatcher() {
-		PortalRuntimePermission.checkGetBeanProperty(Patcher.class);
-
 		return _patcher;
 	}
 
@@ -64,6 +60,10 @@ public class PatcherUtil {
 		return getPatcher().getProperties();
 	}
 
+	public static String getSeparationId() {
+		return getPatcher().getSeparationId();
+	}
+
 	public static boolean hasInconsistentPatchLevels() {
 		return getPatcher().hasInconsistentPatchLevels();
 	}
@@ -72,13 +72,15 @@ public class PatcherUtil {
 		return getPatcher().isConfigured();
 	}
 
+	public static boolean isSeparated() {
+		return getPatcher().isSeparated();
+	}
+
 	public static void verifyPatchLevels() throws PatchInconsistencyException {
 		getPatcher().verifyPatchLevels();
 	}
 
 	public void setPatcher(Patcher patcher) {
-		PortalRuntimePermission.checkGetBeanProperty(Patcher.class);
-
 		_patcher = patcher;
 	}
 

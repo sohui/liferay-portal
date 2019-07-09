@@ -1,0 +1,50 @@
+definition {
+
+	macro rate {
+		var key_ratingResult = StringUtil.replace("${ratingResult}", " ", "-");
+		var key_ratingResult = StringUtil.lowerCase("${key_ratingResult}");
+
+		Click(locator1 = "Ratings#THUMB");
+	}
+
+	macro viewRating {
+		var key_ratingResult = StringUtil.replace("${ratingResult}", " ", "-");
+		var key_ratingResult = StringUtil.lowerCase("${key_ratingResult}");
+
+		if (isSet(ratingResult)) {
+			AssertTextEquals(
+				locator1 = "Ratings#THUMB",
+				value1 = "${voteCount}");
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "Ratings#DISPLAY_VOTES",
+				value1 = "${voteCount}");
+		}
+	}
+
+	macro viewRatingReadOnly {
+		AssertElementNotPresent(locator1 = "Ratings#THUMB_UP");
+
+		AssertElementNotPresent(locator1 = "Ratings#THUMB_DOWN");
+
+		AssertElementPresent(locator1 = "Ratings#THUMB_UP_OFF");
+
+		AssertElementPresent(locator1 = "Ratings#THUMB_DOWN_OFF");
+	}
+
+	macro viewRatingWithStarsReadOnly {
+		for (var starCount : list "1,2,3,4,5") {
+			AssertElementNotPresent(
+				key_averageRatingStar = "${starCount}",
+				locator1 = "Ratings#AVERAGE_STAR");
+		}
+
+		for (var starCount : list "1,2,3,4,5") {
+			AssertElementPresent(
+				key_averageDisableStar = "${starCount}",
+				locator1 = "Ratings#AVERAGE_STAR_DISABLE");
+		}
+	}
+
+}

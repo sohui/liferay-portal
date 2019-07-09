@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Queue;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.petra.reflect.AnnotationLocator}
  */
+@Deprecated
 public class AnnotationLocator {
 
 	public static List<Annotation> locate(Class<?> targetClass) {
@@ -191,10 +194,10 @@ public class AnnotationLocator {
 	private static void _queueSuperTypes(
 		Queue<Class<?>> queue, Class<?> clazz) {
 
-		Class<?> supperClass = clazz.getSuperclass();
+		Class<?> superClass = clazz.getSuperclass();
 
-		if ((supperClass != null) && (supperClass != Object.class)) {
-			queue.offer(supperClass);
+		if ((superClass != null) && (superClass != Object.class)) {
+			queue.offer(superClass);
 		}
 
 		Class<?>[] interfaceClasses = clazz.getInterfaces();

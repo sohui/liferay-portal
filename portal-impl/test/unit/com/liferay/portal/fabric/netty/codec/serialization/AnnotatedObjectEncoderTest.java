@@ -14,13 +14,13 @@
 
 package com.liferay.portal.fabric.netty.codec.serialization;
 
-import com.liferay.portal.kernel.io.ProtectedAnnotatedObjectInputStream;
+import com.liferay.petra.io.ProtectedAnnotatedObjectInputStream;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandler;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -59,13 +59,15 @@ public class AnnotatedObjectEncoderTest {
 				new ByteBufInputStream(byteBuf));
 
 		Assert.assertEquals(date, annotatedObjectInputStream.readObject());
+
 		Assert.assertFalse(byteBuf.isReadable());
 	}
 
 	@Test
 	public void testStructure() throws ReflectiveOperationException {
 		Assert.assertNotNull(
-			AnnotatedObjectEncoder.class.getAnnotation(Sharable.class));
+			AnnotatedObjectEncoder.class.getAnnotation(
+				ChannelHandler.Sharable.class));
 
 		Field instanceField = AnnotatedObjectEncoder.class.getField("INSTANCE");
 

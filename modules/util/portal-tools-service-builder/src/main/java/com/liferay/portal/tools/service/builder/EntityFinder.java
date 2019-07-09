@@ -14,10 +14,11 @@
 
 package com.liferay.portal.tools.service.builder;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TextFormatter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,19 +29,28 @@ public class EntityFinder {
 
 	public EntityFinder(
 		String name, String returnType, boolean unique, String where,
-		boolean dbIndex, List<EntityColumn> columns) {
+		String dbWhere, boolean dbIndex, List<EntityColumn> entityColumns) {
 
 		_name = name;
 		_returnType = returnType;
 		_unique = unique;
 		_where = where;
+		_dbWhere = dbWhere;
 		_dbIndex = dbIndex;
-		_columns = columns;
+		_entityColumns = entityColumns;
+
+		_arrayableColumns = new ArrayList<>();
+
+		for (EntityColumn column : _entityColumns) {
+			if (column.hasArrayableOperator()) {
+				_arrayableColumns.add(column);
+			}
+		}
 
 		if (isCollection() && isUnique() && !hasArrayableOperator()) {
 			throw new IllegalArgumentException(
-				"A finder cannot return a Collection and be unique unless " +
-					"it has an arrayable column. See the ExpandoColumn " +
+				"A finder cannot return a Collection and be unique unless it " +
+					"has an arrayable column. See the ExpandoColumn " +
 						"service.xml declaration for an example.");
 		}
 
@@ -50,33 +60,43 @@ public class EntityFinder {
 		}
 	}
 
-	public EntityColumn getColumn(String name) {
-		for (EntityColumn column : _columns) {
-			if (name.equals(column.getName())) {
-				return column;
+	public List<EntityColumn> getArrayableColumns() {
+		return _arrayableColumns;
+	}
+
+	public String getDBWhere() {
+		return _dbWhere;
+	}
+
+	public EntityColumn getEntityColumn(String name) {
+		for (EntityColumn entityColumn : _entityColumns) {
+			if (name.equals(entityColumn.getName())) {
+				return entityColumn;
 			}
 		}
 
 		return null;
 	}
 
-	public List<EntityColumn> getColumns() {
-		return _columns;
+	public List<EntityColumn> getEntityColumns() {
+		return _entityColumns;
 	}
 
 	public String getHumanConditions(boolean arrayable) {
-		if (_columns.size() == 1) {
-			return _columns.get(0).getHumanCondition(arrayable);
+		if (_entityColumns.size() == 1) {
+			EntityColumn entityColumn = _entityColumns.get(0);
+
+			return entityColumn.getHumanCondition(arrayable);
 		}
 
-		StringBundler sb = new StringBundler(_columns.size() * 2);
+		StringBundler sb = new StringBundler(_entityColumns.size() * 2);
 
-		for (EntityColumn column : _columns) {
+		for (EntityColumn column : _entityColumns) {
 			sb.append(column.getHumanCondition(arrayable));
 			sb.append(" and ");
 		}
 
-		if (!_columns.isEmpty()) {
+		if (!_entityColumns.isEmpty()) {
 			sb.setIndex(sb.index() - 1);
 		}
 
@@ -100,7 +120,7 @@ public class EntityFinder {
 	}
 
 	public boolean hasArrayableOperator() {
-		for (EntityColumn column : _columns) {
+		for (EntityColumn column : _entityColumns) {
 			if (column.hasArrayableOperator()) {
 				return true;
 			}
@@ -109,12 +129,18 @@ public class EntityFinder {
 		return false;
 	}
 
-	public boolean hasColumn(String name) {
-		return Entity.hasColumn(name, _columns);
+	public boolean hasArrayablePagination() {
+		for (EntityColumn column : _entityColumns) {
+			if (column.hasArrayablePagination()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public boolean hasCustomComparator() {
-		for (EntityColumn column : _columns) {
+		for (EntityColumn column : _entityColumns) {
 			String comparator = column.getComparator();
 
 			if (!comparator.equals(StringPool.EQUAL)) {
@@ -125,13 +151,16 @@ public class EntityFinder {
 		return false;
 	}
 
+	public boolean hasEntityColumn(String name) {
+		return Entity.hasEntityColumn(name, _entityColumns);
+	}
+
 	public boolean isCollection() {
 		if ((_returnType != null) && _returnType.equals("Collection")) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public boolean isDBIndex() {
@@ -142,8 +171,10 @@ public class EntityFinder {
 		return _unique;
 	}
 
-	private final List<EntityColumn> _columns;
+	private final List<EntityColumn> _arrayableColumns;
 	private final boolean _dbIndex;
+	private final String _dbWhere;
+	private final List<EntityColumn> _entityColumns;
 	private final String _name;
 	private final String _returnType;
 	private final boolean _unique;

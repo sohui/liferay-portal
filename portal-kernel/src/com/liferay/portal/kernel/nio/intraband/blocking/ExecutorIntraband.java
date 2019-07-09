@@ -77,8 +77,8 @@ public class ExecutorIntraband extends BaseIntraband {
 
 			if (!selectableChannel.isBlocking()) {
 				throw new IllegalArgumentException(
-					"Channel is of type SelectableChannel and " +
-						"configured in nonblocking mode");
+					"Channel is of type SelectableChannel and configured in " +
+						"nonblocking mode");
 			}
 		}
 
@@ -253,9 +253,8 @@ public class ExecutorIntraband extends BaseIntraband {
 								_gatheringByteChannel +
 									" behaved in nonblocking way.");
 						}
-						else {
-							break;
-						}
+
+						break;
 					}
 
 					cleanUpTimeoutResponseWaitingDatagrams();

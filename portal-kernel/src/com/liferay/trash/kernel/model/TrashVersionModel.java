@@ -14,7 +14,7 @@
 
 package com.liferay.trash.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 import com.liferay.expando.kernel.model.ExpandoBridge;
 
@@ -38,8 +38,11 @@ import java.io.Serializable;
  * @see TrashVersion
  * @see com.liferay.portlet.trash.model.impl.TrashVersionImpl
  * @see com.liferay.portlet.trash.model.impl.TrashVersionModelImpl
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+           com.liferay.trash.model.impl.TrashVersionImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 public interface TrashVersionModel extends AttachedModel, BaseModel<TrashVersion>,
 	ShardedModel {
@@ -134,17 +137,17 @@ public interface TrashVersionModel extends AttachedModel, BaseModel<TrashVersion
 	public void setClassNameId(long classNameId);
 
 	/**
-	 * Returns the class p k of this trash version.
+	 * Returns the class pk of this trash version.
 	 *
-	 * @return the class p k of this trash version
+	 * @return the class pk of this trash version
 	 */
 	@Override
 	public long getClassPK();
 
 	/**
-	 * Sets the class p k of this trash version.
+	 * Sets the class pk of this trash version.
 	 *
-	 * @param classPK the class p k of this trash version
+	 * @param classPK the class pk of this trash version
 	 */
 	@Override
 	public void setClassPK(long classPK);

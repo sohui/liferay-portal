@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.util.HttpImpl;
+import com.liferay.portlet.internal.RouterImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -96,14 +97,14 @@ public class RouterImplTest {
 
 		route.addImplicitParameter("format", "html");
 
-		route = _routerImpl.addRoute(
+		_routerImpl.addRoute(
 			"{method}/{controller}/{id:\\d+}/{action}.{format}");
 
 		route = _routerImpl.addRoute("{method}/{controller}/{action}");
 
 		route.addImplicitParameter("format", "html");
 
-		route = _routerImpl.addRoute("{method}/{controller}/{action}.{format}");
+		_routerImpl.addRoute("{method}/{controller}/{action}.{format}");
 	}
 
 	@Test

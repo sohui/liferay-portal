@@ -15,7 +15,6 @@
 package com.liferay.portlet;
 
 import com.liferay.portal.kernel.util.MappingEnumeration;
-import com.liferay.portal.kernel.util.MappingEnumeration.Mapper;
 import com.liferay.portal.kernel.util.SetUtil;
 
 import java.util.AbstractMap;
@@ -184,15 +183,14 @@ public class PortletSessionAttributeMap extends AbstractMap<String, Object> {
 		}
 
 		return new MappingEnumeration<>(
-			enumeration,
-			new AttributeNameMapper(scopePrefix, removePrefix));
+			enumeration, new AttributeNameMapper(scopePrefix, removePrefix));
 	}
 
 	protected final String scopePrefix;
 	protected final HttpSession session;
 
 	protected static class AttributeNameMapper
-		implements Mapper<String, String> {
+		implements MappingEnumeration.Mapper<String, String> {
 
 		@Override
 		public String map(String attributeName) {

@@ -14,12 +14,8 @@
 
 package com.liferay.knowledge.base.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
-
 import com.liferay.knowledge.base.model.KBComment;
-
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
@@ -44,6 +40,8 @@ import java.io.Serializable;
 
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the local service interface for KBComment. Methods of this
  * service will not have security checks based on the propagated JAAS
@@ -52,133 +50,163 @@ import java.util.List;
  *
  * @author Brian Wing Shun Chan
  * @see KBCommentLocalServiceUtil
- * @see com.liferay.knowledge.base.service.base.KBCommentLocalServiceBaseImpl
- * @see com.liferay.knowledge.base.service.impl.KBCommentLocalServiceImpl
  * @generated
  */
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
-public interface KBCommentLocalService extends BaseLocalService,
-	PersistedModelLocalService {
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
+public interface KBCommentLocalService
+	extends BaseLocalService, PersistedModelLocalService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link KBCommentLocalServiceUtil} to access the k b comment local service. Add custom service methods to {@link com.liferay.knowledge.base.service.impl.KBCommentLocalServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link KBCommentLocalServiceUtil} to access the kb comment local service. Add custom service methods to <code>com.liferay.knowledge.base.service.impl.KBCommentLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 
 	/**
-	* Adds the k b comment to the database. Also notifies the appropriate model listeners.
-	*
-	* @param kbComment the k b comment
-	* @return the k b comment that was added
-	*/
+	 * Adds the kb comment to the database. Also notifies the appropriate model listeners.
+	 *
+	 * @param kbComment the kb comment
+	 * @return the kb comment that was added
+	 */
 	@Indexable(type = IndexableType.REINDEX)
 	public KBComment addKBComment(KBComment kbComment);
 
-	public KBComment addKBComment(long userId, long classNameId, long classPK,
-		java.lang.String content, ServiceContext serviceContext)
+	public KBComment addKBComment(
+			long userId, long classNameId, long classPK, String content,
+			int userRating, ServiceContext serviceContext)
 		throws PortalException;
 
-	public KBComment addKBComment(long userId, long classNameId, long classPK,
-		java.lang.String content, int userRating, ServiceContext serviceContext)
+	public KBComment addKBComment(
+			long userId, long classNameId, long classPK, String content,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
-	* Creates a new k b comment with the primary key. Does not add the k b comment to the database.
-	*
-	* @param kbCommentId the primary key for the new k b comment
-	* @return the new k b comment
-	*/
+	 * Creates a new kb comment with the primary key. Does not add the kb comment to the database.
+	 *
+	 * @param kbCommentId the primary key for the new kb comment
+	 * @return the new kb comment
+	 */
+	@Transactional(enabled = false)
 	public KBComment createKBComment(long kbCommentId);
 
 	/**
-	* Deletes the k b comment from the database. Also notifies the appropriate model listeners.
-	*
-	* @param kbComment the k b comment
-	* @return the k b comment that was removed
-	* @throws PortalException
-	*/
+	 * Deletes the kb comment from the database. Also notifies the appropriate model listeners.
+	 *
+	 * @param kbComment the kb comment
+	 * @return the kb comment that was removed
+	 * @throws PortalException
+	 */
 	@Indexable(type = IndexableType.DELETE)
 	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public KBComment deleteKBComment(KBComment kbComment)
 		throws PortalException;
 
 	/**
-	* Deletes the k b comment with the primary key from the database. Also notifies the appropriate model listeners.
-	*
-	* @param kbCommentId the primary key of the k b comment
-	* @return the k b comment that was removed
-	* @throws PortalException if a k b comment with the primary key could not be found
-	*/
+	 * Deletes the kb comment with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * @param kbCommentId the primary key of the kb comment
+	 * @return the kb comment that was removed
+	 * @throws PortalException if a kb comment with the primary key could not be found
+	 */
 	@Indexable(type = IndexableType.DELETE)
-	public KBComment deleteKBComment(long kbCommentId)
+	public KBComment deleteKBComment(long kbCommentId) throws PortalException;
+
+	public void deleteKBComments(String className, long classPK)
 		throws PortalException;
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
+	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public DynamicQuery dynamicQuery();
+
+	/**
+	 * Performs a dynamic query on the database and returns the matching rows.
+	 *
+	 * @param dynamicQuery the dynamic query
+	 * @return the matching rows
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery);
+
+	/**
+	 * Performs a dynamic query on the database and returns a range of the matching rows.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.knowledge.base.model.impl.KBCommentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param dynamicQuery the dynamic query
+	 * @param start the lower bound of the range of model instances
+	 * @param end the upper bound of the range of model instances (not inclusive)
+	 * @return the range of matching rows
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end);
+
+	/**
+	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.knowledge.base.model.impl.KBCommentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param dynamicQuery the dynamic query
+	 * @param start the lower bound of the range of model instances
+	 * @param end the upper bound of the range of model instances (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching rows
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end,
+		OrderByComparator<T> orderByComparator);
+
+	/**
+	 * Returns the number of rows matching the dynamic query.
+	 *
+	 * @param dynamicQuery the dynamic query
+	 * @return the number of rows matching the dynamic query
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public long dynamicQueryCount(DynamicQuery dynamicQuery);
+
+	/**
+	 * Returns the number of rows matching the dynamic query.
+	 *
+	 * @param dynamicQuery the dynamic query
+	 * @param projection the projection to apply to the query
+	 * @return the number of rows matching the dynamic query
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public long dynamicQueryCount(
+		DynamicQuery dynamicQuery, Projection projection);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public KBComment fetchKBComment(long kbCommentId);
 
 	/**
-	* Returns the k b comment matching the UUID and group.
-	*
-	* @param uuid the k b comment's UUID
-	* @param groupId the primary key of the group
-	* @return the matching k b comment, or <code>null</code> if a matching k b comment could not be found
-	*/
+	 * Returns the kb comment matching the UUID and group.
+	 *
+	 * @param uuid the kb comment's UUID
+	 * @param groupId the primary key of the group
+	 * @return the matching kb comment, or <code>null</code> if a matching kb comment could not be found
+	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public KBComment fetchKBCommentByUuidAndGroupId(java.lang.String uuid,
-		long groupId);
-
-	/**
-	* Returns the k b comment with the primary key.
-	*
-	* @param kbCommentId the primary key of the k b comment
-	* @return the k b comment
-	* @throws PortalException if a k b comment with the primary key could not be found
-	*/
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public KBComment getKBComment(long kbCommentId) throws PortalException;
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public KBComment getKBComment(long userId, java.lang.String className,
-		long classPK) throws PortalException;
-
-	/**
-	* Returns the k b comment matching the UUID and group.
-	*
-	* @param uuid the k b comment's UUID
-	* @param groupId the primary key of the group
-	* @return the matching k b comment
-	* @throws PortalException if a matching k b comment could not be found
-	*/
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public KBComment getKBCommentByUuidAndGroupId(java.lang.String uuid,
-		long groupId) throws PortalException;
-
-	/**
-	* Updates the k b comment in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
-	*
-	* @param kbComment the k b comment
-	* @return the k b comment that was updated
-	*/
-	@Indexable(type = IndexableType.REINDEX)
-	public KBComment updateKBComment(KBComment kbComment);
-
-	public KBComment updateKBComment(long kbCommentId, long classNameId,
-		long classPK, java.lang.String content, int status,
-		ServiceContext serviceContext) throws PortalException;
-
-	public KBComment updateKBComment(long kbCommentId, long classNameId,
-		long classPK, java.lang.String content, int userRating, int status,
-		ServiceContext serviceContext) throws PortalException;
-
-	public KBComment updateStatus(long userId, long kbCommentId, int status,
-		ServiceContext serviceContext) throws PortalException;
+	public KBComment fetchKBCommentByUuidAndGroupId(String uuid, long groupId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ActionableDynamicQuery getActionableDynamicQuery();
-
-	public DynamicQuery dynamicQuery();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
@@ -188,11 +216,136 @@ public interface KBCommentLocalService extends BaseLocalService,
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
 
 	/**
-	* @throws PortalException
-	*/
-	@Override
-	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
+	 * Returns the kb comment with the primary key.
+	 *
+	 * @param kbCommentId the primary key of the kb comment
+	 * @return the kb comment
+	 * @throws PortalException if a kb comment with the primary key could not be found
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public KBComment getKBComment(long kbCommentId) throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public KBComment getKBComment(long userId, String className, long classPK)
 		throws PortalException;
+
+	/**
+	 * Returns the kb comment matching the UUID and group.
+	 *
+	 * @param uuid the kb comment's UUID
+	 * @param groupId the primary key of the group
+	 * @return the matching kb comment
+	 * @throws PortalException if a matching kb comment could not be found
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public KBComment getKBCommentByUuidAndGroupId(String uuid, long groupId)
+		throws PortalException;
+
+	/**
+	 * Returns a range of all the kb comments.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.knowledge.base.model.impl.KBCommentModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param start the lower bound of the range of kb comments
+	 * @param end the upper bound of the range of kb comments (not inclusive)
+	 * @return the range of kb comments
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(int start, int end);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(
+		long groupId, int status, int start, int end);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(
+		long groupId, int status, int start, int end,
+		OrderByComparator<KBComment> obc);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(
+		long groupId, int start, int end, OrderByComparator<KBComment> obc);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(
+		long userId, String className, long classPK, int start, int end,
+		OrderByComparator<KBComment> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(
+		String className, long classPK, int status, int start, int end);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(
+		String className, long classPK, int status, int start, int end,
+		OrderByComparator<KBComment> obc);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(
+		String className, long classPK, int start, int end,
+		OrderByComparator orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBComments(
+		String className, long classPK, int[] status, int start, int end);
+
+	/**
+	 * Returns all the kb comments matching the UUID and company.
+	 *
+	 * @param uuid the UUID of the kb comments
+	 * @param companyId the primary key of the company
+	 * @return the matching kb comments, or an empty list if no matches were found
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBCommentsByUuidAndCompanyId(
+		String uuid, long companyId);
+
+	/**
+	 * Returns a range of kb comments matching the UUID and company.
+	 *
+	 * @param uuid the UUID of the kb comments
+	 * @param companyId the primary key of the company
+	 * @param start the lower bound of the range of kb comments
+	 * @param end the upper bound of the range of kb comments (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the range of matching kb comments, or an empty list if no matches were found
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<KBComment> getKBCommentsByUuidAndCompanyId(
+		String uuid, long companyId, int start, int end,
+		OrderByComparator<KBComment> orderByComparator);
+
+	/**
+	 * Returns the number of kb comments.
+	 *
+	 * @return the number of kb comments
+	 */
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getKBCommentsCount();
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getKBCommentsCount(long groupId, int status);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getKBCommentsCount(long userId, String className, long classPK);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getKBCommentsCount(String className, long classPK);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getKBCommentsCount(String className, long classPK, int status);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getKBCommentsCount(String className, long classPK, int[] status);
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
 
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -200,160 +353,27 @@ public interface KBCommentLocalService extends BaseLocalService,
 		throws PortalException;
 
 	/**
-	* Returns the number of k b comments.
-	*
-	* @return the number of k b comments
-	*/
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getKBCommentsCount();
+	 * Updates the kb comment in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
+	 *
+	 * @param kbComment the kb comment
+	 * @return the kb comment that was updated
+	 */
+	@Indexable(type = IndexableType.REINDEX)
+	public KBComment updateKBComment(KBComment kbComment);
 
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getKBCommentsCount(java.lang.String className, long classPK);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getKBCommentsCount(java.lang.String className, long classPK,
-		int status);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getKBCommentsCount(java.lang.String className, long classPK,
-		int[] status);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getKBCommentsCount(long groupId, int status);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getKBCommentsCount(long userId, java.lang.String className,
-		long classPK);
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
-
-	/**
-	* Performs a dynamic query on the database and returns the matching rows.
-	*
-	* @param dynamicQuery the dynamic query
-	* @return the matching rows
-	*/
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery);
-
-	/**
-	* Performs a dynamic query on the database and returns a range of the matching rows.
-	*
-	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.knowledge.base.model.impl.KBCommentModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
-	* </p>
-	*
-	* @param dynamicQuery the dynamic query
-	* @param start the lower bound of the range of model instances
-	* @param end the upper bound of the range of model instances (not inclusive)
-	* @return the range of matching rows
-	*/
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end);
-
-	/**
-	* Performs a dynamic query on the database and returns an ordered range of the matching rows.
-	*
-	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.knowledge.base.model.impl.KBCommentModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
-	* </p>
-	*
-	* @param dynamicQuery the dynamic query
-	* @param start the lower bound of the range of model instances
-	* @param end the upper bound of the range of model instances (not inclusive)
-	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	* @return the ordered range of matching rows
-	*/
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end, OrderByComparator<T> orderByComparator);
-
-	/**
-	* Returns a range of all the k b comments.
-	*
-	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.knowledge.base.model.impl.KBCommentModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
-	* </p>
-	*
-	* @param start the lower bound of the range of k b comments
-	* @param end the upper bound of the range of k b comments (not inclusive)
-	* @return the range of k b comments
-	*/
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBComments(int start, int end);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBComments(java.lang.String className,
-		long classPK, int start, int end, OrderByComparator orderByComparator);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBComments(java.lang.String className,
-		long classPK, int status, int start, int end);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBComments(java.lang.String className,
-		long classPK, int[] status, int start, int end);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBComments(long groupId, int start, int end,
-		OrderByComparator<KBComment> obc);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBComments(long groupId, int status, int start,
-		int end);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBComments(long userId,
-		java.lang.String className, long classPK, int start, int end,
-		OrderByComparator<KBComment> orderByComparator);
-
-	/**
-	* Returns all the k b comments matching the UUID and company.
-	*
-	* @param uuid the UUID of the k b comments
-	* @param companyId the primary key of the company
-	* @return the matching k b comments, or an empty list if no matches were found
-	*/
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBCommentsByUuidAndCompanyId(
-		java.lang.String uuid, long companyId);
-
-	/**
-	* Returns a range of k b comments matching the UUID and company.
-	*
-	* @param uuid the UUID of the k b comments
-	* @param companyId the primary key of the company
-	* @param start the lower bound of the range of k b comments
-	* @param end the upper bound of the range of k b comments (not inclusive)
-	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	* @return the range of matching k b comments, or an empty list if no matches were found
-	*/
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<KBComment> getKBCommentsByUuidAndCompanyId(
-		java.lang.String uuid, long companyId, int start, int end,
-		OrderByComparator<KBComment> orderByComparator);
-
-	/**
-	* Returns the number of rows matching the dynamic query.
-	*
-	* @param dynamicQuery the dynamic query
-	* @return the number of rows matching the dynamic query
-	*/
-	public long dynamicQueryCount(DynamicQuery dynamicQuery);
-
-	/**
-	* Returns the number of rows matching the dynamic query.
-	*
-	* @param dynamicQuery the dynamic query
-	* @param projection the projection to apply to the query
-	* @return the number of rows matching the dynamic query
-	*/
-	public long dynamicQueryCount(DynamicQuery dynamicQuery,
-		Projection projection);
-
-	public void deleteKBComments(java.lang.String className, long classPK)
+	public KBComment updateKBComment(
+			long kbCommentId, long classNameId, long classPK, String content,
+			int userRating, int status, ServiceContext serviceContext)
 		throws PortalException;
+
+	public KBComment updateKBComment(
+			long kbCommentId, long classNameId, long classPK, String content,
+			int status, ServiceContext serviceContext)
+		throws PortalException;
+
+	public KBComment updateStatus(
+			long userId, long kbCommentId, int status,
+			ServiceContext serviceContext)
+		throws PortalException;
+
 }

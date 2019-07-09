@@ -14,12 +14,11 @@
 
 package com.liferay.portal.security.pwd;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.pwd.PasswordEncryptor;
 import com.liferay.portal.kernel.security.pwd.PasswordEncryptorUtil;
 import com.liferay.portal.kernel.util.DigesterUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.util.DigesterImpl;
-import com.liferay.portal.util.PropsUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,20 +26,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * @author Tomas Polesovsky
  */
-@PowerMockIgnore({"javax.crypto.*"})
-@PrepareForTest(PropsUtil.class)
-@RunWith(PowerMockRunner.class)
-public class CompositePasswordEncryptorTest extends PowerMockito {
+public class CompositePasswordEncryptorTest {
 
 	@Before
 	public void setUp() {
@@ -230,8 +220,7 @@ public class CompositePasswordEncryptorTest extends PowerMockito {
 
 		testEncrypt(
 			algorithm, "password",
-			"qLZLq9CsqRpZvbt3YbQh1PK7OCgNOnW6DyHyvrxFWD1EbFmGYMl" +
-				"M5oDEfRnDB4On");
+			"qLZLq9CsqRpZvbt3YbQh1PK7OCgNOnW6DyHyvrxFWD1EbFmGYMlM5oDEfRnDB4On");
 	}
 
 	@Test

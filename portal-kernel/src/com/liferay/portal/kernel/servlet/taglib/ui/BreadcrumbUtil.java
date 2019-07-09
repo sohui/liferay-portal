@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.servlet.taglib.ui;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Account;
 import com.liferay.portal.kernel.model.Group;
@@ -36,7 +37,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -66,11 +66,12 @@ public class BreadcrumbUtil {
 	public static final int ENTRY_TYPE_PORTLET = 5;
 
 	public static List<BreadcrumbEntry> getBreadcrumbEntries(
-			HttpServletRequest request, int[] types)
+			HttpServletRequest httpServletRequest, int[] types)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		List<BreadcrumbEntry> breadcrumbEntries = new ArrayList<>();
 
@@ -104,7 +105,8 @@ public class BreadcrumbUtil {
 		}
 
 		if (hasAll || ArrayUtil.contains(types, ENTRY_TYPE_PORTLET)) {
-			breadcrumbEntries.addAll(getPortletBreadcrumbEntries(request));
+			breadcrumbEntries.addAll(
+				getPortletBreadcrumbEntries(httpServletRequest));
 		}
 
 		return breadcrumbEntries;
@@ -180,17 +182,18 @@ public class BreadcrumbUtil {
 	}
 
 	public static List<BreadcrumbEntry> getPortletBreadcrumbEntries(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 		String name = WebKeys.PORTLET_BREADCRUMBS;
 
 		List<BreadcrumbEntry> breadcrumbEntries =
-			(List<BreadcrumbEntry>)request.getAttribute(name);
+			(List<BreadcrumbEntry>)httpServletRequest.getAttribute(name);
 
 		if (Validator.isNotNull(portletDisplay.getId()) &&
 			!portletDisplay.isFocused() &&
@@ -204,7 +207,7 @@ public class BreadcrumbUtil {
 				StringPool.UNDERLINE.concat(portletDisplay.getId()));
 
 			List<BreadcrumbEntry> portletBreadcrumbEntries =
-				(List<BreadcrumbEntry>)request.getAttribute(name);
+				(List<BreadcrumbEntry>)httpServletRequest.getAttribute(name);
 
 			if (portletBreadcrumbEntries != null) {
 				breadcrumbEntries = portletBreadcrumbEntries;
@@ -215,13 +218,15 @@ public class BreadcrumbUtil {
 			return Collections.emptyList();
 		}
 
-		for (int i = 0; i < breadcrumbEntries.size() - 1; i++) {
+		for (int i = 0; i < (breadcrumbEntries.size() - 1); i++) {
 			BreadcrumbEntry portletBreadcrumbEntry = breadcrumbEntries.get(i);
 
 			String url = portletBreadcrumbEntry.getURL();
 
-			if (Validator.isNotNull(url) && !CookieKeys.hasSessionId(request)) {
-				HttpSession session = request.getSession();
+			if (Validator.isNotNull(url) &&
+				!CookieKeys.hasSessionId(httpServletRequest)) {
+
+				HttpSession session = httpServletRequest.getSession();
 
 				portletBreadcrumbEntry.setURL(
 					PortalUtil.getURLWithSessionId(url, session.getId()));
@@ -324,11 +329,11 @@ public class BreadcrumbUtil {
 
 		String layoutName = layout.getName(themeDisplay.getLocale());
 
-		if (layout.isTypeControlPanel()) {
-			if (layoutName.equals(LayoutConstants.NAME_CONTROL_PANEL_DEFAULT)) {
-				layoutName = LanguageUtil.get(
-					themeDisplay.getLocale(), "control-panel");
-			}
+		if (layout.isTypeControlPanel() &&
+			layoutName.equals(LayoutConstants.NAME_CONTROL_PANEL_DEFAULT)) {
+
+			layoutName = LanguageUtil.get(
+				themeDisplay.getLocale(), "control-panel");
 		}
 
 		breadcrumbEntry.setTitle(layoutName);

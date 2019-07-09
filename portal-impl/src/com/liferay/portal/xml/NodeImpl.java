@@ -14,13 +14,13 @@
 
 package com.liferay.portal.xml;
 
+import com.liferay.petra.string.StringPool;
+import com.liferay.petra.xml.Dom4jUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.Node;
 import com.liferay.portal.kernel.xml.Visitor;
-import com.liferay.util.xml.Dom4jUtil;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -63,9 +63,8 @@ public class NodeImpl implements Node {
 		if (node instanceof org.dom4j.Element) {
 			return new ElementImpl((org.dom4j.Element)node);
 		}
-		else {
-			return new NodeImpl(node);
-		}
+
+		return new NodeImpl(node);
 	}
 
 	@Override
@@ -94,9 +93,8 @@ public class NodeImpl implements Node {
 		if (node instanceof org.dom4j.Element) {
 			return new ElementImpl((org.dom4j.Element)node);
 		}
-		else {
-			return new NodeImpl(node);
-		}
+
+		return new NodeImpl(node);
 	}
 
 	@Override
@@ -109,7 +107,9 @@ public class NodeImpl implements Node {
 			return false;
 		}
 
-		org.dom4j.Node node = ((NodeImpl)obj).getWrappedNode();
+		NodeImpl nodeImpl = (NodeImpl)obj;
+
+		org.dom4j.Node node = nodeImpl.getWrappedNode();
 
 		return _node.equals(node);
 	}
@@ -146,9 +146,8 @@ public class NodeImpl implements Node {
 		if (document == null) {
 			return null;
 		}
-		else {
-			return new DocumentImpl(document);
-		}
+
+		return new DocumentImpl(document);
 	}
 
 	@Override
@@ -163,9 +162,8 @@ public class NodeImpl implements Node {
 		if (element == null) {
 			return null;
 		}
-		else {
-			return new ElementImpl(element);
-		}
+
+		return new ElementImpl(element);
 	}
 
 	@Override
@@ -264,9 +262,8 @@ public class NodeImpl implements Node {
 		else if (obj instanceof List<?>) {
 			return SAXReaderImpl.toNewNodes((List<org.dom4j.Node>)obj);
 		}
-		else {
-			return obj;
-		}
+
+		return obj;
 	}
 
 	@Override
@@ -280,9 +277,8 @@ public class NodeImpl implements Node {
 		if (node instanceof org.dom4j.Element) {
 			return new ElementImpl((org.dom4j.Element)node);
 		}
-		else {
-			return new NodeImpl(node);
-		}
+
+		return new NodeImpl(node);
 	}
 
 	@Override

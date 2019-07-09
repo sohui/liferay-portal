@@ -17,8 +17,10 @@ package com.liferay.taglib.ui;
 import com.liferay.taglib.util.IncludeTag;
 
 /**
- * @author Bruno Farache
+ * @author     Bruno Farache
+ * @deprecated As of Mueller (7.2.x), since 7.2, unused
  */
+@Deprecated
 public class InputSchedulerTag extends IncludeTag {
 
 	@Override

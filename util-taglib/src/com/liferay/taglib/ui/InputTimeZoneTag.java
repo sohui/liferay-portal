@@ -32,6 +32,38 @@ public class InputTimeZoneTag extends IncludeTag {
 		_value = timeZone.getID();
 	}
 
+	public String getCssClass() {
+		return _cssClass;
+	}
+
+	public int getDisplayStyle() {
+		return _displayStyle;
+	}
+
+	public String getName() {
+		return _name;
+	}
+
+	public String getValue() {
+		return _value;
+	}
+
+	public boolean isAutoFocus() {
+		return _autoFocus;
+	}
+
+	public boolean isDaylight() {
+		return _daylight;
+	}
+
+	public boolean isDisabled() {
+		return _disabled;
+	}
+
+	public boolean isNullable() {
+		return _nullable;
+	}
+
 	public void setAutoFocus(boolean autoFocus) {
 		_autoFocus = autoFocus;
 	}
@@ -66,6 +98,8 @@ public class InputTimeZoneTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_autoFocus = false;
 		_cssClass = null;
 		_daylight = false;
@@ -85,21 +119,24 @@ public class InputTimeZoneTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-time-zone:autoFocus", String.valueOf(_autoFocus));
-		request.setAttribute("liferay-ui:input-time-zone:cssClass", _cssClass);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-time-zone:cssClass", _cssClass);
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-time-zone:daylight", String.valueOf(_daylight));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-time-zone:disabled", String.valueOf(_disabled));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-time-zone:displayStyle",
 			String.valueOf(_displayStyle));
-		request.setAttribute("liferay-ui:input-time-zone:name", _name);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-time-zone:name", _name);
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-time-zone:nullable", String.valueOf(_nullable));
-		request.setAttribute("liferay-ui:input-time-zone:value", _value);
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-time-zone:value", _value);
 	}
 
 	private static final String _PAGE =

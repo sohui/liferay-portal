@@ -14,6 +14,8 @@
 
 package com.liferay.portal.image;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.concurrent.FutureConverter;
 import com.liferay.portal.kernel.exception.ImageResolutionException;
 import com.liferay.portal.kernel.image.ImageBag;
@@ -23,12 +25,9 @@ import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Image;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.ImageImpl;
 import com.liferay.portal.module.framework.ModuleFrameworkUtilAdapter;
@@ -40,11 +39,14 @@ import java.awt.AlphaComposite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.color.ColorSpace;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -81,129 +83,10 @@ import org.monte.media.jpeg.CMYKJPEGImageReaderSpi;
  * @author Alexander Chow
  * @author Shuyang Zhou
  */
-@DoPrivileged
 public class ImageToolImpl implements ImageTool {
 
 	public static ImageTool getInstance() {
 		return _instance;
-	}
-
-	public void afterPropertiesSet() {
-		Class<?> clazz = getClass();
-
-		ClassLoader classLoader = clazz.getClassLoader();
-
-		try {
-			InputStream inputStream = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_SPACER));
-
-			if (inputStream == null) {
-				_log.error("Default spacer is not available");
-			}
-
-			_defaultSpacer = getImage(inputStream);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default spacer: " + e.getMessage());
-		}
-
-		try {
-			InputStream inputStream = null;
-
-			String imageDefaultCompanyLogo = PropsUtil.get(
-				PropsKeys.IMAGE_DEFAULT_COMPANY_LOGO);
-
-			int index = imageDefaultCompanyLogo.indexOf(CharPool.SEMICOLON);
-
-			if (index == -1) {
-				inputStream = classLoader.getResourceAsStream(
-					PropsUtil.get(PropsKeys.IMAGE_DEFAULT_COMPANY_LOGO));
-			}
-			else {
-				String bundleIdString = imageDefaultCompanyLogo.substring(
-					0, index);
-
-				int bundleId = GetterUtil.getInteger(bundleIdString, -1);
-
-				String name = imageDefaultCompanyLogo.substring(index + 1);
-
-				if (bundleId < 0) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(
-							"Fallback to portal class loader because of " +
-								"invalid bundle ID " + bundleIdString);
-					}
-
-					inputStream = classLoader.getResourceAsStream(name);
-				}
-				else {
-					URL url = ModuleFrameworkUtilAdapter.getBundleResource(
-						bundleId, name);
-
-					inputStream = url.openStream();
-				}
-			}
-
-			if (inputStream == null) {
-				_log.error("Default company logo is not available");
-			}
-
-			_defaultCompanyLogo = getImage(inputStream);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default company logo: " +
-					e.getMessage());
-		}
-
-		try {
-			InputStream is = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_ORGANIZATION_LOGO));
-
-			if (is == null) {
-				_log.error("Default organization logo is not available");
-			}
-
-			_defaultOrganizationLogo = getImage(is);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default organization logo: " +
-					e.getMessage());
-		}
-
-		try {
-			InputStream is = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_FEMALE_PORTRAIT));
-
-			if (is == null) {
-				_log.error("Default user female portrait is not available");
-			}
-
-			_defaultUserFemalePortrait = getImage(is);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default user female portrait: " +
-					e.getMessage());
-		}
-
-		try {
-			InputStream is = classLoader.getResourceAsStream(
-				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_MALE_PORTRAIT));
-
-			if (is == null) {
-				_log.error("Default user male portrait is not available");
-			}
-
-			_defaultUserMalePortrait = getImage(is);
-		}
-		catch (Exception e) {
-			_log.error(
-				"Unable to configure the default user male portrait: " +
-					e.getMessage());
-		}
 	}
 
 	@Override
@@ -285,11 +168,11 @@ public class ImageToolImpl implements ImageTool {
 		BufferedImage targetImage = new BufferedImage(
 			sourceImage.getWidth(), sourceImage.getHeight(), type);
 
-		Graphics2D graphics = targetImage.createGraphics();
+		Graphics2D graphics2D = targetImage.createGraphics();
 
-		graphics.drawRenderedImage(sourceImage, null);
+		graphics2D.drawRenderedImage(sourceImage, null);
 
-		graphics.dispose();
+		graphics2D.dispose();
 
 		return targetImage;
 	}
@@ -361,7 +244,9 @@ public class ImageToolImpl implements ImageTool {
 			os.write(toMultiByte(bufferedImage.getWidth()));
 			os.write(toMultiByte(bufferedImage.getHeight()));
 
-			DataBuffer dataBuffer = bufferedImage.getData().getDataBuffer();
+			Raster data = bufferedImage.getData();
+
+			DataBuffer dataBuffer = data.getDataBuffer();
 
 			int size = dataBuffer.getSize();
 
@@ -369,6 +254,36 @@ public class ImageToolImpl implements ImageTool {
 				os.write((byte)dataBuffer.getElem(i));
 			}
 		}
+	}
+
+	@Override
+	public RenderedImage flipHorizontal(RenderedImage renderedImage) {
+		BufferedImage bufferedImage = getBufferedImage(renderedImage);
+
+		AffineTransform affineTransform = AffineTransform.getScaleInstance(
+			-1.0, 1.0);
+
+		affineTransform.translate(-bufferedImage.getWidth(), 0);
+
+		AffineTransformOp affineTransformOp = new AffineTransformOp(
+			affineTransform, null);
+
+		return affineTransformOp.filter(bufferedImage, null);
+	}
+
+	@Override
+	public RenderedImage flipVertical(RenderedImage renderedImage) {
+		BufferedImage bufferedImage = getBufferedImage(renderedImage);
+
+		AffineTransform affineTransform = AffineTransform.getScaleInstance(
+			1.0, -1.0);
+
+		affineTransform.translate(0, -bufferedImage.getHeight());
+
+		AffineTransformOp affineTransformOp = new AffineTransformOp(
+			affineTransform, null);
+
+		return affineTransformOp.filter(bufferedImage, null);
 	}
 
 	@Override
@@ -415,27 +330,196 @@ public class ImageToolImpl implements ImageTool {
 
 	@Override
 	public Image getDefaultCompanyLogo() {
+		if (_defaultCompanyLogo != null) {
+			return _defaultCompanyLogo;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream inputStream = null;
+
+			String imageDefaultCompanyLogo = PropsUtil.get(
+				PropsKeys.IMAGE_DEFAULT_COMPANY_LOGO);
+
+			int index = imageDefaultCompanyLogo.indexOf(CharPool.SEMICOLON);
+
+			if (index == -1) {
+				inputStream = classLoader.getResourceAsStream(
+					PropsUtil.get(PropsKeys.IMAGE_DEFAULT_COMPANY_LOGO));
+			}
+			else {
+				String bundleIdString = imageDefaultCompanyLogo.substring(
+					0, index);
+
+				int bundleId = GetterUtil.getInteger(bundleIdString, -1);
+
+				String name = imageDefaultCompanyLogo.substring(index + 1);
+
+				if (bundleId < 0) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Fallback to portal class loader because of " +
+								"invalid bundle ID " + bundleIdString);
+					}
+
+					inputStream = classLoader.getResourceAsStream(name);
+				}
+				else {
+					URL url = ModuleFrameworkUtilAdapter.getBundleResource(
+						bundleId, name);
+
+					inputStream = url.openStream();
+				}
+			}
+
+			if (inputStream == null) {
+				_log.error("Default company logo is not available");
+			}
+
+			_defaultCompanyLogo = getImage(inputStream);
+		}
+		catch (Exception e) {
+			_log.error(
+				"Unable to configure the default company logo: " +
+					e.getMessage());
+		}
+
 		return _defaultCompanyLogo;
 	}
 
 	@Override
 	public Image getDefaultOrganizationLogo() {
+		if (_defaultOrganizationLogo != null) {
+			return _defaultOrganizationLogo;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream is = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_ORGANIZATION_LOGO));
+
+			if (is == null) {
+				_log.error("Default organization logo is not available");
+			}
+
+			_defaultOrganizationLogo = getImage(is);
+		}
+		catch (Exception e) {
+			_log.error(
+				"Unable to configure the default organization logo: " +
+					e.getMessage());
+		}
+
 		return _defaultOrganizationLogo;
 	}
 
 	@Override
 	public Image getDefaultSpacer() {
+		if (_defaultSpacer != null) {
+			return _defaultSpacer;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream inputStream = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_SPACER));
+
+			if (inputStream == null) {
+				_log.error("Default spacer is not available");
+			}
+
+			_defaultSpacer = getImage(inputStream);
+		}
+		catch (Exception e) {
+			_log.error(
+				"Unable to configure the default spacer: " + e.getMessage());
+		}
+
 		return _defaultSpacer;
 	}
 
 	@Override
 	public Image getDefaultUserFemalePortrait() {
+		if (_defaultUserFemalePortrait != null) {
+			return _defaultUserFemalePortrait;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream is = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_FEMALE_PORTRAIT));
+
+			if (is == null) {
+				_log.error("Default user female portrait is not available");
+			}
+
+			_defaultUserFemalePortrait = getImage(is);
+		}
+		catch (Exception e) {
+			_log.error(
+				"Unable to configure the default user female portrait: " +
+					e.getMessage());
+		}
+
 		return _defaultUserFemalePortrait;
 	}
 
 	@Override
 	public Image getDefaultUserMalePortrait() {
+		if (_defaultUserMalePortrait != null) {
+			return _defaultUserMalePortrait;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream is = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_MALE_PORTRAIT));
+
+			if (is == null) {
+				_log.error("Default user male portrait is not available");
+			}
+
+			_defaultUserMalePortrait = getImage(is);
+		}
+		catch (Exception e) {
+			_log.error(
+				"Unable to configure the default user male portrait: " +
+					e.getMessage());
+		}
+
 		return _defaultUserMalePortrait;
+	}
+
+	@Override
+	public Image getDefaultUserPortrait() {
+		if (_defaultUserPortrait != null) {
+			return _defaultUserPortrait;
+		}
+
+		ClassLoader classLoader = ImageToolImpl.class.getClassLoader();
+
+		try {
+			InputStream is = classLoader.getResourceAsStream(
+				PropsUtil.get(PropsKeys.IMAGE_DEFAULT_USER_PORTRAIT));
+
+			if (is == null) {
+				_log.error("Default user portrait is not available");
+			}
+
+			_defaultUserPortrait = getImage(is);
+		}
+		catch (Exception e) {
+			_log.error(
+				"Unable to configure the default user portrait: " +
+					e.getMessage());
+		}
+
+		return _defaultUserPortrait;
 	}
 
 	@Override
@@ -505,9 +589,8 @@ public class ImageToolImpl implements ImageTool {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -537,8 +620,10 @@ public class ImageToolImpl implements ImageTool {
 					int height = imageReader.getHeight(0);
 					int width = imageReader.getWidth(0);
 
-					if ((height > PropsValues.IMAGE_TOOL_IMAGE_MAX_HEIGHT) ||
-						(width > PropsValues.IMAGE_TOOL_IMAGE_MAX_WIDTH)) {
+					if (((PropsValues.IMAGE_TOOL_IMAGE_MAX_HEIGHT > 0) &&
+						 (height > PropsValues.IMAGE_TOOL_IMAGE_MAX_HEIGHT)) ||
+						((PropsValues.IMAGE_TOOL_IMAGE_MAX_WIDTH > 0) &&
+						 (width > PropsValues.IMAGE_TOOL_IMAGE_MAX_WIDTH))) {
 
 						StringBundler sb = new StringBundler(9);
 
@@ -622,17 +707,55 @@ public class ImageToolImpl implements ImageTool {
 	}
 
 	@Override
+	public RenderedImage rotate(RenderedImage renderedImage, int degrees) {
+		BufferedImage bufferedImage = getBufferedImage(renderedImage);
+
+		int imageWidth = bufferedImage.getWidth();
+		int imageHeight = bufferedImage.getHeight();
+
+		double radians = Math.toRadians(degrees);
+
+		double absoluteSin = Math.abs(Math.sin(radians));
+		double absoluteCos = Math.abs(Math.cos(radians));
+
+		int rotatedImageWidth = (int)Math.floor(
+			(imageWidth * absoluteCos) + (imageHeight * absoluteSin));
+		int rotatedImageHeight = (int)Math.floor(
+			(imageHeight * absoluteCos) + (imageWidth * absoluteSin));
+
+		BufferedImage rotatedBufferedImage = new BufferedImage(
+			rotatedImageWidth, rotatedImageHeight, bufferedImage.getType());
+
+		AffineTransform affineTransform = new AffineTransform();
+
+		affineTransform.translate(
+			rotatedImageWidth / 2, rotatedImageHeight / 2);
+		affineTransform.rotate(radians);
+		affineTransform.translate(imageWidth / -2, imageHeight / -2);
+
+		Graphics2D graphics2D = rotatedBufferedImage.createGraphics();
+
+		graphics2D.drawImage(bufferedImage, affineTransform, null);
+
+		graphics2D.dispose();
+
+		return rotatedBufferedImage;
+	}
+
+	@Override
 	public RenderedImage scale(RenderedImage renderedImage, int width) {
 		if (width <= 0) {
 			return renderedImage;
 		}
 
 		int imageHeight = renderedImage.getHeight();
+
 		int imageWidth = renderedImage.getWidth();
 
 		double factor = (double)width / imageWidth;
 
 		int scaledHeight = (int)Math.round(factor * imageHeight);
+
 		int scaledWidth = width;
 
 		return doScale(renderedImage, scaledHeight, scaledWidth);
@@ -699,21 +822,99 @@ public class ImageToolImpl implements ImageTool {
 
 		BufferedImage originalBufferedImage = getBufferedImage(renderedImage);
 
-		ColorModel originalColorModel = originalBufferedImage.getColorModel();
+		int type = originalBufferedImage.getType();
 
-		ColorSpace colorSpace = originalColorModel.getColorSpace();
+		if (type == BufferedImage.TYPE_CUSTOM) {
+			type = BufferedImage.TYPE_INT_ARGB;
+		}
 
 		BufferedImage scaledBufferedImage = new BufferedImage(
-			scaledWidth, scaledHeight, colorSpace.getType());
+			scaledWidth, scaledHeight, type);
+
+		int originalHeight = originalBufferedImage.getHeight();
+		int originalWidth = originalBufferedImage.getWidth();
+
+		if (((scaledHeight * 2) >= originalHeight) &&
+			((scaledWidth * 2) >= originalWidth)) {
+
+			Graphics2D scaledGraphics2D = scaledBufferedImage.createGraphics();
+
+			scaledGraphics2D.setRenderingHint(
+				RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
+			scaledGraphics2D.setRenderingHint(
+				RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			scaledGraphics2D.setRenderingHint(
+				RenderingHints.KEY_RENDERING,
+				RenderingHints.VALUE_RENDER_QUALITY);
+
+			scaledGraphics2D.drawImage(
+				originalBufferedImage, 0, 0, scaledWidth, scaledHeight, null);
+
+			scaledGraphics2D.dispose();
+
+			return scaledBufferedImage;
+		}
+
+		BufferedImage tempBufferedImage = new BufferedImage(
+			originalWidth, originalHeight, scaledBufferedImage.getType());
+
+		Graphics2D tempGraphics2D = tempBufferedImage.createGraphics();
+
+		RenderingHints renderingHints = new RenderingHints(
+			RenderingHints.KEY_INTERPOLATION,
+			RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+		tempGraphics2D.setRenderingHints(renderingHints);
+
+		ColorModel originalColorModel = originalBufferedImage.getColorModel();
+
+		if (originalColorModel.hasAlpha()) {
+			tempGraphics2D.setComposite(AlphaComposite.Src);
+		}
+
+		int startHeight = scaledHeight;
+		int startWidth = scaledWidth;
+
+		while ((startHeight < originalHeight) && (startWidth < originalWidth)) {
+			startHeight *= 2;
+			startWidth *= 2;
+		}
+
+		originalHeight = startHeight / 2;
+		originalWidth = startWidth / 2;
+
+		tempGraphics2D.drawImage(
+			originalBufferedImage, 0, 0, originalWidth, originalHeight, null);
+
+		while ((originalHeight >= (scaledHeight * 2)) &&
+			   (originalWidth >= (scaledWidth * 2))) {
+
+			originalHeight /= 2;
+
+			if (originalHeight < scaledHeight) {
+				originalHeight = scaledHeight;
+			}
+
+			originalWidth /= 2;
+
+			if (originalWidth < scaledWidth) {
+				originalWidth = scaledWidth;
+			}
+
+			tempGraphics2D.drawImage(
+				tempBufferedImage, 0, 0, originalWidth, originalHeight, 0, 0,
+				originalWidth * 2, originalHeight * 2, null);
+		}
+
+		tempGraphics2D.dispose();
 
 		Graphics2D scaledGraphics2D = scaledBufferedImage.createGraphics();
 
-		if (originalColorModel.hasAlpha()) {
-			scaledGraphics2D.setComposite(AlphaComposite.Src);
-		}
-
 		scaledGraphics2D.drawImage(
-			originalBufferedImage, 0, 0, scaledWidth, scaledHeight, null);
+			tempBufferedImage, 0, 0, scaledWidth, scaledHeight, 0, 0,
+			originalWidth, originalHeight, null);
 
 		scaledGraphics2D.dispose();
 
@@ -773,6 +974,7 @@ public class ImageToolImpl implements ImageTool {
 		}
 
 		int numBitsLeft = numBits;
+
 		byte[] multiBytes = new byte[(numBitsLeft + 6) / 7];
 
 		int maxIndex = multiBytes.length - 1;
@@ -806,5 +1008,6 @@ public class ImageToolImpl implements ImageTool {
 	private Image _defaultSpacer;
 	private Image _defaultUserFemalePortrait;
 	private Image _defaultUserMalePortrait;
+	private Image _defaultUserPortrait;
 
 }

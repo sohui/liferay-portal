@@ -14,16 +14,15 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the Group service. Represents a row in the &quot;Group_&quot; database table, with each column mapped to a property of this class.
@@ -39,10 +38,11 @@ import java.util.List;
  */
 @ProviderType
 public abstract class GroupBaseImpl extends GroupModelImpl implements Group {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a group model instance should use the {@link Group} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a group model instance should use the <code>Group</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -67,15 +67,15 @@ public abstract class GroupBaseImpl extends GroupModelImpl implements Group {
 			group = GroupLocalServiceUtil.fetchGroup(group.getParentGroupId());
 		}
 
-		StringBundler sb = new StringBundler((groups.size() * 2) + 1);
+		StringBundler sb = new StringBundler(groups.size() * 2 + 1);
 
-		sb.append(StringPool.SLASH);
+		sb.append("/");
 
 		for (int i = groups.size() - 1; i >= 0; i--) {
 			group = groups.get(i);
 
 			sb.append(group.getGroupId());
-			sb.append(StringPool.SLASH);
+			sb.append("/");
 		}
 
 		return sb.toString();
@@ -89,4 +89,5 @@ public abstract class GroupBaseImpl extends GroupModelImpl implements Group {
 
 		GroupLocalServiceUtil.updateGroup(group);
 	}
+
 }

@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.util.List;
 
 /**
@@ -44,6 +42,10 @@ public class PersistedModelLocalServiceRegistryUtil {
 			getPersistedModelLocalServices();
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static boolean isPermissionedModelLocalService(String className) {
 		return getPersistedModelLocalServiceRegistry().
 			isPermissionedModelLocalService(className);
@@ -63,8 +65,6 @@ public class PersistedModelLocalServiceRegistryUtil {
 
 	public void setPersistedModelLocalServiceRegistry(
 		PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_persistedModelLocalServiceRegistry =
 			persistedModelLocalServiceRegistry;

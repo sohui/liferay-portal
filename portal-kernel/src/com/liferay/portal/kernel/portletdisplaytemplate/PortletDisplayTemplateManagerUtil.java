@@ -16,7 +16,7 @@ package com.liferay.portal.kernel.portletdisplaytemplate;
 
 import com.liferay.dynamic.data.mapping.kernel.DDMTemplate;
 import com.liferay.portal.kernel.template.TemplateVariableGroup;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -49,17 +49,32 @@ public class PortletDisplayTemplateManagerUtil {
 	}
 
 	public static String renderDDMTemplate(
-			HttpServletRequest request, HttpServletResponse response,
-			long templateId, List<?> entries,
-			Map<String, Object> contextObjects)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, DDMTemplate ddmTemplate,
+			List<?> entries, Map<String, Object> contextObjects)
 		throws Exception {
 
 		return _portletDisplayTemplateManager.renderDDMTemplate(
-			request, response, templateId, entries, contextObjects);
+			httpServletRequest, httpServletResponse, ddmTemplate, entries,
+			contextObjects);
 	}
 
-	private static final PortletDisplayTemplateManager
-		_portletDisplayTemplateManager = ProxyFactory.newServiceTrackedInstance(
-			PortletDisplayTemplateManager.class);
+	public static String renderDDMTemplate(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, long templateId,
+			List<?> entries, Map<String, Object> contextObjects)
+		throws Exception {
+
+		return _portletDisplayTemplateManager.renderDDMTemplate(
+			httpServletRequest, httpServletResponse, templateId, entries,
+			contextObjects);
+	}
+
+	private static volatile PortletDisplayTemplateManager
+		_portletDisplayTemplateManager =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				PortletDisplayTemplateManager.class,
+				PortletDisplayTemplateManagerUtil.class,
+				"_portletDisplayTemplateManager", false);
 
 }

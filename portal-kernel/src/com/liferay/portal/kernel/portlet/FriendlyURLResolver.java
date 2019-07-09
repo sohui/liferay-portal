@@ -14,15 +14,16 @@
 
 package com.liferay.portal.kernel.portlet;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.LayoutFriendlyURLComposite;
 
 import java.util.Map;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
+ * @author Marco Leo
  */
 @ProviderType
 public interface FriendlyURLResolver {
@@ -38,6 +39,22 @@ public interface FriendlyURLResolver {
 			String friendlyURL, Map<String, String[]> params,
 			Map<String, Object> requestContext)
 		throws PortalException;
+
+	public default LayoutFriendlyURLSeparatorComposite
+			getLayoutFriendlyURLSeparatorComposite(
+				long companyId, long groupId, boolean privateLayout,
+				String friendlyURL, Map<String, String[]> params,
+				Map<String, Object> requestContext)
+		throws PortalException {
+
+		LayoutFriendlyURLComposite layoutFriendlyURLComposite =
+			getLayoutFriendlyURLComposite(
+				companyId, groupId, privateLayout, friendlyURL, params,
+				requestContext);
+
+		return new LayoutFriendlyURLSeparatorComposite(
+			layoutFriendlyURLComposite, getURLSeparator());
+	}
 
 	public String getURLSeparator();
 

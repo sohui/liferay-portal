@@ -1,0 +1,149 @@
+{namespace Text}
+
+{template .render}
+	{@param name: string}
+	{@param? _handleFieldBlurred: any}
+	{@param? _handleFieldChanged: any}
+	{@param? _handleFieldFocused: any}
+	{@param? _handleAutocompleteSelected: any}
+	{@param? _handleAutocompleteFieldFocused: any}
+	{@param? _handleAutocompleteFieldBlurred: any}
+	{@param? _handleAutocompleteFieldChanged: any}
+	{@param? _handleAutocompleteFilteredItemsChanged: any}
+	{@param? _value: string}
+	{@param? autocompleteEnabled: bool}
+	{@param? displayErrors: bool}
+	{@param? displayStyle: string}
+	{@param? errorMessage: string}
+	{@param? filteredItems: list<?>}
+	{@param? id: string}
+	{@param? label: string}
+	{@param? options: list<?>}
+	{@param? placeholder: string}
+	{@param? predefinedValue: string}
+	{@param? readOnly: bool}
+	{@param? repeatable: bool}
+	{@param? required: bool}
+	{@param? showLabel: bool}
+	{@param? spritemap: string}
+	{@param? tip: string}
+	{@param? tooltip: string}
+	{@param? valid: bool}
+	{@param? visible: bool}
+
+	{call FieldBase.render}
+		{param contentRenderer kind="html"}
+			{call .content}
+				{param _handleFieldBlurred: $_handleFieldBlurred /}
+				{param _handleFieldChanged: $_handleFieldChanged /}
+				{param _handleFieldFocused: $_handleFieldFocused /}
+				{param _handleAutocompleteSelected: $_handleAutocompleteSelected /}
+				{param _handleAutocompleteFieldFocused: $_handleAutocompleteFieldFocused /}
+				{param _handleAutocompleteFieldBlurred: $_handleAutocompleteFieldBlurred /}
+				{param _handleAutocompleteFieldChanged: $_handleAutocompleteFieldChanged /}
+				{param _handleAutocompleteFilteredItemsChanged: $_handleAutocompleteFilteredItemsChanged /}
+				{param autocompleteEnabled: $autocompleteEnabled /}
+				{param displayStyle: $displayStyle /}
+				{param filteredItems: $filteredItems /}
+				{param id: $id /}
+				{param name: $name /}
+				{param options: $options/}
+				{param placeholder: $placeholder /}
+				{param predefinedValue: $predefinedValue /}
+				{param readOnly: $readOnly /}
+				{param value: $_value /}
+			{/call}
+		{/param}
+		{param displayErrors: $displayErrors /}
+		{param errorMessage: $errorMessage /}
+		{param id: $id /}
+		{param label: $label /}
+		{param name: $name /}
+		{param readOnly: $readOnly /}
+		{param repeatable: $repeatable /}
+		{param required: $required /}
+		{param showLabel: $showLabel /}
+		{param spritemap: $spritemap /}
+		{param tip: $tip /}
+		{param tooltip: $tooltip /}
+		{param valid: $valid /}
+		{param visible: $visible /}
+	{/call}
+{/template}
+
+{template .content}
+	{@param name: string}
+	{@param? _handleFieldBlurred: any}
+	{@param? _handleFieldChanged: any}
+	{@param? _handleFieldFocused: any}
+	{@param? _handleAutocompleteSelected: any}
+	{@param? _handleAutocompleteFieldFocused: any}
+	{@param? _handleAutocompleteFieldBlurred: any}
+	{@param? _handleAutocompleteFieldChanged: any}
+	{@param? _handleAutocompleteFilteredItemsChanged: any}
+	{@param? autocompleteEnabled: bool}
+	{@param? displayStyle: string}
+	{@param? filteredItems: list<?>}
+	{@param? id: string}
+	{@param? options: list<?>}
+	{@param? placeholder: string}
+	{@param? predefinedValue: string}
+	{@param? readOnly: bool}
+	{@param? value: string}
+
+	{let $attributes kind="attributes"}
+		class="ddm-field-text form-control"
+
+		name="{$name}"
+
+		type="text"
+
+		data-oninput="{$_handleFieldChanged}"
+
+		data-onfocus="{$_handleFieldFocused}"
+
+		{if $id}
+			id="{$id}"
+		{/if}
+
+		{if $placeholder}
+			placeholder="{$placeholder}"
+		{/if}
+
+		type="text"
+
+		data-onblur="{$_handleFieldBlurred}"
+
+		{if $readOnly}
+			disabled="disabled"
+		{/if}
+
+		{if $value}
+			value="{$value}"
+		{else}
+			value="{$predefinedValue}"
+		{/if}
+	{/let}
+
+	{if $displayStyle == 'multiline'}
+		<textarea {$attributes}></textarea>
+	{elseif ($displayStyle == 'singleline' and $readOnly) or not($autocompleteEnabled)}
+		<input {$attributes}>
+	{elseif $autocompleteEnabled and isNonnull($options) and length($options) > 0}
+		{call ClayAutocomplete.render}
+			{param dataSource: $options /}
+			{param events: [
+				'itemSelected': $_handleAutocompleteSelected,
+				'inputOnFocus': $_handleAutocompleteFieldFocused,
+				'inputOnBlur': $_handleAutocompleteFieldBlurred,
+				'inputChange': $_handleAutocompleteFieldChanged,
+				'filteredItemsChanged': $_handleAutocompleteFilteredItemsChanged
+			] /}
+			{param filteredItems: $filteredItems /}
+			{param ref: 'autocomplete'/}
+			{param inputValue: $value /}
+			{param inputName: $name /}
+		{/call}
+	{/if}
+
+{/template}

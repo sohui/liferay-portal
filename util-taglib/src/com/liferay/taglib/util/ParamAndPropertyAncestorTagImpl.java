@@ -15,6 +15,7 @@
 package com.liferay.taglib.util;
 
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.BaseBodyTagSupport;
 
@@ -37,6 +38,10 @@ public class ParamAndPropertyAncestorTagImpl
 
 	@Override
 	public void addParam(String name, String value) {
+		if (Validator.isNull(name)) {
+			throw new IllegalArgumentException();
+		}
+
 		if (_dynamicServletRequest == null) {
 			_dynamicServletRequest = new DynamicServletRequest(request);
 
@@ -129,9 +134,8 @@ public class ParamAndPropertyAncestorTagImpl
 		if (_dynamicServletRequest != null) {
 			return _dynamicServletRequest.getDynamicParameterMap();
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	public Map<String, String[]> getProperties() {

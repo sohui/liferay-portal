@@ -20,8 +20,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * @author Cristina González
+ * @author     Cristina González
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public interface UpgradeOptimizedConnectionProvider {
 
 	public Connection getConnection() throws SQLException;

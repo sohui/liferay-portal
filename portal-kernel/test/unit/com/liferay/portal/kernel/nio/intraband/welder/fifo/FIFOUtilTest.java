@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.nio.intraband.welder.fifo;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.test.CaptureHandler;
@@ -24,7 +25,6 @@ import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
 import com.liferay.portal.kernel.test.rule.NewEnvTestRule;
 import com.liferay.portal.kernel.util.OSDetector;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -136,7 +136,9 @@ public class FIFOUtilTest {
 							try {
 								checkFlag.set(true);
 
-								new File(file).createNewFile();
+								File tempFile = new File(file);
+
+								tempFile.createNewFile();
 
 								checkFlag.set(false);
 							}
@@ -183,7 +185,7 @@ public class FIFOUtilTest {
 				System.setProperty("java.io.tmpdir", oldTmpDirName);
 			}
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -198,8 +200,8 @@ public class FIFOUtilTest {
 
 			Assert.assertTrue(
 				message.startsWith(
-					"Unable to create FIFO with command \"mkfifo\", " +
-						"external process returned "));
+					"Unable to create FIFO with command \"mkfifo\", external " +
+						"process returned "));
 		}
 	}
 
@@ -230,7 +232,7 @@ public class FIFOUtilTest {
 				System.setProperty("java.io.tmpdir", oldTmpDirName);
 			}
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 	}
 

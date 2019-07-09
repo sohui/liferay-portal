@@ -53,56 +53,36 @@
 			<matches></matches>
 		</ignore-error>
 		<ignore-error description="">
+			<contains>Do NOT use embedded Elasticsearch in production</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="">
+			<contains>Do NOT use Hypersonic in production</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="">
 			<contains>INFO:</contains>
 			<matches></matches>
 		</ignore-error>
-		<ignore-error description="LPS-17639">
-			<contains>Table 'lportal.lock_' doesn't exist</contains>
-			<matches></matches>
-		</ignore-error>
-		<ignore-error description="LPS-17639">
-			<contains>Table 'lportal.Lock_' doesn't exist</contains>
+		<ignore-error description="">
+			<contains>No theme found for specified theme id userdashboard_WAR_userdashboardtheme</contains>
 			<matches></matches>
 		</ignore-error>
 		<ignore-error description="LPS-22821">
 			<contains>Exception sending context destroyed event to listener instance of class com.liferay.portal.spring.context.PortalContextLoaderListener</contains>
 			<matches></matches>
 		</ignore-error>
-		<ignore-error description="LPS-23351">
-			<contains>user lacks privilege or object not found: LOCK_</contains>
-			<matches></matches>
-		</ignore-error>
 		<ignore-error description="LPS-23498">
 			<contains>JBREM00200:</contains>
 			<matches></matches>
-		</ignore-error>
-		<ignore-error description="LPS-28734">
-			<contains>java.nio.channels.ClosedChannelException</contains>
-			<matches></matches>
-		</ignore-error>
-		<ignore-error description="LPS-28954">
-			<contains>[org.apache.axis.utils.XMLUtils.ThreadLocalDocumentBuilder]</contains>
-			<matches>.*The web application \[/wsrp-portlet\] created a ThreadLocal with key of type.*</matches>
-		</ignore-error>
-		<ignore-error description="LPS-28954">
-			<contains>[org.apache.xml.security.utils.UnsyncByteArrayOutputStream$1]</contains>
-			<matches>.*The web application \[/wsrp-portlet\] created a ThreadLocal with key of type.*</matches>
 		</ignore-error>
 		<ignore-error description="LPS-37574">
 			<contains>java.util.zip.ZipException: ZipFile closed</contains>
 			<matches></matches>
 		</ignore-error>
-		<ignore-error description="LPS-41257">
-			<contains>[de.schlichtherle</contains>
-			<matches>.*The web application \[\] created a ThreadLocal with key of type.*</matches>
-		</ignore-error>
 		<ignore-error description="LPS-41776">
 			<contains>SEC5054: Certificate has expired</contains>
 			<matches></matches>
-		</ignore-error>
-		<ignore-error description="LPS-41863">
-			<contains></contains>
-			<matches>.*\[org.hibernate.engine.jdbc.JdbcSupportLoader\] \(MSC service thread .*\) Disabling contextual LOB .*</matches>
 		</ignore-error>
 		<ignore-error description="LPS-46161">
 			<contains>[com.google.javascript.jscomp.Tracer.ThreadTrace]</contains>
@@ -136,15 +116,6 @@
 			<contains>[org.apache.xmlbeans.impl.store.Locale$1]</contains>
 			<matches>.*The web application \[\] created a ThreadLocal with key of type.*</matches>
 		</ignore-error>
-		<ignore-error description="LPS-49505">
-			<contains>[org.jruby.RubyEncoding$2]</contains>
-			<description>LPS-49505</description>
-			<matches>.*The web application \[\] created a ThreadLocal with key of type.*</matches>
-		</ignore-error>
-		<ignore-error description="LPS-49506">
-			<contains>[org.joni.StackMachine$1]</contains>
-			<matches>.*The web application \[\] created a ThreadLocal with key of type.*</matches>
-		</ignore-error>
 		<ignore-error description="LPS-49628">
 			<contains>[org.apache.poi.extractor.ExtractorFactory$1]</contains>
 			<matches>.*The web application \[\] created a ThreadLocal with key of type.*</matches>
@@ -153,21 +124,9 @@
 			<contains>[org.apache.xmlbeans.XmlBeans$1]</contains>
 			<matches>.*The web application \[\] created a ThreadLocal with key of type.*</matches>
 		</ignore-error>
-		<ignore-error description="LPS-50047">
-			<contains>[com.sun.syndication.feed.impl.ToStringBean$1]</contains>
-			<matches>.*The web application \[\] created a ThreadLocal with key of type.*</matches>
-		</ignore-error>
-		<ignore-error description="LPS-50936">
-			<contains>Liferay does not have the Xuggler native libraries installed.</contains>
-			<matches></matches>
-		</ignore-error>
 		<ignore-error description="LPS-51371">
 			<contains>[net.sf.jasperreports.engine.fonts.FontUtil$1]</contains>
 			<matches>.*The web application \[/jasperreports-web\] created a ThreadLocal with key of type.*</matches>
-		</ignore-error>
-		<ignore-error description="LPS-52346">
-			<contains>[org.apache.jasper.runtime.JspWriterImpl.CharBufferThreadLocalPool]</contains>
-			<matches>.*The web application \[\] created a ThreadLocal with key of type.*</matches>
 		</ignore-error>
 		<ignore-error description="LPS-52699">
 			<contains></contains>
@@ -205,28 +164,80 @@
 			<contains></contains>
 			<matches>.*osgi.compendium:service=.*version=1.[0-9]+.*</matches>
 		</ignore-error>
+		<ignore-error description="LPS-63595">
+			<contains>Application exception overridden by commit exception</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LPS-65131">
+			<contains></contains>
+			<matches>.*Table.*does not exist.*</matches>
+		</ignore-error>
 		<ignore-error description="LPS-65878, temporary workaround until Tina Tian fixes it">
 			<contains>The addSearchEngineConfigurator method has thrown an exception</contains>
 			<matches></matches>
 		</ignore-error>
-		<ignore-error description="LPS-65961">
-			<contains>Unable to add taglib</contains>
+		<ignore-error description="LPS-81732">
+			<contains>There are no actions associated with the resource com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion</contains>
 			<matches></matches>
 		</ignore-error>
-		<ignore-error description="LRQA-14442, temporary workaround until Kiyoshi Lee fixes it">
-			<contains>[org_eclipse_equinox_http_servlet.*Framework Event Dispatcher: Equinox Container:</contains>
+		<ignore-error description="LPS-88391, LPS-88417">
+			<contains></contains>
+			<matches>Attempting to upgrade table .* by recreating the table [\s\S]*</matches>
+		</ignore-error>
+		<ignore-error description="LPS-88391, LPS-88417">
+			<contains></contains>
+			<matches>Successfully recreated and upgraded table .*</matches>
+		</ignore-error>
+		<ignore-error description="LPS-88395 - temporarily ignore until fixed">
+			<contains>IX_CED31606</contains>
 			<matches></matches>
 		</ignore-error>
-		<ignore-error description="LRQA-21866">
-			<contains></contains>
-			<matches>.*\(/o/frontend-js-metal-web-1.0.0/metal-promise/src/promise/Promise.js:.*\): @define variable  assignment must be global.*</matches>
+		<ignore-error description="LPS-88412 - temporarily ignore until fixed">
+			<contains>drop table if exists Kaleo</contains>
+			<matches></matches>
 		</ignore-error>
-		<ignore-error description="LRQA-21866">
+		<ignore-error description="LPS-88418 - temporarily ignore until fixed">
+			<contains>There is already an index on table</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LPS-88418 - temporarily ignore until fixed">
+			<contains>SQLSTATE=42710</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LPS-88431">
 			<contains></contains>
-			<matches>.*\{0\} error\(s\), \{1\} warning\(s\).*</matches>
+			<matches>.*Unable to find class loader for com.liferay.portal.cluster.multiple_.* class loader com.liferay.portal.cluster.multiple_.*</matches>
+		</ignore-error>
+		<ignore-error description="LPS-88431">
+			<contains></contains>
+			<matches>.*Unable to find class loader for com.liferay.portal.scheduler.quartz_.* class loader com.liferay.portal.scheduler.quartz_.*</matches>
+		</ignore-error>
+		<ignore-error description="LPS-88522 - temporarily ignore until fixed">
+			<contains>already has the column lastPublishDate</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LPS-88523 - temporarily ignore until fixed">
+			<contains>Implicit conversion from datatype 'VARCHAR' to 'DECIMAL' is not allowed.  Use the CONVERT function to run this query.</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LPS-88523 - temporarily ignore until fixed">
+			<contains>IX_717B97E1</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LPS-88553 - temporarily ignore until fixed">
+			<contains>Returning the default theme</contains>
+			<matches></matches>
 		</ignore-error>
 		<ignore-error description="LRQA-24859">
 			<contains>No binary licenses found</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LRQA-34199, temporarily ignore SAMLBootstrap error">
+			<contains>The activate method has thrown an exception</contains>
+			<matches></matches>
+		</ignore-error>
+		<ignore-error description="LRQA-46637, temporarily ignore metadata errors">
+			<contains>Unable to save metadata for file version</contains>
 			<matches></matches>
 		</ignore-error>
 		<ignore-error description="WCM-202">

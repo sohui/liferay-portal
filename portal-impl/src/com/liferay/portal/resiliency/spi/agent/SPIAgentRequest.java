@@ -14,7 +14,9 @@
 
 package com.liferay.portal.resiliency.spi.agent;
 
-import com.liferay.portal.kernel.io.AutoDeleteFileInputStream;
+import com.liferay.petra.io.AutoDeleteFileInputStream;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.resiliency.spi.agent.annotation.Direction;
@@ -29,8 +31,6 @@ import com.liferay.portal.kernel.util.CookieUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StreamUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.upload.UploadServletRequestImpl;
@@ -60,24 +60,25 @@ import javax.servlet.http.HttpSession;
 public class SPIAgentRequest extends SPIAgentSerializable {
 
 	public static void populatePortletSessionAttributes(
-		HttpServletRequest request, HttpSession session) {
+		HttpServletRequest httpServletRequest, HttpSession session) {
 
 		if (!SPIUtil.isSPI()) {
 			return;
 		}
 
-		if (request.getAttribute(WebKeys.PORTLET_SESSION) != null) {
+		if (httpServletRequest.getAttribute(WebKeys.PORTLET_SESSION) != null) {
 			return;
 		}
 
-		SPIAgentRequest spiAgentRequest = (SPIAgentRequest)request.getAttribute(
-			WebKeys.SPI_AGENT_REQUEST);
+		SPIAgentRequest spiAgentRequest =
+			(SPIAgentRequest)httpServletRequest.getAttribute(
+				WebKeys.SPI_AGENT_REQUEST);
 
 		if (spiAgentRequest == null) {
 			return;
 		}
 
-		request.setAttribute(WebKeys.PORTLET_SESSION, session);
+		httpServletRequest.setAttribute(WebKeys.PORTLET_SESSION, session);
 
 		Map<String, Serializable> originalSessionAttributes =
 			spiAgentRequest.originalSessionAttributes;
@@ -105,12 +106,14 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 		}
 	}
 
-	public SPIAgentRequest(HttpServletRequest request) throws IOException {
+	public SPIAgentRequest(HttpServletRequest httpServletRequest)
+		throws IOException {
+
 		super(
-			((Portlet)request.getAttribute(
+			((Portlet)httpServletRequest.getAttribute(
 				WebKeys.SPI_AGENT_PORTLET)).getContextName());
 
-		Cookie[] cookies = request.getCookies();
+		Cookie[] cookies = httpServletRequest.getCookies();
 
 		if (cookies != null) {
 			cookiesBytes = new byte[cookies.length][];
@@ -121,36 +124,39 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 		}
 
 		distributedRequestAttributes = extractDistributedRequestAttributes(
-			request, Direction.REQUEST);
-		headerMap = extractRequestHeaders(request);
-		parameterMap = new HashMap<>(request.getParameterMap());
-		remoteAddr = request.getRemoteAddr();
-		remoteHost = request.getRemoteHost();
-		remotePort = request.getRemotePort();
-		remoteUser = request.getRemoteUser();
-		serverName = request.getServerName();
-		serverPort = request.getServerPort();
+			httpServletRequest, Direction.REQUEST);
+		headerMap = extractRequestHeaders(httpServletRequest);
+		parameterMap = new HashMap<>(httpServletRequest.getParameterMap());
+		remoteAddr = httpServletRequest.getRemoteAddr();
+		remoteHost = httpServletRequest.getRemoteHost();
+		remotePort = httpServletRequest.getRemotePort();
+		remoteUser = httpServletRequest.getRemoteUser();
+		serverName = httpServletRequest.getServerName();
+		serverPort = httpServletRequest.getServerPort();
 
-		String contentType = request.getContentType();
+		String contentType = httpServletRequest.getContentType();
 
 		if ((contentType != null) &&
 			contentType.startsWith(ContentTypes.MULTIPART)) {
 
-			HttpServletRequest currentRequest = request;
+			HttpServletRequest currentHttpServletRequest = httpServletRequest;
 
 			UploadServletRequest uploadServletRequest = null;
 
-			while (currentRequest instanceof HttpServletRequestWrapper) {
-				if (currentRequest instanceof UploadServletRequest) {
-					uploadServletRequest = (UploadServletRequest)currentRequest;
+			while (currentHttpServletRequest instanceof
+						HttpServletRequestWrapper) {
+
+				if (currentHttpServletRequest instanceof UploadServletRequest) {
+					uploadServletRequest =
+						(UploadServletRequest)currentHttpServletRequest;
 
 					break;
 				}
 
 				HttpServletRequestWrapper httpServletRequestWrapper =
-					(HttpServletRequestWrapper)currentRequest;
+					(HttpServletRequestWrapper)currentHttpServletRequest;
 
-				currentRequest =
+				currentHttpServletRequest =
 					(HttpServletRequest)httpServletRequestWrapper.getRequest();
 			}
 
@@ -160,11 +166,13 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 				requestBodyFile = FileUtil.createTempFile();
 
 				StreamUtil.transfer(
-					StreamUtil.uncloseable(currentRequest.getInputStream()),
+					StreamUtil.uncloseable(
+						currentHttpServletRequest.getInputStream()),
 					new FileOutputStream(requestBodyFile));
 
 				uploadServletRequest = new UploadServletRequestImpl(
-					new AgentHttpServletRequestWrapper(currentRequest));
+					new AgentHttpServletRequestWrapper(
+						currentHttpServletRequest));
 			}
 
 			Map<String, FileItem[]> multipartParameterMap =
@@ -181,8 +189,9 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 			}
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		if ((themeDisplay != null) && themeDisplay.isAjax()) {
 			parameterMap = new HashMap<>(parameterMap);
@@ -192,7 +201,8 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 				new String[] {StringPool.FALSE});
 		}
 
-		originalSessionAttributes = extractSessionAttributes(request);
+		originalSessionAttributes = extractSessionAttributes(
+			httpServletRequest);
 
 		captureThreadLocals();
 	}
@@ -201,23 +211,26 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 		return originalSessionAttributes;
 	}
 
-	public HttpServletRequest populateRequest(HttpServletRequest request) {
-		request = new AgentHttpServletRequestWrapper(request);
+	public HttpServletRequest populateRequest(
+		HttpServletRequest httpServletRequest) {
+
+		httpServletRequest = new AgentHttpServletRequestWrapper(
+			httpServletRequest);
 
 		for (Map.Entry<String, Serializable> entry :
 				distributedRequestAttributes.entrySet()) {
 
-			request.setAttribute(entry.getKey(), entry.getValue());
+			httpServletRequest.setAttribute(entry.getKey(), entry.getValue());
 		}
 
 		if ((multipartParameterMap != null) || (regularParameterMap != null)) {
-			request = new UploadServletRequestImpl(
-				request, multipartParameterMap, regularParameterMap);
+			httpServletRequest = new UploadServletRequestImpl(
+				httpServletRequest, multipartParameterMap, regularParameterMap);
 		}
 
 		restoreThreadLocals();
 
-		return request;
+		return httpServletRequest;
 	}
 
 	public void populateSessionAttributes(HttpSession session) {
@@ -247,6 +260,7 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 				Cookie cookie = CookieUtil.deserialize(cookieBytes);
 
 				sb.append(CookieUtil.toString(cookie));
+
 				sb.append(", ");
 			}
 
@@ -304,8 +318,10 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 	protected class AgentHttpServletRequestWrapper
 		extends PersistentHttpServletRequestWrapper {
 
-		public AgentHttpServletRequestWrapper(HttpServletRequest request) {
-			super(request);
+		public AgentHttpServletRequestWrapper(
+			HttpServletRequest httpServletRequest) {
+
+			super(httpServletRequest);
 		}
 
 		@Override
@@ -385,9 +401,8 @@ public class SPIAgentRequest extends SPIAgentSerializable {
 			if (ArrayUtil.isNotEmpty(values)) {
 				return values[0];
 			}
-			else {
-				return null;
-			}
+
+			return null;
 		}
 
 		@Override

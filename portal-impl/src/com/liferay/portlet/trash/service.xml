@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.0.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_0_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
 
 <service-builder api-package-path="com.liferay.trash.kernel" package-path="com.liferay.portlet.trash">
 	<namespace>Trash</namespace>
-	<entity local-service="true" name="TrashEntry" remote-service="true">
+	<entity deprecated="true" local-service="true" name="TrashEntry" remote-service="true">
 
 		<!-- PK fields -->
 
@@ -42,13 +42,13 @@
 		<finder name="CompanyId" return-type="Collection">
 			<finder-column name="companyId" />
 		</finder>
-		<finder name="G_LtCD" return-type="Collection">
-			<finder-column name="groupId" />
-			<finder-column comparator="&lt;" name="createDate" />
-		</finder>
 		<finder name="G_C" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="classNameId" />
+		</finder>
+		<finder name="G_LtCD" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column comparator="&lt;" name="createDate" />
 		</finder>
 		<finder name="C_C" return-type="TrashEntry" unique="true">
 			<finder-column name="classNameId" />
@@ -60,7 +60,7 @@
 		<reference entity="Group" package-path="com.liferay.portal" />
 		<reference entity="SystemEvent" package-path="com.liferay.portal" />
 	</entity>
-	<entity local-service="true" name="TrashVersion" remote-service="false">
+	<entity deprecated="true" local-service="true" name="TrashVersion" remote-service="false">
 
 		<!-- PK fields -->
 

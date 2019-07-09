@@ -1,11 +1,14 @@
-<definition default="assertValue">
-	<command name="assertValue">
-		<execute function="WaitForSPARefresh" />
+@default = "assertValue"
+definition {
 
-		<execute selenium="waitForVisible" />
+	function assertValue {
+		WaitForSPARefresh();
 
-		<execute selenium="waitForValue" />
+		selenium.waitForVisible();
 
-		<execute selenium="assertValue" />
-	</command>
-</definition>
+		selenium.waitForValue();
+
+		selenium.assertValue();
+	}
+
+}

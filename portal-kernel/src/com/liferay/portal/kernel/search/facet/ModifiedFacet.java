@@ -29,8 +29,10 @@ import java.text.DateFormat;
 import java.util.Calendar;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class ModifiedFacet extends RangeFacet {
 
 	public ModifiedFacet(SearchContext searchContext) {
@@ -77,14 +79,14 @@ public class ModifiedFacet extends RangeFacet {
 
 		now.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY) + 1);
 
-		DateFormat dateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
-			"yyyyMMddHHmmss");
-
 		JSONObject dataJSONObject = facetConfiguration.getData();
 
 		if (!dataJSONObject.has("ranges")) {
 			return;
 		}
+
+		DateFormat dateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
+			"yyyyMMddHHmmss");
 
 		JSONArray rangesJSONArray = dataJSONObject.getJSONArray("ranges");
 

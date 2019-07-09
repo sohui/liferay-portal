@@ -1,36 +1,55 @@
-<definition>
-	<command name="addCP">
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
-		<execute function="Type" locator1="TextInput#SOURCE_URL" value1="${sourceURL}" />
-		<execute macro="Button#clickSave" />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
+definition {
 
-	<command name="closeFrame">
-		<execute function="SelectFrame" value1="relative=top" />
+	macro addCP {
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+		Type(
+			locator1 = "TextInput#SOURCE_URL",
+			value1 = "${sourceURL}");
 
-	<command name="saveConfiguration">
-		<execute macro="PortletEntry#save" />
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
+		PortletEntry.save();
 
-	<command name="selectConfigurationFrame">
-		<execute function="SelectFrame" locator1="Configuration#CONFIGURATION_IFRAME" />
-	</command>
+		SelectFrame(value1 = "relative=top");
+	}
 
-	<command name="selectPermissionsFrame">
-		<var name="key_iframeTitle" value="Permissions" />
+	macro closeFrame {
+		SelectFrame(value1 = "relative=top");
 
-		<execute function="AssertElementPresent" locator1="IFrame#IFRAME_TITLE" value1="Permissions" />
+		Click(locator1 = "Icon#CLOSE");
+	}
 
-		<execute function="SelectFrame" locator1="Permissions#PERMISSIONS_IFRAME" />
-	</command>
+	macro saveConfiguration {
+		PortletEntry.save();
 
-	<command name="selectTopFrame">
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-</definition>
+		SelectFrame(value1 = "relative=top");
+	}
+
+	macro selectCategoryFrame {
+		SelectFrame(locator1 = "IFrame#SELECT_CATEGORY");
+	}
+
+	macro selectConfigurationFrame {
+		if (IsElementPresent(locator1 = "IFrame#DIALOG")) {
+			echo("Selecting configuration iframe");
+
+			SelectFrame(locator1 = "IFrame#DIALOG");
+		}
+	}
+
+	macro selectEditAssetFrame {
+		SelectFrame(locator1 = "IFrame#EDIT_ASSET");
+	}
+
+	macro selectModalFrame {
+		SelectFrame(locator1 = "IFrame#MODAL_IFRAME");
+	}
+
+	macro selectPermissionsFrame {
+		SelectFrame(locator1 = "IFrame#DIALOG");
+	}
+
+	macro selectTopFrame {
+		SelectFrame(value1 = "relative=top");
+	}
+
+}

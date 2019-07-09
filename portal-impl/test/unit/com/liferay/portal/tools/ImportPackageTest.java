@@ -29,18 +29,21 @@ public class ImportPackageTest {
 	public void testContains() {
 		ImportPackage importPackage = _javaImportsFormatter.createImportPackage(
 			_ARRAYS_IMPORT_STATEMENT);
-		ImportPackage importPackage2 =
-			_javaImportsFormatter.createImportPackage(_ARRAYS_IMPORT_STATEMENT);
 
 		List<ImportPackage> importPackages = new ArrayList<>();
 
 		importPackages.add(importPackage);
 
 		if (!importPackages.contains(importPackage)) {
+			ImportPackage importPackage2 =
+				_javaImportsFormatter.createImportPackage(
+					_ARRAYS_IMPORT_STATEMENT);
+
 			importPackages.add(importPackage2);
 		}
 
-		Assert.assertEquals(1, importPackages.size());
+		Assert.assertEquals(
+			importPackages.toString(), 1, importPackages.size());
 	}
 
 	@Test

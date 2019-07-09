@@ -14,18 +14,9 @@
 
 package com.liferay.source.formatter;
 
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
-
-import java.io.File;
+import java.io.IOException;
 
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Hugo Huijser
@@ -34,82 +25,15 @@ import java.util.regex.Pattern;
 public class GradleSourceProcessor extends BaseSourceProcessor {
 
 	@Override
-	public String[] getIncludes() {
-		return _INCLUDES;
-	}
-
-	@Override
-	protected String doFormat(
-			File file, String fileName, String absolutePath, String content)
-		throws Exception {
-
-		content = formatDependencies(absolutePath, content);
-
-		return trimContent(content, false);
-	}
-
-	@Override
-	protected List<String> doGetFileNames() throws Exception {
+	protected List<String> doGetFileNames() throws IOException {
 		return getFileNames(new String[0], getIncludes());
 	}
 
-	protected String formatDependencies(String absolutePath, String content) {
-		Matcher matcher = _dependenciesPattern.matcher(content);
-
-		if (!matcher.find()) {
-			return content;
-		}
-
-		String dependencies = matcher.group(1);
-
-		Set<String> uniqueDependencies = new TreeSet<>();
-
-		for (String dependency : StringUtil.splitLines(dependencies)) {
-			dependency = dependency.trim();
-
-			if (Validator.isNull(dependency)) {
-				continue;
-			}
-
-			uniqueDependencies.add(dependency);
-		}
-
-		StringBundler sb = new StringBundler();
-
-		String previousConfiguration = null;
-
-		for (String dependency : uniqueDependencies) {
-			int pos = dependency.indexOf(StringPool.SPACE);
-
-			String configuration = dependency.substring(0, pos);
-
-			if (configuration.equals("compile") &&
-				(absolutePath.contains("/modules/apps/") ||
-				 absolutePath.contains("/modules/private/apps/"))) {
-
-				dependency = StringUtil.replaceFirst(
-					dependency, "compile", "provided");
-			}
-
-			if ((previousConfiguration == null) ||
-				!previousConfiguration.equals(configuration)) {
-
-				previousConfiguration = configuration;
-
-				sb.append("\n");
-			}
-
-			sb.append("\t");
-			sb.append(dependency);
-			sb.append("\n");
-		}
-
-		return StringUtil.replace(content, dependencies, sb.toString());
+	@Override
+	protected String[] doGetIncludes() {
+		return _INCLUDES;
 	}
 
-	private static final String[] _INCLUDES = new String[] {"**/build.gradle"};
-
-	private final Pattern _dependenciesPattern = Pattern.compile(
-		"^dependencies \\{(.+?\n)\\}", Pattern.DOTALL | Pattern.MULTILINE);
+	private static final String[] _INCLUDES = {"**/*.gradle"};
 
 }

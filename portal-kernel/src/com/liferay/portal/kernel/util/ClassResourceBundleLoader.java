@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.portal.kernel.language.UTF8Control;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -32,10 +34,19 @@ public class ClassResourceBundleLoader implements ResourceBundleLoader {
 	}
 
 	@Override
-	public ResourceBundle loadResourceBundle(String languageId) {
-		Locale locale = LocaleUtil.fromLanguageId(languageId);
+	public ResourceBundle loadResourceBundle(Locale locale) {
+		return ResourceBundle.getBundle(
+			_baseName, locale, _classLoader, UTF8Control.INSTANCE);
+	}
 
-		return ResourceBundleUtil.getBundle(_baseName, locale, _classLoader);
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #loadResourceBundle(Locale)}
+	 */
+	@Deprecated
+	@Override
+	public ResourceBundle loadResourceBundle(String languageId) {
+		return ResourceBundleLoader.super.loadResourceBundle(languageId);
 	}
 
 	private final String _baseName;

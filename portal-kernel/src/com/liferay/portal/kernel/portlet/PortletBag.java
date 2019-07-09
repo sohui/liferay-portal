@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.portlet;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.expando.kernel.model.CustomAttributesDisplay;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
@@ -28,7 +26,7 @@ import com.liferay.portal.kernel.pop.MessageListener;
 import com.liferay.portal.kernel.scheduler.messaging.SchedulerEventMessageListener;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.OpenSearch;
-import com.liferay.portal.kernel.security.permission.PermissionPropagator;
+import com.liferay.portal.kernel.security.permission.propagator.PermissionPropagator;
 import com.liferay.portal.kernel.servlet.URLEncoder;
 import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.trash.TrashHandler;
@@ -46,6 +44,8 @@ import javax.portlet.Portlet;
 import javax.portlet.PreferencesValidator;
 
 import javax.servlet.ServletContext;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -122,6 +122,9 @@ public interface PortletBag extends Cloneable {
 	public List<WorkflowHandler<?>> getWorkflowHandlerInstances();
 
 	public List<Method> getXmlRpcMethodInstances();
+
+	public void setPortletDataHandlerInstances(
+		List<PortletDataHandler> portletDataHandlerInstances);
 
 	public void setPortletInstance(Portlet portletInstance);
 

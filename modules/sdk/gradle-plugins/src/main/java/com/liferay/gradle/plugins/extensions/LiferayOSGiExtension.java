@@ -25,7 +25,7 @@ import com.liferay.ant.bnd.sass.SassAnalyzerPlugin;
 import com.liferay.ant.bnd.service.ServiceAnalyzerPlugin;
 import com.liferay.ant.bnd.social.SocialAnalyzerPlugin;
 import com.liferay.ant.bnd.spring.SpringDependencyAnalyzerPlugin;
-import com.liferay.gradle.plugins.util.GradleUtil;
+import com.liferay.gradle.plugins.internal.util.GradleUtil;
 import com.liferay.gradle.util.StringUtil;
 import com.liferay.gradle.util.Validator;
 
@@ -43,6 +43,17 @@ import org.gradle.api.tasks.compile.JavaCompile;
  */
 public class LiferayOSGiExtension {
 
+	/**
+	 * @deprecated As of 3.6.0, with no direct replacement
+	 */
+	@Deprecated
+	public static final String
+		BUNDLE_DEFAULT_INSTRUCTION_INCLUDERESOURCE_SERVICE =
+			Constants.INCLUDERESOURCE + ".service";
+
+	public static final String BUNDLE_DEFAULT_INSTRUCTION_LIFERAY_SERVICE_XML =
+		"-liferay-service-xml";
+
 	public static final String DONOTCOPY_DEFAULT = ".*\\.wsdd";
 
 	public LiferayOSGiExtension(Project project) {
@@ -52,10 +63,18 @@ public class LiferayOSGiExtension {
 			Constants.BUNDLE_SYMBOLICNAME, project.getName());
 		_bundleDefaultInstructions.put(
 			Constants.DONOTCOPY, "(" + DONOTCOPY_DEFAULT + ")");
-		_bundleDefaultInstructions.put(Constants.DSANNOTATIONS, "*");
+		_bundleDefaultInstructions.put(
+			Constants.FIXUPMESSAGES + ".deprecated",
+			"annotations are deprecated");
+		_bundleDefaultInstructions.put(
+			Constants.FIXUPMESSAGES + ".classpath.empty", "Classpath is empty");
+		_bundleDefaultInstructions.put(
+			Constants.FIXUPMESSAGES + ".unicode.string",
+			"Invalid unicode string");
 		_bundleDefaultInstructions.put(Constants.METATYPE, "*");
 		_bundleDefaultInstructions.put(
-			Constants.PLUGIN, StringUtil.merge(_BND_PLUGIN_CLASS_NAMES, ","));
+			Constants.PLUGIN + ".liferay",
+			StringUtil.merge(_BND_PLUGIN_CLASS_NAMES, ","));
 
 		_bundleDefaultInstructions.put(
 			"Javac-Debug",
@@ -102,6 +121,10 @@ public class LiferayOSGiExtension {
 
 			});
 
+		_bundleDefaultInstructions.put(
+			BUNDLE_DEFAULT_INSTRUCTION_LIFERAY_SERVICE_XML,
+			"service.xml,*/service.xml");
+		_bundleDefaultInstructions.put("-contract", "*");
 		_bundleDefaultInstructions.put("-jsp", "*.jsp,*.jspf");
 		_bundleDefaultInstructions.put("-sass", "*");
 	}
@@ -114,12 +137,16 @@ public class LiferayOSGiExtension {
 		return this;
 	}
 
-	public Map<String, String> getBundleDefaultInstructions() {
-		return GradleUtil.toStringMap(_bundleDefaultInstructions);
+	public Map<String, Object> getBundleDefaultInstructions() {
+		return _bundleDefaultInstructions;
 	}
 
 	public boolean isAutoUpdateXml() {
 		return _autoUpdateXml;
+	}
+
+	public boolean isExpandCompileInclude() {
+		return _expandCompileInclude;
 	}
 
 	public void setAutoUpdateXml(boolean autoUpdateXml) {
@@ -132,6 +159,10 @@ public class LiferayOSGiExtension {
 		_bundleDefaultInstructions.clear();
 
 		bundleDefaultInstructions(bundleDefaultInstructions);
+	}
+
+	public void setExpandCompileInclude(boolean expandCompileInclude) {
+		_expandCompileInclude = expandCompileInclude;
 	}
 
 	private CompileOptions _getCompileOptions() {
@@ -161,6 +192,7 @@ public class LiferayOSGiExtension {
 	private boolean _autoUpdateXml = true;
 	private final Map<String, Object> _bundleDefaultInstructions =
 		new HashMap<>();
+	private boolean _expandCompileInclude;
 	private final Project _project;
 
 }

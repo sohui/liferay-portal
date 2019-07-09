@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 
 	@Override
-	@SuppressWarnings("unused")
 	public int copyCollectionResource(
 			WebDAVRequest webDAVRequest, Resource resource, String destination,
 			boolean overwrite, long depth)
@@ -40,7 +39,6 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public int copySimpleResource(
 			WebDAVRequest webDAVRequest, Resource resource, String destination,
 			boolean overwrite)
@@ -50,7 +48,6 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public int deleteResource(WebDAVRequest webDAVRequest)
 		throws WebDAVException {
 
@@ -79,9 +76,8 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 		if (getResource(webDAVRequest) == null) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	@Override
@@ -90,7 +86,6 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public Status lockResource(
 			WebDAVRequest webDAVRequest, String owner, long timeout)
 		throws WebDAVException {
@@ -99,7 +94,6 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public Status makeCollection(WebDAVRequest webDAVRequest)
 		throws WebDAVException {
 
@@ -107,7 +101,6 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public int moveCollectionResource(
 			WebDAVRequest webDAVRequest, Resource resource, String destination,
 			boolean overwrite)
@@ -117,7 +110,6 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public int moveSimpleResource(
 			WebDAVRequest webDAVRequest, Resource resource, String destination,
 			boolean overwrite)
@@ -127,13 +119,11 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public int putResource(WebDAVRequest webDAVRequest) throws WebDAVException {
 		return HttpServletResponse.SC_FORBIDDEN;
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public Lock refreshResourceLock(
 			WebDAVRequest webDAVRequest, String uuid, long timeout)
 		throws WebDAVException {
@@ -152,7 +142,6 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean unlockResource(WebDAVRequest webDAVRequest, String token)
 		throws WebDAVException {
 
@@ -169,9 +158,8 @@ public abstract class BaseWebDAVStorageImpl implements WebDAVStorage {
 		if (!group.isUser()) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private String _rootPath;

@@ -14,80 +14,166 @@
 
 package com.liferay.arquillian.extension.junit.bridge.junit;
 
-import com.liferay.arquillian.extension.junit.bridge.util.FrameworkMethodComparator;
+import com.liferay.arquillian.extension.junit.bridge.client.ClientState;
 
-import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.rules.TestRule;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.Statement;
-import org.junit.runners.model.TestClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.Description;
+import org.junit.runner.Runner;
+import org.junit.runner.manipulation.Filter;
+import org.junit.runner.manipulation.Filterable;
+import org.junit.runner.manipulation.NoTestsRemainException;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunNotifier;
 
 /**
  * @author Shuyang Zhou
  */
-public class Arquillian extends org.jboss.arquillian.junit.Arquillian {
+public class Arquillian extends Runner implements Filterable {
 
-	public Arquillian(Class<?> clazz)
-		throws org.junit.runners.model.InitializationError {
+	public Arquillian(Class<?> clazz) {
+		_clazz = clazz;
 
-		super(clazz);
+		_testMethods = _scanTestMethods(clazz);
 	}
 
 	@Override
-	protected List<TestRule> classRules() {
-		return Collections.emptyList();
-	}
+	public void filter(Filter filter) throws NoTestsRemainException {
+		_filter(_clazz, _testMethods, filter);
 
-	@Override
-	protected TestClass createTestClass(Class<?> testClass) {
-		return new TestClass(testClass) {
+		if (_testMethods.isEmpty()) {
+			throw new NoTestsRemainException();
+		}
 
-			@Override
-			public List<FrameworkMethod> getAnnotatedMethods(
-				Class<? extends Annotation> annotationClass) {
+		_clientState.filterTestClasses(
+			_clazz,
+			testClass -> {
+				List<Method> testMethods = _scanTestMethods(testClass);
 
-				if ((annotationClass == AfterClass.class) ||
-					(annotationClass == BeforeClass.class)) {
+				List<String> filteredMethodNames = _filter(
+					testClass, testMethods, filter);
 
-					return Collections.emptyList();
+				if (testMethods.isEmpty()) {
+					return true;
 				}
 
-				List<FrameworkMethod> frameworkMethods = new ArrayList<>(
-					super.getAnnotatedMethods(annotationClass));
+				if (!filteredMethodNames.isEmpty()) {
+					if (_filteredMethodNamesMap == null) {
+						_filteredMethodNamesMap = new HashMap<>();
+					}
 
-				Collections.sort(
-					frameworkMethods, FrameworkMethodComparator.INSTANCE);
+					_filteredMethodNamesMap.put(
+						testClass.getName(), filteredMethodNames);
+				}
 
-				return frameworkMethods;
+				return false;
+			});
+	}
+
+	@Override
+	public Description getDescription() {
+		return Description.createSuiteDescription(_clazz);
+	}
+
+	@Override
+	public void run(RunNotifier runNotifier) {
+		_testMethods.removeIf(
+			method -> {
+				if (method.getAnnotation(Ignore.class) != null) {
+					runNotifier.fireTestIgnored(
+						Description.createTestDescription(
+							_clazz, method.getName(), method.getAnnotations()));
+
+					return true;
+				}
+
+				return false;
+			});
+
+		if (_testMethods.isEmpty()) {
+			_clientState.removeTestClass(_clazz);
+
+			return;
+		}
+
+		// Enforce client side test class initialization
+
+		try {
+			Class.forName(_clazz.getName(), true, _clazz.getClassLoader());
+		}
+		catch (ClassNotFoundException cnfe) {
+			runNotifier.fireTestFailure(new Failure(getDescription(), cnfe));
+
+			return;
+		}
+
+		try (ClientState.Connection connection = _clientState.open(
+				_clazz, _filteredMethodNamesMap)) {
+
+			connection.execute(
+				_clazz.getName(),
+				runNotifierCommand -> runNotifierCommand.execute(runNotifier));
+		}
+		catch (Throwable t) {
+			runNotifier.fireTestFailure(new Failure(getDescription(), t));
+		}
+	}
+
+	private static List<String> _filter(
+		Class<?> clazz, List<Method> testMethods, Filter filter) {
+
+		List<String> filteredMethodNames = new ArrayList<>();
+
+		Iterator<Method> iterator = testMethods.iterator();
+
+		while (iterator.hasNext()) {
+			Method method = iterator.next();
+
+			String methodName = method.getName();
+
+			if (!filter.shouldRun(
+					Description.createTestDescription(clazz, methodName))) {
+
+				filteredMethodNames.add(methodName);
+
+				iterator.remove();
+			}
+		}
+
+		return filteredMethodNames;
+	}
+
+	private static List<Method> _scanTestMethods(Class<?> clazz) {
+		List<Method> testMethods = new ArrayList<>();
+
+		while (clazz != Object.class) {
+			for (Method method : clazz.getDeclaredMethods()) {
+				if (method.getAnnotation(Test.class) != null) {
+					testMethods.add(method);
+				}
 			}
 
-		};
+			clazz = clazz.getSuperclass();
+		}
+
+		testMethods.sort(Comparator.comparing(Method::getName));
+
+		return testMethods;
 	}
 
-	@Override
-	protected List<TestRule> getTestRules(Object target) {
-		return Collections.emptyList();
-	}
+	private static final ClientState _clientState = new ClientState();
 
-	@Override
-	protected Statement withAfters(
-		FrameworkMethod method, Object target, Statement statement) {
-
-		return statement;
-	}
-
-	@Override
-	protected Statement withBefores(
-		FrameworkMethod method, Object target, Statement statement) {
-
-		return statement;
-	}
+	private final Class<?> _clazz;
+	private Map<String, List<String>> _filteredMethodNamesMap;
+	private final List<Method> _testMethods;
 
 }

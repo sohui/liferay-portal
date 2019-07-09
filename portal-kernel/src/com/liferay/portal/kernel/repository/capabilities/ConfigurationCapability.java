@@ -14,9 +14,12 @@
 
 package com.liferay.portal.kernel.repository.capabilities;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Iván Zaera
  */
+@ProviderType
 public interface ConfigurationCapability extends Capability {
 
 	public String getProperty(Class<? extends Capability> owner, String key);

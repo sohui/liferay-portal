@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+import java.net.URLEncoder;
+
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -48,8 +50,10 @@ import org.gradle.api.AntBuilder;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.api.tasks.SourceSet;
 
 /**
  * @author Andrea Di Giorgi
@@ -110,13 +114,32 @@ public class FileUtil {
 		return get(project, url, destinationFile, false, true);
 	}
 
-	public static synchronized File get(
+	public static File get(
 			Project project, String url, File destinationFile,
 			boolean ignoreErrors, boolean tryLocalNetwork)
 		throws IOException {
 
+		return get(
+			project, url, null, null, destinationFile, ignoreErrors,
+			tryLocalNetwork);
+	}
+
+	public static synchronized File get(
+			Project project, String url, String username, String password,
+			File destinationFile, boolean ignoreErrors, boolean tryLocalNetwork)
+		throws IOException {
+
 		String mirrorsCacheArtifactSubdir = url.replaceFirst(
 			"https?:\\/\\/(.+\\/).+", "$1");
+
+		StringBuilder sb = new StringBuilder();
+
+		for (String segment : mirrorsCacheArtifactSubdir.split("/")) {
+			sb.append(URLEncoder.encode(segment, "UTF-8"));
+			sb.append('/');
+		}
+
+		mirrorsCacheArtifactSubdir = sb.toString();
 
 		File mirrorsCacheArtifactDir = new File(
 			_getMirrorsCacheDir(), mirrorsCacheArtifactSubdir);
@@ -130,20 +153,24 @@ public class FileUtil {
 			mirrorsCacheArtifactDir.mkdirs();
 
 			String mirrorsUrl = url.replaceFirst(
-				"http:\\/\\/", "http://mirrors.lax.liferay.com/");
+				"https?:\\/\\/", "http://mirrors.lax.liferay.com/");
 
 			if (tryLocalNetwork) {
 				try {
 					_get(
-						project, mirrorsUrl, mirrorsCacheArtifactFile,
-						ignoreErrors);
+						project, mirrorsUrl, null, null,
+						mirrorsCacheArtifactFile, ignoreErrors);
 				}
 				catch (Exception e) {
-					_get(project, url, mirrorsCacheArtifactFile, ignoreErrors);
+					_get(
+						project, url, username, password,
+						mirrorsCacheArtifactFile, ignoreErrors);
 				}
 			}
 			else {
-				_get(project, url, mirrorsCacheArtifactFile, ignoreErrors);
+				_get(
+					project, url, username, password, mirrorsCacheArtifactFile,
+					ignoreErrors);
 			}
 		}
 
@@ -157,7 +184,11 @@ public class FileUtil {
 			destinationPath = destinationPath.resolve(fileName);
 		}
 
-		Files.createDirectories(destinationPath.getParent());
+		Path destinationParentPath = destinationPath.getParent();
+
+		if (destinationParentPath != null) {
+			Files.createDirectories(destinationParentPath);
+		}
 
 		Files.copy(
 			mirrorsCacheArtifactFile.toPath(), destinationPath,
@@ -182,6 +213,12 @@ public class FileUtil {
 		char driveLetter = absolutePath.charAt(0);
 
 		return Character.toLowerCase(driveLetter);
+	}
+
+	public static File getJavaClassesDir(SourceSet sourceSet) {
+		SourceDirectorySet sourceDirectorySet = sourceSet.getJava();
+
+		return sourceDirectorySet.getOutputDir();
 	}
 
 	public static boolean isChild(File file, File parentFile) {
@@ -231,7 +268,7 @@ public class FileUtil {
 		Project project, final File destinationFile, final String duplicate,
 		final boolean update, final String[][] filesets) {
 
-		Closure<Void> closure = new Closure<Void>(null) {
+		Closure<Void> closure = new Closure<Void>(project) {
 
 			@SuppressWarnings("unused")
 			public void doCall(AntBuilder antBuilder) {
@@ -450,7 +487,8 @@ public class FileUtil {
 	}
 
 	private static void _get(
-		Project project, final String url, File destinationFile,
+		Project project, final String url, final String username,
+		final String password, File destinationFile,
 		final boolean ignoreErrors) {
 
 		final File tmpFile = new File(
@@ -459,7 +497,7 @@ public class FileUtil {
 
 		project.delete(destinationFile, tmpFile);
 
-		Closure<Void> closure = new Closure<Void>(null) {
+		Closure<Void> closure = new Closure<Void>(project) {
 
 			@SuppressWarnings("unused")
 			public void doCall(AntBuilder antBuilder) {
@@ -468,6 +506,13 @@ public class FileUtil {
 				args.put("dest", tmpFile);
 				args.put("ignoreerrors", ignoreErrors);
 				args.put("src", url);
+
+				if (Validator.isNotNull(username) &&
+					Validator.isNotNull(password)) {
+
+					args.put("password", password);
+					args.put("username", username);
+				}
 
 				if (_logger.isLifecycleEnabled()) {
 					_logger.lifecycle(
@@ -535,7 +580,7 @@ public class FileUtil {
 	private static void _invokeAntMethodClasspath(
 		final AntBuilder antBuilder, final String path) {
 
-		Closure<Void> closure = new Closure<Void>(null) {
+		Closure<Void> closure = new Closure<Void>(antBuilder) {
 
 			@SuppressWarnings("unused")
 			public void doCall() {
@@ -576,7 +621,7 @@ public class FileUtil {
 
 		args.put("update", update);
 
-		Closure<Void> closure = new Closure<Void>(null) {
+		Closure<Void> closure = new Closure<Void>(antBuilder) {
 
 			@SuppressWarnings("unused")
 			public void doCall() {
@@ -596,7 +641,7 @@ public class FileUtil {
 
 		Map<String, File> args = Collections.singletonMap("file", file);
 
-		Closure<Void> closure = new Closure<Void>(null) {
+		Closure<Void> closure = new Closure<Void>(antBuilder) {
 
 			@SuppressWarnings("unused")
 			public void doCall() {
@@ -625,7 +670,7 @@ public class FileUtil {
 		args.put("maxParentLevels", 99);
 		args.put("property", property);
 
-		Closure<Void> closure = new Closure<Void>(null) {
+		Closure<Void> closure = new Closure<Void>(antBuilder) {
 
 			@SuppressWarnings("unused")
 			public void doCall() {

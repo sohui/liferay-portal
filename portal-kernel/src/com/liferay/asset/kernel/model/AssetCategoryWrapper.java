@@ -14,21 +14,15 @@
 
 package com.liferay.asset.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-
 import com.liferay.portal.kernel.model.ModelWrapper;
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -40,20 +34,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class AssetCategoryWrapper implements AssetCategory,
-	ModelWrapper<AssetCategory> {
+public class AssetCategoryWrapper
+	extends BaseModelWrapper<AssetCategory>
+	implements AssetCategory, ModelWrapper<AssetCategory> {
+
 	public AssetCategoryWrapper(AssetCategory assetCategory) {
-		_assetCategory = assetCategory;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return AssetCategory.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return AssetCategory.class.getName();
+		super(assetCategory);
 	}
 
 	@Override
@@ -61,6 +47,7 @@ public class AssetCategoryWrapper implements AssetCategory,
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("uuid", getUuid());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("categoryId", getCategoryId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -86,6 +73,13 @@ public class AssetCategoryWrapper implements AssetCategory,
 
 		if (uuid != null) {
 			setUuid(uuid);
+		}
+
+		String externalReferenceCode = (String)attributes.get(
+			"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
 		}
 
 		Long categoryId = (Long)attributes.get("categoryId");
@@ -180,819 +174,722 @@ public class AssetCategoryWrapper implements AssetCategory,
 	}
 
 	@Override
-	public AssetCategory toEscapedModel() {
-		return new AssetCategoryWrapper(_assetCategory.toEscapedModel());
+	public java.util.List<AssetCategory> getAncestors()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getAncestors();
 	}
 
 	@Override
-	public AssetCategory toUnescapedModel() {
-		return new AssetCategoryWrapper(_assetCategory.toUnescapedModel());
+	public String[] getAvailableLanguageIds() {
+		return model.getAvailableLanguageIds();
+	}
+
+	/**
+	 * Returns the category ID of this asset category.
+	 *
+	 * @return the category ID of this asset category
+	 */
+	@Override
+	public long getCategoryId() {
+		return model.getCategoryId();
+	}
+
+	/**
+	 * Returns the company ID of this asset category.
+	 *
+	 * @return the company ID of this asset category
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the create date of this asset category.
+	 *
+	 * @return the create date of this asset category
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
 	}
 
 	@Override
-	public boolean isCachedModel() {
-		return _assetCategory.isCachedModel();
+	public String getDefaultLanguageId() {
+		return model.getDefaultLanguageId();
+	}
+
+	/**
+	 * Returns the description of this asset category.
+	 *
+	 * @return the description of this asset category
+	 */
+	@Override
+	public String getDescription() {
+		return model.getDescription();
+	}
+
+	/**
+	 * Returns the localized description of this asset category in the language. Uses the default language if no localization exists for the requested language.
+	 *
+	 * @param locale the locale of the language
+	 * @return the localized description of this asset category
+	 */
+	@Override
+	public String getDescription(java.util.Locale locale) {
+		return model.getDescription(locale);
+	}
+
+	/**
+	 * Returns the localized description of this asset category in the language, optionally using the default language if no localization exists for the requested language.
+	 *
+	 * @param locale the local of the language
+	 * @param useDefault whether to use the default language if no localization exists for the requested language
+	 * @return the localized description of this asset category. If <code>useDefault</code> is <code>false</code> and no localization exists for the requested language, an empty string will be returned.
+	 */
+	@Override
+	public String getDescription(java.util.Locale locale, boolean useDefault) {
+		return model.getDescription(locale, useDefault);
+	}
+
+	/**
+	 * Returns the localized description of this asset category in the language. Uses the default language if no localization exists for the requested language.
+	 *
+	 * @param languageId the ID of the language
+	 * @return the localized description of this asset category
+	 */
+	@Override
+	public String getDescription(String languageId) {
+		return model.getDescription(languageId);
+	}
+
+	/**
+	 * Returns the localized description of this asset category in the language, optionally using the default language if no localization exists for the requested language.
+	 *
+	 * @param languageId the ID of the language
+	 * @param useDefault whether to use the default language if no localization exists for the requested language
+	 * @return the localized description of this asset category
+	 */
+	@Override
+	public String getDescription(String languageId, boolean useDefault) {
+		return model.getDescription(languageId, useDefault);
 	}
 
 	@Override
-	public boolean isEscapedModel() {
-		return _assetCategory.isEscapedModel();
+	public String getDescriptionCurrentLanguageId() {
+		return model.getDescriptionCurrentLanguageId();
 	}
 
 	@Override
-	public boolean isNew() {
-		return _assetCategory.isNew();
+	public String getDescriptionCurrentValue() {
+		return model.getDescriptionCurrentValue();
 	}
 
+	/**
+	 * Returns a map of the locales and localized descriptions of this asset category.
+	 *
+	 * @return the locales and localized descriptions of this asset category
+	 */
 	@Override
-	public boolean isRootCategory() {
-		return _assetCategory.isRootCategory();
+	public Map<java.util.Locale, String> getDescriptionMap() {
+		return model.getDescriptionMap();
+	}
+
+	/**
+	 * Returns the external reference code of this asset category.
+	 *
+	 * @return the external reference code of this asset category
+	 */
+	@Override
+	public String getExternalReferenceCode() {
+		return model.getExternalReferenceCode();
+	}
+
+	/**
+	 * Returns the group ID of this asset category.
+	 *
+	 * @return the group ID of this asset category
+	 */
+	@Override
+	public long getGroupId() {
+		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the last publish date of this asset category.
+	 *
+	 * @return the last publish date of this asset category
+	 */
+	@Override
+	public Date getLastPublishDate() {
+		return model.getLastPublishDate();
+	}
+
+	/**
+	 * Returns the left category ID of this asset category.
+	 *
+	 * @return the left category ID of this asset category
+	 */
+	@Override
+	public long getLeftCategoryId() {
+		return model.getLeftCategoryId();
+	}
+
+	/**
+	 * Returns the modified date of this asset category.
+	 *
+	 * @return the modified date of this asset category
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the name of this asset category.
+	 *
+	 * @return the name of this asset category
+	 */
+	@Override
+	public String getName() {
+		return model.getName();
 	}
 
 	@Override
 	public AssetCategory getParentCategory() {
-		return _assetCategory.getParentCategory();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _assetCategory.getExpandoBridge();
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.CacheModel<AssetCategory> toCacheModel() {
-		return _assetCategory.toCacheModel();
-	}
-
-	@Override
-	public int compareTo(AssetCategory assetCategory) {
-		return _assetCategory.compareTo(assetCategory);
-	}
-
-	@Override
-	public int hashCode() {
-		return _assetCategory.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _assetCategory.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new AssetCategoryWrapper((AssetCategory)_assetCategory.clone());
-	}
-
-	@Override
-	public java.lang.String getDefaultLanguageId() {
-		return _assetCategory.getDefaultLanguageId();
+		return model.getParentCategory();
 	}
 
 	/**
-	* Returns the description of this asset category.
-	*
-	* @return the description of this asset category
-	*/
-	@Override
-	public java.lang.String getDescription() {
-		return _assetCategory.getDescription();
-	}
-
-	/**
-	* Returns the localized description of this asset category in the language. Uses the default language if no localization exists for the requested language.
-	*
-	* @param languageId the ID of the language
-	* @return the localized description of this asset category
-	*/
-	@Override
-	public java.lang.String getDescription(java.lang.String languageId) {
-		return _assetCategory.getDescription(languageId);
-	}
-
-	/**
-	* Returns the localized description of this asset category in the language, optionally using the default language if no localization exists for the requested language.
-	*
-	* @param languageId the ID of the language
-	* @param useDefault whether to use the default language if no localization exists for the requested language
-	* @return the localized description of this asset category
-	*/
-	@Override
-	public java.lang.String getDescription(java.lang.String languageId,
-		boolean useDefault) {
-		return _assetCategory.getDescription(languageId, useDefault);
-	}
-
-	/**
-	* Returns the localized description of this asset category in the language. Uses the default language if no localization exists for the requested language.
-	*
-	* @param locale the locale of the language
-	* @return the localized description of this asset category
-	*/
-	@Override
-	public java.lang.String getDescription(java.util.Locale locale) {
-		return _assetCategory.getDescription(locale);
-	}
-
-	/**
-	* Returns the localized description of this asset category in the language, optionally using the default language if no localization exists for the requested language.
-	*
-	* @param locale the local of the language
-	* @param useDefault whether to use the default language if no localization exists for the requested language
-	* @return the localized description of this asset category. If <code>useDefault</code> is <code>false</code> and no localization exists for the requested language, an empty string will be returned.
-	*/
-	@Override
-	public java.lang.String getDescription(java.util.Locale locale,
-		boolean useDefault) {
-		return _assetCategory.getDescription(locale, useDefault);
-	}
-
-	@Override
-	public java.lang.String getDescriptionCurrentLanguageId() {
-		return _assetCategory.getDescriptionCurrentLanguageId();
-	}
-
-	@Override
-	public java.lang.String getDescriptionCurrentValue() {
-		return _assetCategory.getDescriptionCurrentValue();
-	}
-
-	/**
-	* Returns the name of this asset category.
-	*
-	* @return the name of this asset category
-	*/
-	@Override
-	public java.lang.String getName() {
-		return _assetCategory.getName();
-	}
-
-	@Override
-	public java.lang.String getPath(java.util.Locale locale)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _assetCategory.getPath(locale);
-	}
-
-	/**
-	* Returns the title of this asset category.
-	*
-	* @return the title of this asset category
-	*/
-	@Override
-	public java.lang.String getTitle() {
-		return _assetCategory.getTitle();
-	}
-
-	/**
-	* Returns the localized title of this asset category in the language. Uses the default language if no localization exists for the requested language.
-	*
-	* @param languageId the ID of the language
-	* @return the localized title of this asset category
-	*/
-	@Override
-	public java.lang.String getTitle(java.lang.String languageId) {
-		return _assetCategory.getTitle(languageId);
-	}
-
-	/**
-	* Returns the localized title of this asset category in the language, optionally using the default language if no localization exists for the requested language.
-	*
-	* @param languageId the ID of the language
-	* @param useDefault whether to use the default language if no localization exists for the requested language
-	* @return the localized title of this asset category
-	*/
-	@Override
-	public java.lang.String getTitle(java.lang.String languageId,
-		boolean useDefault) {
-		return _assetCategory.getTitle(languageId, useDefault);
-	}
-
-	/**
-	* Returns the localized title of this asset category in the language. Uses the default language if no localization exists for the requested language.
-	*
-	* @param locale the locale of the language
-	* @return the localized title of this asset category
-	*/
-	@Override
-	public java.lang.String getTitle(java.util.Locale locale) {
-		return _assetCategory.getTitle(locale);
-	}
-
-	/**
-	* Returns the localized title of this asset category in the language, optionally using the default language if no localization exists for the requested language.
-	*
-	* @param locale the local of the language
-	* @param useDefault whether to use the default language if no localization exists for the requested language
-	* @return the localized title of this asset category. If <code>useDefault</code> is <code>false</code> and no localization exists for the requested language, an empty string will be returned.
-	*/
-	@Override
-	public java.lang.String getTitle(java.util.Locale locale, boolean useDefault) {
-		return _assetCategory.getTitle(locale, useDefault);
-	}
-
-	@Override
-	public java.lang.String getTitleCurrentLanguageId() {
-		return _assetCategory.getTitleCurrentLanguageId();
-	}
-
-	@Override
-	public java.lang.String getTitleCurrentValue() {
-		return _assetCategory.getTitleCurrentValue();
-	}
-
-	/**
-	* Returns the user name of this asset category.
-	*
-	* @return the user name of this asset category
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _assetCategory.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this asset category.
-	*
-	* @return the user uuid of this asset category
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _assetCategory.getUserUuid();
-	}
-
-	/**
-	* Returns the uuid of this asset category.
-	*
-	* @return the uuid of this asset category
-	*/
-	@Override
-	public java.lang.String getUuid() {
-		return _assetCategory.getUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _assetCategory.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _assetCategory.toXmlString();
-	}
-
-	@Override
-	public java.lang.String[] getAvailableLanguageIds() {
-		return _assetCategory.getAvailableLanguageIds();
-	}
-
-	/**
-	* Returns the create date of this asset category.
-	*
-	* @return the create date of this asset category
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _assetCategory.getCreateDate();
-	}
-
-	/**
-	* Returns the last publish date of this asset category.
-	*
-	* @return the last publish date of this asset category
-	*/
-	@Override
-	public Date getLastPublishDate() {
-		return _assetCategory.getLastPublishDate();
-	}
-
-	/**
-	* Returns the modified date of this asset category.
-	*
-	* @return the modified date of this asset category
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _assetCategory.getModifiedDate();
-	}
-
-	@Override
-	public java.util.List<AssetCategory> getAncestors()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _assetCategory.getAncestors();
-	}
-
-	/**
-	* Returns a map of the locales and localized descriptions of this asset category.
-	*
-	* @return the locales and localized descriptions of this asset category
-	*/
-	@Override
-	public Map<java.util.Locale, java.lang.String> getDescriptionMap() {
-		return _assetCategory.getDescriptionMap();
-	}
-
-	/**
-	* Returns a map of the locales and localized titles of this asset category.
-	*
-	* @return the locales and localized titles of this asset category
-	*/
-	@Override
-	public Map<java.util.Locale, java.lang.String> getTitleMap() {
-		return _assetCategory.getTitleMap();
-	}
-
-	/**
-	* Returns the category ID of this asset category.
-	*
-	* @return the category ID of this asset category
-	*/
-	@Override
-	public long getCategoryId() {
-		return _assetCategory.getCategoryId();
-	}
-
-	/**
-	* Returns the company ID of this asset category.
-	*
-	* @return the company ID of this asset category
-	*/
-	@Override
-	public long getCompanyId() {
-		return _assetCategory.getCompanyId();
-	}
-
-	/**
-	* Returns the group ID of this asset category.
-	*
-	* @return the group ID of this asset category
-	*/
-	@Override
-	public long getGroupId() {
-		return _assetCategory.getGroupId();
-	}
-
-	/**
-	* Returns the left category ID of this asset category.
-	*
-	* @return the left category ID of this asset category
-	*/
-	@Override
-	public long getLeftCategoryId() {
-		return _assetCategory.getLeftCategoryId();
-	}
-
-	/**
-	* Returns the parent category ID of this asset category.
-	*
-	* @return the parent category ID of this asset category
-	*/
+	 * Returns the parent category ID of this asset category.
+	 *
+	 * @return the parent category ID of this asset category
+	 */
 	@Override
 	public long getParentCategoryId() {
-		return _assetCategory.getParentCategoryId();
+		return model.getParentCategoryId();
+	}
+
+	@Override
+	public String getPath(java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getPath(locale);
+	}
+
+	@Override
+	public String getPath(java.util.Locale locale, boolean reverse)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getPath(locale, reverse);
 	}
 
 	/**
-	* Returns the primary key of this asset category.
-	*
-	* @return the primary key of this asset category
-	*/
+	 * Returns the primary key of this asset category.
+	 *
+	 * @return the primary key of this asset category
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _assetCategory.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Returns the right category ID of this asset category.
-	*
-	* @return the right category ID of this asset category
-	*/
+	 * Returns the right category ID of this asset category.
+	 *
+	 * @return the right category ID of this asset category
+	 */
 	@Override
 	public long getRightCategoryId() {
-		return _assetCategory.getRightCategoryId();
+		return model.getRightCategoryId();
 	}
 
 	/**
-	* Returns the user ID of this asset category.
-	*
-	* @return the user ID of this asset category
-	*/
+	 * Returns the title of this asset category.
+	 *
+	 * @return the title of this asset category
+	 */
+	@Override
+	public String getTitle() {
+		return model.getTitle();
+	}
+
+	/**
+	 * Returns the localized title of this asset category in the language. Uses the default language if no localization exists for the requested language.
+	 *
+	 * @param locale the locale of the language
+	 * @return the localized title of this asset category
+	 */
+	@Override
+	public String getTitle(java.util.Locale locale) {
+		return model.getTitle(locale);
+	}
+
+	/**
+	 * Returns the localized title of this asset category in the language, optionally using the default language if no localization exists for the requested language.
+	 *
+	 * @param locale the local of the language
+	 * @param useDefault whether to use the default language if no localization exists for the requested language
+	 * @return the localized title of this asset category. If <code>useDefault</code> is <code>false</code> and no localization exists for the requested language, an empty string will be returned.
+	 */
+	@Override
+	public String getTitle(java.util.Locale locale, boolean useDefault) {
+		return model.getTitle(locale, useDefault);
+	}
+
+	/**
+	 * Returns the localized title of this asset category in the language. Uses the default language if no localization exists for the requested language.
+	 *
+	 * @param languageId the ID of the language
+	 * @return the localized title of this asset category
+	 */
+	@Override
+	public String getTitle(String languageId) {
+		return model.getTitle(languageId);
+	}
+
+	/**
+	 * Returns the localized title of this asset category in the language, optionally using the default language if no localization exists for the requested language.
+	 *
+	 * @param languageId the ID of the language
+	 * @param useDefault whether to use the default language if no localization exists for the requested language
+	 * @return the localized title of this asset category
+	 */
+	@Override
+	public String getTitle(String languageId, boolean useDefault) {
+		return model.getTitle(languageId, useDefault);
+	}
+
+	@Override
+	public String getTitleCurrentLanguageId() {
+		return model.getTitleCurrentLanguageId();
+	}
+
+	@Override
+	public String getTitleCurrentValue() {
+		return model.getTitleCurrentValue();
+	}
+
+	/**
+	 * Returns a map of the locales and localized titles of this asset category.
+	 *
+	 * @return the locales and localized titles of this asset category
+	 */
+	@Override
+	public Map<java.util.Locale, String> getTitleMap() {
+		return model.getTitleMap();
+	}
+
+	/**
+	 * Returns the user ID of this asset category.
+	 *
+	 * @return the user ID of this asset category
+	 */
 	@Override
 	public long getUserId() {
-		return _assetCategory.getUserId();
+		return model.getUserId();
 	}
 
 	/**
-	* Returns the vocabulary ID of this asset category.
-	*
-	* @return the vocabulary ID of this asset category
-	*/
+	 * Returns the user name of this asset category.
+	 *
+	 * @return the user name of this asset category
+	 */
+	@Override
+	public String getUserName() {
+		return model.getUserName();
+	}
+
+	/**
+	 * Returns the user uuid of this asset category.
+	 *
+	 * @return the user uuid of this asset category
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the uuid of this asset category.
+	 *
+	 * @return the uuid of this asset category
+	 */
+	@Override
+	public String getUuid() {
+		return model.getUuid();
+	}
+
+	/**
+	 * Returns the vocabulary ID of this asset category.
+	 *
+	 * @return the vocabulary ID of this asset category
+	 */
 	@Override
 	public long getVocabularyId() {
-		return _assetCategory.getVocabularyId();
+		return model.getVocabularyId();
+	}
+
+	@Override
+	public boolean isRootCategory() {
+		return model.isRootCategory();
 	}
 
 	@Override
 	public void persist() {
-		_assetCategory.persist();
+		model.persist();
 	}
 
 	@Override
 	public void prepareLocalizedFieldsForImport()
 		throws com.liferay.portal.kernel.exception.LocaleException {
-		_assetCategory.prepareLocalizedFieldsForImport();
+
+		model.prepareLocalizedFieldsForImport();
 	}
 
 	@Override
 	public void prepareLocalizedFieldsForImport(
-		java.util.Locale defaultImportLocale)
+			java.util.Locale defaultImportLocale)
 		throws com.liferay.portal.kernel.exception.LocaleException {
-		_assetCategory.prepareLocalizedFieldsForImport(defaultImportLocale);
-	}
 
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_assetCategory.setCachedModel(cachedModel);
+		model.prepareLocalizedFieldsForImport(defaultImportLocale);
 	}
 
 	/**
-	* Sets the category ID of this asset category.
-	*
-	* @param categoryId the category ID of this asset category
-	*/
+	 * Sets the category ID of this asset category.
+	 *
+	 * @param categoryId the category ID of this asset category
+	 */
 	@Override
 	public void setCategoryId(long categoryId) {
-		_assetCategory.setCategoryId(categoryId);
+		model.setCategoryId(categoryId);
 	}
 
 	/**
-	* Sets the company ID of this asset category.
-	*
-	* @param companyId the company ID of this asset category
-	*/
+	 * Sets the company ID of this asset category.
+	 *
+	 * @param companyId the company ID of this asset category
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_assetCategory.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this asset category.
-	*
-	* @param createDate the create date of this asset category
-	*/
+	 * Sets the create date of this asset category.
+	 *
+	 * @param createDate the create date of this asset category
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_assetCategory.setCreateDate(createDate);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the description of this asset category.
-	*
-	* @param description the description of this asset category
-	*/
+	 * Sets the description of this asset category.
+	 *
+	 * @param description the description of this asset category
+	 */
 	@Override
-	public void setDescription(java.lang.String description) {
-		_assetCategory.setDescription(description);
+	public void setDescription(String description) {
+		model.setDescription(description);
 	}
 
 	/**
-	* Sets the localized description of this asset category in the language.
-	*
-	* @param description the localized description of this asset category
-	* @param locale the locale of the language
-	*/
+	 * Sets the localized description of this asset category in the language.
+	 *
+	 * @param description the localized description of this asset category
+	 * @param locale the locale of the language
+	 */
 	@Override
-	public void setDescription(java.lang.String description,
-		java.util.Locale locale) {
-		_assetCategory.setDescription(description, locale);
+	public void setDescription(String description, java.util.Locale locale) {
+		model.setDescription(description, locale);
 	}
 
 	/**
-	* Sets the localized description of this asset category in the language, and sets the default locale.
-	*
-	* @param description the localized description of this asset category
-	* @param locale the locale of the language
-	* @param defaultLocale the default locale
-	*/
+	 * Sets the localized description of this asset category in the language, and sets the default locale.
+	 *
+	 * @param description the localized description of this asset category
+	 * @param locale the locale of the language
+	 * @param defaultLocale the default locale
+	 */
 	@Override
-	public void setDescription(java.lang.String description,
-		java.util.Locale locale, java.util.Locale defaultLocale) {
-		_assetCategory.setDescription(description, locale, defaultLocale);
-	}
-
-	@Override
-	public void setDescriptionCurrentLanguageId(java.lang.String languageId) {
-		_assetCategory.setDescriptionCurrentLanguageId(languageId);
-	}
-
-	/**
-	* Sets the localized descriptions of this asset category from the map of locales and localized descriptions.
-	*
-	* @param descriptionMap the locales and localized descriptions of this asset category
-	*/
-	@Override
-	public void setDescriptionMap(
-		Map<java.util.Locale, java.lang.String> descriptionMap) {
-		_assetCategory.setDescriptionMap(descriptionMap);
-	}
-
-	/**
-	* Sets the localized descriptions of this asset category from the map of locales and localized descriptions, and sets the default locale.
-	*
-	* @param descriptionMap the locales and localized descriptions of this asset category
-	* @param defaultLocale the default locale
-	*/
-	@Override
-	public void setDescriptionMap(
-		Map<java.util.Locale, java.lang.String> descriptionMap,
+	public void setDescription(
+		String description, java.util.Locale locale,
 		java.util.Locale defaultLocale) {
-		_assetCategory.setDescriptionMap(descriptionMap, defaultLocale);
+
+		model.setDescription(description, locale, defaultLocale);
 	}
 
 	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_assetCategory.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(
-		com.liferay.portal.kernel.model.BaseModel<?> baseModel) {
-		_assetCategory.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_assetCategory.setExpandoBridgeAttributes(serviceContext);
+	public void setDescriptionCurrentLanguageId(String languageId) {
+		model.setDescriptionCurrentLanguageId(languageId);
 	}
 
 	/**
-	* Sets the group ID of this asset category.
-	*
-	* @param groupId the group ID of this asset category
-	*/
+	 * Sets the localized descriptions of this asset category from the map of locales and localized descriptions.
+	 *
+	 * @param descriptionMap the locales and localized descriptions of this asset category
+	 */
+	@Override
+	public void setDescriptionMap(
+		Map<java.util.Locale, String> descriptionMap) {
+
+		model.setDescriptionMap(descriptionMap);
+	}
+
+	/**
+	 * Sets the localized descriptions of this asset category from the map of locales and localized descriptions, and sets the default locale.
+	 *
+	 * @param descriptionMap the locales and localized descriptions of this asset category
+	 * @param defaultLocale the default locale
+	 */
+	@Override
+	public void setDescriptionMap(
+		Map<java.util.Locale, String> descriptionMap,
+		java.util.Locale defaultLocale) {
+
+		model.setDescriptionMap(descriptionMap, defaultLocale);
+	}
+
+	/**
+	 * Sets the external reference code of this asset category.
+	 *
+	 * @param externalReferenceCode the external reference code of this asset category
+	 */
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		model.setExternalReferenceCode(externalReferenceCode);
+	}
+
+	/**
+	 * Sets the group ID of this asset category.
+	 *
+	 * @param groupId the group ID of this asset category
+	 */
 	@Override
 	public void setGroupId(long groupId) {
-		_assetCategory.setGroupId(groupId);
+		model.setGroupId(groupId);
 	}
 
 	/**
-	* Sets the last publish date of this asset category.
-	*
-	* @param lastPublishDate the last publish date of this asset category
-	*/
+	 * Sets the last publish date of this asset category.
+	 *
+	 * @param lastPublishDate the last publish date of this asset category
+	 */
 	@Override
 	public void setLastPublishDate(Date lastPublishDate) {
-		_assetCategory.setLastPublishDate(lastPublishDate);
+		model.setLastPublishDate(lastPublishDate);
 	}
 
 	/**
-	* Sets the left category ID of this asset category.
-	*
-	* @param leftCategoryId the left category ID of this asset category
-	*/
+	 * Sets the left category ID of this asset category.
+	 *
+	 * @param leftCategoryId the left category ID of this asset category
+	 */
 	@Override
 	public void setLeftCategoryId(long leftCategoryId) {
-		_assetCategory.setLeftCategoryId(leftCategoryId);
+		model.setLeftCategoryId(leftCategoryId);
 	}
 
 	/**
-	* Sets the modified date of this asset category.
-	*
-	* @param modifiedDate the modified date of this asset category
-	*/
+	 * Sets the modified date of this asset category.
+	 *
+	 * @param modifiedDate the modified date of this asset category
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_assetCategory.setModifiedDate(modifiedDate);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the name of this asset category.
-	*
-	* @param name the name of this asset category
-	*/
+	 * Sets the name of this asset category.
+	 *
+	 * @param name the name of this asset category
+	 */
 	@Override
-	public void setName(java.lang.String name) {
-		_assetCategory.setName(name);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_assetCategory.setNew(n);
+	public void setName(String name) {
+		model.setName(name);
 	}
 
 	/**
-	* Sets the parent category ID of this asset category.
-	*
-	* @param parentCategoryId the parent category ID of this asset category
-	*/
+	 * Sets the parent category ID of this asset category.
+	 *
+	 * @param parentCategoryId the parent category ID of this asset category
+	 */
 	@Override
 	public void setParentCategoryId(long parentCategoryId) {
-		_assetCategory.setParentCategoryId(parentCategoryId);
+		model.setParentCategoryId(parentCategoryId);
 	}
 
 	/**
-	* Sets the primary key of this asset category.
-	*
-	* @param primaryKey the primary key of this asset category
-	*/
+	 * Sets the primary key of this asset category.
+	 *
+	 * @param primaryKey the primary key of this asset category
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_assetCategory.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_assetCategory.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the right category ID of this asset category.
-	*
-	* @param rightCategoryId the right category ID of this asset category
-	*/
+	 * Sets the right category ID of this asset category.
+	 *
+	 * @param rightCategoryId the right category ID of this asset category
+	 */
 	@Override
 	public void setRightCategoryId(long rightCategoryId) {
-		_assetCategory.setRightCategoryId(rightCategoryId);
+		model.setRightCategoryId(rightCategoryId);
 	}
 
 	/**
-	* Sets the title of this asset category.
-	*
-	* @param title the title of this asset category
-	*/
+	 * Sets the title of this asset category.
+	 *
+	 * @param title the title of this asset category
+	 */
 	@Override
-	public void setTitle(java.lang.String title) {
-		_assetCategory.setTitle(title);
+	public void setTitle(String title) {
+		model.setTitle(title);
 	}
 
 	/**
-	* Sets the localized title of this asset category in the language.
-	*
-	* @param title the localized title of this asset category
-	* @param locale the locale of the language
-	*/
+	 * Sets the localized title of this asset category in the language.
+	 *
+	 * @param title the localized title of this asset category
+	 * @param locale the locale of the language
+	 */
 	@Override
-	public void setTitle(java.lang.String title, java.util.Locale locale) {
-		_assetCategory.setTitle(title, locale);
+	public void setTitle(String title, java.util.Locale locale) {
+		model.setTitle(title, locale);
 	}
 
 	/**
-	* Sets the localized title of this asset category in the language, and sets the default locale.
-	*
-	* @param title the localized title of this asset category
-	* @param locale the locale of the language
-	* @param defaultLocale the default locale
-	*/
+	 * Sets the localized title of this asset category in the language, and sets the default locale.
+	 *
+	 * @param title the localized title of this asset category
+	 * @param locale the locale of the language
+	 * @param defaultLocale the default locale
+	 */
 	@Override
-	public void setTitle(java.lang.String title, java.util.Locale locale,
+	public void setTitle(
+		String title, java.util.Locale locale, java.util.Locale defaultLocale) {
+
+		model.setTitle(title, locale, defaultLocale);
+	}
+
+	@Override
+	public void setTitleCurrentLanguageId(String languageId) {
+		model.setTitleCurrentLanguageId(languageId);
+	}
+
+	/**
+	 * Sets the localized titles of this asset category from the map of locales and localized titles.
+	 *
+	 * @param titleMap the locales and localized titles of this asset category
+	 */
+	@Override
+	public void setTitleMap(Map<java.util.Locale, String> titleMap) {
+		model.setTitleMap(titleMap);
+	}
+
+	/**
+	 * Sets the localized titles of this asset category from the map of locales and localized titles, and sets the default locale.
+	 *
+	 * @param titleMap the locales and localized titles of this asset category
+	 * @param defaultLocale the default locale
+	 */
+	@Override
+	public void setTitleMap(
+		Map<java.util.Locale, String> titleMap,
 		java.util.Locale defaultLocale) {
-		_assetCategory.setTitle(title, locale, defaultLocale);
-	}
 
-	@Override
-	public void setTitleCurrentLanguageId(java.lang.String languageId) {
-		_assetCategory.setTitleCurrentLanguageId(languageId);
+		model.setTitleMap(titleMap, defaultLocale);
 	}
 
 	/**
-	* Sets the localized titles of this asset category from the map of locales and localized titles.
-	*
-	* @param titleMap the locales and localized titles of this asset category
-	*/
-	@Override
-	public void setTitleMap(Map<java.util.Locale, java.lang.String> titleMap) {
-		_assetCategory.setTitleMap(titleMap);
-	}
-
-	/**
-	* Sets the localized titles of this asset category from the map of locales and localized titles, and sets the default locale.
-	*
-	* @param titleMap the locales and localized titles of this asset category
-	* @param defaultLocale the default locale
-	*/
-	@Override
-	public void setTitleMap(Map<java.util.Locale, java.lang.String> titleMap,
-		java.util.Locale defaultLocale) {
-		_assetCategory.setTitleMap(titleMap, defaultLocale);
-	}
-
-	/**
-	* Sets the user ID of this asset category.
-	*
-	* @param userId the user ID of this asset category
-	*/
+	 * Sets the user ID of this asset category.
+	 *
+	 * @param userId the user ID of this asset category
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_assetCategory.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user name of this asset category.
-	*
-	* @param userName the user name of this asset category
-	*/
+	 * Sets the user name of this asset category.
+	 *
+	 * @param userName the user name of this asset category
+	 */
 	@Override
-	public void setUserName(java.lang.String userName) {
-		_assetCategory.setUserName(userName);
+	public void setUserName(String userName) {
+		model.setUserName(userName);
 	}
 
 	/**
-	* Sets the user uuid of this asset category.
-	*
-	* @param userUuid the user uuid of this asset category
-	*/
+	 * Sets the user uuid of this asset category.
+	 *
+	 * @param userUuid the user uuid of this asset category
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_assetCategory.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets the uuid of this asset category.
-	*
-	* @param uuid the uuid of this asset category
-	*/
+	 * Sets the uuid of this asset category.
+	 *
+	 * @param uuid the uuid of this asset category
+	 */
 	@Override
-	public void setUuid(java.lang.String uuid) {
-		_assetCategory.setUuid(uuid);
+	public void setUuid(String uuid) {
+		model.setUuid(uuid);
 	}
 
 	/**
-	* Sets the vocabulary ID of this asset category.
-	*
-	* @param vocabularyId the vocabulary ID of this asset category
-	*/
+	 * Sets the vocabulary ID of this asset category.
+	 *
+	 * @param vocabularyId the vocabulary ID of this asset category
+	 */
 	@Override
 	public void setVocabularyId(long vocabularyId) {
-		_assetCategory.setVocabularyId(vocabularyId);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof AssetCategoryWrapper)) {
-			return false;
-		}
-
-		AssetCategoryWrapper assetCategoryWrapper = (AssetCategoryWrapper)obj;
-
-		if (Objects.equals(_assetCategory, assetCategoryWrapper._assetCategory)) {
-			return true;
-		}
-
-		return false;
+		model.setVocabularyId(vocabularyId);
 	}
 
 	@Override
 	public long getNestedSetsTreeNodeLeft() {
-		return _assetCategory.getNestedSetsTreeNodeLeft();
+		return model.getNestedSetsTreeNodeLeft();
 	}
 
 	@Override
 	public long getNestedSetsTreeNodeRight() {
-		return _assetCategory.getNestedSetsTreeNodeRight();
+		return model.getNestedSetsTreeNodeRight();
 	}
 
 	@Override
 	public long getNestedSetsTreeNodeScopeId() {
-		return _assetCategory.getNestedSetsTreeNodeScopeId();
+		return model.getNestedSetsTreeNodeScopeId();
 	}
 
 	@Override
 	public void setNestedSetsTreeNodeLeft(long nestedSetsTreeNodeLeft) {
-		_assetCategory.setNestedSetsTreeNodeLeft(nestedSetsTreeNodeLeft);
+		model.setNestedSetsTreeNodeLeft(nestedSetsTreeNodeLeft);
 	}
 
 	@Override
 	public void setNestedSetsTreeNodeRight(long nestedSetsTreeNodeRight) {
-		_assetCategory.setNestedSetsTreeNodeRight(nestedSetsTreeNodeRight);
+		model.setNestedSetsTreeNodeRight(nestedSetsTreeNodeRight);
 	}
 
 	@Override
 	public StagedModelType getStagedModelType() {
-		return _assetCategory.getStagedModelType();
+		return model.getStagedModelType();
 	}
 
 	@Override
-	public AssetCategory getWrappedModel() {
-		return _assetCategory;
+	protected AssetCategoryWrapper wrap(AssetCategory assetCategory) {
+		return new AssetCategoryWrapper(assetCategory);
 	}
 
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _assetCategory.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _assetCategory.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_assetCategory.resetOriginalValues();
-	}
-
-	private final AssetCategory _assetCategory;
 }

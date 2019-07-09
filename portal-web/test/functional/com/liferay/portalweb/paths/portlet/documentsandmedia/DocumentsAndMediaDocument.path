@@ -9,64 +9,24 @@
 </thead>
 <tbody>
 <tr>
-	<td>SUCCESS_MESSAGE_DOCUMENT_VIEW</td>
-	<td>//div[@class='view']//div[contains(@class,'alert') and contains(@class,'alert-success')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>DOCUMENT_VIEW_VERSION_NUMBER</td>
 	<td>//section[contains(@id,'DLAdminPortlet')]//span[@class='workflow-version']/span[contains(@class,'workflow-value')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>DOCUMENT_VIEW_WORKFLOW_STATUS</td>
-	<td>//section[contains(@id,'DLAdminPortlet')]//span[@class='workflow-status']/span[contains(@class,'workflow-value')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
 </tr>
-<!--TOOLBAR-->
+<!--CUSTOM_FIELD-->
 <tr>
-	<td>TOOLBAR_DOWNLOAD_BUTTON</td>
-	<td>//div[contains(@id,'fileEntryToolbar')]/div/button[contains(.,'Download')]</td>
+	<td>CUSTOM_FIELD_NAME</td>
+	<td>//div[contains(@class,'ddm-field-group')]//span[contains(.,'${customFieldName}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>TOOLBAR_EDIT_BUTTON</td>
-	<td>//div[contains(@id,'fileEntryToolbar')]/div/button[contains(.,'Edit')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_MOVE_BUTTON</td>
-	<td>//div[contains(@id,'fileEntryToolbar')]/div/button[contains(.,'Move')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_CHECKOUT_BUTTON</td>
-	<td>//div[contains(@id,'fileEntryToolbar')]/div/button[contains(.,'Checkout')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_CANCEL_CHECKOUT_BUTTON</td>
-	<td>//div[contains(@id,'fileEntryToolbar')]/div/button[contains(.,'Cancel Checkout')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_CHECKIN_BUTTON</td>
-	<td>//div[contains(@id,'fileEntryToolbar')]/div/button[contains(.,'Checkin')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_PERMISSIONS_BUTTON</td>
-	<td>//div[contains(@id,'fileEntryToolbar')]/div/button[contains(.,'Permissions')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_RECYCLE_BIN_BUTTON</td>
-	<td>//div[contains(@id,'fileEntryToolbar')]/div/button[contains(.,'Move to the Recycle Bin')]</td>
+	<td>CUSTOM_FIELD_VALUE</td>
+	<td>//div[contains(@class,'ddm-field-group')]//span[contains(.,'${customFieldValue}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -76,63 +36,58 @@
 </tr>
 <!--DOCUMENT_INFO-->
 <tr>
+	<td>DOCUMENT_INFO_COLLABORATOR_TOOLTIP</td>
+	<td>//div[contains(@class,'lfr-portal-tooltip') and contains(@data-title,'${key_collaborator}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DOCUMENT_INFO_TITLE</td>
-	<td>//div[contains(@class,'document-info')]/h2[contains(@title,'${key_dmDocumentTitle}')]</td>
+	<td>//div[contains(@class,'tbar-section')]/h2[contains(@title,'${key_dmDocumentTitle}')] | //h3[contains(@class,'header-title')]/span[contains(.,'${key_dmDocumentTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_THUMBNAIL</td>
-	<td>//span[contains(@class,'document-thumbnail')] | //span[contains(@class,'document-thumbnail')]/img</td>
+	<td>//div[contains(@class,'preview-file-container')]/img</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_UPLOADED_BY</td>
-	<td>//span[@class='user-date']/span/span/a</td>
+	<td>//div[contains(@class,'username')]/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_RATING</td>
-	<td>//div[contains(@class,'document-info')]/span[@class='lfr-asset-ratings']</td>
+	<td>//dd[contains(@class,'sidebar-dd')]/div[contains(@class,'taglib-ratings')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_RELATED_ASSETS_HEADER</td>
-	<td>//h2[contains(@class,'asset-links-title')]</td>
+	<td>//div[contains(@class,'sidebar-body')]//h2[contains(@class,'sheet-tertiary-title')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_RELATED_ASSETS_TITLE</td>
-	<td>//li[@class='asset-links-list-item']//a/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_INFO_LINKS</td>
-	<td>//div[contains(@class,'document-info')]/div[@class='entry-links']</td>
+	<td>//div[contains(@class,'sidebar-body')]//li[contains(@class,'list-group-item')]//a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_DESCRIPTION</td>
-	<td>//div[contains(@class,'document-info')]/span[@class='document-description']</td>
+	<td>//dd[contains(@class,'sidebar-dd') and contains (.,'Description')] | //dt[contains(@class,'sidebar-dt') and contains (.,'Description')]/following-sibling::dd[contains(.,'${key_dmDocumentDescription}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_CATEGORIES</td>
-	<td>//div[contains(@class,'document-info')]/div[@class='lfr-asset-categories']</td>
+	<td>//dd[contains(@class,'sidebar-dd')]/span[contains(@class,'categories')]/span[contains(.,'${key_categoryName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_TAGS</td>
-	<td>//div[contains(@class,'document-info')]/div[@class='lfr-asset-tags']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_INFO_URL_LINK</td>
-	<td>//div[@class='asset-details-content']//span/a[@class='show-url-file']</td>
+	<td>//dt[contains(.,'Tags')]/../dd[contains(@class,'sidebar-dd')]/span</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_VERSION</td>
-	<td>//div[contains(@class,'sidebar-body')]/dl/dt[contains(.,'Version')]/following-sibling::dd</td>
+	<td>//div[@class='sidebar-header']//span[contains(@class,'label-item') and contains(.,'Version')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -141,23 +96,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DOCUMENT_INFO_LAST_UPDATED_BY</td>
-	<td>//div[contains(@class,'lfr-asset-icon') and contains(.,'Last Updated by Test Test')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>DOCUMENT_INFO_CREATED_DATE</td>
-	<td>//div[contains(@class,'sidebar-body')]/dl/dt[3]/following-sibling::dd</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_INFO_DOWNLOAD_DOCUMENT</td>
-	<td>//span[@class='download-document']/span/a/span</td>
+	<td>//div[contains(@class,'sidebar-body')]//dl/dt[5]/following-sibling::dd</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_INFO_GET_URL_OR_WEBDAV_URL</td>
-	<td>//span[@class='webdav-url']</td>
+	<td>//input[contains(@id,'webDavURL')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -167,13 +112,38 @@
 </tr>
 <!--DOCUMENT_DETAILS-->
 <tr>
+	<td>DOCUMENT_DETAILS_DOWNLOAD</td>
+	<td>//div[@class='sidebar-section']//a[@title='File Size ${key_dmDocumentSize}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DOCUMENT_DETAILS_DROPDOWN</td>
 	<td>//li/a[contains(@class,'dropdown-toggle')]/span[contains(.,'Details')]</td>
 	<td></td>
 </tr>
 <tr>
+	<td>DOCUMENT_DETAILS_IMAGE_PREVIEW</td>
+	<td>//div[contains(@class,'preview-file-container')]/img</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENT_DETAILS_SIZE</td>
+	<td>//div[contains(@class,'sidebar-body')]//dd[contains(.,'${key_dmDocumentSize}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENT_DETAILS_UPLOADER</td>
+	<td>//div[contains(@class,'sidebar-body')]//dt[contains(.,'Created')]/following-sibling::dd[contains(.,'${key_dmDocumentUploader}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENT_DETAILS_URL</td>
+	<td>//div[contains(@class,'sidebar-section')]//label[contains(.,'URL')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>DOCUMENT_DETAILS_VERSION</td>
-	<td>//div[contains(@class,'sidebar-body')]//span[contains(.,'Version')]/../../..//dd[contains(.,'${key_dmDocumentVersionNumber}')]</td>
+	<td>//div[@class='sidebar-header']//span[contains(@class,'label-item') and contains(.,'Version') and contains(.,'${key_dmDocumentVersionNumber}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -182,38 +152,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DOCUMENT_DETAILS_UPLOADER</td>
-	<td>//div[@class='asset-details-content']/div[contains(@class,'icon-user') and contains(@class,'lfr-asset-icon')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_DETAILS_DATE</td>
-	<td>//div[@class='asset-details-content']//div[contains(@class,'lfr-asset-icon') and contains(@class,'icon-calendar')]</td>
+	<td>DOCUMENT_DETAILS_WEBDAV_URL</td>
+	<td>//div[contains(@class,'sidebar-section')]//label[contains(.,'WebDAV URL')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_DETAILS_WORKFLOW</td>
-	<td>//div[@class='asset-details-content']//span[contains(@class,'workflow-status')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_DETAILS_WORKFLOW_PNG</td>
-	<td>portal/icons/document_detail_workflow.png</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_DETAILS_DOWNLOAD</td>
-	<td>//span[@class='download-document']/span/a/span[contains(.,'Download (${key_dmDocumentSize}KB)')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_DETAILS_URL</td>
-	<td>//div[@class='asset-details-content']//span[@class='webdav-url']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_DETAILS_IMAGE_PREVIEW</td>
-	<td>//div[contains(@class,'preview-file-image-container')]/img</td>
+	<td>//div[contains(@class,'sidebar-header')]//span[contains(@class,'workflow-status')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -258,10 +203,20 @@
 	<td>//div[@class='lfr-ddm-container']//div[contains(.,'${key_bannerDescription}')]</td>
 	<td></td>
 </tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--DETAILS_PANEL-->
 <tr>
 	<td>DETAILS_URL</td>
-	<td>//a[@class='show-url-file']</td>
+	<td>//div[label[contains(.,'Latest Version URL')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
 	<td></td>
 </tr>
 <!--METADATA_PANEL-->
@@ -273,41 +228,6 @@
 <tr>
 	<td>METADATA_PANEL_DATE</td>
 	<td>//div[@class='lfr-ddm-container']/div[contains(.,'${key_dateValue}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>METADATA_PANEL_DECIMAL</td>
-	<td>//div[@class='lfr-ddm-container']/div[contains(.,'${key_decimalValue}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>METADATA_PANEL_DOCUMENTS_AND_MEDIA</td>
-	<td>//div[@class='lfr-ddm-container']/div[contains(.,'Documents and Media') and contains(.,'${key_dmDocument}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>METADATA_PANEL_DOCUMENTS_AND_MEDIA_FILE</td>
-	<td>//div[@class='lfr-ddm-container']/div[contains(.,'Documents and Media')]/a[contains(.,'${key_dmDocument}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>METADATA_PANEL_HTML</td>
-	<td>//div[@class='lfr-ddm-container']/div[contains(.,'${key_htmlContent}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>METADATA_PANEL_INTERGER</td>
-	<td>//div[@class='lfr-ddm-container']/div[contains(.,'${key_integerValue}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>METADATA_PANEL_LINK_TO_PAGE</td>
-	<td>//div[@class='lfr-ddm-container']/div[contains(.,'Link to Page') and contains(.,'${key_pageName}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>METADATA_PANEL_LINK_TO_PAGE</td>
-	<td>//div[@class='lfr-ddm-container']/div[contains(.,'Link to Page')]/a[contains(.,'${key_pageName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -328,22 +248,6 @@
 <tr>
 	<td>METADATA_PANEL_TEXT</td>
 	<td>//div[@class='lfr-ddm-container']/div[contains(.,'${key_textContent}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>METADATA_PANEL_TEXT_BOX</td>
-	<td>//div[@class='lfr-ddm-container']/div[contains(.,'Text Box') and contains(.,'${key_textBoxContent}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--SOCIAL_OFFICE_RATING-->
-<tr>
-	<td>SOCIAL_OFFICE_AVERAGE_RATING_STAR_ICON_PNG</td>
-	<td>so/icons/average_rating_star_icon.png</td>
 	<td></td>
 </tr>
 <tr>

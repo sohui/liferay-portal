@@ -29,8 +29,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class FacetFactoryUtil {
 
 	public static Facet create(

@@ -15,7 +15,8 @@
 package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.util.Function;
+
+import java.util.function.Function;
 
 import javax.portlet.PortletRequest;
 
@@ -27,8 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 public class ServiceContextFunction
 	implements Function<String, ServiceContext> {
 
-	public ServiceContextFunction(HttpServletRequest request) {
-		_request = request;
+	public ServiceContextFunction(HttpServletRequest httpServletRequest) {
+		_httpServletRequest = httpServletRequest;
 
 		_portletRequest = null;
 	}
@@ -36,7 +37,7 @@ public class ServiceContextFunction
 	public ServiceContextFunction(PortletRequest portletRequest) {
 		_portletRequest = portletRequest;
 
-		_request = null;
+		_httpServletRequest = null;
 	}
 
 	@Override
@@ -46,16 +47,16 @@ public class ServiceContextFunction
 				return ServiceContextFactory.getInstance(
 					className, _portletRequest);
 			}
-			else {
-				return ServiceContextFactory.getInstance(className, _request);
-			}
+
+			return ServiceContextFactory.getInstance(
+				className, _httpServletRequest);
 		}
 		catch (PortalException pe) {
 			throw new RuntimeException(pe);
 		}
 	}
 
+	private final HttpServletRequest _httpServletRequest;
 	private final PortletRequest _portletRequest;
-	private final HttpServletRequest _request;
 
 }

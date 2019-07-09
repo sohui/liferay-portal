@@ -14,9 +14,10 @@
 
 package com.liferay.portal.jsonwebservice;
 
-import com.liferay.portal.kernel.annotation.AnnotationLocator;
+import com.liferay.petra.reflect.AnnotationLocator;
 import com.liferay.portal.kernel.bean.BeanLocator;
 import com.liferay.portal.kernel.bean.BeanLocatorException;
+import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionsManagerUtil;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceMappingResolver;
@@ -26,8 +27,12 @@ import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceRegistrator;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceScannerStrategy;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.service.ServiceWrapper;
+import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.spring.aop.AopInvocationHandler;
 import com.liferay.portal.util.PropsValues;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import java.util.HashMap;
@@ -104,8 +109,10 @@ public class DefaultJSONWebServiceRegistrator
 			return;
 		}
 
+		Class<?> targetClass = getTargetClass(bean);
+
 		JSONWebService jsonWebService = AnnotationLocator.locate(
-			bean.getClass(), JSONWebService.class);
+			targetClass, JSONWebService.class);
 
 		if (jsonWebService != null) {
 			try {
@@ -143,7 +150,46 @@ public class DefaultJSONWebServiceRegistrator
 	}
 
 	public void setWireViaUtil(boolean wireViaUtil) {
-		this._wireViaUtil = wireViaUtil;
+		_wireViaUtil = wireViaUtil;
+	}
+
+	protected Class<?> getTargetClass(Object service) {
+		while (ProxyUtil.isProxyClass(service.getClass())) {
+			InvocationHandler invocationHandler =
+				ProxyUtil.getInvocationHandler(service);
+
+			if (invocationHandler instanceof AopInvocationHandler) {
+				AopInvocationHandler aopInvocationHandler =
+					(AopInvocationHandler)invocationHandler;
+
+				service = aopInvocationHandler.getTarget();
+			}
+			else if (invocationHandler instanceof ClassLoaderBeanHandler) {
+				ClassLoaderBeanHandler classLoaderBeanHandler =
+					(ClassLoaderBeanHandler)invocationHandler;
+
+				Object bean = classLoaderBeanHandler.getBean();
+
+				if (bean instanceof ServiceWrapper) {
+					ServiceWrapper<?> serviceWrapper = (ServiceWrapper<?>)bean;
+
+					service = serviceWrapper.getWrappedService();
+				}
+				else {
+					service = bean;
+				}
+			}
+			else {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Unable to handle proxy of type " + invocationHandler);
+				}
+
+				break;
+			}
+		}
+
+		return service.getClass();
 	}
 
 	protected Class<?> loadUtilClass(Class<?> implementationClass)
@@ -210,14 +256,14 @@ public class DefaultJSONWebServiceRegistrator
 				}
 			}
 
-			Class<?> serviceBeanClass = methodDescriptor.getDeclaringClass();
-
 			String httpMethod =
 				_jsonWebServiceMappingResolver.resolveHttpMethod(method);
 
 			if (!_jsonWebServiceNaming.isValidHttpMethod(httpMethod)) {
 				continue;
 			}
+
+			Class<?> serviceBeanClass = methodDescriptor.getDeclaringClass();
 
 			if (_wireViaUtil) {
 				Class<?> utilClass = loadUtilClass(serviceBeanClass);

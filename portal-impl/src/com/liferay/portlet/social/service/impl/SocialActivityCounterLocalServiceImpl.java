@@ -15,8 +15,10 @@
 package com.liferay.portlet.social.service.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.portal.kernel.cache.MultiVMPoolUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.PortalCache;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.LockProtectedAction;
@@ -25,7 +27,6 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.util.PropsValues;
@@ -172,10 +173,10 @@ public class SocialActivityCounterLocalServiceImpl
 	/**
 	 * Adds or increments activity counters related to an activity.
 	 *
-	 * </p>
+	 * <p>
 	 * This method is called asynchronously from the social activity service
 	 * when the user performs an activity defined in
-	 * </code>liferay-social.xml</code>.
+	 * <code>liferay-social.xml</code>.
 	 * </p>
 	 *
 	 * <p>
@@ -228,8 +229,6 @@ public class SocialActivityCounterLocalServiceImpl
 			return;
 		}
 
-		User user = userPersistence.findByPrimaryKey(activity.getUserId());
-
 		SocialActivityDefinition activityDefinition =
 			socialActivitySettingLocalService.getActivityDefinition(
 				activity.getGroupId(), activity.getClassName(),
@@ -247,6 +246,8 @@ public class SocialActivityCounterLocalServiceImpl
 		if (activityProcessor != null) {
 			activityProcessor.processActivity(activity);
 		}
+
+		User user = userPersistence.findByPrimaryKey(activity.getUserId());
 
 		AssetEntry assetEntry = activity.getAssetEntry();
 
@@ -990,7 +991,8 @@ public class SocialActivityCounterLocalServiceImpl
 
 	protected void clearFinderCache() {
 		PortalCache<String, SocialActivityCounter> portalCache =
-			MultiVMPoolUtil.getPortalCache(
+			PortalCacheHelperUtil.getPortalCache(
+				PortalCacheManagerNames.MULTI_VM,
 				SocialActivityCounterFinder.class.getName());
 
 		portalCache.removeAll();
@@ -1108,13 +1110,9 @@ public class SocialActivityCounterLocalServiceImpl
 				protected SocialActivityCounter performProtectedAction()
 					throws PortalException {
 
-					SocialActivityCounter activityCounter =
-						socialActivityCounterLocalService.addActivityCounter(
-							groupId, classNameId, classPK, name, ownerType,
-							totalValue, previousActivityCounterId,
-							periodLength);
-
-					return activityCounter;
+					return socialActivityCounterLocalService.addActivityCounter(
+						groupId, classNameId, classPK, name, ownerType,
+						totalValue, previousActivityCounterId, periodLength);
 				}
 
 			};

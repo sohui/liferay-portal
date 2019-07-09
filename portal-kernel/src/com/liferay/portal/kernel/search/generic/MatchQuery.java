@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search.generic;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.BaseQueryImpl;
 import com.liferay.portal.kernel.search.query.QueryVisitor;
 
@@ -144,6 +145,47 @@ public class MatchQuery extends BaseQueryImpl {
 		_zeroTermsQuery = zeroTermsQuery;
 	}
 
+	@Override
+	public String toString() {
+		StringBundler sb = new StringBundler(29);
+
+		sb.append("{analyzer=");
+		sb.append(_analyzer);
+		sb.append(", className=");
+
+		Class<?> clazz = getClass();
+
+		sb.append(clazz.getSimpleName());
+
+		sb.append(", cutOffFrequency=");
+		sb.append(_cutOffFrequency);
+		sb.append(", field=");
+		sb.append(_field);
+		sb.append(", fuzziness=");
+		sb.append(_fuzziness);
+		sb.append(", fuzzyTranspositions=");
+		sb.append(_fuzzyTranspositions);
+		sb.append(", lenient=");
+		sb.append(_lenient);
+		sb.append(", maxExpansions=");
+		sb.append(_maxExpansions);
+		sb.append(", minShouldMatch=");
+		sb.append(_minShouldMatch);
+		sb.append(", operator=");
+		sb.append(_operator);
+		sb.append(", prefixLength=");
+		sb.append(_prefixLength);
+		sb.append(", slop=");
+		sb.append(_slop);
+		sb.append(", type=");
+		sb.append(_type);
+		sb.append(", value=");
+		sb.append(_value);
+		sb.append("}");
+
+		return sb.toString();
+	}
+
 	public enum Operator {
 
 		AND, OR
@@ -153,7 +195,7 @@ public class MatchQuery extends BaseQueryImpl {
 	public enum RewriteMethod {
 
 		CONSTANT_SCORE_AUTO, CONSTANT_SCORE_BOOLEAN, CONSTANT_SCORE_FILTER,
-		SCORING_BOOLEAN, TOP_TERMS_N, TOP_TERMS_BOOST_N
+		SCORING_BOOLEAN, TOP_TERMS_BOOST_N, TOP_TERMS_N
 
 	}
 

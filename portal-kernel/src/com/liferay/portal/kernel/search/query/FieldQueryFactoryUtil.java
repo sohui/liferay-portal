@@ -15,7 +15,7 @@
 package com.liferay.portal.kernel.search.query;
 
 import com.liferay.portal.kernel.search.Query;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Michael C. Han
@@ -29,7 +29,9 @@ public class FieldQueryFactoryUtil {
 			field, value, like, splitKeywords);
 	}
 
-	private static final FieldQueryFactory _fieldQueryFactory =
-		ProxyFactory.newServiceTrackedInstance(FieldQueryFactory.class);
+	private static volatile FieldQueryFactory _fieldQueryFactory =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			FieldQueryFactory.class, FieldQueryFactoryUtil.class,
+			"_fieldQueryFactory", false);
 
 }

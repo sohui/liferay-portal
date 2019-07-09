@@ -14,7 +14,6 @@
 
 package com.liferay.portal.service.impl;
 
-import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
@@ -26,13 +25,12 @@ import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.service.permission.TeamPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.comparator.UserGroupIdComparator;
 import com.liferay.portal.service.base.UserGroupServiceBaseImpl;
-
-import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Provides the remote service for accessing, adding, deleting, and updating
@@ -72,28 +70,6 @@ public class UserGroupServiceImpl extends UserGroupServiceBaseImpl {
 			getPermissionChecker(), teamId, ActionKeys.ASSIGN_MEMBERS);
 
 		userGroupLocalService.addTeamUserGroups(teamId, userGroupIds);
-	}
-
-	/**
-	 * Adds a user group.
-	 *
-	 * <p>
-	 * This method handles the creation and bookkeeping of the user group,
-	 * including its resources, metadata, and internal data structures.
-	 * </p>
-	 *
-	 * @param      name the user group's name
-	 * @param      description the user group's description
-	 * @return     the user group
-	 * @deprecated As of 6.2.0, replaced by {@link #addUserGroup(String, String,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public UserGroup addUserGroup(String name, String description)
-		throws PortalException {
-
-		return addUserGroup(name, description, null);
 	}
 
 	/**
@@ -161,6 +137,15 @@ public class UserGroupServiceImpl extends UserGroupServiceBaseImpl {
 		return userGroup;
 	}
 
+	@Override
+	public List<UserGroup> getGtUserGroups(
+		long gtUserGroupId, long companyId, long parentUserGroupId, int size) {
+
+		return userGroupPersistence.filterFindByU_C_P(
+			gtUserGroupId, companyId, parentUserGroupId, 0, size,
+			new UserGroupIdComparator(true));
+	}
+
 	/**
 	 * Returns the user group with the primary key.
 	 *
@@ -201,6 +186,28 @@ public class UserGroupServiceImpl extends UserGroupServiceBaseImpl {
 		throws PortalException {
 
 		return filterUserGroups(userGroupLocalService.getUserGroups(companyId));
+	}
+
+	@Override
+	public List<UserGroup> getUserGroups(
+		long companyId, String name, int start, int end) {
+
+		if (Validator.isNull(name)) {
+			return userGroupPersistence.filterFindByCompanyId(
+				companyId, start, end);
+		}
+
+		return userGroupPersistence.filterFindByC_LikeN(
+			companyId, name, start, end);
+	}
+
+	@Override
+	public int getUserGroupsCount(long companyId, String name) {
+		if (Validator.isNull(name)) {
+			return userGroupPersistence.filterCountByCompanyId(companyId);
+		}
+
+		return userGroupPersistence.filterCountByC_LikeN(companyId, name);
 	}
 
 	/**
@@ -252,39 +259,6 @@ public class UserGroupServiceImpl extends UserGroupServiceBaseImpl {
 			getPermissionChecker(), teamId, ActionKeys.ASSIGN_MEMBERS);
 
 		userGroupLocalService.unsetTeamUserGroups(teamId, userGroupIds);
-	}
-
-	/**
-	 * Updates the user group.
-	 *
-	 * @param      userGroupId the primary key of the user group
-	 * @param      name the user group's name
-	 * @param      description the the user group's description
-	 * @return     the user group
-	 * @deprecated As of 6.2.0, replaced by {@link #updateUserGroup(long,
-	 *             String, String, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public UserGroup updateUserGroup(
-			long userGroupId, String name, String description)
-		throws PortalException {
-
-		UserGroup oldUserGroup = userGroupPersistence.findByPrimaryKey(
-			userGroupId);
-
-		ExpandoBridge oldExpandoBridge = oldUserGroup.getExpandoBridge();
-
-		Map<String, Serializable> oldExpandoAttributes =
-			oldExpandoBridge.getAttributes();
-
-		UserGroup userGroup = updateUserGroup(
-			userGroupId, name, description, null);
-
-		UserGroupMembershipPolicyUtil.verifyPolicy(
-			userGroup, oldUserGroup, oldExpandoAttributes);
-
-		return userGroup;
 	}
 
 	/**

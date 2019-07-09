@@ -14,6 +14,7 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ColorScheme;
 import com.liferay.portal.kernel.model.Layout;
@@ -29,9 +30,9 @@ import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.CookieKeys;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  * @author Brian Wing Shun Chan
@@ -57,10 +59,9 @@ public class LayoutRevisionImpl extends LayoutRevisionBaseImpl {
 		if (isInheritLookAndFeel()) {
 			return getLayoutSet().getColorScheme();
 		}
-		else {
-			return ThemeLocalServiceUtil.getColorScheme(
-				getCompanyId(), getTheme().getThemeId(), getColorSchemeId());
-		}
+
+		return ThemeLocalServiceUtil.getColorScheme(
+			getCompanyId(), getTheme().getThemeId(), getColorSchemeId());
 	}
 
 	@Override
@@ -68,9 +69,8 @@ public class LayoutRevisionImpl extends LayoutRevisionBaseImpl {
 		if (isInheritLookAndFeel()) {
 			return getLayoutSet().getCss();
 		}
-		else {
-			return getCss();
-		}
+
+		return getCss();
 	}
 
 	@Override
@@ -113,26 +113,39 @@ public class LayoutRevisionImpl extends LayoutRevisionBaseImpl {
 	}
 
 	@Override
-	public String getRegularURL(HttpServletRequest request)
+	public String getRegularURL(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-		String portalURL = PortalUtil.getPortalURL(request);
+		String portalURL = PortalUtil.getPortalURL(httpServletRequest);
 
 		Layout layout = LayoutLocalServiceUtil.getLayout(getPlid());
 
 		String url = PortalUtil.getLayoutURL(layout, themeDisplay);
 
-		if (!CookieKeys.hasSessionId(request) &&
+		if (!CookieKeys.hasSessionId(httpServletRequest) &&
 			(url.startsWith(portalURL) || url.startsWith(StringPool.SLASH))) {
 
-			url = PortalUtil.getURLWithSessionId(
-				url, request.getSession().getId());
+			HttpSession session = httpServletRequest.getSession();
+
+			url = PortalUtil.getURLWithSessionId(url, session.getId());
 		}
 
 		return url;
+	}
+
+	@Override
+	public String getTarget() {
+		String target = getTypeSettingsProperty("target");
+
+		if (Validator.isNull(target)) {
+			return StringPool.BLANK;
+		}
+
+		return "target=\"" + HtmlUtil.escapeAttribute(target) + "\"";
 	}
 
 	@Override
@@ -140,9 +153,8 @@ public class LayoutRevisionImpl extends LayoutRevisionBaseImpl {
 		if (isInheritLookAndFeel()) {
 			return getLayoutSet().getTheme();
 		}
-		else {
-			return ThemeLocalServiceUtil.getTheme(getCompanyId(), getThemeId());
-		}
+
+		return ThemeLocalServiceUtil.getTheme(getCompanyId(), getThemeId());
 	}
 
 	@Override
@@ -182,9 +194,8 @@ public class LayoutRevisionImpl extends LayoutRevisionBaseImpl {
 		if (_typeSettingsProperties == null) {
 			return super.getTypeSettings();
 		}
-		else {
-			return _typeSettingsProperties.toString();
-		}
+
+		return _typeSettingsProperties.toString();
 	}
 
 	@Override
@@ -232,9 +243,8 @@ public class LayoutRevisionImpl extends LayoutRevisionBaseImpl {
 		if (Validator.isNotNull(defaultAssetPublisherPortletId)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -249,9 +259,8 @@ public class LayoutRevisionImpl extends LayoutRevisionBaseImpl {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override

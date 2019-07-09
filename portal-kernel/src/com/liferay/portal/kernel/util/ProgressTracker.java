@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
+
 import java.io.Serializable;
 
 import java.util.HashMap;
@@ -36,6 +38,7 @@ public class ProgressTracker implements Serializable {
 
 	public ProgressTracker(String progressId) {
 		_progressId = progressId;
+
 		addProgress(ProgressStatusConstants.PREPARED, 0, StringPool.BLANK);
 	}
 
@@ -45,8 +48,8 @@ public class ProgressTracker implements Serializable {
 		_progress.put(status, tuple);
 	}
 
-	public void finish(HttpServletRequest request) {
-		finish(request.getSession());
+	public void finish(HttpServletRequest httpServletRequest) {
+		finish(httpServletRequest.getSession());
 	}
 
 	public void finish(HttpSession session) {
@@ -65,9 +68,7 @@ public class ProgressTracker implements Serializable {
 	public String getMessage() {
 		Tuple tuple = _progress.get(_status);
 
-		String message = GetterUtil.getString(tuple.getObject(1));
-
-		return message;
+		return GetterUtil.getString(tuple.getObject(1));
 	}
 
 	public int getPercent() {
@@ -78,8 +79,8 @@ public class ProgressTracker implements Serializable {
 		return _status;
 	}
 
-	public void initialize(HttpServletRequest request) {
-		initialize(request.getSession());
+	public void initialize(HttpServletRequest httpServletRequest) {
+		initialize(httpServletRequest.getSession());
 	}
 
 	public void initialize(HttpSession session) {
@@ -107,8 +108,8 @@ public class ProgressTracker implements Serializable {
 		_percent = GetterUtil.getInteger(tuple.getObject(0));
 	}
 
-	public void start(HttpServletRequest request) {
-		start(request.getSession());
+	public void start(HttpServletRequest httpServletRequest) {
+		start(httpServletRequest.getSession());
 	}
 
 	public void start(HttpSession session) {

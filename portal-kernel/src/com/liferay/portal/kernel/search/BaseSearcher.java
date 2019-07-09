@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Locale;
 
@@ -90,8 +90,8 @@ public abstract class BaseSearcher extends BaseIndexer<Object> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, added strictly to support backwards
-	 *             compatibility of {@link
+	 * @deprecated As of Wilberforce (7.0.x), added strictly to support
+	 *             backwards compatibility of {@link
 	 *             Indexer#postProcessSearchQuery(BooleanQuery, SearchContext)}
 	 */
 	@Deprecated

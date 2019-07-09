@@ -1,0 +1,131 @@
+@import './variables';
+
+.fragments-editor-toolbar {
+	background-color: #fff;
+	border-bottom: $toolbarBorderWidth solid $toolbarBorderColor;
+	color: #6b6c7e;
+	height: $managementBarHeight;
+	left: 0;
+	position: fixed;
+	top: $controlMenuHeight;
+	transition: left ease $productMenuTransitionDuration,
+		right ease $productMenuTransitionDuration,
+		width ease $productMenuTransitionDuration;
+	width: 100%;
+	will-change: left, right, width;
+	z-index: $managementBarZIndex;
+
+	body.open & {
+		left: $sidebarWidth;
+		width: calc(100% - #{$sidebarWidth});
+
+		@media (max-width: 768px) {
+			left: 0;
+			width: 100%;
+		}
+	}
+
+	button {
+		color: #6b6c7e;
+	}
+
+	button.btn-primary {
+		color: #fff;
+	}
+
+	button.btn-secondary {
+		color: #6b6c7e;
+	}
+
+	& > .container-fluid {
+		flex-direction: column;
+		height: $managementBarHeight;
+		padding: 0;
+		white-space: nowrap;
+
+		@media (max-width: 768px) {
+			> .navbar-nav:first-child {
+				align-self: flex-start;
+				flex-grow: 1;
+				order: 1;
+				padding-left: 12px;
+			}
+
+			> .navbar-nav:last-child {
+				border-bottom: $toolbarBorderWidth solid $toolbarBorderColor;
+				justify-content: flex-end;
+				order: 0;
+				padding-left: 4px;
+				padding-right: 12px;
+				width: 100%;
+			}
+		}
+	}
+
+	&__add-fragment-button {
+		border: none;
+		color: #fff;
+		padding: 0;
+	}
+
+	&__translation-status-button {
+		height: 32px;
+		line-height: 1;
+		padding: 0;
+		width: 32px;
+
+		.inline-item {
+			vertical-align: text-top;
+		}
+
+		.btn-section {
+			font-size: 9px;
+			line-height: 0;
+			padding: 0;
+		}
+	}
+
+	&__translation-status-list {
+		min-width: 35ch;
+		z-index: $translationStatusListZIndex;
+
+		@media (max-width: 768px) {
+			left: auto;
+			right: 0;
+		}
+	}
+
+	&__translation-status-item {
+		cursor: pointer;
+
+		&__label {
+			text-transform: uppercase;
+
+			&.default {
+				border-color: #5a70c2;
+				color: #5a70c2;
+			}
+
+			&.untranslated,
+			&.translating {
+				border-color: #fea500;
+				color: #fea500;
+			}
+
+			&.translated {
+				border-color: #33a766;
+				color: #33a766;
+			}
+		}
+	}
+
+	@media (min-width: 768px) {
+		height: $desktopManagementBarHeight;
+		top: $desktopControlMenuHeight;
+
+		& > .container-fluid {
+			flex-flow: row nowrap;
+			padding: 10px 1.25rem;
+		}
+	}
+}

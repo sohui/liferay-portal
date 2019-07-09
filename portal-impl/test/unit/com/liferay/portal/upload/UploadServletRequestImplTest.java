@@ -14,31 +14,30 @@
 
 package com.liferay.portal.upload;
 
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.registry.BasicRegistryImpl;
-import com.liferay.registry.RegistryUtil;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.tools.ToolDependencies;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItem;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.powermock.api.mockito.PowerMockito;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Roberto Díaz
  */
-public class UploadServletRequestImplTest extends PowerMockito {
+public class UploadServletRequestImplTest {
 
 	@Before
 	public void setUp() {
-		RegistryUtil.setRegistry(new BasicRegistryImpl());
+		ToolDependencies.wireCaches();
 
 		_fileItems.add(_getFileItem("A", 12));
 		_fileItems.add(_getFileItem("B", 92));
@@ -59,7 +58,8 @@ public class UploadServletRequestImplTest extends PowerMockito {
 
 		List<FileItem> sortedFileItems = uploadServletRequest.sort(_fileItems);
 
-		Assert.assertEquals(10, sortedFileItems.size());
+		Assert.assertEquals(
+			sortedFileItems.toString(), 10, sortedFileItems.size());
 
 		String previousFieldName = StringPool.BLANK;
 		long previousSize = 0;
@@ -98,19 +98,10 @@ public class UploadServletRequestImplTest extends PowerMockito {
 	}
 
 	private FileItem _getFileItem(String fieldName, long size) {
-		FileItem fileItem = mock(FileItem.class);
+		FileItem fileItem = new DiskFileItem(
+			fieldName, null, false, null, 0, null);
 
-		when(
-			fileItem.getFieldName()
-		).thenReturn(
-			fieldName
-		);
-
-		when(
-			fileItem.getSize()
-		).thenReturn(
-			size
-		);
+		ReflectionTestUtil.setFieldValue(fileItem, "size", size);
 
 		return fileItem;
 	}

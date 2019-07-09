@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.security.auth;
 
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
+import com.liferay.petra.lang.CentralizedThreadLocal;
 
 /**
  * @author Michael C. Han
@@ -38,10 +38,11 @@ public class PasswordModificationThreadLocal {
 	}
 
 	private static final ThreadLocal<Boolean> _passwordModified =
-		new AutoResetThreadLocal<>(
-			PrincipalThreadLocal.class + "._passwordModified", false);
+		new CentralizedThreadLocal<>(
+			PrincipalThreadLocal.class + "._passwordModified",
+			() -> Boolean.FALSE);
 	private static final ThreadLocal<String> _passwordUnencrypted =
-		new AutoResetThreadLocal<>(
+		new CentralizedThreadLocal<>(
 			PrincipalThreadLocal.class + "._passwordUnencrypted");
 
 }

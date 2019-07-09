@@ -1,0 +1,206 @@
+@component-name = "portal-collaboration"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property custom.properties = "default.layout.template.id=1_column";
+	property testray.main.component.name = "Notifications";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Site.tearDownCP();
+
+			BlogsEntry.tearDownCP();
+
+			Page.tearDownCP();
+
+			User.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test MarkNotificationAsReadAndAcceptRequest {
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			password = "password",
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
+
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.assignRegularRoleCP(
+			roleTitle = "Administrator",
+			userScreenName = "usersn");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Blogs Page",
+			sitePageType = "Widget Page");
+
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Blogs Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		Portlet.addPG(portletName = "Blogs");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCP(
+			siteName = "Community Site Name",
+			siteType = "Community");
+
+		Navigator.gotoSitePage(
+			pageName = "Home",
+			siteName = "Community Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Blank Page",
+			sitePageType = "Widget Page");
+
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Blank Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
+
+		SitePages.addPublicPage(
+			pageName = "Invite Members Page",
+			sitePageType = "Widget Page");
+
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Invite Members Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
+
+		Navigator.gotoSitePage(
+			pageName = "Invite Members Page",
+			siteName = "Community Site Name");
+
+		Portlet.addPG(portletName = "Invite Members");
+
+		Navigator.gotoSitePage(
+			pageName = "Invite Members Page",
+			siteName = "Community Site Name");
+
+		InviteMembers.inviteMembers(inviteUserFullName = "userfn userln");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		Blogs.subscribePG();
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		Blogs.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Notifications.viewBadgeCount(notificationCount = "2");
+
+		Notifications.gotoNotifications();
+
+		Notifications.viewNewContent(
+			assetType = "Blogs Entry",
+			contentBody = "Blogs Entry Title",
+			user = "Test Test");
+
+		Notifications.viewRequest(requestsTitle = "Test Test invited you to join Community Site Name.");
+
+		Notifications.acceptRequest(requestsTitle = "Test Test invited you to join Community Site Name.");
+
+		Refresh();
+
+		Notifications.viewNoRequest();
+
+		Notifications.viewNoNotifications();
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+	}
+
+	@priority = "3"
+	test ViewDefaultNotificationsPortletDeliveryOptions {
+		property osgi.app.includes = "bookmarks";
+
+		Navigator.openURL();
+
+		NotificationsPortlet.gotoNotificationDelivery(notificationPG = "true");
+
+		IFrame.selectConfigurationFrame();
+
+		NotificationsPortlet.viewDefaultNotificationDeliveries();
+	}
+
+	@priority = "5"
+	test ViewNoNotification {
+		Notifications.viewNoNotifications(activePanel = "Profile");
+
+		Notifications.viewNoRequest();
+
+		Notifications.viewNoNotificationEntry();
+	}
+
+}

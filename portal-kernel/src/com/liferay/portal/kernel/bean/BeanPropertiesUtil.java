@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.bean;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -44,8 +42,6 @@ public class BeanPropertiesUtil {
 	}
 
 	public static BeanProperties getBeanProperties() {
-		PortalRuntimePermission.checkGetBeanProperty(BeanPropertiesUtil.class);
-
 		return _beanProperties;
 	}
 
@@ -243,8 +239,18 @@ public class BeanPropertiesUtil {
 		return getBeanProperties().getStringSilent(bean, param, defaultValue);
 	}
 
-	public static void setProperties(Object bean, HttpServletRequest request) {
-		getBeanProperties().setProperties(bean, request);
+	public static void setProperties(
+		Object bean, HttpServletRequest httpServletRequest) {
+
+		getBeanProperties().setProperties(bean, httpServletRequest);
+	}
+
+	public static void setProperties(
+		Object bean, HttpServletRequest httpServletRequest,
+		String[] ignoreProperties) {
+
+		getBeanProperties().setProperties(
+			bean, httpServletRequest, ignoreProperties);
 	}
 
 	public static void setProperty(Object bean, String param, Object value) {
@@ -258,8 +264,6 @@ public class BeanPropertiesUtil {
 	}
 
 	public void setBeanProperties(BeanProperties beanProperties) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_beanProperties = beanProperties;
 	}
 

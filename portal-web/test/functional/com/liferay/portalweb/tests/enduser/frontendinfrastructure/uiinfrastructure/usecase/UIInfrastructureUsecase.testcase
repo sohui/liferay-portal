@@ -1,0 +1,174 @@
+@component-name = "portal-frontend-infrastructure"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "User Interface";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "5"
+	test RightToLeftSmoke {
+		property portal.acceptance = "false";
+		property test.name.skip.portal.instance = "UIInfrastructureUsecase#RightToLeftSmoke";
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "RTL Test Page");
+
+		Navigator.gotoPage(pageName = "RTL Test Page");
+
+		Portlet.addPG(portletName = "Language Selector");
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "ar_SA",
+			textIcon = "العربية-السعودية");
+
+		ProductMenuHelper.openProductMenu();
+
+		Page.viewRTLLayout();
+
+		LanguagePortlet.selectLanguagePG(
+			locale = "en_US",
+			textIcon = "english-United States");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoAddCP();
+
+		Navigator.ensureLocaleURL(locale = "ar");
+
+		PortletEntry.changeLocale(locale = "ar_SA");
+
+		WebContent.addCP(webContentTitle = "WC Title");
+
+		WebContent.viewRTLLayout();
+
+		Navigator.openURL();
+
+		Navigator.ensureLocaleURL(locale = "en");
+	}
+
+	@description = "Ensure that a user can access portlet options and drag and drop portlets."
+	@priority = "5"
+	test Smoke {
+		property portal.acceptance = "true";
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Test Page");
+
+		Navigator.gotoPage(pageName = "Test Page");
+
+		Portlet.addPG(portletName = "Hello World");
+
+		task ("Close the Add Panel") {
+			Click(locator1 = "ControlMenuAddPanel#CLOSE_ADD_PANEL");
+		}
+
+		task ("Assert the 'Configuration' iframe of the Hello World portlet") {
+			Portlet.gotoPortletOptions(
+				portletName = "Hello World",
+				portletOption = "Configuration");
+
+			IFrame.selectConfigurationFrame();
+
+			AssertTextEquals(
+				key_navItem = "Sharing",
+				locator1 = "NavBar#NAV_ITEM_LINK",
+				value1 = "Sharing");
+
+			IFrame.closeFrame();
+		}
+
+		Navigator.gotoPage(pageName = "Test Page");
+
+		task ("Assert the 'Look and Feel' iframe of the Hello World portlet") {
+			Portlet.gotoPortletOptions(
+				portletName = "Hello World",
+				portletOption = "Look and Feel Configuration");
+
+			IFrame.selectConfigurationFrame();
+
+			var key_tab = "General";
+
+			AssertTextEquals(
+				locator1 = "NavTab#TAB_LINK",
+				value1 = "General");
+
+			IFrame.closeFrame();
+		}
+
+		Portlet.dragAndDropPortletToColumnPG(
+			columnNumberFrom = "1",
+			columnNumberTo = "2",
+			portletName = "Hello World");
+
+		Portlet.dragAndDropPortletToColumnPG(
+			columnNumberFrom = "2",
+			columnNumberTo = "1",
+			portletName = "Hello World");
+
+		task ("Removes Hello World Portlets on Test Page and Welcome Page") {
+			Navigator.gotoPage(pageName = "Test Page");
+
+			Portlet.deletePG(portletName = "Hello World");
+
+			Navigator.gotoPage(pageName = "Home");
+
+			Portlet.deletePG(portletName = "Hello World");
+
+			Portlet.viewNoSpecificPG(portletName = "Hello World");
+		}
+	}
+
+	@description = "This is a use case for LPS-70390."
+	@priority = "4"
+	test ViewNonASCIICharactersWithSPADisabled {
+		property custom.properties = "javascript.single.page.application.enabled=false";
+
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.addCP(
+			userEmailAddress = "skandi@liferay.com",
+			userFirstName = "Skändi",
+			userLastName = "Ääkkönen",
+			userScreenName = "uskandi");
+
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.viewCP(
+			userEmailAddress = "skandi@liferay.com",
+			userFirstName = "Skändi",
+			userLastName = "Ääkkönen",
+			userScreenName = "uskandi");
+	}
+
+}

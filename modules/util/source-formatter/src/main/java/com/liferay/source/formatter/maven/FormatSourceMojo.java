@@ -28,7 +28,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Formats Liferay sources.
  *
  * @author Raymond Augé
- * @goal format-source
+ * @goal format
  */
 public class FormatSourceMojo extends AbstractMojo {
 
@@ -72,13 +72,6 @@ public class FormatSourceMojo extends AbstractMojo {
 	/**
 	 * @parameter
 	 */
-	public void setCopyright(String copyright) {
-		_sourceFormatterArgs.setCopyrightFileName(copyright);
-	}
-
-	/**
-	 * @parameter
-	 */
 	public void setFileNames(String[] fileNames) {
 		_sourceFormatterArgs.setFileNames(Arrays.asList(fileNames));
 	}
@@ -107,6 +100,20 @@ public class FormatSourceMojo extends AbstractMojo {
 	/**
 	 * @parameter
 	 */
+	public void setGitWorkingBranchName(String gitWorkingBranchName) {
+		_sourceFormatterArgs.setGitWorkingBranchName(gitWorkingBranchName);
+	}
+
+	/**
+	 * @parameter
+	 */
+	public void setIncludeSubrepositories(boolean includeSubrepositories) {
+		_sourceFormatterArgs.setIncludeSubrepositories(includeSubrepositories);
+	}
+
+	/**
+	 * @parameter
+	 */
 	public void setMaxLineLength(int maxLineLength) {
 		_sourceFormatterArgs.setMaxLineLength(maxLineLength);
 	}
@@ -128,15 +135,29 @@ public class FormatSourceMojo extends AbstractMojo {
 	/**
 	 * @parameter
 	 */
-	public void setThrowException(boolean throwException) {
-		_sourceFormatterArgs.setThrowException(throwException);
+	public void setShowDebugInformation(boolean showDebugInformation) {
+		_sourceFormatterArgs.setShowDebugInformation(showDebugInformation);
 	}
 
 	/**
 	 * @parameter
 	 */
-	public void setUseProperties(boolean useProperties) {
-		_sourceFormatterArgs.setUseProperties(useProperties);
+	public void setShowDocumentation(boolean showDocumentation) {
+		_sourceFormatterArgs.setShowDocumentation(showDocumentation);
+	}
+
+	/**
+	 * @parameter
+	 */
+	public void setShowStatusUpdates(boolean showStatusUpdates) {
+		_sourceFormatterArgs.setShowStatusUpdates(showStatusUpdates);
+	}
+
+	/**
+	 * @parameter
+	 */
+	public void setThrowException(boolean throwException) {
+		_sourceFormatterArgs.setThrowException(throwException);
 	}
 
 	private final SourceFormatterArgs _sourceFormatterArgs =

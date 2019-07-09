@@ -16,9 +16,12 @@ package com.liferay.exportimport.kernel.xstream;
 
 import java.util.Iterator;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public interface XStreamHierarchicalStreamReader {
 
 	public void close();

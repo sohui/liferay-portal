@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
+
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -46,8 +48,11 @@ public class NamedThreadFactory implements ThreadFactory {
 	public Thread newThread(Runnable runnable) {
 		Thread thread = new Thread(
 			_group, runnable,
-			_name.concat(StringPool.MINUS).concat(
-				String.valueOf(_counter.incrementAndGet())));
+			_name.concat(
+				StringPool.MINUS
+			).concat(
+				String.valueOf(_counter.incrementAndGet())
+			));
 
 		thread.setDaemon(true);
 		thread.setPriority(_priority);

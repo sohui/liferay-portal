@@ -29,8 +29,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Tina Tian
+ * @author     Tina Tian
+ * @deprecated As of Judson (7.1.x), moved to {@link
+ *             com.liferay.portal.search.internal.permission.DefaultSearchResultPermissionFilter}
  */
+@Deprecated
 public abstract class BaseSearchResultPermissionFilter
 	implements SearchResultPermissionFilter {
 
@@ -46,8 +49,7 @@ public abstract class BaseSearchResultPermissionFilter
 				selectedFieldNameSet, _PERMISSION_SELECTED_FIELD_NAMES);
 
 			queryConfig.setSelectedFieldNames(
-				selectedFieldNameSet.toArray(
-					new String[selectedFieldNameSet.size()]));
+				selectedFieldNameSet.toArray(new String[0]));
 		}
 
 		int end = searchContext.getEnd();
@@ -88,6 +90,7 @@ public abstract class BaseSearchResultPermissionFilter
 			int amplifiedEnd = offset + amplifiedCount;
 
 			searchContext.setEnd(amplifiedEnd);
+
 			searchContext.setStart(offset);
 
 			Hits hits = getHits(searchContext);
@@ -161,7 +164,7 @@ public abstract class BaseSearchResultPermissionFilter
 		documents = documents.subList(start, end);
 		scores = scores.subList(start, end);
 
-		hits.setDocs(documents.toArray(new Document[documents.size()]));
+		hits.setDocs(documents.toArray(new Document[0]));
 		hits.setScores(ArrayUtil.toFloatArray(scores));
 		hits.setLength(size);
 		hits.setSearchTime(
@@ -185,7 +188,8 @@ public abstract class BaseSearchResultPermissionFilter
 					PropsKeys.
 						INDEX_PERMISSION_FILTER_SEARCH_AMPLIFICATION_FACTOR));
 
-	private static final String[] _PERMISSION_SELECTED_FIELD_NAMES =
-		{Field.COMPANY_ID, Field.ENTRY_CLASS_NAME, Field.ENTRY_CLASS_PK};
+	private static final String[] _PERMISSION_SELECTED_FIELD_NAMES = {
+		Field.COMPANY_ID, Field.ENTRY_CLASS_NAME, Field.ENTRY_CLASS_PK
+	};
 
 }

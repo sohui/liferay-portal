@@ -24,20 +24,9 @@ public class PortletCategoryKeys {
 		PortletCategoryKeys.CONTROL_PANEL_CONFIGURATION,
 		PortletCategoryKeys.CONTROL_PANEL_SITES,
 		PortletCategoryKeys.CONTROL_PANEL_SYSTEM,
-		PortletCategoryKeys.CONTROL_PANEL_USERS
+		PortletCategoryKeys.CONTROL_PANEL_USERS,
+		PortletCategoryKeys.CONTROL_PANEL_WORKFLOW
 	};
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #CONTROL_PANEL_APPS}
-	 */
-	@Deprecated
-	public static final String APPS = "apps";
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #CONTROL_PANEL_CONFIGURATION}
-	 */
-	@Deprecated
-	public static final String CONFIGURATION = "control_panel.configuration";
 
 	public static final String CONTROL_PANEL_APPS = "control_panel.apps";
 
@@ -50,13 +39,10 @@ public class PortletCategoryKeys {
 
 	public static final String CONTROL_PANEL_USERS = "control_panel.users";
 
-	public static final String CURRENT_SITE = "current_site";
+	public static final String CONTROL_PANEL_WORKFLOW =
+		"control_panel.workflow";
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #USER_MY_ACCOUNT}
-	 */
-	@Deprecated
-	public static final String MY = "user";
+	public static final String CURRENT_SITE = "current_site";
 
 	public static final String PORTLET = "portlet";
 
@@ -67,9 +53,7 @@ public class PortletCategoryKeys {
 		PortletCategoryKeys.SITE_ADMINISTRATION_CONTENT,
 		PortletCategoryKeys.SITE_ADMINISTRATION_MEMBERS,
 		PortletCategoryKeys.SITE_ADMINISTRATION_NAVIGATION,
-		PortletCategoryKeys.SITE_ADMINISTRATION_PAGES,
-		PortletCategoryKeys.SITE_ADMINISTRATION_PUBLISHING,
-		PortletCategoryKeys.SITE_ADMINISTRATION_USERS
+		PortletCategoryKeys.SITE_ADMINISTRATION_PUBLISHING
 	};
 
 	public static final String SITE_ADMINISTRATION_CONFIGURATION =
@@ -84,35 +68,9 @@ public class PortletCategoryKeys {
 	public static final String SITE_ADMINISTRATION_NAVIGATION =
 		"site_administration.navigation";
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #SITE_ADMINISTRATION_NAVIGATION}
-	 */
-	@Deprecated
-	public static final String SITE_ADMINISTRATION_PAGES =
-		"site_administration.pages";
-
 	public static final String SITE_ADMINISTRATION_PUBLISHING =
 		"site_administration.publishing";
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #SITE_ADMINISTRATION_MEMBERS}
-	 */
-	@Deprecated
-	public static final String SITE_ADMINISTRATION_USERS =
-		"site_administration.users";
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #CONTROL_PANEL_SITES}
-	 */
-	@Deprecated
-	public static final String SITES = "sites";
-
 	public static final String USER_MY_ACCOUNT = "user.my_account";
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #CONTROL_PANEL_USERS}
-	 */
-	@Deprecated
-	public static final String USERS = "users";
 
 }

@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.service.RepositoryLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the Repository service. Represents a row in the &quot;Repository&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.portal.kernel.service.RepositoryLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class RepositoryBaseImpl extends RepositoryModelImpl
-	implements Repository {
+public abstract class RepositoryBaseImpl
+	extends RepositoryModelImpl implements Repository {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a repository model instance should use the {@link Repository} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a repository model instance should use the <code>Repository</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class RepositoryBaseImpl extends RepositoryModelImpl
 			RepositoryLocalServiceUtil.updateRepository(this);
 		}
 	}
+
 }

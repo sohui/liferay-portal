@@ -14,17 +14,16 @@
 
 package com.liferay.portal.kernel.settings;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.powermock.api.mockito.PowerMockito;
-
 /**
  * @author Iván Zaera
  */
-public class MemorySettingsTest extends PowerMockito {
+public class MemorySettingsTest {
 
 	@Test
 	public void testSetAndGetValue() {
@@ -32,7 +31,8 @@ public class MemorySettingsTest extends PowerMockito {
 
 		Collection<String> keys = _memorySettings.getModifiedKeys();
 
-		Assert.assertEquals(1, keys.size());
+		Assert.assertEquals(keys.toString(), 1, keys.size());
+
 		Assert.assertEquals("value", _memorySettings.getValue("key", null));
 	}
 
@@ -42,11 +42,11 @@ public class MemorySettingsTest extends PowerMockito {
 
 		Collection<String> keys = _memorySettings.getModifiedKeys();
 
-		Assert.assertEquals(1, keys.size());
+		Assert.assertEquals(keys.toString(), 1, keys.size());
 
 		String[] values = _memorySettings.getValues("key", null);
 
-		Assert.assertEquals(2, values.length);
+		Assert.assertEquals(Arrays.toString(values), 2, values.length);
 		Assert.assertEquals("value1", values[0]);
 		Assert.assertEquals("value2", values[1]);
 

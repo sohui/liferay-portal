@@ -14,7 +14,11 @@
 
 package com.liferay.portal.security.auth.http;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.AuthException;
 import com.liferay.portal.kernel.security.auth.http.HttpAuthManager;
 import com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil;
@@ -23,7 +27,6 @@ import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManag
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.Base64;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -247,8 +250,6 @@ public class HttpAuthManagerImpl implements HttpAuthManager {
 
 		String login = httpAuthorizationHeader.getAuthParameter(
 			HttpAuthorizationHeader.AUTH_PARAMETER_NAME_USERNAME);
-		String password = httpAuthorizationHeader.getAuthParameter(
-			HttpAuthorizationHeader.AUTH_PARAMETER_NAME_PASSWORD);
 
 		// Strip @uid and @sn for backwards compatibility
 
@@ -264,10 +265,19 @@ public class HttpAuthManagerImpl implements HttpAuthManager {
 		}
 
 		try {
+			String password = httpAuthorizationHeader.getAuthParameter(
+				HttpAuthorizationHeader.AUTH_PARAMETER_NAME_PASSWORD);
+
 			return AuthenticatedSessionManagerUtil.getAuthenticatedUserId(
 				httpServletRequest, login, password, null);
 		}
 		catch (AuthException ae) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(ae, ae);
+			}
 		}
 
 		return 0;
@@ -298,9 +308,19 @@ public class HttpAuthManagerImpl implements HttpAuthManager {
 			return userId;
 		}
 
-		if (!realm.equals(Portal.PORTAL_REALM) ||
-			!uri.equals(httpServletRequest.getRequestURI())) {
+		String requestURI = httpServletRequest.getRequestURI();
 
+		String queryString = httpServletRequest.getQueryString();
+
+		if (Validator.isNotNull(queryString)) {
+			requestURI = requestURI.concat(
+				StringPool.QUESTION
+			).concat(
+				queryString
+			);
+		}
+
+		if (!realm.equals(Portal.PORTAL_REALM) || !uri.equals(requestURI)) {
 			return userId;
 		}
 
@@ -323,15 +343,22 @@ public class HttpAuthManagerImpl implements HttpAuthManager {
 
 		String credentials = new String(Base64.decode(authorizationParts[1]));
 
-		String[] loginAndPassword = StringUtil.split(
-			credentials, CharPool.COLON);
-
-		String login = HttpUtil.decodeURL(loginAndPassword[0].trim());
-
+		String login = null;
 		String password = null;
 
-		if (loginAndPassword.length > 1) {
-			password = loginAndPassword[1].trim();
+		int index = credentials.indexOf(CharPool.COLON);
+
+		if (index > -1) {
+			login = credentials.substring(0, index);
+
+			login = HttpUtil.decodeURL(login.trim());
+
+			password = credentials.substring(index + 1);
+
+			password = password.trim();
+		}
+		else {
+			login = credentials.trim();
 		}
 
 		HttpAuthorizationHeader httpAuthorizationHeader =
@@ -367,6 +394,7 @@ public class HttpAuthManagerImpl implements HttpAuthManager {
 				authorizationProperties.entrySet()) {
 
 			String key = authorizationProperty.getKey();
+
 			String value = StringUtil.unquote(
 				authorizationProperties.getProperty(key));
 
@@ -375,5 +403,8 @@ public class HttpAuthManagerImpl implements HttpAuthManager {
 
 		return httpAuthorizationHeader;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		HttpAuthManagerImpl.class);
 
 }

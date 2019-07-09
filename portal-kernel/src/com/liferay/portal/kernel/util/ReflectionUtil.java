@@ -21,15 +21,20 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Miguel Pastor
- * @author Shuyang Zhou
+ * @author     Brian Wing Shun Chan
+ * @author     Miguel Pastor
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.petra.reflect.ReflectionUtil}
  */
+@Deprecated
 public class ReflectionUtil {
 
 	public static Object arrayClone(Object array) {
@@ -41,7 +46,7 @@ public class ReflectionUtil {
 		}
 
 		try {
-			return _CLONE_METHOD.invoke(array);
+			return _cloneMethod.invoke(array);
 		}
 		catch (Exception e) {
 			return throwException(e);
@@ -53,11 +58,21 @@ public class ReflectionUtil {
 
 		Field field = clazz.getDeclaredField(name);
 
-		if (!field.isAccessible()) {
-			field.setAccessible(true);
-		}
+		field.setAccessible(true);
 
 		return unfinalField(field);
+	}
+
+	public static Field[] getDeclaredFields(Class<?> clazz) throws Exception {
+		Field[] fields = clazz.getDeclaredFields();
+
+		for (Field field : fields) {
+			field.setAccessible(true);
+
+			unfinalField(field);
+		}
+
+		return fields;
 	}
 
 	public static Method getDeclaredMethod(
@@ -66,13 +81,15 @@ public class ReflectionUtil {
 
 		Method method = clazz.getDeclaredMethod(name, parameterTypes);
 
-		if (!method.isAccessible()) {
-			method.setAccessible(true);
-		}
+		method.setAccessible(true);
 
 		return method;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static Type getGenericInterface(
 		Object object, Class<?> interfaceClass) {
 
@@ -99,6 +116,10 @@ public class ReflectionUtil {
 		return null;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static Class<?> getGenericSuperType(Class<?> clazz) {
 		try {
 			ParameterizedType parameterizedType =
@@ -123,23 +144,46 @@ public class ReflectionUtil {
 	public static Class<?>[] getInterfaces(
 		Object object, ClassLoader classLoader) {
 
+		return getInterfaces(
+			object, classLoader,
+			cnfe -> {
+			});
+	}
+
+	public static Class<?>[] getInterfaces(
+		Object object, ClassLoader classLoader,
+		Consumer<ClassNotFoundException> classNotFoundHandler) {
+
 		Set<Class<?>> interfaceClasses = new LinkedHashSet<>();
 
-		Class<?> clazz = object.getClass();
-
-		_getInterfaces(interfaceClasses, clazz, classLoader);
-
-		Class<?> superClass = clazz.getSuperclass();
+		Class<?> superClass = object.getClass();
 
 		while (superClass != null) {
-			_getInterfaces(interfaceClasses, superClass, classLoader);
+			for (Class<?> interfaceClass : superClass.getInterfaces()) {
+				try {
+					if (classLoader == null) {
+						interfaceClasses.add(interfaceClass);
+					}
+					else {
+						interfaceClasses.add(
+							classLoader.loadClass(interfaceClass.getName()));
+					}
+				}
+				catch (ClassNotFoundException cnfe) {
+					classNotFoundHandler.accept(cnfe);
+				}
+			}
 
 			superClass = superClass.getSuperclass();
 		}
 
-		return interfaceClasses.toArray(new Class<?>[interfaceClasses.size()]);
+		return interfaceClasses.toArray(new Class<?>[0]);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static Class<?>[] getParameterTypes(Object[] arguments) {
 		if (arguments == null) {
 			return null;
@@ -183,11 +227,15 @@ public class ReflectionUtil {
 		return parameterTypes;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static Set<Method> getVisibleMethods(Class<?> clazz) {
 		Set<Method> visibleMethods = new HashSet<>(
 			Arrays.asList(clazz.getMethods()));
 
-		visibleMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+		Collections.addAll(visibleMethods, clazz.getDeclaredMethods());
 
 		while ((clazz = clazz.getSuperclass()) != null) {
 			for (Method method : clazz.getDeclaredMethods()) {
@@ -205,27 +253,17 @@ public class ReflectionUtil {
 	}
 
 	public static <T> T throwException(Throwable throwable) {
-		return ReflectionUtil.<T, RuntimeException>_doThrowException(throwable);
+		return ReflectionUtil.<T, RuntimeException>_throwException(throwable);
 	}
 
 	public static Field unfinalField(Field field) throws Exception {
 		int modifiers = field.getModifiers();
 
 		if ((modifiers & Modifier.FINAL) == Modifier.FINAL) {
-			Field modifiersField = getDeclaredField(Field.class, "modifiers");
-
-			modifiersField.setInt(field, modifiers & ~Modifier.FINAL);
+			_modifiersField.setInt(field, modifiers & ~Modifier.FINAL);
 		}
 
 		return field;
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T, E extends Throwable> T _doThrowException(
-			Throwable throwable)
-		throws E {
-
-		throw (E)throwable;
 	}
 
 	private static Type _getGenericInterface(
@@ -251,30 +289,26 @@ public class ReflectionUtil {
 		return null;
 	}
 
-	private static void _getInterfaces(
-		Set<Class<?>> interfaceClasses, Class<?> clazz,
-		ClassLoader classLoader) {
+	@SuppressWarnings("unchecked")
+	private static <T, E extends Throwable> T _throwException(
+			Throwable throwable)
+		throws E {
 
-		for (Class<?> interfaceClass : clazz.getInterfaces()) {
-			try {
-				if (classLoader != null) {
-					interfaceClasses.add(
-						classLoader.loadClass(interfaceClass.getName()));
-				}
-				else {
-					interfaceClasses.add(interfaceClass);
-				}
-			}
-			catch (ClassNotFoundException cnfe) {
-			}
-		}
+		throw (E)throwable;
 	}
 
-	private static final Method _CLONE_METHOD;
+	private static final Method _cloneMethod;
+	private static final Field _modifiersField;
 
 	static {
 		try {
-			_CLONE_METHOD = getDeclaredMethod(Object.class, "clone");
+			_cloneMethod = Object.class.getDeclaredMethod("clone");
+
+			_cloneMethod.setAccessible(true);
+
+			_modifiersField = Field.class.getDeclaredField("modifiers");
+
+			_modifiersField.setAccessible(true);
 		}
 		catch (Exception e) {
 			throw new ExceptionInInitializerError(e);

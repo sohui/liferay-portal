@@ -14,94 +14,96 @@
 
 package com.liferay.expando.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the remote service utility for ExpandoColumn. This utility wraps
- * {@link com.liferay.portlet.expando.service.impl.ExpandoColumnServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portlet.expando.service.impl.ExpandoColumnServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see ExpandoColumnService
- * @see com.liferay.portlet.expando.service.base.ExpandoColumnServiceBaseImpl
- * @see com.liferay.portlet.expando.service.impl.ExpandoColumnServiceImpl
  * @generated
  */
 @ProviderType
 public class ExpandoColumnServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portlet.expando.service.impl.ExpandoColumnServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.expando.service.impl.ExpandoColumnServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static com.liferay.expando.kernel.model.ExpandoColumn addColumn(
-		long tableId, java.lang.String name, int type)
+			long tableId, String name, int type)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		return getService().addColumn(tableId, name, type);
 	}
 
 	public static com.liferay.expando.kernel.model.ExpandoColumn addColumn(
-		long tableId, java.lang.String name, int type,
-		java.lang.Object defaultData)
+			long tableId, String name, int type, Object defaultData)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		return getService().addColumn(tableId, name, type, defaultData);
-	}
-
-	public static com.liferay.expando.kernel.model.ExpandoColumn fetchExpandoColumn(
-		long columnId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().fetchExpandoColumn(columnId);
-	}
-
-	public static com.liferay.expando.kernel.model.ExpandoColumn updateColumn(
-		long columnId, java.lang.String name, int type)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().updateColumn(columnId, name, type);
-	}
-
-	public static com.liferay.expando.kernel.model.ExpandoColumn updateColumn(
-		long columnId, java.lang.String name, int type,
-		java.lang.Object defaultData)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().updateColumn(columnId, name, type, defaultData);
-	}
-
-	public static com.liferay.expando.kernel.model.ExpandoColumn updateTypeSettings(
-		long columnId, java.lang.String typeSettings)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().updateTypeSettings(columnId, typeSettings);
-	}
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
-		return getService().getOSGiServiceIdentifier();
 	}
 
 	public static void deleteColumn(long columnId)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().deleteColumn(columnId);
+	}
+
+	public static com.liferay.expando.kernel.model.ExpandoColumn
+			fetchExpandoColumn(long columnId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().fetchExpandoColumn(columnId);
+	}
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
+		return getService().getOSGiServiceIdentifier();
+	}
+
+	public static com.liferay.expando.kernel.model.ExpandoColumn updateColumn(
+			long columnId, String name, int type)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateColumn(columnId, name, type);
+	}
+
+	public static com.liferay.expando.kernel.model.ExpandoColumn updateColumn(
+			long columnId, String name, int type, Object defaultData)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateColumn(columnId, name, type, defaultData);
+	}
+
+	public static com.liferay.expando.kernel.model.ExpandoColumn
+			updateTypeSettings(long columnId, String typeSettings)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateTypeSettings(columnId, typeSettings);
 	}
 
 	public static ExpandoColumnService getService() {
 		if (_service == null) {
-			_service = (ExpandoColumnService)PortalBeanLocatorUtil.locate(ExpandoColumnService.class.getName());
-
-			ReferenceRegistry.registerReference(ExpandoColumnServiceUtil.class,
-				"_service");
+			_service = (ExpandoColumnService)PortalBeanLocatorUtil.locate(
+				ExpandoColumnService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static ExpandoColumnService _service;
+
 }

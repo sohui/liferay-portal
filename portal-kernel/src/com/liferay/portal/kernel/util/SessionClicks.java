@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
@@ -31,18 +32,20 @@ import javax.servlet.http.HttpSession;
 public class SessionClicks {
 
 	public static String get(
-		HttpServletRequest request, String key, String defaultValue) {
+		HttpServletRequest httpServletRequest, String key,
+		String defaultValue) {
 
-		return get(request, _DEFAULT_NAMESPACE, key, defaultValue);
+		return get(httpServletRequest, _DEFAULT_NAMESPACE, key, defaultValue);
 	}
 
 	public static String get(
-		HttpServletRequest request, String namespace, String key,
+		HttpServletRequest httpServletRequest, String namespace, String key,
 		String defaultValue) {
 
 		try {
 			PortalPreferences portalPreferences =
-				PortletPreferencesFactoryUtil.getPortalPreferences(request);
+				PortletPreferencesFactoryUtil.getPortalPreferences(
+					httpServletRequest);
 
 			return portalPreferences.getValue(namespace, key, defaultValue);
 		}
@@ -63,20 +66,24 @@ public class SessionClicks {
 		HttpSession session, String namespace, String key,
 		String defaultValue) {
 
-		String sessionKey = namespace.concat(StringPool.COLON).concat(key);
+		String sessionKey = namespace.concat(
+			StringPool.COLON
+		).concat(
+			key
+		);
 
 		return GetterUtil.getString(
 			session.getAttribute(sessionKey), defaultValue);
 	}
 
 	public static void put(
-		HttpServletRequest request, String key, String value) {
+		HttpServletRequest httpServletRequest, String key, String value) {
 
-		put(request, _DEFAULT_NAMESPACE, key, value);
+		put(httpServletRequest, _DEFAULT_NAMESPACE, key, value);
 	}
 
 	public static void put(
-		HttpServletRequest request, String namespace, String key,
+		HttpServletRequest httpServletRequest, String namespace, String key,
 		String value) {
 
 		if ((key.length() > _SESSION_CLICKS_MAX_SIZE_TERMS) ||
@@ -84,9 +91,10 @@ public class SessionClicks {
 
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Session clicks has attempted to exceed the maximum " +
-						"size allowed for keys or values with {key=" + key +
-							", value=" + value + "}");
+					StringBundler.concat(
+						"Session clicks has attempted to exceed the maximum ",
+						"size allowed for keys or values with {key=", key,
+						", value=", value, "}"));
 			}
 
 			return;
@@ -95,7 +103,8 @@ public class SessionClicks {
 		while (true) {
 			try {
 				PortalPreferences portalPreferences =
-					PortletPreferencesFactoryUtil.getPortalPreferences(request);
+					PortletPreferencesFactoryUtil.getPortalPreferences(
+						httpServletRequest);
 
 				int size = portalPreferences.size();
 
@@ -105,16 +114,16 @@ public class SessionClicks {
 				else {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
-							"Session clicks has attempted to exceed the " +
-								"maximum number of allowed values with {key=" +
-									key + ", value=" + value + "}");
+							StringBundler.concat(
+								"Session clicks has attempted to exceed the ",
+								"maximum number of allowed values with {key=",
+								key, ", value=", value, "}"));
 					}
 				}
 
 				break;
 			}
 			catch (ConcurrentModificationException cme) {
-				continue;
 			}
 			catch (Exception e) {
 				_log.error(e, e);
@@ -131,7 +140,11 @@ public class SessionClicks {
 	public static void put(
 		HttpSession session, String namespace, String key, String value) {
 
-		String sessionKey = namespace.concat(StringPool.COLON).concat(key);
+		String sessionKey = namespace.concat(
+			StringPool.COLON
+		).concat(
+			key
+		);
 
 		session.setAttribute(sessionKey, value);
 	}

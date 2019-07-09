@@ -1,0 +1,368 @@
+@component-name = "portal-web-forms-and-data-lists"
+definition {
+
+	property custom.properties = "minifier.enabled=true";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Forms";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "5"
+	test ConfigureAutocompleteWithTextField {
+		property test.name.skip.portal.instance = "FormsDataProvider#ConfigureAutocompleteWithTextField";
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		Navigator.gotoNavItem(navItem = "Data Providers");
+
+		FormsAdminNavigator.gotoAddDataProvider();
+
+		FormsAdmin.editDataProvider(
+			name = "Country Names",
+			outputParameterLabel = "Countries Full Name",
+			outputParameterLabel2 = "Countries A2",
+			outputParameterName = "Countries Full Name",
+			outputParameterName2 = "Countries A2",
+			outputParameterPath = "nameCurrentValue",
+			outputParameterPath2 = "a2",
+			outputParameterType = "List",
+			outputParameterType2 = "List",
+			password = "test",
+			url = "${portalURL}/api/jsonws/country/get-countries",
+			username = "test@liferay.com");
+
+		FormsAdmin.saveDataProvider();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName();
+
+		Form.editDescription();
+
+		Form.gotoAddField(fieldType = "Text Field");
+
+		Form.editFieldLabelMetal(fieldValue = "Text Field With Autocomplete");
+
+		Form.gotoAdvancedTab();
+
+		Form.enableAutocompleteConfiguration();
+
+		Form.editFieldDataProvider(
+			dataProvider = "Country Names",
+			dataProviderOutput = "Countries A2");
+
+		Form.closeSidebar();
+
+		Form.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "Created Form Name");
+
+		FormsAdminNavigator.gotoEditField(fieldName = "Text Field With Autocomplete");
+
+		Form.gotoAdvancedTab();
+
+		Form.editFieldDataProvider(
+			dataProvider = "Country Names",
+			dataProviderOutput = "Countries Full Name");
+
+		Form.closeSidebar();
+
+		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Form Page");
+
+		Navigator.gotoPage(pageName = "Form Page");
+
+		Portlet.addPG(
+			pageName = "Form Page",
+			portletName = "Form");
+
+		FormPortletNavigator.gotoSelectForm();
+
+		FormPortletConfiguration.selectForm();
+
+		PortletEntry.save();
+
+		Navigator.gotoPage(pageName = "Form Page");
+
+		FormFields.editTextWithDataProvider(
+			fieldName = "TextFieldWithAutocomplete",
+			fieldValue = "United");
+
+		FormFields.selectAutoCompleteOption(autocompleteOption = "United States");
+
+		FormPortlet.submit();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoViewEntries();
+
+		FormsAdmin.viewFormTableEntry(
+			fieldLabel = "Text Field With Autocomplete",
+			fieldValue = "United States");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoEditFormByName();
+
+		FormsAdminNavigator.gotoEditField(fieldName = "Text Field With Autocomplete");
+
+		Form.gotoAdvancedTab();
+
+		AssertVisible(
+			key_fieldName = "dataSourceType",
+			key_radioOption = "From Data Provider",
+			locator1 = "FormFields#RADIO_OPTION_LABEL");
+
+		Form.disableAutocompleteConfiguration();
+
+		AssertElementNotPresent(
+			key_fieldName = "dataSourceType",
+			key_radioOption = "From Data Provider",
+			locator1 = "FormFields#RADIO_OPTION_LABEL");
+
+		Form.closeSidebar();
+
+		Form.save();
+
+		Navigator.gotoPage(pageName = "Form Page");
+
+		FormFields.editText(
+			fieldName = "TextFieldWithAutocomplete",
+			fieldValue = "Un");
+
+		AssertElementNotPresent(
+			key_autocompleteOption = "United States",
+			locator1 = "FormFields#AUTOCOMPLETE_OPTION");
+	}
+
+	@priority = "5"
+	test ConfigureWithSelectField {
+		property test.name.skip.portal.instance = "FormsDataProvider#ConfigureWithSelectField";
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		Navigator.gotoNavItem(navItem = "Data Providers");
+
+		FormsAdminNavigator.gotoAddDataProvider();
+
+		FormsAdmin.editDataProvider(
+			name = "Liferay Countries",
+			outputParameterLabel = "Country Names",
+			outputParameterName = "Country Names",
+			outputParameterPath = "nameCurrentValue",
+			outputParameterType = "List",
+			password = "test",
+			url = "${portalURL}/api/jsonws/country/get-countries",
+			username = "test@liferay.com");
+
+		FormsAdmin.saveDataProvider();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName();
+
+		Form.editDescription();
+
+		Form.gotoAddField(fieldType = "Select from List");
+
+		Form.editFieldLabelMetal(fieldValue = "Data Provider Select Field");
+
+		Form.editFieldDataProvider(
+			dataProvider = "Liferay Countries",
+			dataProviderOutput = "Country Names");
+
+		Form.closeSidebar();
+
+		Form.save();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Form Page");
+
+		Navigator.gotoPage(pageName = "Form Page");
+
+		Portlet.addPG(
+			pageName = "Form Page",
+			portletName = "Form");
+
+		FormPortletNavigator.gotoSelectForm();
+
+		FormPortletConfiguration.selectForm();
+
+		PortletEntry.save();
+
+		Navigator.gotoPage(pageName = "Form Page");
+
+		FormFields.viewSelectLabel(
+			fieldLabel = "Data Provider Select Field",
+			fieldName = "DataProviderSelectField");
+
+		FormFields.selectSelectOption(
+			fieldName = "Select Field",
+			selectOption = "United States");
+
+		FormPortlet.submitSuccessfully();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoViewEntries();
+
+		FormsAdmin.viewFormTableEntry(
+			fieldLabel = "Data Provider Select Field",
+			fieldValue = "United States");
+	}
+
+	@description = "This is a use case for LPS-75682."
+	@priority = "5"
+	test ViewDataRetrievedForGuestUser {
+		property test.name.skip.portal.instance = "FormsDataProvider#ViewDataRetrievedForGuestUser";
+		var portalURL = PropsUtil.get("portal.url");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		Navigator.gotoNavItem(navItem = "Data Providers");
+
+		FormsAdminNavigator.gotoAddDataProvider();
+
+		FormsAdmin.editDataProvider(
+			name = "Liferay Countries",
+			outputParameterLabel = "Countries Full Name",
+			outputParameterName = "Country Name",
+			outputParameterPath = "nameCurrentValue",
+			outputParameterType = "List",
+			password = "test",
+			url = "${portalURL}/api/jsonws/country/get-countries",
+			username = "test@liferay.com");
+
+		FormFields.selectDataProviderPermission(selectOption = "Anyone (Guest Role)");
+
+		FormsAdmin.saveDataProvider();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName();
+
+		Form.editDescription();
+
+		Form.gotoAddField(fieldType = "Select from List");
+
+		Form.editFieldLabelMetal(fieldValue = "Countries");
+
+		Form.editFieldDataProvider(
+			dataProvider = "Liferay Countries",
+			dataProviderOutput = "Countries Full Name");
+
+		Form.closeSidebar();
+
+		FormsAdminNavigator.gotoFormBuilder();
+
+		Form.save();
+
+		Form.publishForm();
+
+		FormsAdminNavigator.gotoPublishCopyURLLink();
+
+		var publishedFormPublicURL = Form.getPublishedFormPublicURL(
+			publishedFormPublicURL = "${publishedFormPublicURL}"
+		);
+
+		Navigator.openSpecificURL(url = "${publishedFormPublicURL}");
+
+		FormFields.viewSelectOptionsList(
+			fieldName = "Countries",
+			selectOption = "Afghanistan");
+
+		User.logoutPG();
+
+		Navigator.openSpecificURL(url = "${publishedFormPublicURL}");
+
+		FormFields.viewSelectOptionsList(
+			fieldName = "Countries",
+			selectOption = "Afghanistan");
+	}
+
+}

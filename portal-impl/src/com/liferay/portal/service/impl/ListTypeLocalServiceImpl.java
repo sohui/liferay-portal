@@ -14,8 +14,6 @@
 
 package com.liferay.portal.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.NoSuchListTypeException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ClassName;
@@ -23,11 +21,11 @@ import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.service.base.ListTypeLocalServiceBaseImpl;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class ListTypeLocalServiceImpl extends ListTypeLocalServiceBaseImpl {
 
 	@Override
@@ -57,6 +55,11 @@ public class ListTypeLocalServiceImpl extends ListTypeLocalServiceBaseImpl {
 	}
 
 	@Override
+	public ListType getListType(String name, String type) {
+		return listTypePersistence.fetchByN_T(name, type);
+	}
+
+	@Override
 	public List<ListType> getListTypes(String type) {
 		return listTypePersistence.findByType(type);
 	}
@@ -74,7 +77,7 @@ public class ListTypeLocalServiceImpl extends ListTypeLocalServiceBaseImpl {
 	public void validate(long listTypeId, String type) throws PortalException {
 		ListType listType = listTypePersistence.fetchByPrimaryKey(listTypeId);
 
-		if ((listType == null) || !listType.getType().equals(type)) {
+		if ((listType == null) || !Objects.equals(listType.getType(), type)) {
 			NoSuchListTypeException nslte = new NoSuchListTypeException();
 
 			nslte.setType(type);

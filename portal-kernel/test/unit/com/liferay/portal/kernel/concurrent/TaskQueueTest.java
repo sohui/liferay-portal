@@ -86,11 +86,11 @@ public class TaskQueueTest {
 
 		taskQueue.drainTo(set);
 
-		Assert.assertEquals(4, set.size());
-		Assert.assertTrue(set.contains(object1));
-		Assert.assertTrue(set.contains(object2));
-		Assert.assertTrue(set.contains(object3));
-		Assert.assertTrue(set.contains(object4));
+		Assert.assertEquals(set.toString(), 4, set.size());
+		Assert.assertTrue(set.toString(), set.contains(object1));
+		Assert.assertTrue(set.toString(), set.contains(object2));
+		Assert.assertTrue(set.toString(), set.contains(object3));
+		Assert.assertTrue(set.toString(), set.contains(object4));
 
 		object1 = new Object();
 		object2 = new Object();
@@ -125,7 +125,7 @@ public class TaskQueueTest {
 		catch (IllegalStateException ise) {
 		}
 
-		Assert.assertEquals(2, list.size());
+		Assert.assertEquals(list.toString(), 2, list.size());
 		Assert.assertSame(object1, list.get(0));
 		Assert.assertSame(object2, list.get(1));
 		Assert.assertEquals(2, taskQueue.size());
@@ -183,6 +183,7 @@ public class TaskQueueTest {
 		boolean result = taskQueue.offer(new Object(), hasWaiterMarker);
 
 		Assert.assertTrue(result);
+
 		Assert.assertFalse(hasWaiterMarker[0]);
 	}
 

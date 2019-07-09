@@ -1,1268 +1,1399 @@
-<definition>
-	<var name="siteMember" value="User" />
-	<var name="siteType" value="Open" />
-
-	<command name="addAllMembersCP">
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Users" />
-		</execute>
-
-		<execute function="Click" locator1="Button#PLUS" />
-
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-
-		<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
-
-		<execute function="SelectFrameTop" />
-
-		<execute function="AssertClick" locator1="Button#DONE" value1="Done" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
-
-	<command name="addBlankCP">
-		<execute macro="Site#addCP">
-			<var name="membershipType" value="${membershipType}" />
-			<var name="parentSiteName" value="${parentSiteName}" />
-			<var name="singleSiteTypePermission" value="${singleSiteTypePermission}" />
-			<var name="siteLimitMembership" value="${siteLimitMembership}" />
-			<var name="siteName" value="${siteName}" />
-			<var name="siteTemplateName" value="${siteTemplateName}" />
-			<var name="siteType" value="Blank" />
-			<var name="uncheckPropagation" value="${uncheckPropagation}" />
-		</execute>
-	</command>
-
-	<command name="addCommunityCP">
-		<execute macro="Site#addCP">
-			<var name="membershipType" value="${membershipType}" />
-			<var name="parentSiteName" value="${parentSiteName}" />
-			<var name="siteLimitMembership" value="${siteLimitMembership}" />
-			<var name="siteName" value="${siteName}" />
-			<var name="siteTemplateName" value="${siteTemplateName}" />
-			<var name="siteType" value="Community" />
-			<var name="uncheckPropagation" value="${uncheckPropagation}" />
-		</execute>
-	</command>
-
-	<command name="addCP">
-		<execute function="Click" locator1="Button#PLUS" />
-
-		<if>
-			<not>
-				<equals arg1="${singleSiteTypePermission}" arg2="true" />
-			</not>
-			<then>
-				<if>
-					<equals arg1="${siteType}" arg2="Blank" />
-					<then>
-						<execute function="AssertClick" locator1="MenuItem#BLANK_SITE" value1="Blank Site" />
-					</then>
-					<elseif>
-						<equals arg1="${siteType}" arg2="Community" />
-						<then>
-							<execute function="AssertClick" locator1="MenuItem#COMMUNITY_SITE" value1="Community Site" />
-						</then>
-					</elseif>
-					<elseif>
-						<equals arg1="${siteType}" arg2="Intranet" />
-						<then>
-							<execute function="AssertClick" locator1="MenuItem#INTRANET_SITE" value1="Intranet Site" />
-						</then>
-					</elseif>
-					<elseif>
-						<equals arg1="${siteType}" arg2="Site Template" />
-						<then>
-							<var name="key_siteTemplateName" value="${siteTemplateName}" />
-
-							<execute function="Click" locator1="MenuItem#SITE_TEMPLATE_SITE" />
-						</then>
-					</elseif>
-					<else>
-						<fail message="Invalid var siteType. Must be (Blank|Community|Intranet|Site Template)." />
-					</else>
-				</if>
-			</then>
-		</if>
-
-		<execute function="Type#mouseOverFocusType" locator1="TextInput#NAME" value1="${siteName}" />
-
-		<if>
-			<or>
-				<equals arg1="${siteType}" arg2="Community" />
-				<equals arg1="${siteType}" arg2="Site Template" />
-			</or>
-			<then>
-				<if>
-					<equals arg1="${uncheckPropagation}" arg2="true" />
-					<then>
-						<execute macro="Panel#expandPanel">
-							<var name="panelHeading" value="Pages" />
-						</execute>
-
-						<execute function="Uncheck#uncheckToggleSwitch" locator1="Checkbox#ENABLE_PROPAGATION" />
-					</then>
-				</if>
-			</then>
-		</if>
-
-		<if>
-			<equals arg1="${membershipType}" arg2="Private" />
-			<then>
-				<execute function="Select" locator1="SitesEditSite#MEMBERSHIP_TYPE" value1="Private" />
-			</then>
-			<elseif>
-				<equals arg1="${membershipType}" arg2="Restricted" />
-				<then>
-					<execute function="Select" locator1="SitesEditSite#MEMBERSHIP_TYPE" value1="Restricted" />
-				</then>
-			</elseif>
-			<else>
-				<execute function="Select" locator1="SitesEditSite#MEMBERSHIP_TYPE" value1="Open" />
-			</else>
-		</if>
-
-		<if>
-			<isset var="parentSiteName" />
-			<then>
-				<execute function="AssertClick" locator1="Button#SELECT" value1="Select" />
-
-				<var name="key_parentSiteName" value="${parentSiteName}" />
-
-				<execute function="SelectFrame" locator1="SitesSelectSite#SELECT_SITE_IFRAME" />
-				<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${parentSiteName}" />
-				<execute function="KeyPress" locator1="NavBar#BASIC_SEARCH_FIELD" value1="\RETURN" />
+definition {
+
+	var siteMember = "User";
+	var siteType = "Open";
 
-				<var name="key_site" value="${parentSiteName}" />
+	macro activateInactive {
+		var key_siteName = "${siteName}";
 
-				<execute function="AssertTextEquals" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="${parentSiteName}" />
+		Search.searchCP(searchTerm = "${siteName}");
 
-				<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" />
+		LexiconTable.clickEllipsisItem(
+			item = "Activate",
+			tableEntry = "${siteName}");
 
-				<var name="key_parentSiteName" value="${parentSiteName}" />
+		Alert.viewSuccessMessage();
+	}
 
-				<execute function="SelectFrameTop" />
-			</then>
-		</if>
+	macro addAllMembersCP {
+		Navigator.gotoNavItem(navItem = "Users");
 
-		<execute function="Click" locator1="Button#SAVE" value1="Save" />
+		LexiconEntry.gotoAdd();
 
-		<execute function="AssertTextEquals" locator1="SitesEditSite#DETAILS_NAME" value1="${siteName}" />
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-		<if>
-			<isset var="siteLimitMembership" />
-			<then>
-				<if>
-					<equals arg1="${siteLimitMembership}" arg2="Yes" />
-					<then>
-						<execute function="Check#checkToggleSwitch" locator1="SitesEditSite#PARENT_SITE_LIMIT_MEMBERSHIP_CHECKBOX" />
-					</then>
-					<elseif>
-						<equals arg1="${siteLimitMembership}" arg2="No" />
-						<then>
-							<execute function="Uncheck#uncheckToggleSwitch" locator1="SitesEditSite#PARENT_SITE_LIMIT_MEMBERSHIP_CHECKBOX" />
-						</then>
-					</elseif>
-				</if>
+		PortletEntry.selectAll();
 
-				<execute macro="Button#clickSave" />
-				<execute macro="Alert#viewSuccessMessage" />
-			</then>
-		</if>
-	</command>
+		SelectFrameTop();
 
-	<command name="addIntranetCP">
-		<execute macro="Site#addCP">
-			<var name="membershipType" value="${membershipType}" />
-			<var name="parentSiteName" value="${parentSiteName}" />
-			<var name="siteLimitMembership" value="${siteLimitMembership}" />
-			<var name="siteName" value="${siteName}" />
-			<var name="siteTemplateName" value="${siteTemplateName}" />
-			<var name="siteType" value="Intranet" />
-			<var name="uncheckPropagation" value="${uncheckPropagation}" />
-		</execute>
-	</command>
+		AssertClick(
+			locator1 = "Button#DONE",
+			value1 = "Done");
 
-	<command name="addMemberCP">
-		<var name="key_cardText" value="${userScreenName}" />
+		Alert.viewSuccessMessage();
+	}
 
-		<execute function="Click" locator1="Button#PLUS" />
+	macro addBlankCP {
+		Site.addCP(
+			membershipType = "${membershipType}",
+			parentSiteName = "${parentSiteName}",
+			singleSiteTypePermission = "${singleSiteTypePermission}",
+			siteName = "${siteName}",
+			siteTemplateName = "${siteTemplateName}",
+			siteType = "Blank",
+			uncheckPropagation = "${uncheckPropagation}");
+	}
 
-		<execute function="AssertVisible" locator1="Button#DONE" />
+	macro addCommunityCP {
+		Site.addCP(
+			membershipType = "${membershipType}",
+			parentSiteName = "${parentSiteName}",
+			siteName = "${siteName}",
+			siteTemplateName = "${siteTemplateName}",
+			siteType = "Community",
+			uncheckPropagation = "${uncheckPropagation}");
+	}
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-
-		<if>
-			<isset var="userMiddleName" />
-			<then>
-				<execute function="AssertTextEquals" locator1="Card#SPECIFIC_LARGE_TEXT" value1="${userFirstName} ${userMiddleName} ${userLastName}" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="Card#SPECIFIC_LARGE_TEXT" value1="${userFirstName} ${userLastName}" />
-			</else>
-		</if>
+	macro addCP {
+		LexiconEntry.gotoAdd();
 
-		<execute function="AssertTextEquals" locator1="Card#SPECIFIC_TEXT" value1="${userScreenName}" />
+		if (!("${singleSiteTypePermission}" == "true")) {
+			if (contains("${siteTemplateName}", "{siteTemplateName}")) {
+				var siteTemplateName = "${siteType} Site";
+			}
 
-		<execute function="Check" locator1="Card#SPECIFIC_CHECKBOX" />
+			MetalComponent.waitForCard(card = "${siteTemplateName}");
+
+			LexiconCard.clickCard(card = "${siteTemplateName}");
+
+			PortletEntry.inputName(name = "${siteName}");
+
+			Modal.save();
+		}
+
+		if (("${siteType}" == "Community") || ("${siteType}" == "Site Template")) {
+			if ("${uncheckPropagation}" == "true") {
+				Panel.expandPanel(panel = "Pages");
 
-		<execute function="SelectFrameTop" />
+				Uncheck.uncheckToggleSwitch(locator1 = "Checkbox#ENABLE_PROPAGATION");
+			}
+		}
 
-		<execute function="AssertClick" locator1="Button#DONE" value1="Done" />
+		if ("${membershipType}" == "Private") {
+			Select(
+				locator1 = "SitesEditSite#MEMBERSHIP_TYPE",
+				value1 = "Private");
+		}
+		else if ("${membershipType}" == "Restricted") {
+			Select(
+				locator1 = "SitesEditSite#MEMBERSHIP_TYPE",
+				value1 = "Restricted");
+		}
+		else {
+			Select(
+				locator1 = "SitesEditSite#MEMBERSHIP_TYPE",
+				value1 = "Open");
+		}
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		if (isSet(parentSiteName)) {
+			AssertClick(
+				locator1 = "Button#SELECT",
+				value1 = "Select");
 
-	<command name="addMemberOrganizationCP">
-		<var name="key_cardText" value="${orgName}" />
+			var key_parentSiteName = "${parentSiteName}";
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Organizations" />
-		</execute>
+			SelectFrame(locator1 = "SitesSelectSite#SELECT_SITE_IFRAME");
 
-		<execute function="Click" locator1="Button#PLUS" />
+			Search.searchCP(searchTerm = "${parentSiteName}");
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+			var key_site = "${parentSiteName}";
 
-		<execute function="AssertTextEquals" locator1="Card#SPECIFIC_LARGE_TEXT" value1="${orgName}" />
+			AssertTextEquals(
+				locator1 = "ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK",
+				value1 = "${parentSiteName}");
 
-		<execute function="Check" locator1="Card#SPECIFIC_CHECKBOX" />
+			Click(locator1 = "ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK");
 
-		<execute function="SelectFrameTop" />
+			var key_parentSiteName = "${parentSiteName}";
 
-		<execute function="Click" locator1="Button#DONE" />
+			SelectFrameTop();
+		}
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		ScrollWebElementIntoView(locator1 = "Button#SAVE");
 
-	<command name="addMemberUserGroupCP">
-		<var name="key_cardText" value="${userGroupName}" />
+		PortletEntry.save();
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="User Groups" />
-		</execute>
+		AssertTextEquals(
+			locator1 = "SitesEditSite#DETAILS_NAME",
+			value1 = "${siteName}");
+	}
 
-		<execute function="Pause" locator1="5000" />
+	macro addIntranetCP {
+		Site.addCP(
+			membershipType = "${membershipType}",
+			parentSiteName = "${parentSiteName}",
+			siteName = "${siteName}",
+			siteTemplateName = "${siteTemplateName}",
+			siteType = "Intranet",
+			uncheckPropagation = "${uncheckPropagation}");
+	}
 
-		<execute function="Click" locator1="Button#PLUS" />
+	macro addSiteTemplateCP {
+		Site.addCP(
+			membershipType = "${membershipType}",
+			parentSiteName = "${parentSiteName}",
+			siteName = "${siteName}",
+			siteTemplateName = "${siteTemplateName}",
+			siteType = "Site Template",
+			uncheckPropagation = "${uncheckPropagation}");
+	}
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+	macro addVirtualHostsURLCP {
+		Panel.expandPanel(panel = "Site URL");
 
-		<execute function="AssertTextEquals" locator1="Card#SPECIFIC_LARGE_TEXT" value1="${userGroupName}" />
+		if (isSet(publicVirtualHosts)) {
+			AssertTextEquals(
+				locator1 = "SiteSettingsSiteURL#SITE_URL_VIRTUAL_HOSTS_PUBLIC_PAGES_LABEL",
+				value1 = "Public Pages");
 
-		<execute function="Check" locator1="Card#SPECIFIC_CHECKBOX" />
+			Type(
+				locator1 = "TextInput#PUBLIC_VIRTUAL_HOST_URL",
+				value1 = "${publicPageVirtualHostURL}");
+		}
 
-		<execute function="SelectFrameTop" />
+		if (isSet(privateVirtualHosts)) {
+			AssertTextEquals(
+				locator1 = "SiteSettingsSiteURL#SITE_URL_VIRTUAL_HOSTS_PRIVATE_PAGES_LABEL",
+				value1 = "Private Pages");
 
-		<execute function="Click" locator1="Button#DONE" />
+			Type(
+				locator1 = "TextInput#PRIVATE_VIRTUAL_HOST_URL",
+				value1 = "${privatePageVirtualHostURL}");
+		}
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		PortletEntry.save();
+	}
 
-	<command name="addSiteTemplateCP">
-		<execute macro="Site#addCP">
-			<var name="membershipType" value="${membershipType}" />
-			<var name="parentSiteName" value="${parentSiteName}" />
-			<var name="siteLimitMembership" value="${siteLimitMembership}" />
-			<var name="siteName" value="${siteName}" />
-			<var name="siteTemplateName" value="${siteTemplateName}" />
-			<var name="siteType" value="Site Template" />
-			<var name="uncheckPropagation" value="${uncheckPropagation}" />
-		</execute>
-	</command>
+	macro approveJoinSiteRestrictedViaMySitesPG {
+		var key_userScreenName = "${userScreenName}";
 
-	<command name="addVirtualHostsURLCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Site URL" />
-		</execute>
+		Click(locator1 = "Icon#INFO");
 
-		<if>
-			<isset var="publicVirtualHosts" />
-			<then>
-				<execute function="AssertTextEquals" locator1="SiteSettingsSiteURL#SITE_URL_VIRTUAL_HOSTS_PUBLIC_PAGES_LABEL" value1="Public Pages" />
-				<execute function="Type" locator1="TextInput#PUBLIC_VIRTUAL_HOST_URL" value1="${publicPageVirtualHostURL}" />
-			</then>
-		</if>
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteMemberships#MEMBERSHIP_TYPE",
+			value1 = "Membership Type: Restricted");
 
-		<if>
-			<isset var="privateVirtualHosts" />
-			<then>
-				<execute function="AssertTextEquals" locator1="SiteSettingsSiteURL#SITE_URL_VIRTUAL_HOSTS_PRIVATE_PAGES_LABEL" value1="Private Pages" />
-				<execute function="Type" locator1="TextInput#PRIVATE_VIRTUAL_HOST_URL" value1="${privatePageVirtualHostURL}" />
-			</then>
-		</if>
+		AssertElementPresent(locator1 = "SiteMemberships#REQUEST_MESSAGE");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		Click(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
 
-	<command name="approveJoinSiteRestrictedViaMySitesPG">
-		<var name="key_userScreenName" value="${userScreenName}" />
+		Click(locator1 = "SiteMemberships#REQUEST_MESSAGE");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="SiteMemberships#MEMBERSHIP_TYPE" value1="Membership Type, Restricted" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="SiteMemberships#REQUEST_MESSAGE" value1="There are 1 membership requests pending." />
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
 
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_NAME",
+			value1 = "${userFirstName} ${userLastName}");
 
-		<execute function="Click" locator1="SiteMemberships#REQUEST_MESSAGE" />
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_COMMENTS",
+			value1 = "Please allow me to join the Restricted Site.");
 
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
-		</execute>
+		LexiconTable.clickEllipsisItem(
+			item = "Reply",
+			tableEntry = "${userFirstName} ${userLastName}");
 
-		<execute function="AssertTextEquals" locator1="SiteMembershipsViewMembershipRequests#USER_NAME" value1="${userFirstName} ${userLastName}" />
-		<execute function="AssertTextEquals" locator1="SiteMembershipsViewMembershipRequests#USER_COMMENTS" value1="Please allow me to join the Restricted Site." />
+		Select(
+			locator1 = "SiteMembershipsViewMembershipRequests#STATUS",
+			value1 = "Approve");
 
-		<execute function="Click" locator1="SiteMembershipsViewMembershipRequests#REPLY" />
+		Type(
+			locator1 = "SiteMembershipsViewMembershipRequests#REPLY_COMMENTS_AREA",
+			value1 = "You may join the Restricted Site.");
 
-		<execute function="Select" locator1="SiteMembershipsViewMembershipRequests#STATUS" value1="Approve" />
-		<execute function="Type" locator1="SiteMembershipsViewMembershipRequests#REPLY_COMMENTS_AREA" value1="You may join the Restricted Site." />
-		<execute macro="Button#clickSave" />
+		Button.clickSave();
 
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
+		AssertElementPresent(locator1 = "Message#SUCCESS");
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Approved" />
-		</execute>
+		Navigator.gotoNavItem(navItem = "Approved");
 
-		<execute function="AssertTextEquals" locator1="SiteMembershipsViewMembershipRequests#USER_NAME" value1="${userFirstName} ${userLastName}" />
-		<execute function="AssertTextEquals" locator1="SiteMembershipsViewMembershipRequests#REPLIER_NAME" value1="Test Test" />
-	</command>
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
 
-	<command name="assertMemberListNotVisibleCP">
-		<for list="${usersEmailsList}" param="userEmail" >
-			<var method="StringUtil#replace('${userEmail}', '@liferay.com', '')" name="userName" />
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_NAME",
+			value1 = "${userFirstName} ${userLastName}");
 
-			<execute macro="Site#assertMemberNotVisibleCP">
-				<var name="userFirstName" value="${userName}" />
-				<var name="userLastName" value="${userName}" />
-				<var name="userScreenName" value="${userName}" />
-			</execute>
-		</for>
-	</command>
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#REPLIER_NAME",
+			value1 = "Test Test");
+	}
 
-	<command name="assertMemberNotVisibleCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
+	macro assertMemberListNotVisibleCP {
+		for (var userEmail : list "${usersEmailsList}") {
+			var userName = StringUtil.replace("${userEmail}", "@liferay.com", "");
 
-		<execute function="AssertTextNotPresent" locator1="SiteMemberships#USER_TABLE_NAME" value1="${userFirstName} ${userLastName}" />
-		<execute function="AssertTextNotPresent" locator1="SiteMemberships#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-	</command>
+			Site.assertMemberNotVisibleCP(
+				userFirstName = "${userName}",
+				userLastName = "${userName}",
+				userScreenName = "${userName}");
+		}
+	}
 
-	<command name="assignDefaultSiteTeam">
-		<execute function="Click" locator1="SitesEditSite#MENU_ADVANCED_TAB" />
+	macro assertMemberNotVisibleCP {
+		var key_userScreenName = "${userScreenName}";
 
-		<execute function="AssertClick" locator1="SiteSettingsDefaultUserAssociations#TEAMS_SELECT" value1="Select" />
-		<execute function="SelectFrame" locator1="SiteSettingsDefaultUserAssociations#TEAMS_SELECT_IFRAME" />
+		AssertTextNotPresent(
+			locator1 = "SiteMemberships#USER_TABLE_NAME",
+			value1 = "${userFirstName} ${userLastName}");
 
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="List" />
-		</execute>
+		AssertTextNotPresent(
+			locator1 = "SiteMemberships#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+	}
 
-		<var name="key_rowEntry" value="${teamName}" />
+	macro assignDefaultSiteTeam {
+		Click(locator1 = "SitesEditSite#MENU_ADVANCED_TAB");
 
-		<execute function="AssertClick" locator1="ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK" value1="${teamName}" />
-		<execute function="SelectFrame" value1="relative=top" />
+		AssertClick(
+			locator1 = "SiteSettingsDefaultUserAssociations#TEAMS_SELECT",
+			value1 = "Select");
 
-		<execute macro="PortletEntry#save" />
+		SelectFrame(locator1 = "SiteSettingsDefaultUserAssociations#TEAMS_SELECT_IFRAME");
 
-		<execute function="Click" locator1="SitesEditSite#MENU_ADVANCED_TAB" />
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
 
-		<var name="key_teamName" value="${teamName}" />
+		var key_rowEntry = "${teamName}";
 
-		<execute function="AssertTextEquals" locator1="SiteSettingsDefaultUserAssociations#TEAMS_SELECTED" value1="${teamName}" />
-	</command>
+		AssertClick(
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK",
+			value1 = "${teamName}");
 
-	<command name="assignRoleCP">
-		<execute function="AssertVisible" locator1="Portlet#HEADER" />
+		SelectFrame(value1 = "relative=top");
 
-		<var name="key_cardText" value="${userScreenName}" />
+		PortletEntry.save();
 
-		<execute function="AssertTextEquals" locator1="Card#SPECIFIC_TEXT" value1="${userScreenName}" />
+		Click(locator1 = "SitesEditSite#MENU_ADVANCED_TAB");
 
-		<execute function="Check" locator1="Card#SPECIFIC_CHECKBOX" />
+		var key_teamName = "${teamName}";
 
-		<execute function="AssertClick" locator1="Button#ASSIGN_SITE_ROLES" value1="Assign Site Roles" />
+		AssertTextEquals(
+			locator1 = "SiteSettingsDefaultUserAssociations#TEAMS_SELECTED",
+			value1 = "${teamName}");
+	}
 
-		<var name="key_iframeTitle" value="Assign Site Roles" />
+	macro assignOrganizationAsMemberCP {
+		var key_card = "${orgName}";
 
-		<execute function="AssertElementPresent" locator1="IFrame#IFRAME_TITLE" />
-		<execute function="AssertVisible" locator1="Button#DONE" />
+		Navigator.gotoNavItem(navItem = "Organizations");
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		LexiconEntry.gotoAdd();
 
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${roleName}" />
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-		<execute function="KeyPress" locator1="TextInput#SEARCH" value1="\RETURN" />
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
 
-		<var name="key_roleName" value="${roleName}" />
+		AssertTextEquals(
+			locator1 = "LexiconCard#CARD_TITLE",
+			value1 = "${orgName}");
 
-		<execute function="AssertTextEquals" locator1="SiteMembershipsAssignUserRoles#ROLE_TABLE_TITLE" value1="${roleName}" />
+		LexiconCard.checkCardCheckbox(card = "${orgName}");
 
-		<execute function="Check" locator1="SiteMembershipsAssignUserRoles#ROLE_TABLE_CHECKBOX" />
+		SelectFrameTop();
 
-		<execute function="SelectFrameTop" />
+		Button.clickDone();
 
-		<execute function="AssertClick" locator1="Button#DONE" value1="Done" />
+		Alert.viewSuccessMessage();
+	}
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+	macro assignSiteRoleCP {
+		LexiconCard.clickEllipsisItem(
+			card = "${resourceName}",
+			item = "Assign Site Roles");
 
-	<command name="assignSiteRolesUserGroupsCP">
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="User Groups" />
-		</execute>
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-		<execute macro="LexiconEntry#gotoEntryMenuItem">
-			<var name="menuItem" value="Assign Site Roles" />
-			<var name="rowEntry" value="${userGroupName}" />
-		</execute>
+		LexiconCard.checkCardCheckbox(card = "${roleTitle}");
 
-		<execute function="AssertTextEquals" locator1="IFrame#IFRAME_TITLE" value1="Assign Site Roles" />
+		SelectFrameTop();
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		Button.clickDone();
 
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${roleName}" />
+		Alert.viewSuccessMessage();
+	}
 
-		<execute function="KeyPress" locator1="TextInput#SEARCH" value1="\RETURN" />
+	macro assignSiteRoleToUserGroup {
+		var key_userGroupName = "${userGroupName}";
 
-		<execute function="Check" locator1="ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX">
-			<var name="rowEntry" value="roleName" />
-		</execute>
+		Navigator.gotoNavItem(navItem = "User Groups");
 
-		<execute macro="Button#clickDone" />
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
 
-		<execute macro="Alert#viewSuccessMessage" />
+		AssertTextEquals(
+			locator1 = "UserGroups#USER_GROUP_TABLE_NAME",
+			value1 = "${userGroupName}");
 
-		<execute function="AssertTextEquals" locator1="Card#SPECIFIC_SMALL_TEXT_2" value1="${roleName}">
-			<var name="key_cardText" value="${userGroupName}" />
-		</execute>
-	</command>
+		Click(locator1 = "SiteMembershipsUserGroups#USER_GROUP_TABLE_ACTIONS");
 
-	<command name="assignUserSitesCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
+		AssertClick(
+			key_menuItem = "Assign Site Roles",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Assign Site Roles");
 
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
+		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Sites" />
-		</execute>
+		LexiconCard.checkCardCheckbox(card = "${roleName}");
 
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#SITES_SELECT_LINK" value1="Select" />
+		SelectFrameTop();
 
-		<execute function="SelectFrame" locator1="CPUsersandorganizationsUser#SITES_SELECT_IFRAME" />
+		Button.clickDone();
 
-		<var name="key_siteName" value="${siteName}" />
+		Alert.viewSuccessMessage();
+	}
 
-		<execute function="Type" locator1="CPUsersandorganizationsUser#SITES_SELECT_SEARCH_FIELD" value1="${siteName}" />
+	macro assignUserAsMemberCP {
+		var key_cardText = "${userScreenName}";
 
-		<execute function="KeyPress" locator1="CPUsersandorganizationsUser#SITES_SELECT_SEARCH_FIELD" value1="\RETURN" />
+		LexiconEntry.gotoAdd();
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="CPUsersandorganizationsUser#SITES_SELECT_TABLE_NAME" value1="${siteName}" />
+		AssertVisible(locator1 = "Button#DONE");
 
-		<execute function="Click" locator1="SitesSelectSite#SITES_TABLE_CHOOSE_SITE_LINK" />
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-		<execute function="SelectFrame" value1="relative=top" />
+		Pause(locator1 = "3000");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		if (isSet(userMiddleName)) {
+			LexiconCard.checkCardCheckbox(card = "${userFirstName} ${userMiddleName} ${userLastName}");
+		}
+		else {
+			LexiconCard.checkCardCheckbox(card = "${userFirstName} ${userLastName}");
+		}
 
-	<command name="configureCurrentLanguagesCP">
-		<var name="key_displaySettings" value="${displaySettings}" />
+		SelectFrameTop();
 
-		<if>
-			<condition function="IsNotVisible" locator1="SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO" />
-			<then>
-				<execute macro="Navigator#gotoTab">
-					<var name="tab" value="Languages" />
-				</execute>
-			</then>
-		</if>
+		Button.clickDone();
 
-		<execute function="Check" locator1="SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO" />
+		Alert.viewSuccessMessage();
+	}
 
-		<if>
-			<isset var="currentSiteLanguages" />
-			<then>
-				<while>
-					<condition function="IsElementPresent" locator1="SiteSettingsDisplaySettings#AVAILABLE_LANGUAGES_CURRENT_PRESENT" />
-					<then>
-						<execute function="Click" locator1="SiteSettingsDisplaySettings#AVAILABLE_LANGUAGES_CURRENT_PRESENT" />
-						<execute function="Click" locator1="SiteSettingsDisplaySettings#MOVE_CURRENT_TO_AVAILABLE_BUTTON" />
-					</then>
-				</while>
+	macro assignUserGroupAsMemberCP {
+		Navigator.gotoNavItem(navItem = "User Groups");
 
-				<for list="${currentSiteLanguages}" param="currentSiteLanguage">
-					<var name="currentSiteLanguage" value="${currentSiteLanguage}" />
+		Pause(locator1 = "5000");
 
-					<execute function="Select" locator1="SiteSettingsDisplaySettings#AVAILABLE_LANGUAGES_AVAILABLE_SELECT" value1="${currentSiteLanguage}" />
+		LexiconEntry.gotoAdd();
 
-					<execute function="Click" locator1="SiteSettingsDisplaySettings#MOVE_AVAILABLE_TO_CURRENT_BUTTON" />
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-					<execute function="AssertTextEquals#assertPartialText" locator1="SiteSettingsDisplaySettings#AVAILABLE_LANGUAGES_CURRENT_SELECT" value1="${currentSiteLanguage}" />
-				</for>
-			</then>
-		</if>
+		Pause(locator1 = "3000");
 
-		<if>
-			<isset var="defaultSiteLanguage" />
-			<then>
-				<var name="defaultSiteLanguage" value="${defaultSiteLanguage}" />
+		LexiconEntry.selectEntry(rowEntry = "${userGroupName}");
 
-				<execute function="Select" locator1="SiteSettingsDisplaySettings#DEFAULT_LANGUAGE_SELECT" value1="${defaultSiteLanguage}" />
-			</then>
-		</if>
+		SelectFrameTop();
 
-		<execute function="Click" locator1="Button#SAVE" />
+		Button.clickDone();
 
-		<if>
-			<isset var="localizedSuccessMessage" />
-			<then>
-				<var name="localizedSuccessMessage" value="${localizedSuccessMessage}" />
+		Alert.viewSuccessMessage();
+	}
 
-				<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-			</then>
-			<else>
-				<execute macro="Alert#viewSuccessMessage" />
-			</else>
-		</if>
-	</command>
+	macro assignUserSitesCP {
+		var key_userScreenName = "${userScreenName}";
 
-	<command name="deactivateCP">
-		<var name="key_siteName" value="${siteName}" />
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${siteName}" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-		<execute function="AssertTextEquals" locator1="Sites#SITE_TABLE_NAME" value1="${siteName}" />
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Sites#SITE_TABLE_ACTIONS" />
-		<execute function="AssertClickNoError" locator1="MenuItem#DEACTIVATE" value1="Deactivate" />
-		<execute function="Confirm" value1="Are you sure you want to deactivate this?" />
+		AssertClick(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
 
-		<if>
-			<equals arg1="${successMessage}" arg2="true" />
-			<then>
-				<execute macro="Alert#viewSuccessMessage" />
-			</then>
-			<else>
-				<execute macro="Alert#viewRequestFailedToComplete" />
+		UserNavigator.gotoMemberships();
 
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The site cannot be deleted or deactivated because you are accessing the site." />
-			</else>
-		</if>
-	</command>
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_SELECT_LINK",
+			value1 = "Select");
 
-	<command name="deleteCP">
-		<var name="key_siteName" value="${siteName}" />
+		SelectFrame(locator1 = "IFrame#SELECT_USER_SITES");
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Name" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-		<execute function="AssertTextEquals" locator1="Sites#SITE_TABLE_NAME" value1="${siteName}" />
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Sites#SITE_TABLE_ACTIONS" />
-		<execute function="AssertClickNoError" locator1="MenuItem#DELETE" value1="Delete" />
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		var key_siteName = "${siteName}";
 
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No sites were found." />
-		<execute function="AssertTextNotPresent" value1="${siteName}" />
-	</command>
+		Type(
+			locator1 = "TextInput#SITE_SEARCH_KEYWORDS",
+			value1 = "${siteName}");
 
-	<command name="editCP">
-		<execute function="AssertTextEquals" locator1="TextInput#NAME" value1="${siteName}" />
-		<execute function="Type" locator1="TextInput#NAME" value1="${siteNameEdit}" />
-		<execute macro="PortletEntry#save" />
-		<execute function="AssertTextEquals" locator1="TextInput#NAME" value1="${siteNameEdit}" />
-	</command>
+		KeyPress(
+			locator1 = "TextInput#SEARCH",
+			value1 = "\RETURN");
 
-	<command name="editFriendlyURLCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Site URL" />
-		</execute>
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_TABLE_NAME",
+			value1 = "${siteName}");
 
-		<execute function="AssertTextEquals" locator1="SiteSettingsSiteURL#SITE_URL_FRIENDLY_URL_LABEL" value1="Friendly URL" />
+		Click(locator1 = "SitesSelectSite#SITES_TABLE_CHOOSE_SITE_LINK");
 
-		<execute function="Pause" locator1="5000" />
+		SelectFrame(value1 = "relative=top");
 
-		<execute function="Type#mouseOverFocusType" locator1="TextInput#FRIENDLY_URL" value1="${siteFriendlyURLEdit}" />
-		<execute macro="Button#clickSave" />
+		PortletEntry.save();
+	}
 
-		<if>
-			<equals arg1="${friendlyURLInvalid}" arg2="true" />
-			<then>
-				<execute macro="Alert#viewRequestFailedToComplete" />
+	macro changeSiteLogo {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The friendly URL has too many slashes." />
-				<execute function="AssertTextEquals" locator1="TextInput#FRIENDLY_URL" value1="${siteFriendlyURLEdit}" />
-			</then>
-			<else>
-				<execute macro="Alert#viewSuccessMessage" />
-			</else>
-		</if>
-	</command>
+		SitePages.togglePrivacy(privacy = "${pageName}");
 
-	<command name="editGoogleAnalyticsIDCP">
-		<execute function="AssertClick" locator1="SitesEditSite#MENU_ADVANCED_TAB" value1="Advanced" />
+		Click(
+			key_pageName = "${pageName}",
+			locator1 = "Icon#COG_PAGE");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Analytics" />
-		</execute>
+		Panel.expandPanel(panel = "Logo");
 
-		<execute function="Type" locator1="TextInput#GOOGLE_ANALYTICS_ID" value1="${googleAnalyticsID}" />
+		Page.uploadFileForLogo(logoFile = "${logoFile}");
+	}
 
-		<execute macro="PortletEntry#save" />
-	</command>
+	macro configureCurrentLanguagesCP {
+		var key_displaySettings = "${displaySettings}";
 
-	<command name="enableRecycleBinCP">
-		<execute function="AssertClick" locator1="NavListItem#RECYCLE_BIN" value1="Recycle Bin" />
+		if (IsNotVisible(locator1 = "SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO")) {
+			if (isSet(localizedLanguageTab)) {
+				Navigator.gotoNavTab(navTab = "${localizedLanguageTab}");
+			}
+			else {
+				Navigator.gotoNavTab(navTab = "Languages");
+			}
+		}
 
-		<execute function="Check" locator1="Checkbox#ENABLE_RECYCLE_BIN" />
+		Check(locator1 = "SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		if (isSet(currentSiteLanguages)) {
+			while (IsElementPresent(locator1 = "LanguageConfiguration#LANGUAGES_CURRENT_SELECT")) {
+				Click(locator1 = "LanguageConfiguration#LANGUAGES_CURRENT_SELECT");
 
-	<command name="exportSite">
-		<var name="key_siteName" value="${siteName}" />
+				Click(locator1 = "SiteSettingsDisplaySettings#MOVE_CURRENT_TO_AVAILABLE_BUTTON");
+			}
 
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="Sites#SITE_TABLE_NAME" value1="${siteName}" />
+			for (var currentSiteLanguage : list "${currentSiteLanguages}") {
+				var currentSiteLanguage = "${currentSiteLanguage}";
 
-		<execute function="AssertClick" locator1="SitePages#TOOLBAR_EXPORT" value1="Export" />
+				Select(
+					locator1 = "LanguageConfiguration#LANGUAGES_AVAILABLE",
+					value1 = "${currentSiteLanguage}");
 
-		<execute function="SelectFrame" locator1="SitesExport#EXPORT_IFRAME" />
-		<execute function="Type" locator1="SitesImport#EXPORT_FILE_NAME" value1="${fileName}" />
-		<execute function="AssertClick" locator1="SitesExport#EXPORT_BUTTON" value1="Export" />
-		<execute function="Pause" locator1="5000" />
-		<execute function="AssertClick" locator1="SitesExport#DOWNLOAD_FILE" value1="${fileDownload}" />
-	</command>
+				Click(locator1 = "SiteSettingsDisplaySettings#MOVE_AVAILABLE_TO_CURRENT_BUTTON");
 
-	<command name="gotoManageSitesTemplatesViaAddDropdown">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#MANAGE_SITES_TEMPLATES" value1="Manage Sites Templates" />
-	</command>
+				AssertTextEquals.assertPartialText(
+					locator1 = "LanguageConfiguration#LANGUAGES_CURRENT",
+					value1 = "${currentSiteLanguage}");
+			}
+		}
 
-	<command name="gotoSiteViaMySitesPG">
-		<execute function="AssertClick" locator1="ListGroupItem#ITEM_NAME_LINK" value1="${siteName}">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
-	</command>
+		if (isSet(defaultSiteLanguage)) {
+			var defaultSiteLanguage = "${defaultSiteLanguage}";
 
-	<command name="importSite">
-		<var name="key_siteName" value="${siteName}" />
+			Select(
+				locator1 = "Select#DEFAULT_LANGUAGE",
+				value1 = "${defaultSiteLanguage}");
+		}
 
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="Sites#SITE_TABLE_NAME" value1="${siteName}" />
+		if (isSet(localizedSaveButton)) {
+			var key_saveButton = "${localizedSaveButton}";
 
-		<execute function="AssertClick" locator1="SitePages#TOOLBAR_IMPORT" value1="Import" />
+			AssertClick(
+				locator1 = "Button#SAVE_LOCALIZED",
+				value1 = "${localizedSaveButton}");
+		}
+		else {
+			Click(locator1 = "Button#SAVE");
+		}
 
-		<execute function="SelectFrame" locator1="SitesImport#IMPORT_IFRAME" />
-		<execute function="AssertClick" locator1="SitesImport#SELECT_FILE" value1="Select File" />
+		if (isSet(localizedSuccessMessage)) {
+			var localizedSuccessMessage = "${localizedSuccessMessage}";
 
-		<execute function="SikuliClick" locator1="OS#FILE_DIALOG_BOX_TYPE_FILE_NAME_ICON_PNG" />
-		<execute function="SikuliType" locator1="OS#FILE_DIALOG_BOX_FILE_NAME_FIELD_PNG" value1="${larFileName}" />
-		<execute function="SikuliClick" locator1="OS#FILE_DIALOG_BOX_TEST_LAR_FILE_ICON_PNG" />
-		<execute function="SikuliClick" locator1="OS#FILE_DIALOG_BOX_OPEN_BUTTON_PNG" />
+			AssertElementPresent(locator1 = "Message#SUCCESS");
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
 
-		<execute function="AssertClick" locator1="SitesImport#IMPORT_CONTINUE" value1="Continue" />
-		<execute function="AssertClick" locator1="SitesImport#IMPORT_CONTINUE_2" value1="Continue" />
-		<execute function="AssertClick" locator1="SitesImport#IMPORT" value1="Import" />
-		<execute function="Pause" locator1="2000" />
-	</command>
+	macro deactivateCP {
+		var key_siteName = "${siteName}";
 
-	<command name="inactivateCP">
-		<execute function="AssertTextEquals" locator1="TextInput#NAME" value1="${siteName}" />
-		<execute function="AssertTextEquals" locator1="SitesEditSite#ACTIVE_LABEL" value1="Active" />
+		Search.searchCP(searchTerm = "${siteName}");
 
-		<execute function="Uncheck#uncheckToggleSwitch" locator1="Checkbox#ACTIVE" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Sites#SITE_TABLE_NAME",
+			value1 = "${siteName}");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		LexiconTable.clickEllipsisItem(
+			item = "Deactivate",
+			tableEntry = "${siteName}");
 
-	<command name="joinViaMySitesPG">
-		<var name="key_siteName" value="${siteName}" />
+		AssertConfirm(value1 = "Are you sure you want to deactivate this?");
 
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No sites were found." />
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Available Sites" />
-		</execute>
+		if ("${successMessage}" == "true") {
+			Alert.viewSuccessMessage();
+		}
+		else {
+			Alert.viewRequestFailedToComplete();
 
-		<execute function="Pause" locator1="3000" />
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_2",
+				value1 = "The site cannot be deleted or deactivated because you are accessing the site.");
+		}
+	}
 
-		<if>
-			<equals arg1="${membershipType}" arg2="Private" />
-			<then>
-				<execute function="AssertElementNotPresent" locator1="ListGroupItem#ITEM_NAME">
-					<var name="key_itemName" value="${siteName}" />
-				</execute>
-			</then>
-			<elseif>
-				<equals arg1="${membershipType}" arg2="Restricted" />
-				<then>
-					<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_NAME" value1="${siteName}">
-						<var name="key_itemName" value="${siteName}" />
-					</execute>
+	macro deleteAllCP {
+		PortletEntry.selectAll();
 
-					<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_SUB_INFO" value1="Members: 1">
-						<var name="key_itemName" value="${siteName}" />
-					</execute>
+		ClickNoError(locator1 = "Icon#DELETE");
 
-					<var name="key_rowEntry" value="${siteName}" />
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-					<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+		Alert.viewSuccessMessage();
+	}
 
-					<execute function="AssertClick" locator1="MenuItem#REQUEST_MEMBERSHIP" value1="Request Membership" />
+	macro deleteCP {
+		var key_siteName = "${siteName}";
 
-					<execute function="Type" locator1="TextArea#COMMENTS" value1="Please allow me to join the Restricted Site." />
+		Search.searchCP(searchTerm = "Name");
 
-					<execute macro="Button#clickSave" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Sites#SITE_TABLE_NAME",
+			value1 = "${siteName}");
 
-					<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS_1" value1="Your request was sent. You will receive a reply by email." />
+		LexiconTable.clickEllipsisItem(
+			item = "Delete",
+			tableEntry = "${siteName}");
 
-					<execute macro="Alert#viewSuccessMessage" />
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-					<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS_2" />
+		Alert.viewSuccessMessage();
 
-					<execute function="AssertTextEquals" locator1="MenuItem#MEMBERSHIP_REQUESTED" value1="Membership Requested" />
-				</then>
-			</elseif>
-			<else>
-				<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_NAME" value1="${siteName}">
-					<var name="key_itemName" value="${siteName}" />
-				</execute>
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No sites were found.");
 
-				<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_SUB_INFO" value1="Members: 1">
-					<var name="key_itemName" value="${siteName}" />
-				</execute>
+		AssertTextNotPresent(value1 = "${siteName}");
+	}
 
-				<var name="key_rowEntry" value="${siteName}" />
+	macro disableRecycleBinCP {
+		AssertClick(
+			locator1 = "SitesEditSite#MENU_ADVANCED_TAB",
+			value1 = "Advanced");
 
-				<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+		Panel.expandPanel(panel = "Recycle Bin");
 
-				<execute function="AssertClick" locator1="MenuItem#JOIN" value1="Join" />
+		Uncheck.uncheckToggleSwitchNoErrorNoAssert(locator1 = "Checkbox#ENABLE_RECYCLE_BIN");
 
-				<execute macro="Alert#viewSuccessMessage" />
+		AssertConfirm(value1 = "Disabling the Recycle Bin prevents the restoring of content that has been moved to the Recycle Bin.");
 
-				<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_NAME" value1="${siteName}">
-					<var name="key_itemName" value="${siteName}" />
-				</execute>
+		AssertNotChecked.assertNotCheckedNotVisible(locator1 = "Checkbox#ENABLE_RECYCLE_BIN");
 
-				<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_SUB_INFO" value1="Members: 2">
-					<var name="key_itemName" value="${siteName}" />
-				</execute>
+		PortletEntry.save();
+	}
 
-				<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+	macro editCP {
+		AssertTextEquals(
+			locator1 = "TextInput#NAME",
+			value1 = "${siteName}");
 
-				<execute function="AssertVisible" locator1="MenuItem#LEAVE" />
-			</else>
-		</if>
-	</command>
+		PortletEntry.inputName(name = "${siteNameEdit}");
 
-	<command name="leaveViaMySitesPG">
-		<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_NAME" value1="${siteName}">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+		PortletEntry.save();
 
-		<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_SUB_INFO" value1="Members: 2">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+		AssertTextEquals(
+			locator1 = "TextInput#NAME",
+			value1 = "${siteNameEdit}");
+	}
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Available Sites" />
-		</execute>
+	macro editFriendlyURLCP {
+		Panel.expandPanel(panel = "Site URL");
 
-		<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_NAME" value1="${siteName}">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+		AssertTextEquals(
+			locator1 = "SiteSettingsSiteURL#SITE_URL_FRIENDLY_URL_LABEL",
+			value1 = "Friendly URL");
 
-		<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_SUB_INFO" value1="Members: 2">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+		Pause(locator1 = "5000");
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS">
-			<var name="key_rowEntry" value="${siteName}" />
-		</execute>
+		Type(
+			locator1 = "TextInput#FRIENDLY_URL",
+			value1 = "${siteFriendlyURLEdit}");
 
-		<execute function="AssertClick" locator1="MenuItem#LEAVE" value1="Leave" />
+		Button.clickSave();
 
-		<execute macro="Alert#viewSuccessMessage" />
+		if ("${friendlyURLInvalid}" == "true") {
+			Alert.viewRequestFailedToComplete();
 
-		<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_NAME" value1="${siteName}">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "The friendly URL has too many slashes.");
 
-		<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_SUB_INFO" value1="Members: 1">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+			AssertTextEquals(
+				locator1 = "TextInput#FRIENDLY_URL",
+				value1 = "${siteFriendlyURLEdit}");
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS">
-			<var name="key_rowEntry" value="${siteName}" />
-		</execute>
+	macro editGoogleAnalyticsIDCP {
+		AssertClick(
+			locator1 = "SitesEditSite#MENU_ADVANCED_TAB",
+			value1 = "Advanced");
 
-		<execute function="AssertVisible" locator1="MenuItem#JOIN" />
-	</command>
+		Panel.expandPanel(panel = "Analytics");
 
-	<command name="manageMembershipOptions">
-		<execute macro="Navigator#openURL" />
+		Type(
+			locator1 = "TextInput#GOOGLE_ANALYTICS_ID",
+			value1 = "${googleAnalyticsID}");
 
-		<execute macro="ProductMenu#gotoSitesConfiguration">
-			<var name="portlet" value="Site Settings" />
-		</execute>
+		PortletEntry.save();
+	}
 
-		<if>
-			<equals arg1="${selectMembershipType}" arg2="true" />
-			<then>
-				<execute function="AssertTextEquals" locator1="SitesEditSite#MEMBERSHIP_OPTIONS_MEMBERSHIP_TYPE_LABEL" value1="Membership Type" />
-				<execute function="Select" locator1="SitesEditSite#MEMBERSHIP_OPTIONS_MEMBERSHIP_TYPE" value1="${membershipType}" />
-			</then>
-		</if>
+	macro getSiteId {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
 
-		<if>
-			<equals arg1="${allowManualMembershipManagement}" arg2="true" />
-			<then>
-				<execute function="Check#checkToggleSwitch" locator1="Checkbox#ALLOW_MANUAL_MEMBERSHIP_MANAGEMENT" />
-			</then>
-			<elseif>
-				<equals arg1="${allowManualMembershipManagement}" arg2="false" />
-				<then>
-					<execute function="Uncheck#uncheckToggleSwitch" locator1="Checkbox#ALLOW_MANUAL_MEMBERSHIP_MANAGEMENT" />
-				</then>
-			</elseif>
-		</if>
+		AssertElementPresent(locator1 = "SitesEditSite#SITE_ID");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		var siteId = selenium.getElementValue("SitesEditSite#SITE_ID");
 
-	<command name="removeMemberCP">
-		<var name="key_cardText" value="${userScreenName}" />
+		return "${siteId}";
+	}
 
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${userScreenName}" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+	macro gotoSiteViaMySitesPG {
+		LexiconList.clickListEntryTitle(listEntry = "${siteName}");
+	}
 
-		<if>
-			<isset var="userMiddleName" />
-			<then>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Card#SPECIFIC_LARGE_TEXT" value1="${userFirstName} ${userMiddleName} ${userLastName}" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Card#SPECIFIC_LARGE_TEXT" value1="${userFirstName} ${userLastName}" />
-			</else>
-		</if>
+	macro importSiteFromTempFolder {
+		AssertClick(
+			locator1 = "Button#SELECT_FILE",
+			value1 = "Select File");
 
-		<execute function="AssertTextEquals" locator1="Card#SPECIFIC_TEXT" value1="${userScreenName}" />
+		SikuliClick(locator1 = "OS#FILE_DIALOG_BOX_TYPE_FILE_NAME_ICON_PNG");
 
-		<var name="key_rowEntry" value="${key_cardText}" />
+		var siteLARFileName = TestCase.getDownloadedTempFileName(fileNamePattern = "Public_Pages-*.lar");
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+		UploadTempFile.uploadTempFileHiddenNoMouseOver(
+			locator1 = "TextInput#FILE",
+			value1 = "${siteLARFileName}");
 
-		<execute function="AssertClick" locator1="MenuItem#REMOVE_MEMBERSHIP" value1="Remove Membership" />
+		Button.click(button = "Continue");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		Button.click(button = "Import");
 
-	<command name="removeSiteRolesSiteOwnerUserGroupsCP">
-		<var name="key_userGroupName" value="${userGroupName}" />
+		AssertTextEquals(
+			locator1 = "SitePagesImport#CURRENT_AND_PREVIOUS_STATUS_1",
+			value1 = "Successful");
+	}
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="User Groups" />
-		</execute>
+	macro inactivateCP {
+		AssertTextEquals(
+			locator1 = "TextInput#NAME",
+			value1 = "${siteName}");
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${userGroupName}" />
-		<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
+		AssertTextEquals(
+			locator1 = "SitesEditSite#ACTIVE_LABEL",
+			value1 = "Active");
 
-		<execute function="AssertTextEquals" locator1="SiteMembershipsUserGroups#USER_GROUP_TABLE_NAME" value1="${userGroupName}" />
-		<execute function="Click" locator1="SiteMembershipsUserGroups#USER_GROUP_TABLE_ACTIONS" />
-		<execute function="AssertClick" locator1="MenuItem#ASSIGN_SITE_ROLES" value1="Assign Site Roles" />
+		Uncheck.uncheckToggleSwitch(locator1 = "Checkbox#ACTIVE");
 
-		<execute function="Uncheck" locator1="Checkbox#SITE_OWNER" />
-		<execute function="Click" locator1="Button#UPDATE_ASSOCIATIONS" />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertNotChecked" locator1="Checkbox#SITE_OWNER" />
-	</command>
+		PortletEntry.save();
+	}
 
-	<command name="searchCP">
-		<execute macro="Site#searchInputCP">
-			<var name="siteName" value="Site Name" />
-		</execute>
+	macro joinViaMySitesPG {
+		var key_siteName = "${siteName}";
 
-		<execute macro="Site#viewSearchResultsCP">
-			<var name="siteName" value="Site Name" />
-		</execute>
-	</command>
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No sites were found.");
 
-	<command name="searchInputCP">
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${siteName}" />
+		Navigator.gotoNavItem(navItem = "Available Sites");
 
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-	</command>
+		Pause(locator1 = "3000");
 
-	<command name="searchMemberCP">
-		<if>
-			<isset var="userScreenNameSearchValue" />
-			<then>
-				<execute function="Type" locator1="TextInput#SEARCH" value1="${userScreenNameSearchValue}" />
-			</then>
-			<elseif>
-				<isset var="userFirstNameSearchValue" />
-				<then>
-					<execute function="Type" locator1="TextInput#SEARCH" value1="${userFirstNameSearchValue}" />
-				</then>
-			</elseif>
-			<elseif>
-				<isset var="userLastNameSearchValue" />
-				<then>
-					<execute function="Type" locator1="TextInput#SEARCH" value1="${userLastNameSearchValue}" />
-				</then>
-			</elseif>
-			<else>
-				<execute function="Type" locator1="TextInput#SEARCH" value1="${userEmailAddressSearchValue}" />
-			</else>
-		</if>
+		if ("${membershipType}" == "Private") {
+			LexiconList.viewListEntryNotPresent(listEntry = "${siteName}");
+		}
+		else if ("${membershipType}" == "Restricted") {
+			LexiconList.viewListEntryTitle(listEntry = "${siteName}");
 
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+			LexiconList.viewListEntrySubtitle(
+				listEntry = "${siteName}",
+				listEntrySubtitle = "Members: 1");
 
-		<execute macro="Site#viewMemberCP">
-			<var name="userFirstName" value="${userFirstName}" />
-			<var name="userLastName" value="${userLastName}" />
-			<var name="userScreenName" value="${userScreenName}" />
-		</execute>
-	</command>
+			LexiconList.clickEllipsisItem(
+				item = "Request Membership",
+				listEntry = "${siteName}");
 
-	<command name="selectPageType">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Pages" />
-		</execute>
+			Type(
+				locator1 = "TextArea#COMMENTS",
+				value1 = "Please allow me to join the Restricted Site.");
 
-		<if>
-			<equals arg1="${selectPublicPages}" arg2="true" />
-			<then>
-				<execute function="Select" locator1="SitesEditSite#PAGES_PUBLIC_PAGES_SITE_TEMPLATE_SELECT" value1="${siteTemplate}" />
-			</then>
-			<elseif>
-				<equals arg1="${selectPrivatePages}" arg2="true" />
-				<then>
-					<execute function="Select" locator1="SitesEditSite#PAGES_PRIVATE_PAGES_SITE_TEMPLATE_SELECT" value1="${siteTemplate}" />
-				</then>
-			</elseif>
-		</if>
+			Button.clickSave();
 
-		<execute macro="PortletEntry#save" />
-	</command>
+			Alert.viewSuccessMessageText(successMessage = "Your request was sent. You will receive a reply by email.");
 
-	<command name="selectParentSite">
-		<execute function="AssertClick" locator1="SitesEditSite#PARENT_SITE_SELECT" value1="Select" />
+			MySites.viewMembershipRequested(siteName = "${siteName}");
+		}
+		else {
+			LexiconList.viewListEntryTitle(listEntry = "${siteName}");
 
-		<var name="key_parentSiteName" value="${parentSiteName}" />
+			LexiconList.viewListEntrySubtitle(
+				listEntry = "${siteName}",
+				listEntrySubtitle = "Members: 1");
 
-		<execute function="SelectFrame" locator1="SitesSelectSite#SELECT_SITE_IFRAME" />
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${parentSiteName}" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+			LexiconList.clickEllipsisItem(
+				item = "Join",
+				listEntry = "${siteName}");
 
-		<if>
-			<equals arg1="${chooseButtonAvailable}" arg2="false" />
-			<then>
-				<execute function="AssertTextNotPresent" locator1="SitesSelectSite#SITES_TABLE_NAME" value1="${parentSiteName}" />
-				<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No sites were found." />
-			</then>
-		</if>
+			Alert.viewSuccessMessage();
 
-		<execute function="Close" locator1="null" />
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
+			LexiconList.viewListEntryTitle(listEntry = "${siteName}");
 
-	<command name="tearDownCP">
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
+			LexiconList.viewListEntrySubtitle(
+				listEntry = "${siteName}",
+				listEntrySubtitle = "Members: 2");
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Name" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
+			LexiconList.clickEllipsis(listEntry = "${siteName}");
 
-		<if>
-			<condition function="IsElementNotPresent" locator1="Message#EMPTY_INFO" />
-			<then>
-				<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
-				<execute function="ClickNoError" locator1="Icon#DELETE" value1="Delete" />
-				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
-				<execute macro="Alert#viewSuccessMessage" />
-			</then>
-		</if>
-	</command>
+			AssertVisible(
+				key_menuItem = "Leave",
+				locator1 = "MenuItem#ANY_MENU_ITEM",
+				value1 = "Leave");
+		}
+	}
 
-	<command name="viewCannotAdd">
-		<execute function="Click" locator1="Button#PLUS" />
-		<execute function="AssertClick" locator1="MenuItem#BLANK_SITE" value1="Blank Site" />
-		<execute function="Type" locator1="TextInput#NAME" value1="${siteName}" />
-		<execute function="Click" locator1="Button#SAVE" value1="Save" />
+	macro leaveViaMySitesPG {
+		LexiconList.viewListEntryTitle(listEntry = "${siteName}");
 
-		<if>
-			<equals arg1="${siteNameInvalid}" arg2="Duplicate" />
-			<then>
-				<execute macro="Alert#viewRequestFailedToComplete" />
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${siteName}",
+			listEntrySubtitle = "Members: 2");
 
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a unique name." />
-			</then>
-			<elseif>
-				<equals arg1="${siteNameInvalid}" arg2="Null" />
-				<then>
-					<execute function="AssertTextEquals" locator1="Message#REQUIRED_INFO" value1="This field is required." />
-				</then>
-			</elseif>
-			<else>
-				<execute macro="Alert#viewRequestFailedToComplete" />
+		Navigator.gotoNavItem(navItem = "Available Sites");
 
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The Site Name cannot be blank, numeric or a reserved word such as null." />
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The Site Name cannot contain the following invalid characters: *." />
-			</else>
-		</if>
-	</command>
+		LexiconList.viewListEntryTitle(listEntry = "${siteName}");
 
-	<command name="viewChildCP">
-		<var name="key_siteName" value="${siteName}" />
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${siteName}",
+			listEntrySubtitle = "Members: 2");
 
-		<execute macro="Site#viewCP">
-			<var name="siteName" value="${siteName}" />
-		</execute>
+		LexiconList.clickEllipsisItem(
+			item = "Leave",
+			listEntry = "${siteName}");
 
-		<execute macro="LexiconEntry#gotoEntryMenuItem">
-			<var name="menuItem" value="View Child Sites" />
-			<var name="rowEntry" value="${siteName}" />
-		</execute>
+		Alert.viewSuccessMessage();
 
-		<var method="StringUtil#upperCase('${siteName}')" name="siteNameUppercase" />
+		LexiconList.viewListEntryTitle(listEntry = "${siteName}");
 
-		<execute function="AssertTextEquals" locator1="Sites#SITE_NAME_BREADCRUMB" value1="${siteNameUppercase}" />
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${siteName}",
+			listEntrySubtitle = "Members: 1");
 
-		<execute macro="Site#viewCP">
-			<var name="siteName" value="${childSiteName}" />
-		</execute>
-	</command>
+		LexiconList.clickEllipsis(listEntry = "${siteName}");
 
-	<command name="viewCP">
-		<var name="key_siteName" value="${siteName}" />
+		AssertVisible(
+			key_menuItem = "Join",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Join");
+	}
 
-		<execute function="AssertElementPresent" locator1="Sites#SITE_TABLE_CHECKBOX" value1="${siteName}" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="Sites#SITE_TABLE_NAME" value1="${siteName}" />
-		<execute function="AssertTextEquals" locator1="Sites#SITE_TABLE_TYPE" value1="${siteType}" />
+	macro limitMembership {
+		if ("${siteLimitMembership}" == "Yes") {
+			Check.checkToggleSwitch(locator1 = "SitesEditSite#PARENT_SITE_LIMIT_MEMBERSHIP_CHECKBOX");
+		}
+		else if ("${siteLimitMembership}" == "No") {
+			Uncheck.uncheckToggleSwitch(locator1 = "SitesEditSite#PARENT_SITE_LIMIT_MEMBERSHIP_CHECKBOX");
+		}
 
-		<if>
-			<equals arg1="${siteMember}" arg2="User" />
-			<then>
-				<execute function="AssertTextEquals" locator1="Sites#SITE_TABLE_MEMBERS_USERS" value1="1 ${siteMember}" />
-			</then>
-		</if>
+		PortletEntry.save();
+	}
 
-		<execute function="AssertTextEquals" locator1="Sites#SITE_TABLE_ACTIVE" value1="Yes" />
-		<execute function="AssertElementPresent" locator1="Sites#SITE_TABLE_ACTIONS" />
-	</command>
+	macro manageMembershipOptions {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
 
-	<command name="viewCurrentLanguagesCP">
-		<var name="key_displaySettings" value="${displaySettings}" />
+		if ("${selectMembershipType}" == "true") {
+			AssertTextEquals(
+				locator1 = "SitesEditSite#MEMBERSHIP_OPTIONS_MEMBERSHIP_TYPE_LABEL",
+				value1 = "Membership Type");
 
-		<if>
-			<condition function="IsNotVisible" locator1="SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO" />
-			<then>
-				<execute macro="Navigator#gotoTab">
-					<var name="tab" value="Languages" />
-				</execute>
-			</then>
-		</if>
+			Select(
+				locator1 = "SitesEditSite#MEMBERSHIP_OPTIONS_MEMBERSHIP_TYPE",
+				value1 = "${membershipType}");
+		}
 
-		<execute function="Check" locator1="SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO" value1="Display Settings" />
+		if ("${allowManualMembershipManagement}" == "true") {
+			Check.checkToggleSwitch(locator1 = "Checkbox#ALLOW_MANUAL_MEMBERSHIP_MANAGEMENT");
+		}
+		else if ("${allowManualMembershipManagement}" == "false") {
+			Uncheck.uncheckToggleSwitch(locator1 = "Checkbox#ALLOW_MANUAL_MEMBERSHIP_MANAGEMENT");
+		}
 
-		<for list="${currentSiteLanguages}" param="currentSiteLanguage">
-			<var name="currentSiteLanguage" value="${currentSiteLanguage}" />
+		PortletEntry.save();
+	}
 
-			<execute function="AssertTextEquals#assertPartialText" locator1="SiteSettingsDisplaySettings#AVAILABLE_LANGUAGES_CURRENT_SELECT" value1="${currentSiteLanguage}" />
-		</for>
+	macro openSiteMembershipsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/site_memberships");
+	}
 
-		<for list="${availableSiteLanguages}" param="availableSiteLanguage">
-			<var name="availableSiteLanguage" value="${availableSiteLanguage}" />
+	macro openSitesAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage/-/sites");
+	}
 
-			<execute function="AssertTextEquals#assertPartialText" locator1="SiteSettingsDisplaySettings#AVAILABLE_LANGUAGES_AVAILABLE_SELECT" value1="${availableSiteLanguage}" />
-		</for>
+	macro openSiteSettingsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/site/settings");
+	}
 
-		<if>
-			<isset var="defaultSiteLanguage" />
-			<then>
-				<var name="defaultSiteLanguage" value="${defaultSiteLanguage}" />
+	macro removeMemberCP {
+		var key_cardText = "${userScreenName}";
 
-				<execute function="Select" locator1="SiteSettingsDisplaySettings#DEFAULT_LANGUAGE_SELECT" value1="${defaultSiteLanguage}" />
-			</then>
-		</if>
-	</command>
+		Search.searchCP(searchTerm = "${userScreenName}");
 
-	<command name="viewDefaultThemePG">
-		<execute function="AssertElementNotPresent" locator1="Home#DARK_THEME" />
-		<execute function="AssertElementPresent" locator1="Home#DEFAULT_THEME" />
-	</command>
+		if (isSet(userMiddleName)) {
+			LexiconCard.viewCardTitle(card = "${userFirstName} ${userMiddleName} ${userLastName}");
+		}
+		else {
+			LexiconCard.viewCardTitle(card = "${userFirstName} ${userLastName}");
+		}
 
-	<command name="viewGlobalLandingDefault">
-		<var name="key_portletName" value="${portletName}" />
-		<var name="key_siteName" value="${siteName}" />
+		LexiconCard.viewCardSubtitle(
+			card = "${userFirstName} ${userLastName}",
+			cardSubtitle = "${userScreenName}");
 
-		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME" value1="${siteName}" />
-		<execute function="AssertTextNotPresent" value1="You do not have the roles required to access this portlet" />
-		<execute function="AssertTextEquals" locator1="ProductMenu#PRODUCT_MENU_PANEL_MENU_ITEM" value1="${portletName}" />
-	</command>
+		LexiconCard.clickEllipsisItem(
+			card = "${userScreenName}",
+			item = "Remove Membership");
 
-	<command name="viewLimitMembershipParentSiteCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
+		Confirm();
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Users" />
-		</execute>
+		Alert.viewSuccessMessage();
+	}
 
-		<execute function="Click" locator1="Button#PLUS" />
+	macro removeSiteRolesSiteOwnerUserGroupsCP {
+		var key_userGroupName = "${userGroupName}";
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		Navigator.gotoNavItem(navItem = "User Groups");
 
-		<execute function="AssertTextNotPresent" locator1="SiteMembershipsAddMembers#USER_TABLE_NAME" value1="${userFirstName} ${userLastName}" />
-		<execute function="AssertTextNotPresent" locator1="SiteMembershipsAddMembers#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-	</command>
+		Search.searchCP(searchTerm = "${userGroupName}");
 
-	<command name="viewMemberCP">
-		<var name="key_cardText" value="${userScreenName}" />
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Card#SPECIFIC_LARGE_TEXT" value1="${userFirstName} ${userLastName}" />
-		<execute function="AssertTextEquals" locator1="Card#SPECIFIC_TEXT" value1="${userScreenName}" />
+		AssertTextEquals(
+			locator1 = "UserGroups#USER_GROUP_TABLE_NAME",
+			value1 = "${userGroupName}");
 
-		<var name="key_rowEntry" value="${key_cardText}" />
+		LexiconEntry.openEntryMenu(rowEntry = "${userGroupName}");
 
-		<execute function="AssertVisible" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-	</command>
+		MenuItem.click(menuItem = "Assign Site Roles");
 
-	<command name="viewMemberListCP">
-		<for list="${usersEmailsList}" param="userEmail" >
-			<var method="StringUtil#replace('${userEmail}', '@liferay.com', '')" name="userName" />
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-			<execute macro="Site#viewMemberCP">
-				<var name="userFirstName" value="${userName}" />
-				<var name="userLastName" value="${userName}" />
-				<var name="userScreenName" value="${userName}" />
-			</execute>
-		</for>
-	</command>
+		Uncheck(locator1 = "Checkbox#SITE_OWNER");
 
-	<command name="viewMemberOrganizationCP">
-		<var name="key_cardText" value="${orgName}" />
+		SelectFrameTop();
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="Organizations" />
-		</execute>
+		AssertClick(
+			locator1 = "Button#DONE",
+			value1 = "Done");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Card#SPECIFIC_LARGE_TEXT" value1="${orgName}" />
-		<if>
-			<equals arg1="${toolTip}" arg2="true" />
-			<then>
-				<execute function="MouseOver" locator1="Icon#TOOLTIP" />
+		Alert.viewSuccessMessage();
+	}
 
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#TOOLTIP" value1="Users are not allowed to request membership. Only site administrators can add new members." />
-			</then>
-		</if>
-	</command>
+	macro searchCP {
+		Search.searchCP(searchTerm = "Site Name");
 
-	<command name="viewMySitesViaMySitesPG">
-		<execute function="AssertTextEquals" locator1="NavBar#NAV_ITEM_LINK" value1="My Sites">
-			<var name="key_navItem" value="My Sites" />
-		</execute>
+		Site.viewSearchResultsCP(siteName = "Site Name");
+	}
 
-		<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_NAME" value1="${siteName}">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+	macro searchMemberCP {
+		var searchTerm = "${userEmailAddressSearchValue}";
 
-		<execute function="AssertTextEquals" locator1="ListGroupItem#ITEM_SUB_INFO" value1="Members: ${memberCount}">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
-	</command>
+		if (isSet(userScreenNameSearchValue)) {
+			var searchTerm = "${userScreenNameSearchValue}";
+		}
+		else if (isSet(userFirstNameSearchValue)) {
+			var searchTerm = "${userFirstNameSearchValue}";
+		}
+		else if (isSet(userLastNameSearchValue)) {
+			var searchTerm = "${userLastNameSearchValue}";
+		}
 
-	<command name="viewNoMySitesViaMySitesPG">
-		<execute function="AssertElementNotPresent" locator1="ListGroupItem#ITEM_NAME" value1="${siteName}">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+		Search.searchCP(searchTerm = "${searchTerm}");
 
-		<execute function="AssertElementNotPresent" locator1="ListGroupItem#ITEM_SUB_INFO">
-			<var name="key_itemName" value="${siteName}" />
-		</execute>
+		Site.viewMemberCP(
+			userFirstName = "${userFirstName}",
+			userLastName = "${userLastName}",
+			userScreenName = "${userScreenName}");
+	}
 
-		<execute function="AssertElementNotPresent" locator1="Icon#ROW_VERTICAL_ELLIPSIS">
-			<var name="key_rowEntry" value="${siteName}" />
-		</execute>
-	</command>
+	macro searchMembershipCP {
+		Search.searchCP(searchTerm = "${searchValue}");
 
-	<command name="viewPrivateVirtualHostUrlUserLoginRedirect">
-		<execute function="AssertTextEquals" locator1="TextInput#EMAIL_ADDRESS" value1="${userEmailAddress}" />
-		<execute function="AssertElementPresent" locator1="TextInput#PASSWORD" />
-	</command>
+		if ("${emptyResults}" == "true") {
+			AssertElementPresent(locator1 = "Message#EMPTY_INFO");
+		}
+		else {
+			LexiconTable.viewTableEntryTitle(tableEntry = StringUtil.unquote("${searchValue}"));
+		}
+	}
 
-	<command name="viewSearchResultsCP">
-		<var name="key_siteName" value="${siteName}" />
+	macro selectPageType {
+		Panel.expandPanel(panel = "Pages");
 
-		<execute function="AssertElementPresent" locator1="Sites#SITE_TABLE_CHECKBOX" value1="${siteName}" />
-		<execute function="AssertTextEquals" locator1="Sites#SITE_TABLE_NAME" value1="${siteName}" />
-		<execute function="AssertTextEquals" locator1="Sites#SITE_TABLE_TYPE" value1="${siteType}" />
-		<execute function="AssertTextEquals" locator1="Sites#SITE_TABLE_ACTIVE" value1="Yes" />
-		<execute function="AssertVisible" locator1="Sites#SITE_TABLE_ACTIONS" />
-	</command>
+		if ("${selectPublicPages}" == "true") {
+			Select(
+				locator1 = "SitesEditSite#PAGES_PUBLIC_PAGES_SITE_TEMPLATE_SELECT",
+				value1 = "${siteTemplate}");
+		}
+		else if ("${selectPrivatePages}" == "true") {
+			Select(
+				locator1 = "SitesEditSite#PAGES_PRIVATE_PAGES_SITE_TEMPLATE_SELECT",
+				value1 = "${siteTemplate}");
 
-	<command name="viewSiteAdminPermissionsCP">
-		<var name="key_siteName" value="${siteName}" />
+			if ("${checkPropagation}" == "true") {
+				Panel.expandPanel(panel = "Pages");
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${siteName}" />
-		<execute function="Click" locator1="Button#SUBMIT" />
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Sites#SITE_TABLE_ACTIONS" />
-		<execute function="AssertTextEquals" locator1="MenuItem#SITE_ADMINISTRATION" value1="Site Administration" />
-		<execute function="AssertTextEquals" locator1="MenuItem#ADD_CHILD_SITE" value1="Add Child Site" />
-		<execute function="AssertTextEquals" locator1="MenuItem#LEAVE" value1="Leave" />
-		<execute function="AssertTextEquals" locator1="MenuItem#DEACTIVATE" value1="Deactivate" />
-		<execute function="AssertTextEquals" locator1="MenuItem#DELETE" value1="Delete" />
-	</command>
+				Check.checkToggleSwitch(locator1 = "Checkbox#PRIVATE_PAGES_ENABLE_PROPAGATION");
+			}
+		}
 
-	<command name="viewSiteClonedFromSiteTemplateCP">
-		<var name="key_siteTemplateName" value="${siteTemplateName}" />
+		PortletEntry.save();
+	}
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Site Template" />
-		</execute>
+	macro selectParentSite {
+		AssertClick(
+			locator1 = "SitesEditSite#PARENT_SITE_SELECT",
+			value1 = "Select");
 
-		<if>
-			<equals arg1="${clonedFromTemplate}" arg2="true" />
-			<then>
-				<execute function="AssertTextEquals#assertPartialText" locator1="SiteSettingsSiteTemplate#SITE_CLONED_FROM_TEMPLATE_MESSAGE" value1="This site was cloned from site template ${siteTemplateName}" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals#assertPartialText" locator1="SiteSettingsSiteTemplate#SITE_NOT_CLONED_FROM_TEMPLATE_MESSAGE" value1="This site is not related to a site template." />
-			</else>
-		</if>
-	</command>
+		var key_parentSiteName = "${parentSiteName}";
 
-	<command name="viewSiteFriendlyURLPG">
-		<execute function="AssertTextEquals" locator1="Home#SITE_NAME" value1="${siteName}" />
-		<execute function="AssertLocation" value1="${sitePageURL}" />
-	</command>
+		SelectFrame(locator1 = "SitesSelectSite#SELECT_SITE_IFRAME");
 
-	<command name="viewSiteHierarchyInBreadcrumbPG">
-		<if>
-			<isset var="breadcrumbListVisible" />
-			<then>
-				<for list="${breadcrumbListVisible}" param="breadcrumbName">
-					<var name="key_breadcrumbName" value="${breadcrumbName}" />
+		Search.searchCP(searchTerm = "${parentSiteName}");
 
-					<execute function="AssertTextEquals" locator1="SitesDirectory#BREADCRUMB" value1="${breadcrumbName}" />
-				</for>
-			</then>
-		</if>
-	</command>
+		if ("${chooseButtonAvailable}" == "false") {
+			AssertElementNotPresent(
+				key_parentSiteName = "${parentSiteName}",
+				locator1 = "SitesSelectSite#SITES_TABLE_NAME");
 
-	<command name="viewSiteNotClonedFromSiteTemplateCP">
-		<var name="key_siteTemplateName" value="${siteTemplateName}" />
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No sites were found.");
+		}
 
-		<execute function="AssertClick" locator1="SitesEditSite#MENU_BASIC_INFORMATION_SITE_TEMPLATE" value1="Site Template" />
+		Close(locator1 = "null");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="SiteSettingsSiteTemplate#SITE_CLONED_FROM_TEMPLATE_MESSAGE" value1="Site Template" />
-	</command>
+		SelectFrame(value1 = "relative=top");
+	}
 
-	<command name="viewVirtualHostsURLPG">
-		<var name="key_pageName" value="${pageName}" />
+	macro tearDownCP {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
 
-		<execute function="AssertTextEquals" locator1="Home#SITE_NAME" value1="${siteName}" />
-		<execute function="AssertTextEquals" locator1="Home#PAGE" value1="${pageName}" />
+		Search.searchCP(searchTerm = "Name");
 
-		<execute function="AssertLocation" value1="${sitePageURL}" />
-	</command>
-</definition>
+		AssertVisible(locator1 = "Link#CLEAR");
+
+		if (IsElementNotPresent(locator1 = "Message#EMPTY_INFO")) {
+			PortletEntry.selectAll();
+
+			ClickNoError(
+				locator1 = "Icon#DELETE",
+				value1 = "Delete");
+
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro viewCannotAdd {
+		LexiconEntry.gotoAdd();
+
+		LexiconEntry.gotoEntry(rowEntry = "Blank Site");
+
+		PortletEntry.inputName(name = "${siteName}");
+
+		Button.clickSave();
+
+		if ("${siteNameInvalid}" == "Duplicate") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_MODAL_CONTENT",
+				value1 = "Please enter a unique name.");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_MODAL_CONTENT",
+				value1 = "The Site Name cannot be blank, numeric or a reserved word such as null. The Site Name cannot contain the following invalid characters: *.");
+		}
+	}
+
+	macro viewChildCP {
+		Site.viewCP(siteName = "${siteName}");
+
+		LexiconTable.clickEllipsisItem(
+			item = "View Child Sites",
+			tableEntry = "${siteName}");
+
+		Breadcrumb.viewActiveEntry(breadcrumbName = "${siteName}");
+
+		Site.viewCP(siteName = "${childSiteName}");
+	}
+
+	macro viewCP {
+		var key_siteName = "${siteName}";
+
+		AssertElementPresent(locator1 = "Sites#SITE_TABLE_CHECKBOX");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Sites#SITE_TABLE_NAME",
+			value1 = "${siteName}");
+
+		AssertTextEquals(
+			locator1 = "Sites#SITE_TABLE_TYPE",
+			value1 = "${siteType}");
+
+		if ("${siteMember}" == "User") {
+			AssertTextEquals(
+				locator1 = "Sites#SITE_TABLE_MEMBERS_USERS",
+				value1 = "1 ${siteMember}");
+		}
+
+		AssertTextEquals(
+			key_tableEntry = "${siteName}",
+			key_tableEntryText = "Yes",
+			locator1 = "LexiconTable#TABLE_ENTRY_TEXT",
+			value1 = "Yes");
+
+		AssertVisible(
+			key_tableEntry = "${siteName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+	}
+
+	macro viewCurrentLanguagesCP {
+		var key_displaySettings = "${displaySettings}";
+
+		if (IsNotVisible(locator1 = "SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO")) {
+			Navigator.gotoNavTab(navTab = "Languages");
+		}
+
+		Check(
+			locator1 = "SiteSettingsDisplaySettings#DEFINE_DEFAULT_AND_AVAILABLE_SITE_LANGUAGES_RADIO",
+			value1 = "Display Settings");
+
+		for (var currentSiteLanguage : list "${currentSiteLanguages}") {
+			var currentSiteLanguage = "${currentSiteLanguage}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "LanguageConfiguration#LANGUAGES_CURRENT",
+				value1 = "${currentSiteLanguage}");
+		}
+
+		for (var availableSiteLanguage : list "${availableSiteLanguages}") {
+			var availableSiteLanguage = "${availableSiteLanguage}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "LanguageConfiguration#LANGUAGES_AVAILABLE",
+				value1 = "${availableSiteLanguage}");
+		}
+
+		if (isSet(defaultSiteLanguage)) {
+			var defaultSiteLanguage = "${defaultSiteLanguage}";
+
+			Select(
+				locator1 = "Select#DEFAULT_LANGUAGE",
+				value1 = "${defaultSiteLanguage}");
+		}
+	}
+
+	macro viewGlobalLandingDefault {
+		var key_portletName = "${portletName}";
+		var key_siteName = "${siteName}";
+
+		AssertElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME");
+
+		AssertTextNotPresent(value1 = "You do not have the roles required to access this portlet");
+
+		AssertTextEquals(
+			locator1 = "ProductMenu#PRODUCT_MENU_PANEL_MENU_ITEM",
+			value1 = "${portletName}");
+	}
+
+	macro viewLimitMembershipParentSiteCP {
+		var key_userScreenName = "${userScreenName}";
+
+		Navigator.gotoNavItem(navItem = "Users");
+
+		LexiconEntry.gotoAdd();
+
+		SelectFrame(locator1 = "IFrame#DIALOG");
+
+		AssertTextNotPresent(
+			locator1 = "SiteMembershipsAddMembers#USER_TABLE_NAME",
+			value1 = "${userFirstName} ${userLastName}");
+
+		AssertTextNotPresent(
+			locator1 = "SiteMembershipsAddMembers#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+	}
+
+	macro viewMemberCP {
+		LexiconCard.viewCardPresent(card = "${userFirstName} ${userLastName}");
+
+		LexiconCard.viewCardTitle(card = "${userFirstName} ${userLastName}");
+
+		LexiconCard.viewCardSubtitle(
+			card = "${userFirstName} ${userLastName}",
+			cardSubtitle = "${userScreenName}");
+
+		AssertVisible(
+			key_card = "${userFirstName} ${userLastName}",
+			locator1 = "LexiconCard#CARD_ELLIPSIS");
+	}
+
+	macro viewMemberListCP {
+		for (var userEmail : list "${usersEmailsList}") {
+			var userName = StringUtil.replace("${userEmail}", "@liferay.com", "");
+
+			Site.viewMemberCP(
+				userFirstName = "${userName}",
+				userLastName = "${userName}",
+				userScreenName = "${userName}");
+		}
+	}
+
+	macro viewMemberOrganizationCP {
+		var key_tableEntry = "${orgName}";
+
+		Navigator.gotoNavItem(navItem = "Organizations");
+
+		AssertTextEquals(
+			locator1 = "LexiconTable#TABLE_ENTRY_TITLE",
+			value1 = "${orgName}");
+
+		if ("${toolTip}" == "true") {
+			MouseOver(locator1 = "Icon#TOOLTIP");
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#TOOLTIP",
+				value1 = "Users are not allowed to request membership. Only site administrators can add new members.");
+		}
+	}
+
+	macro viewMemberUserGroupCP {
+		Navigator.gotoNavItem(navItem = "User Groups");
+
+		AssertTextEquals(
+			key_userGroupName = "${userGroupName}",
+			locator1 = "SiteMemberships#USER_GROUPS_TABLE_NAME",
+			value1 = "${userGroupName}");
+	}
+
+	macro viewMySitesViaMySitesPG {
+		AssertTextEquals(
+			key_navItem = "My Sites",
+			locator1 = "NavBar#NAV_ITEM_LINK",
+			value1 = "My Sites");
+
+		LexiconList.viewListEntryTitle(listEntry = "${siteName}");
+
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${siteName}",
+			listEntrySubtitle = "Members: ${memberCount}");
+	}
+
+	macro viewNoMySitesViaMySitesPG {
+		LexiconList.viewListEntryNotPresent(listEntry = "${siteName}");
+	}
+
+	macro viewNoSiteMembershipsRequest {
+		Click(locator1 = "Icon#INFO");
+
+		AssertElementNotPresent(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteMemberships#MEMBERSHIP_TYPE",
+			value1 = "Membership Type: Restricted");
+
+		AssertElementNotPresent(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "View Membership Requests");
+
+		AssertElementNotPresent(locator1 = "SiteMembershipsViewMembershipRequests#USER_NAME");
+
+		AssertTextNotPresent(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_COMMENTS",
+			value1 = "Please allow me to join the Restricted Site.");
+	}
+
+	macro viewPrivateVirtualHostUrlUserLoginRedirect {
+		AssertTextEquals(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = "${userEmailAddress}");
+
+		AssertElementPresent(locator1 = "TextInput#PASSWORD");
+	}
+
+	macro viewSearchResultsCP {
+		var key_siteName = "${siteName}";
+
+		AssertElementPresent(
+			key_tableEntry = "${siteName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_CHECKBOX");
+
+		LexiconTable.viewTableEntryTitle(tableEntry = "${siteName}");
+
+		LexiconTable.viewTableEntryText(
+			tableEntry = "${siteName}",
+			tableEntryText = "${siteType}");
+
+		LexiconTable.viewTableEntryText(
+			tableEntry = "${siteName}",
+			tableEntryText = "Yes");
+
+		AssertVisible(
+			key_tableEntry = "${siteName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+	}
+
+	macro viewSelectSiteViaPersonalMenuMySites {
+		AssertElementPresent(locator1 = "Sites#SELECT_SITE_MODAL");
+
+		AssertTextEquals(
+			locator1 = "Sites#SELECT_SITE_MODAL_HEADER",
+			value1 = "Select Site");
+
+		SelectFrame(locator1 = "IFrame#DIALOG");
+
+		AssertElementPresent(
+			key_siteName = "${siteName}",
+			locator1 = "Sites#SELECT_SITE_MODAL_CARD_BODY_SITE_NAME");
+	}
+
+	macro viewSiteAdminPermissionsCP {
+		var key_siteName = "${siteName}";
+
+		Search.searchCP(searchTerm = "${siteName}");
+
+		Click(
+			key_tableEntry = "${siteName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+
+		AssertTextEquals(
+			key_menuItem = "Add Child Site",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Add Child Site");
+
+		AssertTextEquals(
+			key_menuItem = "Leave",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Leave");
+
+		AssertTextEquals(
+			key_menuItem = "Deactivate",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Deactivate");
+
+		AssertTextEquals(
+			key_menuItem = "Delete",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Delete");
+	}
+
+	macro viewSiteClonedFromSiteTemplateCP {
+		Navigator.gotoNavTab(navTab = "General");
+
+		Panel.expandPanel(panel = "Site Template");
+
+		if ("${clonedFromTemplate}" == "true") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "SiteSettingsSiteTemplate#SITE_CLONED_FROM_TEMPLATE_MESSAGE",
+				value1 = "These pages are linked to site template ${siteTemplateName} without propagation of changes.");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "SiteSettingsSiteTemplate#SITE_NOT_CLONED_FROM_TEMPLATE_MESSAGE",
+				value1 = "This site is not related to a site template.");
+		}
+	}
+
+	macro viewSiteFriendlyURLPG {
+		AssertTextEquals(
+			locator1 = "Home#SITE_NAME",
+			value1 = "${siteName}");
+
+		AssertLocation(value1 = "${sitePageURL}");
+	}
+
+	macro viewSiteMembershipsRequest {
+		Click(locator1 = "Icon#INFO");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SiteMemberships#MEMBERSHIP_TYPE",
+			value1 = "Membership Type: Restricted");
+
+		AssertElementPresent(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		Click(locator1 = "SiteMemberships#REQUEST_MESSAGE");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_NAME",
+			value1 = "${userFirstName} ${userLastName}");
+
+		AssertTextEquals(
+			locator1 = "SiteMembershipsViewMembershipRequests#USER_COMMENTS",
+			value1 = "Please allow me to join the Restricted Site.");
+	}
+
+	macro viewSiteRoleViaSiteMembershipsCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		LexiconList.viewListEntryTitle(listEntry = "${resourceName}");
+
+		LexiconList.viewListEntrySubtitle(
+			listEntry = "${resourceName}",
+			listEntrySubtitle = "${roleTitle}");
+	}
+
+	macro viewUserGroupSiteRoleViaSiteMembershipsCP {
+		AssertTextEquals(
+			key_userGroupName = "${resourceName}",
+			locator1 = "SiteMemberships#USER_GROUPS_TABLE_NAME",
+			value1 = "${resourceName}");
+
+		AssertTextEquals(
+			key_siteRoleName = "${roleTitle}",
+			locator1 = "SiteMemberships#USER_GROUPS_TABLE_SITE_ROLES",
+			value1 = "${roleTitle}");
+	}
+
+	macro viewVirtualHostsURLPG {
+		var key_pageName = "${pageName}";
+
+		AssertTextEquals(
+			locator1 = "Home#SITE_NAME",
+			value1 = "${siteName}");
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE",
+			value1 = "${pageName}");
+
+		AssertLocation(value1 = "${sitePageURL}");
+	}
+
+}

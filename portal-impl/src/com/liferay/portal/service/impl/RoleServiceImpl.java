@@ -18,8 +18,8 @@ import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.membershippolicy.OrganizationMembershipPolicyUtil;
 import com.liferay.portal.kernel.security.membershippolicy.RoleMembershipPolicyUtil;
 import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
@@ -154,6 +154,27 @@ public class RoleServiceImpl extends RoleServiceBaseImpl {
 		List<Role> roles = roleLocalService.getGroupRoles(groupId);
 
 		return filterRoles(roles);
+	}
+
+	@Override
+	public List<Role> getGroupRolesAndTeamRoles(
+		long companyId, String keywords, List<String> excludedNames,
+		int[] types, long excludedTeamRoleId, long teamGroupId, int start,
+		int end) {
+
+		return roleFinder.filterFindByGroupRoleAndTeamRole(
+			companyId, keywords, excludedNames, types, excludedTeamRoleId,
+			teamGroupId, start, end);
+	}
+
+	@Override
+	public int getGroupRolesAndTeamRolesCount(
+		long companyId, String keywords, List<String> excludedNames,
+		int[] types, long excludedTeamRoleId, long teamGroupId) {
+
+		return roleFinder.filterCountByGroupRoleAndTeamRole(
+			companyId, keywords, excludedNames, types, excludedTeamRoleId,
+			teamGroupId);
 	}
 
 	/**
@@ -425,9 +446,9 @@ public class RoleServiceImpl extends RoleServiceBaseImpl {
 	protected void checkUserRolesPermission(long userId, long[] roleIds)
 		throws PortalException {
 
-		for (int i = 0; i < roleIds.length; i++) {
+		for (long roleId : roleIds) {
 			RolePermissionUtil.check(
-				getPermissionChecker(), roleIds[i], ActionKeys.ASSIGN_MEMBERS);
+				getPermissionChecker(), roleId, ActionKeys.ASSIGN_MEMBERS);
 		}
 	}
 

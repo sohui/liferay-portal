@@ -14,32 +14,34 @@
 
 package com.liferay.announcements.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the AnnouncementsDelivery service. Represents a row in the &quot;AnnouncementsDelivery&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see AnnouncementsDeliveryModel
- * @see com.liferay.portlet.announcements.model.impl.AnnouncementsDeliveryImpl
- * @see com.liferay.portlet.announcements.model.impl.AnnouncementsDeliveryModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.announcements.model.impl.AnnouncementsDeliveryImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.announcements.model.impl.AnnouncementsDeliveryImpl"
+)
 @ProviderType
-public interface AnnouncementsDelivery extends AnnouncementsDeliveryModel,
-	PersistedModel {
+public interface AnnouncementsDelivery
+	extends AnnouncementsDeliveryModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.announcements.model.impl.AnnouncementsDeliveryImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.announcements.model.impl.AnnouncementsDeliveryImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<AnnouncementsDelivery, Long> DELIVERY_ID_ACCESSOR =
-		new Accessor<AnnouncementsDelivery, Long>() {
+	public static final Accessor<AnnouncementsDelivery, Long>
+		DELIVERY_ID_ACCESSOR = new Accessor<AnnouncementsDelivery, Long>() {
+
 			@Override
 			public Long get(AnnouncementsDelivery announcementsDelivery) {
 				return announcementsDelivery.getDeliveryId();
@@ -54,5 +56,7 @@ public interface AnnouncementsDelivery extends AnnouncementsDeliveryModel,
 			public Class<AnnouncementsDelivery> getTypeClass() {
 				return AnnouncementsDelivery.class;
 			}
+
 		};
+
 }

@@ -25,17 +25,20 @@ User statusByUser = UserLocalServiceUtil.fetchUser(statusByUserId);
 %>
 
 <c:if test="<%= statusByUser != null %>">
-	<liferay-util:buffer var="buffer">
+	<liferay-util:buffer
+		var="buffer"
+	>
 		<div class="user-status-tooltip">
 			<span class="user-status-avatar">
 				<liferay-ui:user-portrait
-					userId="<%= statusByUser.getUserId() %>"
+					user="<%= statusByUser %>"
 				/>
 			</span>
 			<span class="user-status-info">
 				<div class="user-status-name">
-					<aui:a href="<%= statusByUser.getDisplayURL(themeDisplay) %>"><%= HtmlUtil.escape(StringUtil.shorten(statusByUser.getFullName(), 20)) %></aui:a>
+					<aui:a href="<%= statusByUser.isActive() ? statusByUser.getDisplayURL(themeDisplay) : null %>"><%= HtmlUtil.escape(StringUtil.shorten(statusByUser.getFullName(), 20)) %></aui:a>
 				</div>
+
 				<div class="user-status-date">
 					<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - statusDate.getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
 				</div>

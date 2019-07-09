@@ -16,11 +16,15 @@ package com.liferay.portal.repository.capabilities;
 
 import com.liferay.document.library.kernel.exception.NoSuchFolderException;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.DocumentRepository;
 import com.liferay.portal.kernel.repository.capabilities.BulkOperationCapability;
 import com.liferay.portal.kernel.repository.capabilities.ConfigurationCapability;
@@ -32,8 +36,6 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -46,8 +48,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @author Iván Zaera
+ * @author     Iván Zaera
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.capabilities.TemporaryFileEntriesCapabilityImpl}
  */
+@Deprecated
 public class TemporaryFileEntriesCapabilityImpl
 	implements TemporaryFileEntriesCapability {
 
@@ -123,6 +128,12 @@ public class TemporaryFileEntriesCapabilityImpl
 			_documentRepository.deleteFileEntry(fileEntry.getFileEntryId());
 		}
 		catch (NoSuchModelException nsme) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsme, nsme);
+			}
 		}
 	}
 
@@ -139,6 +150,13 @@ public class TemporaryFileEntriesCapabilityImpl
 				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 		}
 		catch (NoSuchModelException nsme) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsme, nsme);
+			}
+
 			return Collections.emptyList();
 		}
 	}
@@ -191,6 +209,13 @@ public class TemporaryFileEntriesCapabilityImpl
 			return _documentRepository.getFolder(parentFolderId, folderName);
 		}
 		catch (NoSuchFolderException nsfe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsfe, nsfe);
+			}
+
 			return _documentRepository.addFolder(
 				userId, parentFolderId, folderName, StringPool.BLANK,
 				serviceContext);
@@ -284,6 +309,9 @@ public class TemporaryFileEntriesCapabilityImpl
 	private static final long _TEMPORARY_FILE_ENTRIES_TIMEOUT_DEFAULT =
 		12 * 60 * 60 * 1000;
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		TemporaryFileEntriesCapabilityImpl.class);
+
 	private final DocumentRepository _documentRepository;
 
 	private class DeleteExpiredTemporaryFilesRepositoryModelOperation
@@ -298,10 +326,13 @@ public class TemporaryFileEntriesCapabilityImpl
 			Folder mountFolder = _documentRepository.getFolder(
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
-			while ((folder.getFolderId() != mountFolder.getFolderId()) &&
-				   (_documentRepository.getFileEntriesCount(
-					   folder.getFolderId(),
-					   WorkflowConstants.STATUS_ANY) == 0)) {
+			while (folder.getFolderId() != mountFolder.getFolderId()) {
+				int count = _documentRepository.getFileEntriesCount(
+					folder.getFolderId(), WorkflowConstants.STATUS_ANY);
+
+				if (count != 0) {
+					break;
+				}
 
 				long folderId = folder.getFolderId();
 

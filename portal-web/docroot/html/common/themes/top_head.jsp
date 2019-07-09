@@ -15,13 +15,12 @@
 --%>
 
 <%@ include file="/html/common/themes/init.jsp" %>
-
-<liferay-util:dynamic-include key="/html/common/themes/top_head.jsp#pre" />
-
 <%@ include file="/html/common/themes/top_meta.jspf" %>
 <%@ include file="/html/common/themes/top_meta-ext.jsp" %>
 
-<link data-senna-track="temporary" href="<%= themeDisplay.getPathThemeImages() %>/<%= PropsValues.THEME_SHORTCUT_ICON %>" rel="Shortcut Icon" />
+<liferay-util:dynamic-include key="/html/common/themes/top_head.jsp#pre" />
+
+<link href="<%= BrowserSnifferUtil.isIe(request) ? StringPool.BLANK : themeDisplay.getPathThemeImages() %>/<%= PropsValues.THEME_SHORTCUT_ICON %>" rel="icon" />
 
 <%-- Available Translations --%>
 
@@ -29,36 +28,36 @@
 if (!themeDisplay.isSignedIn() && layout.isPublicLayout()) {
 	String completeURL = PortalUtil.getCurrentCompleteURL(request);
 
-	String canonicalURL = PortalUtil.getCanonicalURL(completeURL, themeDisplay, layout);
-%>
+	String canonicalURL = PortalUtil.getCanonicalURL(completeURL, themeDisplay, layout, false, false);
 
-	<link data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(canonicalURL) %>" rel="canonical" />
+	Map<Locale, String> alternateURLs = Collections.emptyMap();
 
-	<%
 	Set<Locale> availableLocales = LanguageUtil.getAvailableLocales(themeDisplay.getSiteGroupId());
 
 	if (availableLocales.size() > 1) {
-		for (Locale availableLocale : availableLocales) {
-	%>
-
-			<c:if test="<%= availableLocale.equals(LocaleUtil.getDefault()) %>">
-				<link data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(canonicalURL) %>" hreflang="x-default" rel="alternate" />
-			</c:if>
-
-			<link data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(PortalUtil.getAlternateURL(canonicalURL, themeDisplay, availableLocale, layout)) %>" hreflang="<%= LocaleUtil.toW3cLanguageId(availableLocale) %>" rel="alternate" />
-
-	<%
-		}
+		alternateURLs = PortalUtil.getAlternateURLs(canonicalURL, themeDisplay, layout);
 	}
-	%>
+
+	for (SEOLink seoLink : SEOLinkManagerUtil.getLocalizedSEOLinks(themeDisplay.getCompanyId(), PortalUtil.getLocale(request), canonicalURL, alternateURLs)) {
+%>
+
+		<c:choose>
+			<c:when test="<%= Validator.isNotNull(seoLink.getHrefLang()) %>">
+				<link data-senna-track="temporary" href="<%= seoLink.getHref() %>" hreflang="<%= seoLink.getHrefLang() %>" rel="<%= seoLink.getRelationship() %>" />
+			</c:when>
+			<c:otherwise>
+				<link data-senna-track="temporary" href="<%= seoLink.getHref() %>" rel="<%= seoLink.getRelationship() %>" />
+			</c:otherwise>
+		</c:choose>
 
 <%
+	}
 }
 %>
 
 <%-- Portal CSS --%>
 
-<link class="lfr-css-file" data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, themeDisplay.getPathThemeCss() + "/aui.css")) %>" id="liferayAUICSS" rel="stylesheet" type="text/css" />
+<link class="lfr-css-file" data-senna-track="temporary" href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, themeDisplay.getPathThemeCss() + "/clay.css")) %>" id="liferayAUICSS" rel="stylesheet" type="text/css" />
 
 <%
 long cssLastModifiedTime = PortalWebResourcesUtil.getLastModified(PortalWebResourceConstants.RESOURCE_TYPE_CSS);
@@ -69,13 +68,15 @@ long cssLastModifiedTime = PortalWebResourcesUtil.getLastModified(PortalWebResou
 <%
 List<Portlet> portlets = null;
 
+if (layoutTypePortlet != null) {
+	portlets = layoutTypePortlet.getAllPortlets();
+}
+
 if (layout != null) {
 	String ppid = ParamUtil.getString(request, "p_p_id");
 
 	if (layout.isTypeEmbedded() || layout.isTypePortlet()) {
-		portlets = layoutTypePortlet.getAllPortlets();
-
-		if (themeDisplay.isStateMaximized() || themeDisplay.isStatePopUp()) {
+		if (themeDisplay.isStateMaximized() || themeDisplay.isStatePopUp() || (layout.isSystem() && Objects.equals(layout.getFriendlyURL(), PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL))) {
 			if (Validator.isNotNull(ppid)) {
 				Portlet portlet = PortletLocalServiceUtil.getPortletById(company.getCompanyId(), ppid);
 
@@ -106,6 +107,21 @@ if (layout != null) {
 
 		if ((portlet != null) && !portlets.contains(portlet)) {
 			portlets.add(portlet);
+		}
+	}
+
+	Iterator<Portlet> portletsIterator = portlets.iterator();
+
+	LayoutTypeAccessPolicy layoutTypeAccessPolicy = LayoutTypeAccessPolicyTracker.getLayoutTypeAccessPolicy(layout);
+
+	while (portletsIterator.hasNext()) {
+		Portlet portlet = portletsIterator.next();
+
+		try {
+			layoutTypeAccessPolicy.checkAccessAllowedToPortlet(request, layout, portlet);
+		}
+		catch (PrincipalException pe) {
+			portletsIterator.remove();
 		}
 	}
 
@@ -141,7 +157,7 @@ if (markupHeaders != null) {
 	}
 }
 
-StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
+com.liferay.petra.string.StringBundler pageTopSB = OutputTag.getDataSB(request, WebKeys.PAGE_TOP);
 %>
 
 <c:if test="<%= pageTopSB != null %>">
@@ -150,6 +166,36 @@ StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
 	pageTopSB.writeTo(out);
 	%>
 
+</c:if>
+
+<%
+boolean portletHubRequired = false;
+
+for (Portlet portlet : portlets) {
+	List<PortletDependency> portletDependencies = portlet.getPortletDependencies();
+
+	for (PortletDependency portletDependency : portletDependencies) {
+		if (Objects.equals(portletDependency.getName(), "PortletHub") && Objects.equals(portletDependency.getScope(), "javax.portlet")) {
+			portletHubRequired = true;
+
+			break;
+		}
+	}
+
+	if (portletHubRequired) {
+		break;
+	}
+}
+%>
+
+<c:if test="<%= portletHubRequired %>">
+	<script type="text/javascript">
+		var portlet = portlet || {};
+
+		portlet.data = portlet.data || {};
+
+		portlet.data.pageRenderState = <%= RenderStateUtil.generateJSON(request, themeDisplay) %>;
+	</script>
 </c:if>
 
 <%-- Theme CSS --%>
@@ -171,7 +217,7 @@ StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
 
 		<%
 		for (Portlet portlet : portlets) {
-			PortletPreferences portletSetup = PortletPreferencesFactoryUtil.getStrictLayoutPortletSetup(layout, portlet.getPortletId());
+			PortletPreferences portletSetup = themeDisplay.getStrictLayoutPortletSetup(layout, portlet.getPortletId());
 
 			String portletSetupCss = portletSetup.getValue("portletSetupCss", StringPool.BLANK);
 		%>
@@ -206,11 +252,7 @@ StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
 
 <%!
 private String _escapeCssBlock(String css) {
-	return StringUtil.replace(
-		css,
-		new String[] {"<", "expression("},
-		new String[] {"\\3c", ""}
-	);
+	return StringUtil.replace(css, new String[] {"<", "expression("}, new String[] {"\\3c", ""});
 }
 
 private static Log _log = LogFactoryUtil.getLog("portal_web.docroot.html.common.themes.top_head_jsp");

@@ -22,8 +22,10 @@ import com.liferay.registry.ServiceTracker;
 import java.util.List;
 
 /**
- * @author David Mendez Gonzalez
+ * @author     David Mendez Gonzalez
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class TokenizerUtil {
 
 	public static Tokenizer getTokenizer() {

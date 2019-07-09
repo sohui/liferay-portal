@@ -21,11 +21,12 @@ import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.ObjectInputStream;
@@ -45,7 +46,6 @@ import jodd.typeconverter.Convert;
 /**
  * @author Brian Wing Shun Chan
  */
-@DoPrivileged
 public class BeanPropertiesImpl implements BeanProperties {
 
 	@Override
@@ -419,9 +419,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 		if (beanValue == null) {
 			return defaultValue;
 		}
-		else {
-			return beanValue;
-		}
+
+		return beanValue;
 	}
 
 	@Override
@@ -446,9 +445,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 		if (beanValue == null) {
 			return defaultValue;
 		}
-		else {
-			return beanValue;
-		}
+
+		return beanValue;
 	}
 
 	@Override
@@ -474,9 +472,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 		if (beanType == null) {
 			return defaultValue;
 		}
-		else {
-			return beanType;
-		}
+
+		return beanType;
 	}
 
 	@Override
@@ -501,9 +498,8 @@ public class BeanPropertiesImpl implements BeanProperties {
 		if (beanType == null) {
 			return defaultValue;
 		}
-		else {
-			return beanType;
-		}
+
+		return beanType;
 	}
 
 	@Override
@@ -599,20 +595,40 @@ public class BeanPropertiesImpl implements BeanProperties {
 	}
 
 	@Override
-	public void setProperties(Object bean, HttpServletRequest request) {
-		Enumeration<String> enu = request.getParameterNames();
+	public void setProperties(
+		Object bean, HttpServletRequest httpServletRequest) {
+
+		setProperties(bean, httpServletRequest, new String[0]);
+	}
+
+	@Override
+	public void setProperties(
+		Object bean, HttpServletRequest httpServletRequest,
+		String[] ignoreProperties) {
+
+		Enumeration<String> enu = httpServletRequest.getParameterNames();
 
 		while (enu.hasMoreElements()) {
 			String name = enu.nextElement();
 
-			String value = request.getParameter(name);
+			if (ArrayUtil.contains(ignoreProperties, name)) {
+				continue;
+			}
+
+			String value = httpServletRequest.getParameter(name);
+
+			if (Validator.isNull(value) &&
+				(getObjectSilent(bean, name) instanceof Number)) {
+
+				value = String.valueOf(0);
+			}
 
 			BeanUtil.setPropertyForcedSilent(bean, name, value);
 
 			if (name.endsWith("Month")) {
 				String dateParam = name.substring(0, name.lastIndexOf("Month"));
 
-				if (request.getParameter(dateParam) != null) {
+				if (httpServletRequest.getParameter(dateParam) != null) {
 					continue;
 				}
 
@@ -625,7 +641,7 @@ public class BeanPropertiesImpl implements BeanProperties {
 					continue;
 				}
 
-				Date date = getDate(dateParam, request);
+				Date date = getDate(dateParam, httpServletRequest);
 
 				if (date != null) {
 					BeanUtil.setPropertyForcedSilent(bean, dateParam, date);
@@ -649,14 +665,16 @@ public class BeanPropertiesImpl implements BeanProperties {
 		BeanUtil.setPropertyForcedSilent(bean, param, value);
 	}
 
-	protected Date getDate(String param, HttpServletRequest request) {
-		int month = ParamUtil.getInteger(request, param + "Month");
-		int day = ParamUtil.getInteger(request, param + "Day");
-		int year = ParamUtil.getInteger(request, param + "Year");
-		int hour = ParamUtil.getInteger(request, param + "Hour", -1);
-		int minute = ParamUtil.getInteger(request, param + "Minute");
+	protected Date getDate(
+		String param, HttpServletRequest httpServletRequest) {
 
-		int amPm = ParamUtil.getInteger(request, param + "AmPm");
+		int month = ParamUtil.getInteger(httpServletRequest, param + "Month");
+		int day = ParamUtil.getInteger(httpServletRequest, param + "Day");
+		int year = ParamUtil.getInteger(httpServletRequest, param + "Year");
+		int hour = ParamUtil.getInteger(httpServletRequest, param + "Hour", -1);
+		int minute = ParamUtil.getInteger(httpServletRequest, param + "Minute");
+
+		int amPm = ParamUtil.getInteger(httpServletRequest, param + "AmPm");
 
 		if (amPm == Calendar.PM) {
 			hour += 12;
@@ -666,8 +684,9 @@ public class BeanPropertiesImpl implements BeanProperties {
 			return PortalUtil.getDate(month, day, year);
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		User user = themeDisplay.getUser();
 
@@ -676,6 +695,13 @@ public class BeanPropertiesImpl implements BeanProperties {
 				month, day, year, hour, minute, user.getTimeZone(), null);
 		}
 		catch (PortalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
 			return null;
 		}
 	}

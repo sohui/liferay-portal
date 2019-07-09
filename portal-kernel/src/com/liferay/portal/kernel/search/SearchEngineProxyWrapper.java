@@ -36,16 +36,7 @@ public class SearchEngineProxyWrapper implements SearchEngine {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	@Override
-	public BooleanClauseFactory getBooleanClauseFactory() {
-		return _searchEngine.getBooleanClauseFactory();
-	}
-
-	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -68,21 +59,12 @@ public class SearchEngineProxyWrapper implements SearchEngine {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
 	public TermQueryFactory getTermQueryFactory() {
 		return _searchEngine.getTermQueryFactory();
-	}
-
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	@Override
-	public TermRangeQueryFactory getTermRangeQueryFactory() {
-		return _searchEngine.getTermRangeQueryFactory();
 	}
 
 	@Override

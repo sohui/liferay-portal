@@ -14,6 +14,7 @@
 
 package com.liferay.exportimport.kernel.lar;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
 
 import javax.portlet.PortletPreferences;
@@ -21,9 +22,7 @@ import javax.portlet.PortletPreferences;
 /**
  * A <code>PortletDataHandler</code> is a special class capable of exporting and
  * importing portlet specific data to a Liferay Archive file (LAR) when a site's
- * layouts are exported or imported. <code>PortletDataHandler</code>s are
- * defined by placing a <code>portlet-data-handler-class</code> element in the
- * <code>portlet</code> section of the <b>liferay-portlet.xml</b> file.
+ * layouts are exported or imported.
  *
  * @author Raymond Augé
  * @author Joel Kozikowski
@@ -82,6 +81,10 @@ public interface PortletDataHandler {
 			PortletDataContext portletDataContext, String portletId,
 			PortletPreferences portletPreferences)
 		throws PortletDataException;
+
+	public default String[] getClassNames() {
+		return null;
+	}
 
 	public DataLevel getDataLevel();
 
@@ -170,13 +173,79 @@ public interface PortletDataHandler {
 	public PortletDataHandlerControl[] getImportMetadataControls()
 		throws PortletDataException;
 
+	public default String getNamespace() {
+		return StringPool.BLANK;
+	}
+
 	public String getPortletId();
 
 	public int getRank();
 
+	/**
+	 * Returns the schema version for this data handler, which represents the
+	 * staging and export/import aspect of a component. The schema version is
+	 * used to perform component related validation before importing data.
+	 * Validating the schema version avoids broken data when importing, which is
+	 * typically caused by import failures due to data schema inconsistency.
+	 *
+	 * <p>
+	 * Schema versions follow the semantic versioning format
+	 * <code>major.minor.bugfix</code>. The schema version is added to the LAR
+	 * file for each application being processed. During import, the current
+	 * schema version in an environment is compared to the schema version in the
+	 * LAR file. The generic semantic versioning rules apply during this
+	 * comparison:
+	 * </p>
+	 *
+	 * <ul>
+	 * <li>
+	 * The major version has to be an exact match
+	 * </li>
+	 * <li>
+	 * The minor version is backwards compatible for the same major version
+	 * </li>
+	 * <li>
+	 * The bug fix is always compatible in the context of the two other version
+	 * numbers
+	 * </li>
+	 * </ul>
+	 *
+	 * <p>
+	 * Examples:
+	 * </p>
+	 *
+	 * <ul>
+	 * <li>
+	 * Importing 2.0.0 into 3.0.0 is <em>not</em> compatible
+	 * </li>
+	 * <li>
+	 * Importing 3.0.0 into 3.0.0 is compatible
+	 * </li>
+	 * <li>
+	 * Importing 4.6.2 into 4.9.0 is compatible
+	 * </li>
+	 * <li>
+	 * Importing 2.1.3 into 2.1.6 is compatible
+	 * </li>
+	 * </ul>
+	 *
+	 * @return the portlet data handler's schema version
+	 */
 	public String getSchemaVersion();
 
 	public String getServiceName();
+
+	/**
+	 * Returns an array of the controls defined for this data handler. These
+	 * controls enable the developer to create fine grained controls over
+	 * staging publication behavior. The controls are rendered in the publish
+	 * UI.
+	 *
+	 * @return an array of the controls defined for this data handler
+	 */
+	public default PortletDataHandlerControl[] getStagingControls() {
+		return new PortletDataHandlerControl[0];
+	}
 
 	/**
 	 * Handles any special processing of the data when the portlet is imported
@@ -197,6 +266,10 @@ public interface PortletDataHandler {
 			PortletDataContext portletDataContext, String portletId,
 			PortletPreferences portletPreferences, String data)
 		throws PortletDataException;
+
+	public default boolean isConfigurationEnabled() {
+		return true;
+	}
 
 	public boolean isDataAlwaysStaged();
 
@@ -233,7 +306,17 @@ public interface PortletDataHandler {
 	 */
 	public boolean isRollbackOnException();
 
-	public boolean isSupportsDataStrategyCopyAsNew();
+	public default boolean isStaged() {
+		return true;
+	}
+
+	public default boolean isSupportsDataStrategyCopyAsNew() {
+		return true;
+	}
+
+	public default boolean isSupportsDataStrategyMirrorWithOverwriting() {
+		return false;
+	}
 
 	public void prepareManifestSummary(PortletDataContext portletDataContext)
 		throws PortletDataException;

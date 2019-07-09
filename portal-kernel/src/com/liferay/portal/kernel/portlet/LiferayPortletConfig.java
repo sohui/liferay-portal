@@ -19,9 +19,12 @@ import com.liferay.portal.kernel.model.Portlet;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletContext;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public interface LiferayPortletConfig extends PortletConfig {
 
 	public static final String RUNTIME_OPTION_ESCAPE_XML =

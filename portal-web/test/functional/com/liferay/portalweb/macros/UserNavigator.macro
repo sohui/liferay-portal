@@ -1,0 +1,73 @@
+definition {
+
+	macro gotoContact {
+		Navigator.gotoNavUnderline(navUnderline = "Contact");
+	}
+
+	macro gotoDisplaySettings {
+		UserNavigator.gotoPreferences();
+
+		Navigator.gotoNavNested(navNested = "Display Settings");
+	}
+
+	macro gotoEdit {
+		Click.waitForMenuToggleJSClick(
+			key_rowEntry = "${rowEntry}",
+			locator1 = "Icon#TABLE_VERTICAL_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Edit");
+	}
+
+	macro gotoGeneral {
+		var key_navUnderline = "General";
+
+		if (IsElementNotPresent(locator1 = "NavUnderline#ACTIVE_NAV_UNDERLINE_LINK")) {
+			Navigator.gotoNavUnderline(navUnderline = "General");
+		}
+	}
+
+	macro gotoMemberships {
+		UserNavigator.gotoGeneral();
+
+		Navigator.gotoNavNested(navNested = "Memberships");
+	}
+
+	macro gotoOrganizations {
+		UserNavigator.gotoGeneral();
+
+		Navigator.gotoNavNested(navNested = "Organizations");
+	}
+
+	macro gotoPassword {
+		UserNavigator.gotoGeneral();
+
+		Navigator.gotoNavNested(navNested = "Password");
+	}
+
+	macro gotoPreferences {
+		Navigator.gotoNavUnderline(navUnderline = "Preferences");
+	}
+
+	macro gotoProfileAndDashboard {
+		UserNavigator.gotoGeneral();
+
+		Navigator.gotoNavNested(navNested = "Profile and Dashboard");
+	}
+
+	macro gotoRoles {
+		UserNavigator.gotoGeneral();
+
+		Navigator.gotoNavNested(navNested = "Roles");
+	}
+
+	macro gotoUser {
+		var key_userScreenName = "${userScreenName}";
+
+		AssertClick(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		Pause(locator1 = "1000");
+	}
+
+}

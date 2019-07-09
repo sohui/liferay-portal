@@ -1,2082 +1,2576 @@
-<definition>
-	<var name="password" value="test" />
-	<var name="userEmailAddress" value="test@liferay.com" />
+definition {
+
+	var password = "test";
+	var userEmailAddress = "test@liferay.com";
+
+	macro _login {
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		Type(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = "${userEmailAddress}");
+
+		Type(
+			locator1 = "TextInput#PASSWORD",
+			value1 = "${password}");
+
+		Click(locator1 = "Button#SIGN_IN");
+	}
+
+	macro _signInLocalization {
+		if ("${localization}" == "JA") {
+			var localizedSignIn = "ログイン";
+		}
+		else if ("${localization}" == "ZH") {
+			var localizedSignIn = "登录";
+		}
+		else if ("${localization}" == "ES") {
+			var localizedSignIn = "Acceder";
+		}
+		else {
+			var localizedSignIn = "Sign In";
+		}
+
+		return "${localizedSignIn}";
+	}
+
+	macro acceptEndUserLicenseAgreement {
+		if (IsElementPresent(locator1 = "Button#I_AGREE", value1 = "I Agree")) {
+			AssertClick(
+				locator1 = "Button#I_AGREE",
+				value1 = "I Agree");
+
+			AssertElementNotPresent(locator1 = "Button#I_AGREE");
+		}
+	}
+
+	macro activateCP {
+		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+		MenuItem.click(menuItem = "Inactive");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Activate",
+			rowEntry = "${userScreenName}");
+
+		Alert.viewSuccessMessage();
+
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		var key_userScreenName = "${userScreenName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizations#USER_TABLE_NAME",
+			value1 = "${userName}");
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+	}
+
+	macro addAddressViaMyAccount {
+		Click(locator1 = "NavBar#ADDRESSES");
+
+		Type(
+			locator1 = "TextInput#STREET_1",
+			value1 = "${userAddressStreet1}");
+
+		if (isSet(userAddressCountry)) {
+			Select(
+				locator1 = "Select#COUNTRY",
+				value1 = "${userAddressCountry}");
+		}
+
+		if (isSet(userAddressRegion)) {
+			Select(
+				locator1 = "Select#REGION",
+				value1 = "${userAddressRegion}");
+		}
+
+		if (isSet(userAddressPostalCode)) {
+			Type(
+				locator1 = "TextInput#POSTAL_CODE",
+				value1 = "${userAddressPostalCode}");
+		}
+
+		if (isSet(userAddressType)) {
+			Select(
+				locator1 = "Select#TYPE",
+				value1 = "${userAddressType}");
+		}
+
+		Type(
+			locator1 = "TextInput#CITY",
+			value1 = "${userAddressCity}");
+
+		Click(locator1 = "Radio#PRIMARY");
+
+		Check(locator1 = "Checkbox#MAILING");
+
+		Click(locator1 = "Button#SAVE");
+
+		Alert.viewSuccessMessage();
+
+		SelectFrame(value1 = "relative=top");
+	}
 
-	<command name="activateCP">
-		<execute function="Click" locator1="Dropdown#FILTER" />
+	macro addContactInformation {
+		if (isSet(contactType)) {
+			var key_contactType = "${contactType}";
 
-		<var name="key_filterValue" value="Inactive" />
-
-		<execute function="AssertClick" locator1="Dropdown#FILTER_VALUES" value1="Inactive" />
-
-		<var name="key_rowEntry" value="${userScreenName}" />
-
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#ACTIVATE" value1="Activate" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-	</command>
-
-	<command name="addAdditionalEmailAddressViaMyAccount">
-		<execute function="Click" locator1="NavListItem#ADDITIONAL_EMAIL_ADDRESSES" />
-
-		<execute function="Type" locator1="MyAccount#ADDITIONAL_EMAIL_ADDRESSES_EMAIL_ADDRESS_FIELD" value1="${userAdditionalEmailAddress}" />
-
-		<execute function="Select" locator1="MyAccount#ADDITIONAL_EMAIL_ADDRESSES_TYPE_SELECT" value1="Email Address" />
-
-		<execute function="Click" locator1="MyAccount#ADDITIONAL_EMAIL_ADDRESSES_PRIMARY_RADIO_BUTTON" />
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addAddressViaMyAccount">
-		<execute function="Click" locator1="NavListItem#ADDRESSES" />
-
-		<execute function="Type" locator1="TextInput#STREET_1" value1="${userAddressStreet1}" />
-
-		<if>
-			<isset var="userAddressCountry" />
-			<then>
-				<execute function="Select" locator1="Select#COUNTRY" value1="${userAddressCountry}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userAddressRegion" />
-			<then>
-				<execute function="Select" locator1="Select#REGION" value1="${userAddressRegion}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userAddressPostalCode" />
-			<then>
-				<execute function="Type" locator1="TextInput#POSTAL_CODE" value1="${userAddressPostalCode}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userAddressType" />
-			<then>
-				<execute function="Select" locator1="Select#TYPE" value1="${userAddressType}" />
-			</then>
-		</if>
-
-		<execute function="Type" locator1="TextInput#CITY" value1="${userAddressCity}" />
-		<execute function="Click" locator1="Radio#PRIMARY" />
-		<execute function="Check" locator1="Checkbox#MAILING" />
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addCommentViaMyAccount">
-		<execute function="Click" locator1="NavListItem#COMMENTS" />
-		<execute function="Type" locator1="MyAccount#COMMENTS_FIELD" value1="${userIntroduction}" />
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addCP">
-		<execute function="Click" locator1="Button#PLUS" />
-
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD" value1="${userScreenName}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD" value1="${userFirstName}" />
-
-		<if>
-			<isset var="userBirthday" />
-			<then>
-				<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_BIRTHDAY_FIELD" value1="${userBirthday}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userMiddleName" />
-			<then>
-				<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_MIDDLE_NAME_FIELD" value1="${userMiddleName}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userGender" />
-			<then>
-				<execute function="Select" locator1="UsersAndOrganizationsEditUser#DETAILS_GENDER_SELECT" value1="${userGender}" />
-			</then>
-		</if>
-
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD" value1="${userLastName}" />
-
-		<execute function="AssertClick" locator1="Button#SUBMIT" value1="Save" />
-
-		<if>
-			<equals arg1="${userEmailAddressVariation}" arg2="Invalid" />
-			<then>
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#EMAIL_ADDRESS_FIELD_ALERT" value1="Please enter a valid email address." />
-			</then>
-			<elseif>
-				<equals arg1="${userEmailAddressVariation}" arg2="Null" />
-				<then>
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#EMAIL_ADDRESS_FIELD_ALERT" value1="This field is required." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userEmailAddressVariation}" arg2="Root" />
-				<then>
-					<execute macro="Alert#viewRequestFailedToComplete" />
-
-					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a valid email address." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userScreenNameVariation}" arg2="Invalid" />
-				<then>
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#SCREEN_NAME_FIELD_ALERT" value1="The screen name cannot be an email address or a reserved word, such as postfix. It must contain only alphanumeric or the following special characters: -._." />
-				</then>
-			</elseif>
-			<else>
-				<execute macro="Alert#viewSuccessMessage" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD" value1="${userScreenName}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD" value1="${userFirstName}" />
-
-				<if>
-					<isset var="userMiddleName" />
-					<then>
-						<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_MIDDLE_NAME_FIELD" value1="${userMiddleName}" />
-					</then>
-				</if>
-
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD" value1="${userLastName}" />
-			</else>
-		</if>
-	</command>
-
-	<command name="addCreateAccountPG">
-		<execute macro="User#createAccount">
-			<var name="userEmailAddress" value="${userEmailAddress}" />
-			<var name="userFirstName" value="${userFirstName}" />
-			<var name="userLastName" value="${userLastName}" />
-			<var name="userScreenName" value="${userScreenName}" />
-		</execute>
-
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
-
-	<command name="addInstantMessengerViaMyAccount">
-		<execute function="Click" locator1="NavListItem#INSTANT_MESSENGER" />
-
-		<if>
-			<isset var="userInstantMessengerJabber" />
-			<then>
-				<execute function="Type" locator1="TextInput#JABBER" value1="${userInstantMessengerJabber}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userInstantMessengerSkype" />
-			<then>
-				<execute function="Type" locator1="TextInput#SKYPE" value1="${userInstantMessengerSkype}" />
-			</then>
-		</if>
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addMultipleCP">
-		<for list="${usersEmailsList}" param="userEmail" >
-			<var name="userEmailAddress" value="${userEmail}" />
-			<var method="StringUtil#replace('${userEmail}', '@liferay.com', '')" name="userName" />
-
-			<execute macro="ProductMenu#gotoControlPanelUsers">
-				<var name="portlet" value="Users and Organizations" />
-			</execute>
-
-			<execute macro="User#addCP">
-				<var name="userBirthday" value="${userBirthday}" />
-				<var name="userEmailAddress" value="${userEmailAddress}" />
-				<var name="userEmailAddressVariation" value="${userEmailAddressVariation}" />
-				<var name="userFirstName" value="${userName}" />
-				<var name="userGender" value="${userGender}" />
-				<var name="userLastName" value="${userName}" />
-				<var name="userMiddleName" value="${userMiddleName}" />
-				<var name="userScreenName" value="${userName}" />
-				<var name="userScreenNameVariation" value="${userScreenNameVariation}" />
-			</execute>
-		</for>
-	</command>
-
-	<command name="addPersonalSiteCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Personal Site Template" />
-		</execute>
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#PERSONAL_SITE_PRIVATE_PAGES_LABEL" value1="My Dashboard" />
-
-		<execute function="Select" locator1="UsersAndOrganizationsEditUser#PERSONAL_SITE_PRIVATE_PAGES" value1="${siteTemplateName}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="addPhoneNumbersViaMyAccount">
-		<execute function="Click" locator1="NavListItem#PHONE_NUMBERS" />
-
-		<execute function="Type" locator1="TextInput#NUMBER" value1="${userPhoneNumberNumber}" />
-
-		<if>
-			<isset var="userPhoneNumberExtension" />
-			<then>
-				<execute function="Type" locator1="TextInput#EXTENSION" value1="${userPhoneNumberExtension}" />
-			</then>
-		</if>
-
-		<execute function="Select" locator1="MyAccount#PHONE_NUMBERS_TYPE_SELECT" value1="${userPhoneNumberType}" />
-
-		<execute function="Click" locator1="MyAccount#PHONE_NUMBERS_PRIMARY_RADIO_BUTTON" />
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addProfilePictureViaMyAccount">
-		<execute function="Click" locator1="Button#CHANGE" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
-		<execute function="SelectFrame" locator1="IFrame#UPLOAD_IMAGE" />
-
-		<execute function="UploadCommonFile" locator1="UploadImage#BROWSE_BUTTON" value1="${imageFileName}" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
-		<execute function="SelectFrame" locator1="IFrame#UPLOAD_IMAGE" />
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="Pause" locator1="1000" />
-	</command>
-
-	<command name="addProjectViaMyAccount">
-		<execute function="Click" locator1="NavListItem#PROJECTS" />
-
-		<execute function="Type" locator1="MyAccount#PROJECTS_TITLE_FIELD" value1="${userProjectTitle}" />
-
-		<execute function="Select" locator1="MyAccount#PROJECTS_START_DATE_MONTH_SELECT" value1="${userProjectStartDateMonth}" />
-
-		<execute function="Select" locator1="MyAccount#PROJECTS_START_DATE_YEAR_SELECT" value1="${userProjectStartDateYear}" />
-
-		<execute function="Check" locator1="MyAccount#PROJECTS_CURRENT_CHECKBOX" />
-
-		<if>
-			<isset var="userProjectDescription" />
-			<then>
-				<execute function="Type" locator1="MyAccount#PROJECTS_DESCRIPTION_FIELD" value1="${userProjectDescription}" />
-			</then>
-		</if>
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addReservedEmailAddressCP">
-		<execute function="Click" locator1="Button#PLUS" />
-
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD" value1="${userScreenName}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD" value1="${userFirstName}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD" value1="${userLastName}" />
-
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewRequestFailedToComplete" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The email address you requested is reserved." />
-	</command>
-
-	<command name="addReservedScreenNameCP">
-		<execute function="Click" locator1="Button#PLUS" />
-
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD" value1="${userScreenName}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD" value1="${userFirstName}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD" value1="${userLastName}" />
-
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewRequestFailedToComplete" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The screen name you requested is reserved." />
-	</command>
-
-	<command name="addScreenNameNumberSiteIdCP">
-		<execute function="Click" locator1="Button#PLUS" />
-
-		<execute function="Paste" locator1="UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD" value1="${siteID}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD" value1="${userFirstName}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD" value1="${userLastName}" />
-
-		<execute macro="Button#clickSave" />
-
-		<execute macro="Alert#viewRequestFailedToComplete" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The screen name cannot contain only numeric values." />
-	</command>
-
-	<command name="addSMSViaMyAccount">
-		<execute function="Click" locator1="NavListItem#SMS" />
-
-		<execute function="Type" locator1="MyAccount#SMS_SMS_FIELD" value1="${userSMS}" />
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addSocialNetworkViaMyAccount">
-		<execute function="Click" locator1="NavListItem#SOCIAL_NETWORK" />
-
-		<if>
-			<isset var="userSocialNetworkFacebook" />
-			<then>
-				<execute function="Type" locator1="TextInput#FACEBOOK" value1="${userSocialNetworkFacebook}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userSocialNetworkTwitter" />
-			<then>
-				<execute function="Type" locator1="TextInput#TWITTER" value1="${userSocialNetworkTwitter}" />
-			</then>
-		</if>
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addTagViaMyAccount">
-		<execute function="Click" locator1="NavListItem#CATEGORIZATION" />
-
-		<execute function="Type" locator1="AssetCategorization#CATEGORIES_SEARCH_FIELD" value1="${userTag}" />
-
-		<execute function="Click" locator1="Button#ADD" />
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="addWebsiteViaMyAccount">
-		<execute function="Click" locator1="NavListItem#WEBSITES" />
-
-		<execute function="Type" locator1="MyAccount#WEBSITES_URL_FIELD" value1="${userWebsiteURL}" />
-
-		<execute function="Select" locator1="MyAccount#WEBSITES_TYPE_SELECT" value1="${userWebsiteType}" />
-
-		<execute function="Click" locator1="MyAccount#WEBSITES_PRIMARY_RADIO_BUTTON" />
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="advancedSearchCP">
-		<execute function="Click" locator1="NavBar#SEARCH_TOGGLE_ADVANCED" />
-
-		<if>
-			<equals arg1="${userAdvancedSearch}" arg2="First Name" />
-			<then>
-				<execute function="Type" locator1="AdvancedSearch#FIRST_NAME_FIELD" value1="${userFirstName}" />
-
-				<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-				<execute function="Type" locator1="AdvancedSearch#FIRST_NAME_FIELD" value1="${userFirstName}1" />
-
-				<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-				<execute function="AssertTextEquals" locator1="Message#INFO" value1="No users were found." />
-			</then>
-			<elseif>
-				<equals arg1="${userAdvancedSearch}" arg2="Middle Name" />
-				<then>
-					<execute function="Type" locator1="AdvancedSearch#MIDDLE_NAME_FIELD" value1="${userMiddleName}" />
-
-					<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<execute function="Type" locator1="AdvancedSearch#MIDDLE_NAME_FIELD" value1="${userMiddleName}1" />
-
-					<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-					<execute function="AssertTextEquals" locator1="Message#INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userAdvancedSearch}" arg2="Last Name" />
-				<then>
-					<execute function="Type" locator1="AdvancedSearch#LAST_NAME_FIELD" value1="${userLastName}" />
-
-					<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<execute function="Type" locator1="AdvancedSearch#LAST_NAME_FIELD" value1="${userLastName}1" />
-
-					<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-					<execute function="AssertTextEquals" locator1="Message#INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userAdvancedSearch}" arg2="Screen Name" />
-				<then>
-					<execute function="Type" locator1="AdvancedSearch#SCREEN_NAME_FIELD" value1="${userScreenName}" />
-
-					<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<execute function="Type" locator1="AdvancedSearch#SCREEN_NAME_FIELD" value1="${userScreenName}1" />
-
-					<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-					<execute function="AssertTextEquals" locator1="Message#INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userAdvancedSearch}" arg2="Email Address" />
-				<then>
-					<execute function="Type" locator1="AdvancedSearch#EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
-
-					<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<execute function="Type" locator1="AdvancedSearch#EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}1" />
-
-					<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-					<execute function="AssertTextEquals" locator1="Message#INFO" value1="No users were found." />
-				</then>
-			</elseif>
-		</if>
-	</command>
-
-	<command name="advancedSearchViaFriendsDirectoryPG">
-		<execute function="Click" locator1="PGFriendsdirectory#BASIC_SEARCH_ADVANCED" />
-
-		<if>
-			<equals arg1="${searchField}" arg2="First Name" />
-			<then>
-				<execute function="Type" locator1="TextInput#FIRST_NAME" value1="${searchTerm}" />
-			</then>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Middle Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#MIDDLE_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Last Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#LAST_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Screen Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#SCREEN_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Email Address" />
-				<then>
-					<execute function="Type" locator1="PGFriendsdirectory#ADVANCED_SEARCH_EMAIL_ADDRESS_FIELD" value1="${searchTerm}" />
-				</then>
-			</elseif>
-		</if>
-
-		<execute function="AssertClick" locator1="PGFriendsdirectory#BASIC_SEARCH_BUTTON" value1="Search" />
-
-		<if>
-			<equals arg1="${searchNoResults}" arg2="true" />
-			<then>
-				<execute function="AssertTextEquals" locator1="PGFriendsdirectory#INFO_MESSAGE" value1="No users were found." />
-
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertElementNotPresent" locator1="PGFriendsdirectory#USER_TABLE_FIRST_NAME" value1="${userFirstName}" />
-				<execute function="AssertElementNotPresent" locator1="PGFriendsdirectory#USER_TABLE_LAST_NAME" value1="${userLastName}" />
-				<execute function="AssertElementNotPresent" locator1="PGFriendsdirectory#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-			</then>
-			<else>
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertTextEquals" locator1="PGFriendsdirectory#USER_TABLE_FIRST_NAME" value1="${userFirstName}" />
-				<execute function="AssertTextEquals" locator1="PGFriendsdirectory#USER_TABLE_LAST_NAME" value1="${userLastName}" />
-				<execute function="AssertTextEquals" locator1="PGFriendsdirectory#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-			</else>
-		</if>
-	</command>
-
-	<command name="advancedSearchViaMySitesDirectoryPG" >
-		<execute function="Click" locator1="PGMysitesdirectory#BASIC_SEARCH_ADVANCED" />
-
-		<if>
-			<equals arg1="${searchField}" arg2="First Name" />
-			<then>
-				<execute function="Type" locator1="TextInput#FIRST_NAME" value1="${searchTerm}" />
-			</then>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Middle Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#MIDDLE_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Last Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#LAST_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Screen Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#SCREEN_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Email Address" />
-				<then>
-					<execute function="Type" locator1="PGMysitesdirectory#ADVANCED_SEARCH_EMAIL_ADDRESS_FIELD" value1="${searchTerm}" />
-				</then>
-			</elseif>
-		</if>
-
-		<execute function="AssertClick" locator1="PGMysitesdirectory#BASIC_SEARCH_BUTTON" value1="Search" />
-
-		<if>
-			<equals arg1="${searchNoResults}" arg2="true" />
-			<then>
-				<execute function="AssertTextEquals" locator1="PGMysitesdirectory#INFO_MESSAGE" value1="No users were found." />
-
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertElementNotPresent" locator1="PGMysitesdirectory#USER_TABLE_FIRST_NAME" value1="${userFirstName}" />
-				<execute function="AssertElementNotPresent" locator1="PGMysitesdirectory#USER_TABLE_LAST_NAME" value1="${userLastName}" />
-				<execute function="AssertElementNotPresent" locator1="PGMysitesdirectory#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-			</then>
-			<else>
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertTextEquals" locator1="PGMysitesdirectory#USER_TABLE_FIRST_NAME" value1="${userFirstName}" />
-				<execute function="AssertTextEquals" locator1="PGMysitesdirectory#USER_TABLE_LAST_NAME" value1="${userLastName}" />
-				<execute function="AssertTextEquals" locator1="PGMysitesdirectory#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-			</else>
-		</if>
-	</command>
-
-	<command name="advancedSearchViaPortalDirectoryPG" >
-		<execute function="Click" locator1="PGPortaldirectory#BASIC_SEARCH_ADVANCED" />
-
-		<if>
-			<equals arg1="${searchField}" arg2="First Name" />
-			<then>
-				<execute function="Type" locator1="TextInput#FIRST_NAME" value1="${searchTerm}" />
-			</then>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Middle Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#MIDDLE_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Last Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#LAST_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Screen Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#SCREEN_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Email Address" />
-				<then>
-					<execute function="Type" locator1="PGPortaldirectory#ADVANCED_SEARCH_EMAIL_ADDRESS_FIELD" value1="${searchTerm}" />
-				</then>
-			</elseif>
-		</if>
-
-		<execute function="AssertClick" locator1="NavBar#BASIC_SEARCH_BUTTON" value1="Search" />
-
-		<if>
-			<equals arg1="${searchNoResults}" arg2="true" />
-			<then>
-				<execute function="AssertTextEquals" locator1="PGPortaldirectory#INFO_MESSAGE" value1="No users were found." />
-
-				<var name="key_userFirstName" value="${userFirstName}" />
-
-				<execute function="AssertElementNotPresent" locator1="PortalDirectory#USER_TABLE_FIRST_NAME" value1="${userFirstName}" />
-
-				<var name="key_userLastName" value="${userLastName}" />
-
-				<execute function="AssertElementNotPresent" locator1="PortalDirectory#USER_TABLE_LAST_NAME" value1="${userLastName}" />
-
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertElementNotPresent" locator1="PortalDirectory#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-			</then>
-			<else>
-				<var name="key_userFirstName" value="${userFirstName}" />
-
-				<execute function="AssertTextEquals" locator1="PortalDirectory#USER_TABLE_FIRST_NAME" value1="${userFirstName}" />
-
-				<var name="key_userLastName" value="${userLastName}" />
-
-				<execute function="AssertTextEquals" locator1="PortalDirectory#USER_TABLE_LAST_NAME" value1="${userLastName}" />
-
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertTextEquals" locator1="PortalDirectory#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-			</else>
-		</if>
-	</command>
-
-	<command name="advancedSearchViaSiteMembersDirectoryPG" >
-		<execute function="Click" locator1="PGSitemembersdirectory#BASIC_SEARCH_ADVANCED" />
-
-		<if>
-			<equals arg1="${searchField}" arg2="First Name" />
-			<then>
-				<execute function="Type" locator1="TextInput#FIRST_NAME" value1="${searchTerm}" />
-			</then>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Middle Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#MIDDLE_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Last Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#LAST_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Screen Name" />
-				<then>
-					<execute function="Type" locator1="TextInput#SCREEN_NAME" value1="${searchTerm}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${searchField}" arg2="Email Address" />
-				<then>
-					<execute function="Type" locator1="PGSitemembersdirectory#ADVANCED_SEARCH_EMAIL_ADDRESS_FIELD" value1="${searchTerm}" />
-				</then>
-			</elseif>
-		</if>
-
-		<execute function="AssertClick" locator1="PGSitemembersdirectory#BASIC_SEARCH_BUTTON" value1="Search" />
-
-		<if>
-			<equals arg1="${searchNoResults}" arg2="true" />
-			<then>
-				<execute function="AssertTextEquals" locator1="PGSitemembersdirectory#INFO_MESSAGE" value1="No users were found." />
-
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertElementNotPresent" locator1="PGSitemembersdirectory#USER_TABLE_FIRST_NAME" value1="${userFirstName}" />
-				<execute function="AssertElementNotPresent" locator1="PGSitemembersdirectory#USER_TABLE_LAST_NAME" value1="${userLastName}" />
-				<execute function="AssertElementNotPresent" locator1="PGSitemembersdirectory#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-			</then>
-			<else>
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertTextEquals" locator1="PGSitemembersdirectory#USER_TABLE_FIRST_NAME" value1="${userFirstName}" />
-				<execute function="AssertTextEquals" locator1="PGSitemembersdirectory#USER_TABLE_LAST_NAME" value1="${userLastName}" />
-				<execute function="AssertTextEquals" locator1="PGSitemembersdirectory#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-			</else>
-		</if>
-	</command>
-
-	<command name="assignOrgRoleCP">
-		<execute macro="User#searchCP">
-			<var name="searchTerm" value="${userScreenName}" />
-		</execute>
-
-		<var name="key_rowEntry" value="${userScreenName}" />
-
-		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Roles" />
-		</execute>
-
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#ROLES_ORGANIZATION_ROLES_SELECT_LINK" value1="Select" />
-
-		<execute function="SelectFrame" locator1="CPUsersandorganizationsUser#ROLES_ORGANIZATION_SELECT_IFRAME" />
-
-		<var name="key_roleName" value="${roleName}" />
-
-		<execute function="AssertTextEquals" locator1="CPUsersandorganizationsUser#ROLES_ORGANIZATION_SELECT_ROLE_IFRAME_TITLE" value1="${roleName}" />
-
-		<execute function="AssertClick" locator1="CPUsersandorganizationsUser#ROLES_ORGANIZATION_SELECT_CHOOSE_BUTTON" value1="Choose" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#ROLES_ORGANIZATION_ROLES_TABLE_TITLE" value1="${roleName}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="assignRegularRoleCP">
-		<execute macro="User#searchCP">
-			<var name="searchTerm" value="${userScreenName}" />
-		</execute>
-
-		<var name="key_rowEntry" value="${userScreenName}" />
-
-		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-
-		<execute function="Pause" locator1="5000" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Roles" />
-		</execute>
-
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_SELECT_LINK" value1="Select" />
-
-		<execute function="Pause" locator1="5000" />
-
-		<execute function="SelectFrame" locator1="CPUsersandorganizationsUser#ROLES_REGULAR_SELECT_IFRAME" />
-
-		<var name="key_roleName" value="${roleName}" />
-
-		<execute function="AssertTextEquals" locator1="CPUsersandorganizationsUser#ROLES_REGULAR_ROLE_TITLE" value1="${roleName}" />
-
-		<execute function="AssertClick" locator1="CPUsersandorganizationsUser#ROLES_REGULAR_SELECT_CHOOSE_BUTTON" value1="Choose" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_TABLE_TITLE" value1="${roleName}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="assignSiteRoleCP">
-		<execute macro="User#searchCP">
-			<var name="searchTerm" value="${userScreenName}" />
-		</execute>
-
-		<var name="key_rowEntry" value="${userScreenName}" />
-
-		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Roles" />
-		</execute>
-
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#ROLES_SITE_ROLES_SELECT_LINK" value1="Select" />
-
-		<execute function="SelectFrame" locator1="CPUsersandorganizationsUser#ROLES_SITE_ROLES_IFRAME" />
-
-		<var name="key_siteRoleName" value="${siteRoleName}" />
-
-		<execute function="AssertTextEquals" locator1="CPUsersandorganizationsUser#ROLES_SITE_ROLES_TITLE" value1="${siteRoleName}" />
-
-		<execute function="AssertClick" locator1="CPUsersandorganizationsUser#ROLES_SITE_ROLES_IFRAME_CHOOSE_BUTTON" value1="Choose" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#ROLES_SITE_ROLES_TABLE_TITLE" value1="${siteRoleName}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="attemptImpersonateCP">
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${userScreenName}" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
-
-		<var name="key_rowEntry" value="${userScreenName}" />
-
-		<if>
-			<isset var="notAdmin" />
-			<then>
-				<execute function="AssertElementNotPresent" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-				<execute function="AssertElementNotPresent" locator1="UsersAndOrganizations#USER_TABLE_IMPERSONATE" />
-			</then>
-			<else>
-				<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-				<execute function="AssertElementNotPresent" locator1="MenuItem#IMPERSONATE_USER" />
-			</else>
-		</if>
-	</command>
-
-	<command name="basicSearchCP">
-		<if>
-			<equals arg1="${userBasicSearch}" arg2="Basic" />
-			<then>
-				<execute function="Type" locator1="TextInput#SEARCH" value1="${userScreenName}" />
-
-				<execute function="Click" locator1="Button#SUBMIT" />
-
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-				<execute function="Type" locator1="TextInput#SEARCH" value1="user1*" />
-
-				<execute function="Click" locator1="Button#SUBMIT" />
-
-				<execute function="AssertTextPresent" locator1="Message#EMPTY_INFO" value1="No users were found." />
-			</then>
-			<elseif>
-				<equals arg1="${userBasicSearch}" arg2="Full Name" />
-				<then>
-					<var name="fullName"><![CDATA["${userFirstName} ${userLastName}"]]></var>
-
-					<execute function="Type" locator1="TextInput#SEARCH" value1="${fullName}" />
-
-					<execute function="Click" locator1="Button#SUBMIT" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-					<var name="fullName"><![CDATA["${userFirstName} 1 ${userLastName}"]]></var>
-
-					<execute function="Type" locator1="TextInput#SEARCH" value1="${fullName}" />
-
-					<execute function="Click" locator1="Button#SUBMIT" />
-
-					<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userBasicSearch}" arg2="Quotes" />
-				<then>
-					<var name="quotes"><![CDATA["${userScreenName}"]]></var>
-
-					<execute function="Type" locator1="TextInput#SEARCH" value1="${quotes}" />
-
-					<execute function="Click" locator1="Button#SUBMIT" />
-
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userName}" />
-					<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-				</then>
-			</elseif>
-		</if>
-	</command>
-
-	<command name="changePasswordCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Password" />
-		</execute>
-
-		<if>
-			<equals arg1="${userPassword}" arg2="Invalid" />
-			<then>
-				<execute function="Type" locator1="TextInput#CURRENT_PASSWORD" value1="" />
-				<execute function="Type" locator1="TextInput#NEW_PASSWORD" value1="test1" />
-				<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="test1" />
-
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewRequestFailedToComplete" />
-
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The password cannot be blank. Please enter a password." />
-
-				<execute macro="User#logoutPG" />
-
-				<execute macro="User#loginUserPG">
-					<var name="password" value="test" />
-					<var name="userEmailAddress" value="${userEmailAddress}" />
-				</execute>
-
-				<execute macro="User#logoutUserPG" />
-
-				<execute macro="User#loginPG">
-					<var name="authenticationMethod" value="${authenticationMethod}" />
-					<var name="nodePort" value="${nodePort}" />
-					<var name="password" value="test" />
-					<var name="resetPassword" value="${resetPassword}" />
-					<var name="syntaxCheckingEnabled" value="${syntaxCheckingEnabled}" />
-					<var name="userEmailAddress" value="test@liferay.com" />
-					<var name="userScreenName" value="${userScreenName}" />
-				</execute>
-			</then>
-			<else>
-				<execute function="Type" locator1="TextInput#CURRENT_PASSWORD" value1="test" />
-				<execute function="Type" locator1="TextInput#NEW_PASSWORD" value1="test1" />
-				<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="test1" />
-
-				<execute macro="Button#clickSave" />
-
-				<execute macro="Alert#viewSuccessMessage" />
-
-				<execute macro="User#logoutPG" />
-
-				<execute macro="User#loginUserPG">
-					<var name="password" value="test1" />
-					<var name="userEmailAddress" value="${userEmailAddress}" />
-				</execute>
-
-				<execute macro="User#logoutUserPG" />
-
-				<execute macro="User#loginPG">
-					<var name="authenticationMethod" value="${authenticationMethod}" />
-					<var name="nodePort" value="${nodePort}" />
-					<var name="password" value="test" />
-					<var name="resetPassword" value="${resetPassword}" />
-					<var name="syntaxCheckingEnabled" value="${syntaxCheckingEnabled}" />
-					<var name="userEmailAddress" value="test@liferay.com" />
-					<var name="userScreenName" value="${userScreenName}" />
-				</execute>
-			</else>
-		</if>
-	</command>
-
-	<command name="createAccount">
-		<execute function="AssertClick" locator1="UserBar#USER_SIGN_IN" value1="Sign In" />
-
-		<execute function="AssertClick" locator1="Link#CREATE_ACCOUNT" value1="Create Account" />
-
-		<execute function="Type" locator1="TextInput#FIRST_NAME" value1="${userFirstName}" />
-		<execute function="Type" locator1="TextInput#LAST_NAME" value1="${userLastName}" />
-		<execute function="Type" locator1="TextInput#SCREEN_NAME" value1="${userScreenName}" />
-		<execute function="Type" locator1="TextInput#EMAIL_ADDRESS" value1="${userEmailAddress}" />
-
-		<execute macro="Button#clickSave" />
-	</command>
-
-	<command name="deactivateCP">
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${userFirstName}" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
-
-		<if>
-			<equals arg1="${deactivateType}" arg2="Actions" />
-			<then>
-				<var name="key_rowEntry" value="${userScreenName}" />
-
-				<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-				<execute function="AssertClickNoError" locator1="MenuItem#DEACTIVATE" value1="Deactivate" />
-
-				<execute function="Confirm" value1="Are you sure you want to deactivate this?" />
-
-				<execute macro="Alert#viewSuccessMessage" />
-			</then>
-			<elseif>
-				<equals arg1="${deactivateType}" arg2="Deactivate Button" />
-				<then>
-					<var name="key_userScreenName" value="${userScreenName}" />
-
-					<execute function="Check" locator1="Checkbox#SELECT_ALL" />
-
-					<execute function="AssertClickNoError" locator1="Button#DEACTIVATE" value1="Deactivate" />
-
-					<execute function="Confirm" value1="Are you sure you want to deactivate the selected users?" />
-
-					<execute macro="Alert#viewSuccessMessage" />
-				</then>
-			</elseif>
-			<elseif>
-				<condition function="IsElementPresent" locator1="Checkbox#SELECT_ALL" />
-				<then>
-					<execute function="Click" locator1="Checkbox#SELECT_ALL" />
-
-					<if>
-						<condition function="IsElementPresent" locator1="Button#DEACTIVATE" />
-						<then>
-							<execute function="ClickNoError" locator1="Button#DEACTIVATE" />
-						</then>
-					</if>
-
-					<execute function="Confirm" value1="Are you sure you want to deactivate the selected users?" />
-
-					<execute macro="Alert#viewSuccessMessage" />
-				</then>
-			</elseif>
-		</if>
-
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-	</command>
-
-	<command name="deleteCP">
-		<if>
-			<condition function="IsElementPresent" locator1="Select#USER_STATUS" />
-			<then>
-				<execute function="Select" locator1="Select#USER_STATUS" value1="Inactive" />
-				<if>
-					<condition function="IsElementPresent" locator1="Checkbox#SELECT_ALL" />
-					<then>
-						<execute function="Click" locator1="Checkbox#SELECT_ALL" />
-
-						<execute function="AssertClickNoError" locator1="Button#DELETE" value1="Delete" />
-
-						<execute function="Confirm" value1="Are you sure you want to permanently delete the selected users?" />
-
-						<execute macro="Alert#viewSuccessMessage" />
-					</then>
-				</if>
-			</then>
-		</if>
-	</command>
-
-	<command name="deleteProfilePictureViaMyAccount">
-		<execute function="Click" locator1="Button#DELETE" />
-		<execute function="Pause" value1="1000" />
-		<execute function="Click" locator1="Button#SAVE" />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="deleteTagViaMyAccount">
-		<execute function="Click" locator1="NavListItem#CATEGORIZATION" />
-
-		<if>
-			<isset var="userTagList" />
-			<then>
-				<for list="${userTagList}" param="userTag" >
-					<var name="key_userTag" value="${userTag}" />
-
-					<execute function="Click" locator1="AssetCategorization#TAG_REMOVE" />
-				</for>
-			</then>
-			<else>
-				<var name="key_userTag" value="${userTag}" />
-
-				<execute function="Click" locator1="AssetCategorization#TAG_REMOVE" />
-			</else>
-		</if>
-
-		<execute function="Click" locator1="Button#SAVE" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="editAnnouncementNotificationsViaMyAccount">
-		<execute function="AssertClick" locator1="NavListItem#ANNOUNCEMENTS" value1="Announcements" />
-
-		<var name="key_announcementType" value="${announcementType}" />
-		<var name="key_notificationType" value="${notificationType}" />
-
-		<execute function="Check" locator1="MyAccount#ANNOUNCEMENTS_NOTIFICATION_CHECKBOX" />
-
-		<execute macro="PortletEntry#save" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="editDetailsViaMyAccount">
-		<execute function="AssertElementPresent#assertElementPresent" locator1="TextInput#FIRST_NAME" />
-
-		<if>
-			<isset var="userFirstNameEdit" />
-			<then>
-				<execute function="Type" locator1="TextInput#FIRST_NAME" value1="${userFirstNameEdit}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userLastNameEdit" />
-			<then>
-				<execute function="Type" locator1="TextInput#LAST_NAME" value1="${userLastNameEdit}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userMiddleNameEdit" />
-			<then>
-				<execute function="Type" locator1="TextInput#MIDDLE_NAME" value1="${userMiddleNameEdit}" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="userScreenNameEdit" />
-			<then>
-				<execute function="Type" locator1="TextInput#SCREEN_NAME" value1="${userScreenNameEdit}" />
-			</then>
-		</if>
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="editDisplaySettingsCP">
-		<execute macro="User#searchCP">
-			<var name="searchTerm" value="${userScreenName}" />
-		</execute>
-
-		<var name="key_rowEntry" value="${userScreenName}" />
-
-		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-
-		<execute function="Select" locator1="CPUsersandorganizationsUser#LANGUAGE_SELECT" value1="${languageName}" />
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="editEmailViaMyAccount">
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
-		</execute>
-
-		<execute function="Type" locator1="TextInput#EMAIL_ADDRESS" value1="${userEmailAddress}" />
-
-		<execute macro="Button#clickSave" />
-
-		<execute function="AssertTextEquals" locator1="Message#SUCCESS_1" value1="Your email verification code has been sent and the new email address will be applied to your account once it is verified." />
-
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
-
-	<command name="editPasswordCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="Pause" locator1="3000" />
-
-		<if>
-			<not>
-				<isset var="newPassword" />
-			</not>
-			<then>
-				<var name="newPassword" value="password" />
-			</then>
-		</if>
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Password" />
-		</execute>
-
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#PASSWORD_NEW_PASSWORD_FIELD" value1="${newPassword}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#PASSWORD_ENTER_AGAIN_FIELD" value1="${newPassword}" />
-
-		<execute macro="PortletEntry#save" />
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginPG">
-			<var name="authenticationMethod" value="${authenticationMethod}" />
-			<var name="nodePort" value="${nodePort}" />
-			<var name="password" value="${newPassword}" />
-			<var name="resetPassword" value="${resetPassword}" />
-			<var name="syntaxCheckingEnabled" value="${syntaxCheckingEnabled}" />
-			<var name="userEmailAddress" value="${userEmailAddress}" />
-			<var name="userScreenName" value="${userScreenName}" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginPG">
-			<var name="authenticationMethod" value="${authenticationMethod}" />
-			<var name="nodePort" value="${nodePort}" />
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-			<var name="userScreenName" value="${userScreenName}" />
-		</execute>
-	</command>
-
-	<command name="editPasswordInvalidCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<if>
-			<not>
-				<isset var="newPassword" />
-			</not>
-			<then>
-				<var name="newPassword" value="password" />
-			</then>
-		</if>
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Password" />
-		</execute>
-
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#PASSWORD_NEW_PASSWORD_FIELD" value1="${newPassword}" />
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#PASSWORD_ENTER_AGAIN_FIELD" value1="${newPassword}" />
-
-		<execute macro="Button#clickSave" />
-
-		<if>
-			<equals arg1="${trivialPassword}" arg2="true" />
-			<then>
-				<execute macro="Alert#viewRequestFailedToComplete" />
-
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="That password uses common words. Please enter a password that is harder to guess (i.e. contains a mix of numbers and letters)." />
-			</then>
-			<elseif>
-				<isset var="regex" />
-				<then>
-					<execute macro="Alert#viewRequestFailedToComplete" />
-
-					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="That password does not comply with the regular expression ${regex}. Please enter a different password." />
-				</then>
-			</elseif>
-			<else>
-				<execute macro="Alert#viewRequestFailedToComplete" />
-
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="That password is invalid. Please enter in a different password." />
-			</else>
-		</if>
-	</command>
-
-	<command name="editPasswordViaMyAccount">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Password" />
-		</execute>
-
-		<execute function="Type" locator1="TextInput#CURRENT_PASSWORD" value1="${currentPassword}" />
-		<execute function="Type" locator1="TextInput#NEW_PASSWORD" value1="${newPassword}" />
-		<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="${newPassword}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="editUserDisplaySettingsCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute macro="User#editUserDisplaySettingsTimeZonePacific">
-			<var name="displaySettingsGreeting" value="${displaySettingsGreeting}" />
-		</execute>
-	</command>
-
-	<!-- The time zone option should change automatically because of Daylight Savings Time (DST). Since Los Angeles switches between Pacific Daylight Time (PDT), (UTC -07:00) and Pacific Standard Time (PST), (UTC -08:00), this macro will have to be updated accordingly. -->
-
-	<command name="editUserDisplaySettingsTimeZonePacific">
-		<execute function="AssertClick" locator1="UsersAndOrganizations#MISCELLANEOUS" value1="Miscellaneous" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Display Settings" />
-		</execute>
-
-		<if>
-			<condition function="IsTextNotEqual" locator1="UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_AMERICA_TIME_ZONE_SELECT" value1="(UTC -07:00) Pacific Daylight Time"  />
-			<then>
-				<execute function="Select" locator1="UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_TIME_ZONE_SELECT" value1="(UTC -08:00) Pacific Standard Time" />
-			</then>
-			<else>
-				<execute function="Select" locator1="UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_TIME_ZONE_SELECT" value1="(UTC -07:00) Pacific Daylight Time" />
-			</else>
-		</if>
-
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_GREETING_FIELD" value1="${displaySettingsGreeting}" />
-
-		<execute macro="PortletEntry#save" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#MISCELLANEOUS" value1="Miscellaneous" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Display Settings" />
-		</execute>
-
-		<if>
-			<condition function="IsTextNotEqual" locator1="UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_AMERICA_TIME_ZONE_SELECT" value1="(UTC -07:00) Pacific Daylight Time"  />
-			<then>
-				<execute function="AssertSelectedLabel" locator1="UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_TIME_ZONE_SELECT" value1="(UTC -08:00) Pacific Standard Time" />
-			</then>
-			<else>
-				<execute function="AssertSelectedLabel" locator1="UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_TIME_ZONE_SELECT" value1="(UTC -07:00) Pacific Daylight Time" />
-			</else>
-		</if>
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_GREETING_FIELD" value1="${displaySettingsGreeting}" />
-	</command>
-
-	<command name="editUserGenderCP">
-		<var name="key_rowEntry" value="${userFirstName}" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="AssertTextEquals" locator1="ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK" value1="${userFirstName}" />
-
-		<execute function="AssertClick" locator1="ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK" value1="${userFirstName}" />
-
-		<execute function="Select" locator1="UsersAndOrganizationsEditUser#DETAILS_GENDER_SELECT" value1="${userGender}" />
-
-		<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
-
-	<command name="editUserMiddleNameCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="Type" locator1="UsersAndOrganizationsEditUser#DETAILS_MIDDLE_NAME_FIELD" value1="${userMiddleName}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="editUserOrganizationCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="Pause" locator1="3000" />
-
-		<var name="key_orgName" value="${orgName}" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Organizations" />
-		</execute>
-
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#ORGANIZATIONS_SELECT_LINK" value1="Select" />
-
-		<execute function="SelectFrame" locator1="UsersAndOrganizationsSelectOrganization#SELECT_ORGANIZATION_IFRAME" />
-
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${orgName}" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsSelectOrganization#ORGANIZATION_TABLE_NAME" value1="${orgName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizationsSelectOrganization#ORGANIZATION_TABLE_CHOOSE_BUTTON" value1="Choose" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#ORGANIZATIONS_TABLE_NAME" value1="${orgName}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="editUserSiteCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="Pause" locator1="3000" />
-
-		<var name="key_siteName" value="${siteName}" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Sites" />
-		</execute>
-
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#SITES_SELECT_LINK" value1="Select" />
-
-		<execute function="SelectFrame" locator1="CPUsersandorganizationsUser#SITES_SELECT_IFRAME" />
-
-		<execute function="Type" locator1="CPUsersandorganizationsUser#SITES_SELECT_SEARCH_FIELD" value1="${siteName}" />
-
-		<execute function="KeyPress" locator1="CPUsersandorganizationsUser#SITES_SELECT_SEARCH_FIELD" value1="\RETURN" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="CPUsersandorganizationsUser#SITES_SELECT_TABLE_NAME" value1="${siteName}" />
-
-		<execute function="Click" locator1="SitesSelectSite#SITES_TABLE_CHOOSE_SITE_LINK" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="UsersAndOrganizationsEditUser#SITES_TABLE_NAME" value1="${siteName}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="expandRootCP">
-		<execute function="Click" locator1="CPUsersandorganizationsManagepages#PAGE_TREE_ROOT_ARROW" />
-
-		<execute function="AssertElementPresent#assertElementPresent" locator1="CPUsersandorganizationsManagepages#PAGE_TREE_PAGE_EDIT_COG" />
-
-		<if>
-			<condition function="IsElementNotPresent#isNotVisible" locator1="CPUsersandorganizationsManagepages#PAGE_TREE_PAGE_EDIT_COG" />
-			<then>
-				<execute function="Click" locator1="CPUsersandorganizationsManagepages#PAGE_TREE_ROOT_ARROW" />
-			</then>
-		</if>
-	</command>
-
-	<command name="firstLoginPG" summary="Log into Liferay Portal as '${userEmailAddress}' using the password '${password}'; if not logged in as '${userEmailAddress}', then log out first">
-		<echo message="Checking to see if TCat is enabled..." />
-
-		<var method="selenium#isTCatEnabled()" name="tcatEnabled" />
-
-		<if>
-			<equals arg1="${tcatEnabled}" arg2="true" />
-			<then>
-				<execute macro="TCat#deployLiferayPortalWar" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="virtualHostsURL" />
-			<then>
-				<execute macro="Navigator#openSpecificURL">
-					<var name="url" value="${virtualHostsURL}" />
-				</execute>
-			</then>
-			<else>
-				<execute macro="Navigator#openURL" />
-			</else>
-		</if>
-
-		<if>
-			<condition function="IsElementPresent" locator1="UserBar#USER_AVATAR_IMAGE" />
-			<then>
-				<execute macro="User#logoutPG" />
-				<execute macro="User#loginPG">
-					<var name="userEmailAddress" value="${userEmailAddress}" />
-				</execute>
-			</then>
-			<else>
-				<execute macro="User#loginPG">
-					<var name="setupWizardEnabled" value="${setupWizardEnabled}" />
-					<var name="specificURL" value="${virtualHostsURL}" />
-					<var name="userEmailAddress" value="${userEmailAddress}" />
-				</execute>
-			</else>
-		</if>
-	</command>
-
-	<command name="gotoEditCP">
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="Portlet#HEADER" value1="Edit User" />
-	</command>
-
-	<command name="impersonateCP">
-		<execute function="Pause" locator1="1000" />
-
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${userScreenName}" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
-
-		<var name="key_rowEntry" value="${userScreenName}" />
-
-		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#IMPERSONATE_USER" value1="Impersonate User" />
-
-		<execute function="SelectWindow" locator1="title=Welcome - Liferay" />
-
-		<execute function="AssertElementPresent" locator1="UserBar#USER_AVATAR_IMAGE" />
-		<execute function="Click" locator1="UserBar#USER_AVATAR_IMAGE" />
-
-		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_TABS_USER_EXPANDED" />
-	</command>
-
-	<command name="loginPG" summary="Log into Liferay Portal as '${userEmailAddress}' using the password '${password}'">
-		<if>
-			<isset var="nodePort" />
-			<then>
-				<execute function="Open" locator1="http://localhost:${nodePort}" />
-			</then>
-			<elseif>
-				<isset var="specificURL" />
-				<then>
-					<execute macro="Navigator#openSpecificURL">
-						<var name="url" value="${specificURL}" />
-					</execute>
-				</then>
-			</elseif>
-			<else>
-				<execute macro="Navigator#openURL" />
-			</else>
-		</if>
-
-		<execute function="AssertClick" locator1="UserBar#USER_SIGN_IN" value1="Sign In" />
-
-		<if>
-			<and>
-				<isset var="authenticationMethod" />
-				<equals arg1="${authenticationMethod}" arg2="By Screen Name" />
-			</and>
-			<then>
-				<execute function="Type" locator1="TextInput#SCREEN_NAME" value1="${userScreenName}" />
-			</then>
-			<else>
-				<execute function="Type" locator1="TextInput#EMAIL_ADDRESS" value1="${userEmailAddress}" />
-			</else>
-		</if>
-
-		<execute function="Type" locator1="TextInput#PASSWORD" value1="${password}" />
-
-		<if>
-			<and>
-				<isset var="rememberMeChecked" />
-				<equals arg1="${rememberMeChecked}" arg2="true" />
-			</and>
-			<then>
-				<execute function="Check" locator1="Checkbox#REMEMBER_ME" />
-			</then>
-		</if>
-
-		<take-screenshot />
-
-		<execute function="Click" locator1="Button#SIGN_IN" value1="Sign In" />
-
-		<execute function="AssertElementNotPresent" locator1="Button#SIGN_IN" value1="Sign In" />
-
-		<var method="TestPropsUtil#get('browser.type')" name="browserType" />
-
-		<if>
-			<or>
-				<equals arg1="${browserType}" arg2="edge" />
-				<equals arg1="${browserType}" arg2="internetexplorer" />
-			</or>
-			<then>
-				<execute function="Open" locator1="/web/guest/home" />
-			</then>
-		</if>
-
-		<if>
-			<condition function="IsElementPresent" locator1="Button#I_AGREE" value1="I Agree" />
-			<then>
-				<execute function="AssertClick" locator1="Button#I_AGREE" value1="I Agree" />
-
-				<execute function="AssertElementNotPresent" locator1="Button#I_AGREE" value1="I Agree" />
-			</then>
-		</if>
-
-		<if>
-			<condition function="IsElementPresent#pauseIsElementPresent" locator1="TextInput#PASSWORD" />
-			<then>
-				<if>
-					<and>
-						<isset var="syntaxCheckingEnabled" />
-						<equals arg1="${syntaxCheckingEnabled}" arg2="true" />
-					</and>
-					<then>
-						<execute function="Type" locator1="TextInput#PASSWORD" value1="${resetPassword}" />
-						<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="${resetPassword}" />
-					</then>
-					<else>
-						<if>
-							<and>
-								<isset var="setupWizardEnabled" />
-								<equals arg1="${setupWizardEnabled}" arg2="true" />
-							</and>
-							<then>
-								<execute function="Type" locator1="TextInput#PASSWORD" value1="test2" />
-								<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="test2" />
-							</then>
-							<else>
-								<execute function="Type" locator1="TextInput#PASSWORD" value1="test" />
-								<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="test" />
-							</else>
-						</if>
-					</else>
-				</if>
-
-				<execute macro="Button#clickSave" />
-
-				<execute function="AssertElementNotPresent" locator1="TextInput#ENTER_AGAIN" />
-			</then>
-		</if>
-
-		<if>
-			<condition function="IsElementPresent" locator1="TextInput#ANSWER" />
-			<then>
-				<execute function="Type" locator1="TextInput#ANSWER" value1="test" />
-				<execute macro="Button#clickSave" />
-
-				<execute function="AssertElementNotPresent" locator1="Button#SAVE" value1="Save" />
-			</then>
-		</if>
-
-		<execute function="AssertElementPresent" locator1="Dockbar#USER_AVATAR_IMAGE" />
-	</command>
-
-	<command name="loginUserInvalidPG">
-		<execute macro="Navigator#openURL" />
-
-		<execute function="AssertClick" locator1="UserBar#USER_SIGN_IN" value1="Sign In" />
-
-		<execute function="Type" locator1="TextInput#EMAIL_ADDRESS" value1="${userEmailAddress}" />
-		<execute function="Type" locator1="TextInput#PASSWORD" value1="${password}" />
-
-		<execute function="Click" locator1="Button#SIGN_IN" />
-
-		<execute macro="Alert#viewRequestFailedToComplete" />
-
-		<if>
-			<equals arg1="${loginAttempts}" arg2="${maximumFailure}" />
-			<then>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="This account is locked until" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please wait until the unlock date or contact an administrator to have this account unlocked." />
-			</then>
-			<else>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Authentication failed. Please try again." />
-			</else>
-		</if>
-	</command>
-
-	<command name="loginUserPG">
-		<description message="Log into Liferay Portal as ${userEmailAddress} using the password ${password}." />
-
-		<execute macro="Navigator#openURL" />
-
-		<execute function="AssertClick" locator1="UserBar#USER_SIGN_IN" value1="Sign In" />
-
-		<execute function="Type" locator1="TextInput#EMAIL_ADDRESS" value1="${userEmailAddress}" />
-		<execute function="Type" locator1="TextInput#PASSWORD" value1="${password}" />
-
-		<execute function="Click" locator1="Button#SIGN_IN" />
-
-		<execute function="AssertElementPresent" locator1="Dockbar#USER_AVATAR_IMAGE" />
-	</command>
-
-	<command name="logoutAndLoginPG">
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenuHelper#expandPanelUser" />
-
-		<if>
-			<condition function="IsTextNotEqual" locator1="ControlMenu#USER_NAME" value1="${userLoginFullName}" />
-			<then>
-				<execute macro="User#logoutPG" />
-
-				<execute macro="User#loginPG">
-					<var name="authenticationMethod" value="${authenticationMethod}" />
-					<var name="nodePort" value="${nodePort}" />
-					<var name="userEmailAddress" value="${userLoginEmailAddress}" />
-					<var name="userScreenName" value="${userScreenName}" />
-				</execute>
-			</then>
-		</if>
-	</command>
-
-	<command name="logoutPG">
-		<description message="Log out of Liferay Portal." />
-
-		<if>
-			<isset var="nodePort" />
-			<then>
-				<execute function="Open" locator1="http://localhost:${nodePort}" />
-			</then>
-			<else>
-				<if>
-					<isset var="specificURL" />
-					<then>
-						<execute macro="Navigator#openSpecificURL">
-							<var name="url" value="${specificURL}" />
-						</execute>
-					</then>
-					<else>
-						<execute macro="Navigator#openURL" />
-					</else>
-				</if>
-			</else>
-		</if>
-
-		<execute macro="UserBar#signOut" />
-	</command>
-
-	<command name="logoutUserPG">
-		<description message="Log out of Liferay Portal." />
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="UserBar#signOut" />
-	</command>
-
-	<command name="searchCP">
-		<execute function="Pause" locator1="5000" />
-
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${searchTerm}" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
-
-		<execute function="Pause" locator1="5000" />
-	</command>
-
-	<command name="signInPG">
-		<execute function="AssertClick" locator1="UserBar#USER_SIGN_IN" value1="Sign In" />
-
-		<execute function="Type" locator1="TextInput#EMAIL_ADDRESS" value1="${userEmailAddress}" />
-		<execute function="Type" locator1="TextInput#PASSWORD" value1="${emailPassword}" />
-		<execute function="Check" locator1="Checkbox#REMEMBER_ME" />
-
-		<execute function="AssertClick" locator1="Button#SIGN_IN" value1="Sign In" />
-
-		<if>
-			<condition function="IsElementPresent#pauseIsElementPresent" locator1="Button#I_AGREE" value1="I Agree" />
-			<then>
-				<execute function="AssertClick" locator1="Button#I_AGREE" value1="I Agree" />
-			</then>
-		</if>
-
-		<execute function="AssertTextEquals" locator1="Message#INFO" value1="Please enter your verification code." />
-
-		<execute function="Type" locator1="SignInCreateAccount#EMAIL_VERIFICATION_CODE_FIELD" value1="${emailVerification}" />
-
-		<execute function="AssertClick" locator1="Button#VERIFY" value1="Verify" />
-
-		<if>
-			<condition function="IsElementPresent#pauseIsElementPresent" locator1="TextInput#PASSWORD" />
-			<then>
-				<if>
-					<and>
-						<isset var="syntaxCheckingEnabled" />
-						<equals arg1="${syntaxCheckingEnabled}" arg2="true" />
-					</and>
-					<then>
-						<execute function="Type" locator1="TextInput#PASSWORD" value1="${resetPassword}" />
-						<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="${resetPassword}" />
-					</then>
-					<else>
-						<execute function="Type" locator1="TextInput#PASSWORD" value1="test" />
-						<execute function="Type" locator1="TextInput#ENTER_AGAIN" value1="test" />
-					</else>
-				</if>
-
-				<execute macro="Button#clickSave" />
-			</then>
-		</if>
-
-		<if>
-			<condition function="IsElementPresent#pauseIsElementPresent" locator1="TextInput#ANSWER" />
-			<then>
-				<execute function="Type" locator1="TextInput#ANSWER" value1="test" />
-				<execute macro="Button#clickSave" />
-			</then>
-		</if>
-	</command>
-
-	<command name="tearDownCP">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#deactivateCP">
-			<var name="userFirstName" value="userfn*" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#deleteCP" />
-	</command>
-
-	<command name="unassignRegularRoleCP">
-		<execute function="Pause" locator1="1000" />
-
-		<execute macro="User#searchCP">
-			<var name="searchTerm" value="${userScreenName}" />
-		</execute>
-
-		<var name="key_rowEntry" value="${userScreenName}" />
-
-		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Roles" />
-		</execute>
-
-		<var name="key_roleName" value="${roleName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_TABLE_REMOVE_LINK" value1="Remove" />
-
-		<execute function="AssertElementNotPresent" locator1="UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_TABLE_TITLE" value1="${roleName}" />
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="unlockUserAccount">
-		<execute function="Pause" locator1="1000" />
-
-		<var name="key_userScreenName" value="${userScreenName}" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-		<execute function="AssertTextEquals" locator1="Message#ERROR_3" value1="This user account has been locked due to excessive failed login attempts." />
-
-		<execute function="AssertClick" locator1="Button#UNLOCK" value1="Unlock" />
-
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
-
-	<command name="viewCP">
-		<if>
-			<equals arg1="${userEmailAddressVariation}" arg2="At" />
-			<then>
-				<execute function="Pause" locator1="1000" />
-
-				<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${userEmailAddress}" />
-
-				<execute function="Click" locator1="Button#SUBMIT" />
-
-				<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-			</then>
-			<elseif>
-				<equals arg1="${userEmailAddressVariation}" arg2="Period" />
-				<then>
-					<execute function="Pause" locator1="1000" />
-
-					<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${userEmailAddress}" />
-
-					<execute function="Click" locator1="Button#SUBMIT" />
-
-					<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${userScreenNameVariation}" arg2="Invalid" />
-				<then>
-					<execute function="Pause" locator1="1000" />
-
-					<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${userScreenName}" />
-
-					<execute function="Click" locator1="Button#SUBMIT" />
-
-					<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-				</then>
-			</elseif>
-			<else>
-				<var name="key_userScreenName" value="${userScreenName}" />
-
-				<execute function="Pause" locator1="1000" />
-
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userFirstName} ${userLastName}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizations#USER_TABLE_SCREEN_NAME" value1="${userScreenName}" />
-
-				<execute function="AssertClick" locator1="UsersAndOrganizations#USER_TABLE_NAME" value1="${userFirstName} ${userLastName}" />
-
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD" value1="${userScreenName}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD" value1="${userEmailAddress}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD" value1="${userFirstName}" />
-				<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD" value1="${userLastName}" />
-			</else>
-		</if>
-	</command>
-
-	<command name="viewLoggedInPG">
-		<if>
-			<equals arg1="${authenticationMethod}" arg2="By Screen Name" />
-			<then>
-				<execute function="AssertElementNotPresent" locator1="TextInput#SCREEN_NAME" />
-			</then>
-			<else>
-				<execute function="AssertElementNotPresent" locator1="TextInput#EMAIL_ADDRESS" />
-			</else>
-		</if>
-
-		<execute function="AssertElementNotPresent" locator1="TextInput#PASSWORD" />
-		<execute function="AssertElementNotPresent" locator1="Checkbox#REMEMBER_ME" />
-		<execute function="AssertElementNotPresent" locator1="Button#SIGN_IN" />
-
-		<execute function="AssertTextEquals" locator1="ControlMenu#USER_NAME" value1="${userFirstName} ${userLastName}" />
-	</command>
-
-	<command name="viewLoginPG">
-		<if>
-			<equals arg1="${authenticationMethod}" arg2="By Screen Name" />
-			<then>
-				<execute function="AssertElementPresent" locator1="TextInput#SCREEN_NAME" />
-			</then>
-			<else>
-				<execute function="AssertElementPresent" locator1="TextInput#EMAIL_ADDRESS" />
-			</else>
-		</if>
-
-		<execute function="AssertElementPresent" locator1="TextInput#PASSWORD" />
-
-		<execute function="AssertElementPresent" locator1="Checkbox#REMEMBER_ME" />
-
-		<execute function="AssertTextEquals" locator1="Button#SIGN_IN" value1="Sign In" />
-	</command>
-
-	<command name="viewNoUsersFoundCP">
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No users were found." />
-	</command>
-
-	<command name="viewUserInfomationOrganizationSitesCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Sites" />
-		</execute>
-
-		<var name="key_siteName" value="${siteName}" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#SITES_TABLE_NAME" value1="${orgName}" />
-	</command>
-
-	<command name="viewUserInfomationRolesCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Roles" />
-		</execute>
-
-		<var name="key_roleName" value="${roleName}" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_TABLE_TITLE" value1="${roleName}" />
-	</command>
-
-	<command name="viewUserInfomationSitesCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Sites" />
-		</execute>
-
-		<var name="key_siteName" value="${siteName}" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#SITES_TABLE_NAME" value1="${siteName}" />
-	</command>
-
-	<command name="viewUserInfomationUserGroupsCP">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="User Groups" />
-		</execute>
-
-		<var name="key_userGroupName" value="${userGroupName}" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#USER_GROUPS_TABLE_NAME" value1="${userGroupName}" />
-	</command>
-
-	<command name="viewUserMiscellaneousCustomFieldsCP">
-		<execute function="AssertClick" locator1="UsersAndOrganizations#MISCELLANEOUS" value1="Miscellaneous" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Custom Fields" />
-		</execute>
-
-		<var name="key_customFieldName" value="${customFieldName}" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#CUSTOM_FIELDS_LABEL" value1="${customFieldName}" />
-
-		<if>
-			<equals arg1="${customFieldName}" arg2="Boolean" />
-			<then>
-				<execute function="AssertSelectedLabel" locator1="UsersAndOrganizationsEditUser#CUSTOM_FIELDS_SELECT" value1="${customFieldValue}" />
-			</then>
-		</if>
-	</command>
-
-	<command name="viewUserSiteCP">
-		<execute function="Pause" locator1="3000" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Sites" />
-		</execute>
-
-		<var name="key_siteName" value="${siteName}" />
-
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsEditUser#SITES_TABLE_NAME" value1="${siteName}" />
-	</command>
-</definition>
+			Click.mouseDownMouseUp(locator1 = "UsersAndOrganizationsEditUser#CONTACT_ADD_BUTTON");
+
+			if ("${makePrimary}" == "true") {
+				Check(
+					checkboxName = "Make Primary",
+					locator1 = "Checkbox#ANY_CHECKBOX");
+			}
+
+			// Addresses
+
+			if (isSet(street1)) {
+				Type(
+					locator1 = "TextInput#STREET_1",
+					value1 = "${street1}");
+			}
+
+			if (isSet(city)) {
+				Type(
+					locator1 = "TextInput#CITY",
+					value1 = "${city}");
+			}
+
+			if (isSet(country)) {
+				Select(
+					locator1 = "Select#COUNTRY",
+					value1 = "${country}");
+			}
+
+			if (isSet(region)) {
+				Select(
+					locator1 = "Select#REGION",
+					value1 = "${region}");
+			}
+
+			if (isSet(postalCode)) {
+				Type(
+					locator1 = "TextInput#POSTAL_CODE",
+					value1 = "${postalCode}");
+			}
+
+			// Phone Numbers
+
+			if (isSet(number)) {
+				Type(
+					locator1 = "TextInput#NUMBER",
+					value1 = "${number}");
+			}
+
+			if (isSet(extension)) {
+				Type(
+					locator1 = "TextInput#EXTENSION",
+					value1 = "${extension}");
+			}
+
+			// Additional Email Addresses
+
+			if (isSet(address)) {
+				Type(
+					locator1 = "TextInput#ADDRESS",
+					value1 = "${address}");
+			}
+
+			// Websites
+
+			if (isSet(url)) {
+				Type(
+					locator1 = "TextInput#URL",
+					value1 = "${url}");
+			}
+		}
+
+		// Instant Messenger
+
+		if (isSet(skype)) {
+			Type(
+				locator1 = "TextInput#SKYPE",
+				value1 = "${skype}");
+		}
+
+		Click(locator1 = "Button#SAVE");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro addCP {
+		LexiconEntry.gotoAdd();
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD",
+			value1 = "${userScreenName}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+			value1 = "${userEmailAddress}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD",
+			value1 = "${userFirstName}");
+
+		if (isSet(userBirthday)) {
+			Type(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_BIRTHDAY_FIELD",
+				value1 = "${userBirthday}");
+		}
+
+		if (isSet(userMiddleName)) {
+			Type(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_MIDDLE_NAME_FIELD",
+				value1 = "${userMiddleName}");
+		}
+
+		if (isSet(userGender)) {
+			Select(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_GENDER_SELECT",
+				value1 = "${userGender}");
+		}
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD",
+			value1 = "${userLastName}");
+
+		AssertClick(
+			locator1 = "Button#SUBMIT",
+			value1 = "Save");
+
+		if ("${userEmailAddressVariation}" == "Invalid") {
+			AssertTextEquals(
+				locator1 = "Message#ERROR_ENTER_A_VALID_EMAIL_ADDRESS",
+				value1 = "Please enter a valid email address.");
+		}
+		else if ("${userEmailAddressVariation}" == "Null") {
+			Alert.viewRequiredField();
+		}
+		else if ("${userEmailAddressVariation}" == "Root") {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_ENTER_A_VALID_EMAIL_ADDRESS",
+				value1 = "Please enter a valid email address.");
+		}
+		else if ("${userScreenNameVariation}" == "Invalid") {
+			AssertTextEquals(
+				locator1 = "Message#ERROR_FORM_VALIDATION",
+				value1 = "The screen name cannot be an email address or a reserved word, such as postfix. It must contain only alphanumeric or the following special characters: -._.");
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD",
+				value1 = "${userScreenName}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+				value1 = "${userEmailAddress}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD",
+				value1 = "${userFirstName}");
+
+			if (isSet(userMiddleName)) {
+				AssertTextEquals(
+					locator1 = "UsersAndOrganizationsEditUser#DETAILS_MIDDLE_NAME_FIELD",
+					value1 = "${userMiddleName}");
+			}
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD",
+				value1 = "${userLastName}");
+		}
+	}
+
+	macro addCreateAccountPG {
+		User.createAccount(
+			newPassword = "${newPassword}",
+			userEmailAddress = "${userEmailAddress}",
+			userFirstName = "${userFirstName}",
+			userLastName = "${userLastName}",
+			userScreenName = "${userScreenName}");
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+	}
+
+	macro addMultipleCP {
+		for (var userEmail : list "${usersEmailsList}") {
+			var userEmailAddress = "${userEmail}";
+			var userName = StringUtil.replace("${userEmail}", "@liferay.com", "");
+
+			ProductMenu.gotoPortlet(
+				category = "Users",
+				panel = "Control Panel",
+				portlet = "Users and Organizations");
+
+			User.addCP(
+				userBirthday = "${userBirthday}",
+				userEmailAddress = "${userEmailAddress}",
+				userEmailAddressVariation = "${userEmailAddressVariation}",
+				userFirstName = "${userName}",
+				userGender = "${userGender}",
+				userLastName = "${userName}",
+				userMiddleName = "${userMiddleName}",
+				userScreenName = "${userName}",
+				userScreenNameVariation = "${userScreenNameVariation}");
+		}
+	}
+
+	macro addPersonalSiteCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		UserNavigator.gotoProfileAndDashboard();
+
+		AssertTextEquals(
+			key_subtitle = "Dashboard",
+			locator1 = "UsersAndOrganizationsEditUser#PERSONAL_SITE_LABEL",
+			value1 = "DASHBOARD");
+
+		Select(
+			locator1 = "UsersAndOrganizationsEditUser#PERSONAL_SITE_MY_DASHBOARD",
+			value1 = "${siteTemplateName}");
+
+		PortletEntry.save();
+	}
+
+	macro addReservedEmailAddressCP {
+		LexiconEntry.gotoAdd();
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD",
+			value1 = "${userScreenName}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+			value1 = "${userEmailAddress}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD",
+			value1 = "${userFirstName}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD",
+			value1 = "${userLastName}");
+
+		Button.clickSave();
+
+		Alert.viewErrorMessage(errorMessage = "The email address you requested is reserved.");
+	}
+
+	macro addReservedScreenNameCP {
+		LexiconEntry.gotoAdd();
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD",
+			value1 = "${userScreenName}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+			value1 = "${userEmailAddress}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD",
+			value1 = "${userFirstName}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD",
+			value1 = "${userLastName}");
+
+		Button.clickSave();
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#ERROR_1",
+			value1 = "The screen name you requested is reserved.");
+	}
+
+	macro addScreenNameNumberSiteIdCP {
+		LexiconEntry.gotoAdd();
+
+		Paste(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD",
+			value1 = "${siteID}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+			value1 = "${userEmailAddress}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD",
+			value1 = "${userFirstName}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD",
+			value1 = "${userLastName}");
+
+		Button.clickSave();
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#ERROR_1",
+			value1 = "The screen name cannot contain only numeric values.");
+	}
+
+	macro advancedSearchViaFriendsDirectoryPG {
+		Click(locator1 = "NavBar#SEARCH_TOGGLE_ADVANCED");
+
+		if ("${searchField}" == "First Name") {
+			Type(
+				locator1 = "TextInput#FIRST_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Middle Name") {
+			Type(
+				locator1 = "TextInput#MIDDLE_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Last Name") {
+			Type(
+				locator1 = "TextInput#LAST_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Screen Name") {
+			Type(
+				locator1 = "TextInput#SCREEN_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Email Address") {
+			Type(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+				value1 = "${searchTerm}");
+		}
+
+		KeyPress(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+			value1 = "\RETURN");
+
+		if ("${searchNoResults}" == "true") {
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+
+			var key_userScreenName = "${userScreenName}";
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_FIRST_NAME_LINK");
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_LAST_NAME_LINK");
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_SCREEN_NAME_LINK");
+		}
+		else {
+			var key_userScreenName = "${userScreenName}";
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_FIRST_NAME_LINK",
+				value1 = "${userFirstName}");
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_LAST_NAME_LINK",
+				value1 = "${userLastName}");
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_SCREEN_NAME_LINK",
+				value1 = "${userScreenName}");
+		}
+	}
+
+	macro advancedSearchViaMySitesDirectoryPG {
+		Click(locator1 = "NavBar#SEARCH_TOGGLE_ADVANCED");
+
+		if ("${searchField}" == "First Name") {
+			Type(
+				locator1 = "TextInput#FIRST_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Middle Name") {
+			Type(
+				locator1 = "TextInput#MIDDLE_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Last Name") {
+			Type(
+				locator1 = "TextInput#LAST_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Screen Name") {
+			Type(
+				locator1 = "TextInput#SCREEN_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Email Address") {
+			Type(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+				value1 = "${searchTerm}");
+		}
+
+		KeyPress(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+			value1 = "\RETURN");
+
+		if ("${searchNoResults}" == "true") {
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+
+			var key_userScreenName = "${userScreenName}";
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_FIRST_NAME_LINK");
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_LAST_NAME_LINK");
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_SCREEN_NAME_LINK");
+		}
+		else {
+			var key_userScreenName = "${userScreenName}";
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_FIRST_NAME_LINK",
+				value1 = "${userFirstName}");
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_LAST_NAME_LINK",
+				value1 = "${userLastName}");
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_SCREEN_NAME_LINK",
+				value1 = "${userScreenName}");
+		}
+	}
+
+	macro advancedSearchViaPortalDirectoryPG {
+		Click(locator1 = "NavBar#SEARCH_TOGGLE_ADVANCED");
+
+		if ("${searchField}" == "First Name") {
+			Type(
+				locator1 = "TextInput#FIRST_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Middle Name") {
+			Type(
+				locator1 = "TextInput#MIDDLE_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Last Name") {
+			Type(
+				locator1 = "TextInput#LAST_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Screen Name") {
+			Type(
+				locator1 = "TextInput#SCREEN_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Email Address") {
+			Type(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+				value1 = "${searchTerm}");
+		}
+
+		KeyPress(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+			value1 = "\RETURN");
+
+		if ("${searchNoResults}" == "true") {
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+
+			var key_userScreenName = "${userScreenName}";
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_FIRST_NAME_LINK");
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_LAST_NAME_LINK");
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_SCREEN_NAME_LINK");
+		}
+		else {
+			var key_userScreenName = "${userScreenName}";
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_FIRST_NAME_LINK",
+				value1 = "${userFirstName}");
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_LAST_NAME_LINK",
+				value1 = "${userLastName}");
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_SCREEN_NAME_LINK",
+				value1 = "${userScreenName}");
+		}
+	}
+
+	macro advancedSearchViaSiteMembersDirectoryPG {
+		Click(locator1 = "NavBar#SEARCH_TOGGLE_ADVANCED");
+
+		if ("${searchField}" == "First Name") {
+			Type(
+				locator1 = "TextInput#FIRST_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Middle Name") {
+			Type(
+				locator1 = "TextInput#MIDDLE_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Last Name") {
+			Type(
+				locator1 = "TextInput#LAST_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Screen Name") {
+			Type(
+				locator1 = "TextInput#SCREEN_NAME",
+				value1 = "${searchTerm}");
+		}
+		else if ("${searchField}" == "Email Address") {
+			Type(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+				value1 = "${searchTerm}");
+		}
+
+		KeyPress(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+			value1 = "\RETURN");
+
+		if ("${searchNoResults}" == "true") {
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+
+			var key_userScreenName = "${userScreenName}";
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_FIRST_NAME_LINK");
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_LAST_NAME_LINK");
+
+			AssertElementNotPresent(locator1 = "PortalDirectory#USER_TABLE_SCREEN_NAME_LINK");
+		}
+		else {
+			var key_userScreenName = "${userScreenName}";
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_FIRST_NAME_LINK",
+				value1 = "${userFirstName}");
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_LAST_NAME_LINK",
+				value1 = "${userLastName}");
+
+			AssertTextEquals(
+				locator1 = "PortalDirectory#USER_TABLE_SCREEN_NAME_LINK",
+				value1 = "${userScreenName}");
+		}
+	}
+
+	macro answerPasswordReminder {
+		Pause(locator1 = "3000");
+
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#ANSWER")) {
+			Type(
+				locator1 = "TextInput#ANSWER",
+				value1 = "test");
+
+			Button.clickSave();
+
+			AssertElementNotPresent(locator1 = "Button#SAVE");
+		}
+	}
+
+	macro assignOrgRoleCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		UserNavigator.gotoRoles();
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_ORGANIZATION_ROLES_SELECT_LINK",
+			value1 = "Select");
+
+		SelectFrame(locator1 = "IFrame#SELECT_ORGANIZATION_ROLE");
+
+		var key_roleTitle = "${roleTitle}";
+
+		AssertTextEquals(
+			locator1 = "Permissions#CONTENT_PERMISSIONS_ROLE_NAME",
+			value1 = "${roleTitle}");
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_ORGANIZATION_SELECT_CHOOSE_BUTTON",
+			value1 = "Choose");
+
+		SelectFrame(value1 = "relative=top");
+
+		AssertTextEquals(
+			locator1 = "Permissions#CONTENT_PERMISSIONS_ROLE_NAME",
+			value1 = "${roleTitle}");
+
+		PortletEntry.save();
+	}
+
+	macro assignRegularRoleCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		UserNavigator.gotoRoles();
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_SELECT_LINK",
+			value1 = "Select");
+
+		Pause(locator1 = "5000");
+
+		SelectFrame(locator1 = "IFrame#SELECT_REGULAR_ROLE");
+
+		var key_roleTitle = "${roleTitle}";
+
+		AssertTextEquals(
+			locator1 = "Permissions#CONTENT_PERMISSIONS_ROLE_NAME",
+			value1 = "${roleTitle}");
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_ORGANIZATION_SELECT_CHOOSE_BUTTON",
+			value1 = "Choose");
+
+		SelectFrame(value1 = "relative=top");
+
+		AssertTextEquals(
+			locator1 = "Permissions#CONTENT_PERMISSIONS_ROLE_NAME",
+			value1 = "${roleTitle}");
+
+		PortletEntry.save();
+	}
+
+	macro assignSiteRoleCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		UserNavigator.gotoRoles();
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_SITE_ROLES_SELECT_LINK",
+			value1 = "Select");
+
+		SelectFrame(locator1 = "IFrame#SELECT_SITE_ROLE");
+
+		var key_roleTitle = "${siteRoleName}";
+		var key_siteRoleName = "${siteRoleName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_SITE_ROLES_TABLE_TITLE",
+			value1 = "${siteRoleName}");
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_ORGANIZATION_SELECT_CHOOSE_BUTTON",
+			value1 = "Choose");
+
+		SelectFrame(value1 = "relative=top");
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_SITE_ROLES_TABLE_TITLE",
+			value1 = "${siteRoleName}");
+
+		PortletEntry.save();
+	}
+
+	macro attemptImpersonateCP {
+		Search.searchCP(searchTerm = "${userScreenName}");
+
+		var key_rowEntry = "${userScreenName}";
+
+		if (isSet(notAdmin)) {
+			AssertElementNotPresent(locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS");
+
+			AssertElementNotPresent(locator1 = "UsersAndOrganizations#USER_TABLE_IMPERSONATE");
+		}
+		else {
+			Click(locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS");
+
+			MenuItem.viewNotPresent(menuItem = "Impersonate User");
+		}
+	}
+
+	macro basicSearchCP {
+
+		if ("${userBasicSearch}" == "Basic") {
+			Search.searchCP(searchTerm = "${userScreenName}");
+
+			var key_userScreenName = "${userScreenName}";
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizations#USER_TABLE_NAME",
+				value1 = "${userName}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+				value1 = "${userScreenName}");
+
+			Search.searchCP(searchTerm = "user1*");
+
+			AssertTextPresent(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+		}
+		else if ("${userBasicSearch}" == "Full Name") {
+
+			var fullName = '''"${userFirstName} ${userLastName}"''';
+
+			Search.searchCP(searchTerm = "${fullName}");
+
+			var key_userScreenName = "${userScreenName}";
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizations#USER_TABLE_NAME",
+				value1 = "${userName}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+				value1 = "${userScreenName}");
+
+			var fullName = '''"${userFirstName} 1 ${userLastName}"''';
+
+			Search.searchCP(searchTerm = "${fullName}");
+
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+		}
+		else if ("${userBasicSearch}" == "Quotes") {
+
+			var quotes = '''"${userScreenName}"''';
+
+			Search.searchCP(searchTerm = "${quotes}");
+
+			var key_userScreenName = "${userScreenName}";
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizations#USER_TABLE_NAME",
+				value1 = "${userName}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+				value1 = "${userScreenName}");
+		}
+	}
+
+	macro changePasswordCP {
+		UserNavigator.gotoPassword();
+
+		if ("${userPassword}" == "Invalid") {
+			Type(
+				locator1 = "TextInput#CURRENT_PASSWORD",
+				value1 = "");
+
+			Type(
+				locator1 = "TextInput#NEW_PASSWORD",
+				value1 = "test1");
+
+			Type(
+				locator1 = "TextInput#ENTER_AGAIN",
+				value1 = "test1");
+
+			Button.clickSave();
+
+			Alert.viewRequiredField();
+
+			User.logoutPG();
+
+			User.loginUserPG(
+				password = "test",
+				userEmailAddress = "${userEmailAddress}");
+
+			User.logoutUserPG();
+
+			User.loginPG(
+				authenticationMethod = "${authenticationMethod}",
+				nodePort = "${nodePort}",
+				password = "test",
+				resetPassword = "${resetPassword}",
+				syntaxCheckingEnabled = "${syntaxCheckingEnabled}",
+				userEmailAddress = "test@liferay.com",
+				userScreenName = "${userScreenName}");
+		}
+		else {
+			Type(
+				locator1 = "TextInput#CURRENT_PASSWORD",
+				value1 = "test");
+
+			Type(
+				locator1 = "TextInput#NEW_PASSWORD",
+				value1 = "test1");
+
+			Type(
+				locator1 = "TextInput#ENTER_AGAIN",
+				value1 = "test1");
+
+			PortletEntry.save();
+
+			User.logoutPG();
+
+			User.loginUserPG(
+				password = "test1",
+				userEmailAddress = "${userEmailAddress}");
+
+			User.logoutUserPG();
+
+			User.loginPG(
+				authenticationMethod = "${authenticationMethod}",
+				nodePort = "${nodePort}",
+				password = "test",
+				resetPassword = "${resetPassword}",
+				syntaxCheckingEnabled = "${syntaxCheckingEnabled}",
+				userEmailAddress = "test@liferay.com",
+				userScreenName = "${userScreenName}");
+		}
+	}
+
+	macro changeProfileImage {
+		Button.click(button = "Change");
+
+		IFrame.selectModalFrame();
+
+		AssertElementPresent(locator1 = "UsersAndOrganizationsEditUser#UPLOAD_IMAGE_SELECT");
+
+		UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
+			locator1 = "TextInput#UPLOAD_FILE",
+			value1 = "${imageName}");
+
+		Pause(locator1 = "5000");
+
+		WaitForElementNotPresent(
+			key_text = "Done",
+			locator1 = "Button#ANY_DISABLED");
+
+		Button.click(button = "Done");
+
+		IFrame.selectTopFrame();
+
+		AssertVisible(
+			key_imageName = "${imageName}",
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_PROFILE_IMAGE");
+	}
+
+	macro createAccount {
+		SignInNavigator.gotoCreateAccount();
+
+		Type(
+			locator1 = "TextInput#FIRST_NAME",
+			value1 = "${userFirstName}");
+
+		Type(
+			locator1 = "TextInput#LAST_NAME",
+			value1 = "${userLastName}");
+
+		Type(
+			locator1 = "TextInput#SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		Type(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = "${userEmailAddress}");
+
+		Type(
+			locator1 = "TextInput#PASSWORD",
+			value1 = "${newPassword}");
+
+		Type(
+			locator1 = "TextInput#ENTER_AGAIN",
+			value1 = "${newPassword}");
+
+		Button.clickSave();
+	}
+
+	@description = "Create a new Portal user named ${userFirstName} that is associated with the OpenID ${openIDURL}."
+	macro createUserViaOpenID {
+		Navigator.openURL();
+
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		AssertClick(
+			locator1 = "Link#OPENID",
+			value1 = "OpenID");
+
+		Type(
+			locator1 = "SignInOpenID#OPENID_FIELD",
+			value1 = "${openIDURL}");
+
+		Click(locator1 = "Button#SIGN_IN");
+
+		Type(
+			locator1 = "OpenIDLogin#YAHOO_LOGIN_USERNAME_FIELD",
+			value1 = "${openIDUsername}");
+
+		KeyPress(
+			locator1 = "OpenIDLogin#YAHOO_LOGIN_USERNAME_FIELD",
+			value1 = "\RETURN");
+
+		Type(
+			locator1 = "TextInput#PASSWORD_TYPE",
+			value1 = "${openIDPassword}");
+
+		KeyPress(
+			locator1 = "TextInput#PASSWORD_TYPE",
+			value1 = "\RETURN");
+
+		if (IsElementPresent(locator1 = "OpenIDLogin#YAHOO_LOGIN_SKIP_SECURE_BUTTON")) {
+			Click(locator1 = "OpenIDLogin#YAHOO_LOGIN_SKIP_SECURE_BUTTON");
+		}
+
+		Type(
+			locator1 = "TextInput#FIRST_NAME",
+			value1 = "${userFirstName}");
+
+		Type(
+			locator1 = "TextInput#LAST_NAME",
+			value1 = "${userLastName}");
+
+		Type(
+			locator1 = "TextInput#SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		Type(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = "${userEmailAddress}");
+
+		Button.clickSave();
+	}
+
+	macro deactivateCP {
+		Search.searchCP(searchTerm = "${userFirstName}");
+
+		if ("${deactivateType}" == "Actions") {
+			LexiconEntry.gotoEntryMenuItemNoError(
+				menuItem = "Deactivate",
+				rowEntry = "${userFirstName}");
+
+			AssertConfirm(value1 = "Are you sure you want to deactivate this?");
+
+			Alert.viewSuccessMessage();
+		}
+		else {
+			PortletEntry.selectAll();
+
+			ClickNoError(locator1 = "Icon#DELETE");
+
+			AssertConfirm(value1 = "Are you sure you want to deactivate the selected users?");
+
+			Alert.viewSuccessMessage();
+
+			LexiconEntry.viewNoEntry(rowEntry = "${userFirstName}");
+		}
+	}
+
+	macro deleteCP {
+		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+		MenuItem.click(menuItem = "Inactive");
+
+		if (IsElementPresent(locator1 = "ContentRow#ENTRY_CONTENT_ROW_1")) {
+			PortletEntry.selectAll();
+
+			ClickNoError(locator1 = "Icon#DELETE");
+
+			AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to permanently delete the selected users?");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro deleteProfileImage {
+		Button.click(button = "Delete");
+
+		AssertVisible(
+			key_imageName = "user_portrait",
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_PROFILE_IMAGE");
+	}
+
+	macro editAddressCP {
+		UserNavigator.gotoContact();
+
+		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Edit");
+
+		if (isSet(addressType)) {
+			Select(
+				locator1 = "Select#TYPE",
+				value1 = "${addressType}");
+		}
+
+		if (isSet(street1)) {
+			Type(
+				locator1 = "TextInput#STREET_1",
+				value1 = "${street1}");
+		}
+
+		if (isSet(city)) {
+			Type(
+				locator1 = "TextInput#CITY",
+				value1 = "${city}");
+		}
+
+		if (isSet(country)) {
+			Select(
+				locator1 = "Select#COUNTRY",
+				value1 = "${country}");
+		}
+
+		if (isSet(postalCode)) {
+			Type(
+				locator1 = "TextInput#POSTAL_CODE",
+				value1 = "${postalCode}");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro editDetailsViaMyAccount {
+		AssertElementPresent.assertElementPresent(locator1 = "TextInput#FIRST_NAME");
+
+		if (isSet(userFirstNameEdit)) {
+			Type(
+				locator1 = "TextInput#FIRST_NAME",
+				value1 = "${userFirstNameEdit}");
+		}
+
+		if (isSet(userLastNameEdit)) {
+			Type(
+				locator1 = "TextInput#LAST_NAME",
+				value1 = "${userLastNameEdit}");
+		}
+
+		if (isSet(userMiddleNameEdit)) {
+			Type(
+				locator1 = "TextInput#MIDDLE_NAME",
+				value1 = "${userMiddleNameEdit}");
+		}
+
+		if (isSet(userScreenNameEdit)) {
+			Type(
+				locator1 = "TextInput#SCREEN_NAME",
+				value1 = "${userScreenNameEdit}");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro editDisplaySettingsCP {
+		User.searchCP(searchTerm = "${userScreenName}");
+
+		var key_rowEntry = "${userScreenName}";
+
+		Click(locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Edit");
+
+		Select(
+			locator1 = "Select#DEFAULT_LANGUAGE",
+			value1 = "${languageName}");
+
+		PortletEntry.save();
+	}
+
+	macro editEmailViaMyAccount {
+		Navigator.openURL();
+
+		Navigator.gotoAccountSettings();
+
+		Type(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = "${userEmailAddress}");
+
+		PortletEntry.save();
+	}
+
+	macro editPasswordCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		if (!(isSet(newPassword))) {
+			var newPassword = "password";
+		}
+
+		UserNavigator.gotoPassword();
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#PASSWORD_NEW_PASSWORD_FIELD",
+			value1 = "${newPassword}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#PASSWORD_ENTER_AGAIN_FIELD",
+			value1 = "${newPassword}");
+
+		if ("${requirePasswordReset}" == "true") {
+			Check(
+				checkboxName = "Require Password Reset",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		PortletEntry.save();
+
+		User.logoutPG();
+
+		if ("${samlEnabled}" == "true") {
+			User.viewLoggedOutPG();
+		}
+
+		User.loginPG(
+			authenticationMethod = "${authenticationMethod}",
+			nodePort = "${nodePort}",
+			password = "${newPassword}",
+			resetPassword = "${resetPassword}",
+			syntaxCheckingEnabled = "${syntaxCheckingEnabled}",
+			userEmailAddress = "${userEmailAddress}",
+			userScreenName = "${userScreenName}");
+
+		User.logoutPG();
+
+		if ("${samlEnabled}" == "true") {
+			User.viewLoggedOutPG();
+		}
+
+		User.loginPG(
+			authenticationMethod = "${authenticationMethod}",
+			nodePort = "${nodePort}",
+			password = "test",
+			userEmailAddress = "test@liferay.com",
+			userScreenName = "${userScreenName}");
+	}
+
+	macro editPasswordInvalidCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		if (!(isSet(newPassword))) {
+			var newPassword = "password";
+		}
+
+		UserNavigator.gotoPassword();
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#PASSWORD_NEW_PASSWORD_FIELD",
+			value1 = "${newPassword}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#PASSWORD_ENTER_AGAIN_FIELD",
+			value1 = "${newPassword}");
+
+		Button.clickSave();
+
+		if ("${changeable}" == "false") {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "Passwords may not be changed under the current password policy.");
+		}
+		else if ("${passwordTooShort}" == "true") {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "That password is too short. Please make sure your password is at least 6 characters long.");
+		}
+		else if (isSet(minimumNumbers)) {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "That password must contain at least ${minimumNumbers} numbers.");
+		}
+		else if (isSet(regex)) {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "That password does not comply with the regular expression ${regex}. Please enter a different password.");
+		}
+		else {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "That password is invalid. Please enter in a different password.");
+		}
+	}
+
+	macro editPasswordViaMyAccount {
+		UserNavigator.gotoPassword();
+
+		Type(
+			locator1 = "TextInput#CURRENT_PASSWORD",
+			value1 = "${currentPassword}");
+
+		Type(
+			locator1 = "TextInput#NEW_PASSWORD",
+			value1 = "${newPassword}");
+
+		Type(
+			locator1 = "TextInput#ENTER_AGAIN",
+			value1 = "${newPassword}");
+
+		PortletEntry.save();
+	}
+
+	macro editPrimary {
+		if ("${makePrimary}" == "true") {
+			Check(
+				checkboxName = "Make Primary",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+		else if ("${makePrimary}" == "false") {
+			Uncheck(
+				checkboxName = "Make Primary",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		Click(locator1 = "Button#SAVE");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro editUserDisplaySettingsCP {
+		var key_userScreenName = "${userScreenName}";
+
+		Pause(locator1 = "1000");
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		AssertClick(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		User.editUserDisplaySettingsTimeZonePacific(displaySettingsGreeting = "${displaySettingsGreeting}");
+	}
+
+	macro editUserDisplaySettingsTimeZonePacific {
+		UserNavigator.gotoDisplaySettings();
+
+		if (IsTextNotEqual(locator1 = "Select#LOS_ANGELES_TIME_ZONE", value1 = "(UTC -07:00) Pacific Daylight Time")) {
+			Select(
+				locator1 = "Select#TIME_ZONE",
+				value1 = "(UTC -08:00) Pacific Standard Time");
+		}
+		else {
+			Select(
+				locator1 = "Select#TIME_ZONE",
+				value1 = "(UTC -07:00) Pacific Daylight Time");
+		}
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_GREETING_FIELD",
+			value1 = "${displaySettingsGreeting}");
+
+		PortletEntry.save();
+
+		UserNavigator.gotoDisplaySettings();
+
+		if (IsTextNotEqual(locator1 = "Select#LOS_ANGELES_TIME_ZONE", value1 = "(UTC -07:00) Pacific Daylight Time")) {
+			AssertSelectedLabel(
+				locator1 = "Select#TIME_ZONE",
+				value1 = "(UTC -08:00) Pacific Standard Time");
+		}
+		else {
+			AssertSelectedLabel(
+				locator1 = "Select#TIME_ZONE",
+				value1 = "(UTC -07:00) Pacific Daylight Time");
+		}
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizationsEditUser#DISPLAY_SETTINGS_GREETING_FIELD",
+			value1 = "${displaySettingsGreeting}");
+	}
+
+	macro editUserGenderCP {
+		LexiconEntry.gotoEntry(rowEntry = "${userName}");
+
+		Select(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_GENDER_SELECT",
+			value1 = "${userGender}");
+
+		PortletEntry.save();
+	}
+
+	macro editUserJobTitleCP {
+		LexiconEntry.gotoEntry(rowEntry = "${userName}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_JOB_TITLE_FIELD",
+			value1 = "${userJobTitle}");
+
+		PortletEntry.save();
+	}
+
+	macro editUserOrganizationCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		UserNavigator.gotoOrganizations();
+
+		var key_orgName = "${orgName}";
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#ORGANIZATIONS_SELECT_LINK",
+			value1 = "Select");
+
+		SelectFrame(locator1 = "UsersAndOrganizationsSelectOrganization#SELECT_ORGANIZATION_IFRAME");
+
+		Search.searchCP(searchTerm = "${orgName}");
+
+		AssertTextEquals(
+			locator1 = "ContentRow#ORGANIZATION_TABLE_NAME",
+			value1 = "${orgName}");
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsSelectOrganization#ORGANIZATION_TABLE_CHOOSE_BUTTON",
+			value1 = "Choose");
+
+		SelectFrame(value1 = "relative=top");
+
+		AssertTextEquals(
+			locator1 = "ContentRow#ORGANIZATION_TABLE_NAME",
+			value1 = "${orgName}");
+
+		PortletEntry.save();
+	}
+
+	macro editUserSiteCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		UserNavigator.gotoMemberships();
+
+		var key_siteName = "${siteName}";
+
+		AssertClick(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_SELECT_LINK",
+			value1 = "SELECT");
+
+		SelectFrame(locator1 = "IFrame#SELECT_USER_SITES");
+
+		Type(
+			locator1 = "TextInput#SITE_SEARCH_KEYWORDS",
+			value1 = "${siteName}");
+
+		KeyPress(
+			locator1 = "TextInput#SEARCH",
+			value1 = "\RETURN");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_TABLE_NAME",
+			value1 = "${siteName}");
+
+		Click(locator1 = "SitesSelectSite#SITES_TABLE_CHOOSE_SITE_LINK");
+
+		SelectFrame(value1 = "relative=top");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_TABLE_NAME",
+			value1 = "${siteName}");
+
+		PortletEntry.save();
+	}
+
+	macro editUserSuffixCP {
+		LexiconEntry.gotoEntry(rowEntry = "${userName}");
+
+		Select(
+			locator1 = "UsersAndOrganizationsEditUser#DETAILS_SUFFIX_SELECT",
+			value1 = "${userSuffix}");
+
+		PortletEntry.save();
+	}
+
+	@summary = "Log into Liferay Portal as '${userEmailAddress}' using the password '${password}'; if not logged in as '${userEmailAddress}', then log out first"
+	macro firstLoginPG {
+		if (isSet(virtualHostsURL)) {
+			Navigator.openSpecificURL(url = "${virtualHostsURL}");
+		}
+		else {
+			Navigator.openURL();
+		}
+
+		if (IsElementNotPresent(locator1 = "UserBar#USER_SIGN_IN")) {
+			User.logoutPG();
+
+			User.loginPG(userEmailAddress = "${userEmailAddress}");
+		}
+		else {
+			User.loginPG(
+				localization = "${localization}",
+				samlEnabled = "${samlEnabled}",
+				setupWizardEnabled = "${setupWizardEnabled}",
+				specificURL = "${virtualHostsURL}",
+				userEmailAddress = "${userEmailAddress}");
+		}
+	}
+
+	macro forgotPasswordSendResetLink {
+		SignInNavigator.gotoForgotPassword();
+
+		Type(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = "${userEmailAddress}");
+
+		Button.clickNext();
+
+		AssertClick(
+			locator1 = "Button#SEND_PASSWORD_RESET_LINK",
+			value1 = "Send Password Reset Link");
+
+		Alert.viewSuccessMessageText(successMessage = "Your request completed successfully.");
+	}
+
+	macro gotoEditCP {
+		var key_userScreenName = "${userScreenName}";
+
+		AssertClick(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Portlet#HEADER",
+			value1 = "Edit User");
+	}
+
+	macro impersonateCP {
+		Pause(locator1 = "1000");
+
+		Search.searchCP(searchTerm = "${userScreenName}");
+
+		var key_rowEntry = "${userScreenName}";
+
+		Click(locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Impersonate User");
+
+		SelectWindow(locator1 = "title=Home - ${siteName}");
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+
+		Click(locator1 = "UserBar#USER_AVATAR_IMAGE");
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_DROPDOWN_PORTAL_OPEN");
+	}
+
+	macro loginLocalizationPG {
+		var localizedSignIn = User._signInLocalization(localization = "${localization}");
+
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "${localizedSignIn}");
+	}
+
+	@summary = "Log into Liferay Portal as '${userEmailAddress}' using the password '${password}'"
+	macro loginPG {
+		if (isSet(nodePort)) {
+			Navigator.openSpecificURL(url = "http://localhost:${nodePort}");
+		}
+		else if (isSet(specificURL)) {
+			Navigator.openSpecificURL(url = "${specificURL}");
+		}
+		else {
+			Navigator.openURL();
+		}
+
+		if (IsElementPresent(locator1 = "Message#PORTAL_LOCALIZATION")) {
+			Alert.closePortalLocalizationWarning();
+		}
+
+		if (!("${samlEnabled}" == "true")) {
+			User.loginLocalizationPG(localization = "${localization}");
+		}
+
+		if ("${samlMultiIdPs}" == "true") {
+			Select(
+				key_fieldLabel = "Identity Provider",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${idpName}");
+
+			Button.click(button = "Sign In");
+		}
+
+		if ((isSet(authenticationMethod)) && ("${authenticationMethod}" == "By Screen Name")) {
+			Type(
+				locator1 = "TextInput#SCREEN_NAME",
+				value1 = "${userScreenName}");
+		}
+		else {
+			Type(
+				locator1 = "TextInput#EMAIL_ADDRESS",
+				value1 = "${userEmailAddress}");
+		}
+
+		Type(
+			locator1 = "TextInput#PASSWORD",
+			value1 = "${password}");
+
+		if ((isSet(rememberMeChecked)) && ("${rememberMeChecked}" == "true")) {
+			Check(locator1 = "Checkbox#REMEMBER_ME");
+		}
+
+		takeScreenshot();
+
+		if (isSet(localization)) {
+			var localizedSignIn = User._signInLocalization(localization = "${localization}");
+
+			Button.click(button = "${localizedSignIn}");
+		}
+		else {
+			Button.click(button = "Sign In");
+		}
+
+		if (IsElementPresent(locator1 = "Message#ERROR_FORM_FIELD_REQUIRED")) {
+			echo("Sign in failed due to empty required field. Retrying...");
+
+			if ((isSet(authenticationMethod)) && ("${authenticationMethod}" == "By Screen Name")) {
+				Type(
+					locator1 = "TextInput#SCREEN_NAME",
+					value1 = "${userScreenName}");
+			}
+			else {
+				Type(
+					locator1 = "TextInput#EMAIL_ADDRESS",
+					value1 = "${userEmailAddress}");
+			}
+
+			Type(
+				locator1 = "TextInput#PASSWORD",
+				value1 = "${password}");
+
+			Button.click(button = "Sign In");
+		}
+
+		Button.viewNotPresent(button = "Sign In");
+
+		User.acceptEndUserLicenseAgreement();
+
+		User.resetPassword(
+			resetPassword = "${resetPassword}",
+			setupWizardEnabled = "${setupWizardEnabled}",
+			syntaxCheckingEnabled = "${syntaxCheckingEnabled}");
+
+		User.answerPasswordReminder();
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	macro loginUserInvalidPG {
+		Navigator.openURL();
+
+		var count = "0";
+
+		if (!(isSet(loginAttempts))) {
+			var loginAttempts = "1";
+		}
+
+		if (!(isSet(maxLoginAttempts))) {
+			var maxLoginAttempts = "0";
+		}
+
+		while (!("${count}" == "${loginAttempts}")) {
+			var count = MathUtil.sum("${count}", "1");
+
+			User._login(
+				password = "${password}",
+				userEmailAddress = "${userEmailAddress}");
+
+			if ("${count}" == "${maximumFailure}") {
+				AssertTextEquals.assertPartialText(
+					locator1 = "Message#ERROR_1",
+					value1 = "This account is locked. Please contact an administrator to have this account unlocked.");
+			}
+			else {
+				AssertTextEquals.assertPartialText(
+					locator1 = "Message#ERROR_1",
+					value1 = "Authentication failed. Please try again.");
+			}
+		}
+	}
+
+	@description = "Log into Liferay Portal as ${userEmailAddress} using the password ${password}."
+	macro loginUserPG {
+		Navigator.openURL();
+
+		User._login(
+			password = "${password}",
+			userEmailAddress = "${userEmailAddress}");
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	@description = "Log into Liferay Portal as ${userEmailAddress} using the password ${password} with CAS authentication enabled."
+	macro loginUserWithCASEnabledPG {
+		Navigator.openURL();
+
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		Type(
+			locator1 = "CAS#NETID_FIELD",
+			value1 = "${userScreenName}");
+
+		Type(
+			locator1 = "CAS#PASSWORD_FIELD",
+			value1 = "${userScreenName}");
+
+		AssertClick(
+			locator1 = "CAS#LOGIN_BUTTON",
+			value1 = "LOGIN");
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	@description = "Log into Facebook as ${facebookEmail} using the password ${facebookPassword}."
+	macro loginUserWithFacebookSSOEnabledPG {
+		Navigator.openURL();
+
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		AssertElementPresent(locator1 = "Icon#FACEBOOK");
+
+		AssertClick(
+			locator1 = "Link#FACEBOOK",
+			value1 = "Facebook");
+
+		SelectWindow(locator1 = "title=Log into Facebook | Facebook");
+
+		Type(
+			locator1 = "FacebookLogin#LOGIN_EMAIL_FIELD",
+			value1 = "${facebookEmail}");
+
+		Type(
+			locator1 = "FacebookLogin#LOGIN_PASSWORD_FIELD",
+			value1 = "${facebookPassword}");
+
+		Click(locator1 = "FacebookLogin#LOGIN_BUTTON");
+
+		SelectWindow.selectWindowTopNoSPARefresh();
+
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#EMAIL_ADDRESS")) {
+			SelectWindow.selectWindowNoSPARefresh(locator1 = "title=Terms of Use");
+
+			if (IsElementPresent.pauseIsElementPresent(
+					locator1 = "Button#I_AGREE",
+					value1 = "I Agree")) {
+				AssertClick(
+					locator1 = "Button#I_AGREE",
+					value1 = "I Agree");
+			}
+
+			if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#PASSWORD")) {
+				if ((isSet(syntaxCheckingEnabled)) && ("${syntaxCheckingEnabled}" == "true")) {
+					Type(
+						locator1 = "TextInput#PASSWORD",
+						value1 = "${resetPassword}");
+
+					Type(
+						locator1 = "TextInput#ENTER_AGAIN",
+						value1 = "${resetPassword}");
+				}
+				else {
+					Type(
+						locator1 = "TextInput#PASSWORD",
+						value1 = "test");
+
+					Type(
+						locator1 = "TextInput#ENTER_AGAIN",
+						value1 = "test");
+				}
+
+				Button.clickSave();
+			}
+
+			if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#ANSWER")) {
+				Type(
+					locator1 = "TextInput#ANSWER",
+					value1 = "test");
+
+				Button.clickSave();
+			}
+		}
+
+		SelectWindow.selectWindowTopNoSPARefresh();
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	macro loginUserWithGoogleSSOEnabledPG {
+		GoogleLogin.accountSignIn(
+			userEmailAddress = "${userEmailAddress}",
+			userPassword = "${userPassword}");
+
+		SelectWindow.selectWindowTopNoSPARefresh();
+
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#EMAIL_ADDRESS")) {
+			SelectWindow.selectWindowNoSPARefresh(locator1 = "title=Terms of Use");
+
+			GoogleLogin.acceptConditions();
+		}
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	macro loginUserWithOpenIDConnectEnabledPG {
+		OpenIDConnect.accountSignIn(
+			userEmailAddress = "${userEmailAddress}",
+			userPassword = "${userPassword}");
+
+		OpenIDConnect.acceptConditions();
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	@description = "Log into Portal as ${userFirstName} via OpenID ${openIDURL}."
+	macro loginUserWithOpenIDEnabledPG {
+		Navigator.openURL();
+
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		AssertClick(
+			locator1 = "Link#OPENID",
+			value1 = "OpenID");
+
+		Type(
+			locator1 = "SignInOpenID#OPENID_FIELD",
+			value1 = "${openIDURL}");
+
+		Click(locator1 = "Button#SIGN_IN");
+
+		if (IsElementPresent.pauseIsElementPresent(
+				locator1 = "Button#I_AGREE",
+				value1 = "I Agree")) {
+			AssertClick(
+				locator1 = "Button#I_AGREE",
+				value1 = "I Agree");
+		}
+
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#PASSWORD")) {
+			Type(
+				locator1 = "TextInput#PASSWORD",
+				value1 = "test");
+
+			Type(
+				locator1 = "TextInput#ENTER_AGAIN",
+				value1 = "test");
+
+			Button.clickSave();
+		}
+
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#ANSWER")) {
+			Type(
+				locator1 = "TextInput#ANSWER",
+				value1 = "test");
+
+			Button.clickSave();
+		}
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	@description = "Log into OpenAM as ${userScreenName} using the password ${password}."
+	macro loginUserWithOpenSSOEnabledPG {
+		Navigator.openSpecificURL(url = "${hostsURL}");
+
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		Type(
+			locator1 = "TextInput#TEXT",
+			value1 = "${userScreenName}");
+
+		Type(
+			locator1 = "TextInput#PASSWORD_TYPE",
+			value1 = "${password}");
+
+		Click(locator1 = "OpenAM#LOG_IN");
+
+		AssertElementPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	macro logoutAndLoginPG {
+		Navigator.openURL();
+
+		UserBar.signOut();
+
+		User.loginPG(
+			authenticationMethod = "${authenticationMethod}",
+			nodePort = "${nodePort}",
+			userEmailAddress = "${userLoginEmailAddress}",
+			userScreenName = "${userScreenName}");
+	}
+
+	@description = "Log out of Liferay Portal."
+	macro logoutPG {
+		if (isSet(nodePort)) {
+			Navigator.openSpecificURL(url = "http://localhost:${nodePort}");
+		}
+		else {
+			if (isSet(specificURL)) {
+				Navigator.openSpecificURL(url = "${specificURL}");
+			}
+			else {
+				Navigator.openURL();
+			}
+		}
+
+		UserBar.signOut();
+	}
+
+	@description = "Log out of Liferay Portal."
+	macro logoutUserPG {
+		Navigator.openURL();
+
+		UserBar.signOut();
+	}
+
+	macro makePrimary {
+		Click.waitForMenuToggleJSClick(
+			key_rowEntry = "${rowEntry}",
+			locator1 = "Icon#TABLE_VERTICAL_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Make Primary");
+	}
+
+	macro openUsersAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage?p_p_id=com_liferay_users_admin_web_portlet_UsersAdminPortlet");
+	}
+
+	macro removeContactInformation {
+		Click.waitForMenuToggleJSClick(
+			key_rowEntry = "${rowEntry}",
+			locator1 = "Icon#TABLE_VERTICAL_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Remove");
+	}
+
+	macro resetPassword {
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#PASSWORD")) {
+			if ((isSet(syntaxCheckingEnabled)) && ("${syntaxCheckingEnabled}" == "true")) {
+				Type(
+					locator1 = "TextInput#PASSWORD",
+					value1 = "${resetPassword}");
+
+				Type(
+					locator1 = "TextInput#ENTER_AGAIN",
+					value1 = "${resetPassword}");
+			}
+			else {
+				if ((isSet(setupWizardEnabled)) && ("${setupWizardEnabled}" == "true")) {
+					Type(
+						locator1 = "TextInput#PASSWORD",
+						value1 = "test2");
+
+					Type(
+						locator1 = "TextInput#ENTER_AGAIN",
+						value1 = "test2");
+				}
+				else {
+					Type(
+						locator1 = "TextInput#PASSWORD",
+						value1 = "test");
+
+					Type(
+						locator1 = "TextInput#ENTER_AGAIN",
+						value1 = "test");
+				}
+			}
+
+			Button.clickSave();
+
+			AssertElementNotPresent(locator1 = "TextInput#ENTER_AGAIN");
+		}
+	}
+
+	macro searchCP {
+		Pause(locator1 = "5000");
+
+		Search.searchCP(searchTerm = "${searchTerm}");
+
+		Pause(locator1 = "5000");
+	}
+
+	macro setPasswordByResetLink {
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#PASSWORD_NEW_PASSWORD_FIELD",
+			value1 = "${newPassword1}");
+
+		Type(
+			locator1 = "UsersAndOrganizationsEditUser#PASSWORD_ENTER_AGAIN_FIELD",
+			value1 = "${newPassword2}");
+
+		Button.clickSave();
+
+		if (!("${newPassword1}" == "${newPassword2}")) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "TextInput#ALERT",
+				value1 = "Please enter the same value again.");
+		}
+		else if (!(isSet(invalidateLength))) {
+			User.acceptEndUserLicenseAgreement();
+
+			User.answerPasswordReminder();
+		}
+		else if ("${invalidateLength}" == "Short") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR",
+				value1 = "That password is too short. Please make sure your password is at least 6 characters long.");
+		}
+	}
+
+	macro signInPG {
+		AssertClick(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+
+		Type(
+			locator1 = "TextInput#EMAIL_ADDRESS",
+			value1 = "${userEmailAddress}");
+
+		Type(
+			locator1 = "TextInput#PASSWORD",
+			value1 = "${emailPassword}");
+
+		Check(locator1 = "Checkbox#REMEMBER_ME");
+
+		AssertClick(
+			locator1 = "Button#SIGN_IN",
+			value1 = "Sign In");
+
+		if (IsElementPresent.pauseIsElementPresent(
+				locator1 = "Button#I_AGREE",
+				value1 = "I Agree")) {
+			AssertClick(
+				locator1 = "Button#I_AGREE",
+				value1 = "I Agree");
+		}
+
+		AssertTextEquals(
+			locator1 = "Message#INFO",
+			value1 = "Please enter your verification code.");
+
+		Type(
+			locator1 = "SignInCreateAccount#EMAIL_VERIFICATION_CODE_FIELD",
+			value1 = "${emailVerification}");
+
+		AssertClick(
+			locator1 = "Button#VERIFY",
+			value1 = "Verify");
+
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#PASSWORD")) {
+			if ((isSet(syntaxCheckingEnabled)) && ("${syntaxCheckingEnabled}" == "true")) {
+				Type(
+					locator1 = "TextInput#PASSWORD",
+					value1 = "${resetPassword}");
+
+				Type(
+					locator1 = "TextInput#ENTER_AGAIN",
+					value1 = "${resetPassword}");
+			}
+			else {
+				Type(
+					locator1 = "TextInput#PASSWORD",
+					value1 = "test");
+
+				Type(
+					locator1 = "TextInput#ENTER_AGAIN",
+					value1 = "test");
+			}
+
+			Button.clickSave();
+		}
+
+		if (IsElementPresent.pauseIsElementPresent(locator1 = "TextInput#ANSWER")) {
+			Type(
+				locator1 = "TextInput#ANSWER",
+				value1 = "test");
+
+			Button.clickSave();
+		}
+	}
+
+	macro tearDownCP {
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+		MenuItem.click(menuItem = "Active");
+
+		while (IsElementPresent(locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER", key_rowNumber = "2")) {
+			Click.waitForMenuToggleJSClick(
+				key_rowNumber = "2",
+				locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER_ELLIPSIS");
+
+			MenuItem.clickNoError(menuItem = "Deactivate");
+
+			AssertConfirm(value1 = "Are you sure you want to deactivate this?");
+		}
+
+		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+		MenuItem.click(menuItem = "Inactive");
+
+		if (IsElementPresent(locator1 = "ContentRow#ENTRY_CONTENT_ROW_1")) {
+			PortletEntry.selectAll();
+
+			ClickNoError(locator1 = "Icon#DELETE");
+
+			AssertConfirm(value1 = "Are you sure you want to permanently delete the selected users?");
+
+			Alert.viewSuccessMessage();
+		}
+
+		AssertElementPresent(locator1 = "Message#EMPTY_INFO");
+	}
+
+	macro tearDownSpecificUser {
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+		MenuItem.click(menuItem = "Active");
+
+		User.searchCP(searchTerm = "${userScreenName}");
+
+		if (IsElementPresent(locator1 = "ContentRow#ENTRY_CONTENT_ROW_1")) {
+			PortletEntry.selectAll();
+
+			ClickNoError(locator1 = "Icon#MOVE_TO_RECYCLE_BIN");
+
+			AssertConfirm(value1 = "Are you sure you want to deactivate the selected users?");
+
+			Alert.viewSuccessMessage();
+		}
+
+		Click(locator1 = "Dropdown#FILTER_AND_ORDER");
+
+		MenuItem.click(menuItem = "Inactive");
+
+		if (IsElementPresent(locator1 = "ContentRow#ENTRY_CONTENT_ROW_1")) {
+			PortletEntry.selectAll();
+
+			ClickNoError(locator1 = "Icon#MOVE_TO_RECYCLE_BIN");
+
+			AssertConfirm(value1 = "Are you sure you want to permanently delete the selected users?");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro UnassignRegularRoleCP {
+		UserNavigator.gotoUser(userScreenName = "${userScreenName}");
+
+		UserNavigator.gotoRoles();
+
+		var key_regularRoleName = "${regularRoleName}";
+
+		Click(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_REMOVE_ROLE",
+			value1 = "${regularRoleName}");
+
+		PortletEntry.save();
+
+		AssertElementNotPresent(
+			locator1 = "UsersAndOrganizationsEditUser#ROLES_REGULAR_ROLES_TABLE_TITLE",
+			value1 = "${regularRoleName}");
+	}
+
+	macro unlockUserAccount {
+		Pause(locator1 = "1000");
+
+		var key_userScreenName = "${userScreenName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		AssertClick(
+			locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+			value1 = "${userScreenName}");
+
+		AssertTextEquals(
+			locator1 = "Message#ERROR_3",
+			value1 = "Warning:This user account has been locked due to excessive failed login attempts.");
+
+		AssertClick(
+			locator1 = "Button#UNLOCK",
+			value1 = "Unlock");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro viewAddress {
+		var key_primaryValue = "${street1}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizations#USER_ADDRESS_TABLE",
+			value1 = "${city}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizations#USER_ADDRESS_TABLE",
+			value1 = "${country}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizations#USER_ADDRESS_TABLE",
+			value1 = "${postalCode}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizations#USER_ADDRESS_TABLE",
+			value1 = "${region}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UsersAndOrganizations#USER_ADDRESS_TABLE",
+			value1 = "${street1}");
+
+		if (isSet(addressType)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "UsersAndOrganizations#USER_ADDRESS_TABLE_ADDRESS_TYPE",
+				value1 = "${addressType}");
+		}
+	}
+
+	macro viewCaptchaPG {
+		if ("${captchaType}" == "captcha") {
+			AssertElementPresent.assertElementPresent(locator1 = "SignInCreateAccount#CAPTCHA_IMAGE");
+		}
+		else if ("${captchaType}" == "recaptcha") {
+			SelectFrame.selectFrameNoLoading(locator1 = "IFrame#RECAPTCHA");
+
+			AssertElementPresent.assertElementPresent(locator1 = "SignInCreateAccount#RECAPTCHA_LABEL");
+		}
+	}
+
+	macro viewContactInformation {
+		if (isSet(searchContainerType)) {
+			var key_searchContainerType = "${searchContainerType}";
+
+			// Phone Numbers
+
+			if (isSet(number)) {
+				AssertTextEquals.assertPartialText(
+					locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_PHONE_NUMBER_TABLE",
+					value1 = "${number}");
+			}
+
+			if (isSet(numberType)) {
+				AssertTextEquals.assertPartialText(
+					locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_TYPE_TABLE",
+					value1 = "${numberType}");
+			}
+
+			if (isSet(extension)) {
+				AssertTextEquals.assertPartialText(
+					locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_EXTENSION_TABLE",
+					value1 = "${extension}");
+			}
+
+			// Additional Email Addresses
+
+			if (isSet(address)) {
+				AssertTextEquals.assertPartialText(
+					locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_EMAIL_ADDRESS_TABLE",
+					value1 = "${address}");
+			}
+
+			if (isSet(addressCount)) {
+				var i = "0";
+
+				while (!("${i}" == "${addressCount}")) {
+					var i = MathUtil.sum("${i}", "1");
+
+					AssertTextEquals.assertPartialText(
+						locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_CONTAINER_TABLE",
+						value1 = "${addressPrefix}${i}@liferay.com");
+				}
+			}
+
+			// Websites
+
+			if (isSet(url)) {
+				AssertTextEquals.assertPartialText(
+					locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_EMAIL_ADDRESS_TABLE",
+					value1 = "${url}");
+			}
+
+			if (isSet(websiteType)) {
+				AssertTextEquals.assertPartialText(
+					locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_TYPE_TABLE",
+					value1 = "${websiteType}");
+			}
+		}
+
+		// Instant Messenger
+
+		if (isSet(skype)) {
+			AssertTextEquals.assertValue(
+				locator1 = "TextInput#SKYPE",
+				value1 = "${skype}");
+		}
+	}
+
+	macro viewCP {
+		if ("${userEmailAddressVariation}" == "At") {
+			Pause(locator1 = "1000");
+
+			Search.searchCP(searchTerm = "${userEmailAddress}");
+
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+		}
+		else if ("${userEmailAddressVariation}" == "Period") {
+			Pause(locator1 = "1000");
+
+			Search.searchCP(searchTerm = "${userEmailAddress}");
+
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+		}
+		else if ("${userScreenNameVariation}" == "Invalid") {
+			Pause(locator1 = "1000");
+
+			Search.searchCP(searchTerm = "${userScreenName}");
+
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "No users were found.");
+		}
+		else {
+			var key_userScreenName = "${userScreenName}";
+
+			Pause(locator1 = "1000");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizations#USER_TABLE_NAME",
+				value1 = "${userFirstName} ${userLastName}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizations#USER_TABLE_SCREEN_NAME",
+				value1 = "${userScreenName}");
+
+			AssertClick(
+				locator1 = "UsersAndOrganizations#USER_TABLE_NAME",
+				value1 = "${userFirstName} ${userLastName}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_SCREEN_NAME_FIELD",
+				value1 = "${userScreenName}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_EMAIL_ADDRESS_FIELD",
+				value1 = "${userEmailAddress}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_FIRST_NAME_FIELD",
+				value1 = "${userFirstName}");
+
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#DETAILS_LAST_NAME_FIELD",
+				value1 = "${userLastName}");
+
+			if (isSet(userBirthday)) {
+				AssertTextEquals(
+					locator1 = "UsersAndOrganizationsEditUser#DETAILS_BIRTHDAY_FIELD",
+					value1 = "${userBirthday}");
+			}
+
+			if (isSet(userJobTitle)) {
+				AssertTextEquals(
+					locator1 = "UsersAndOrganizationsEditUser#DETAILS_JOB_TITLE_FIELD",
+					value1 = "${userJobTitle}");
+			}
+		}
+	}
+
+	macro viewIsPrimary {
+		if (isSet(primaryValue)) {
+			var key_primaryValue = "${primaryValue}";
+
+			AssertElementPresent(locator1 = "UsersAndOrganizations#USER_ADDRESS_PRIMARY_TABLE");
+		}
+
+		if (isSet(searchContainerType)) {
+			var key_contactInfoPrimaryValue = "${contactInfoPrimaryValue}";
+			var key_searchContainerType = "${searchContainerType}";
+
+			AssertElementPresent(locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_PRIMARY_TABLE");
+		}
+	}
+
+	macro viewLoggedInPG {
+		ProductMenuHelper.expandPanel(panel = "Control Panel");
+
+		if ("${authenticationMethod}" == "By Screen Name") {
+			AssertElementNotPresent(locator1 = "TextInput#SCREEN_NAME");
+		}
+		else {
+			AssertElementNotPresent(locator1 = "TextInput#EMAIL_ADDRESS");
+		}
+
+		AssertElementNotPresent(locator1 = "TextInput#PASSWORD");
+
+		AssertElementNotPresent(locator1 = "Checkbox#REMEMBER_ME");
+
+		AssertElementNotPresent(locator1 = "Button#SIGN_IN");
+
+		AssertVisible(locator1 = "UserBar#USER_AVATAR_IMAGE");
+	}
+
+	macro viewLoggedOutPG {
+		AssertElementNotPresent(locator1 = "UserBar#USER_AVATAR_IMAGE");
+
+		AssertElementNotPresent(locator1 = "ControlMenu#ADD");
+
+		AssertTextEquals(
+			locator1 = "UserBar#USER_SIGN_IN",
+			value1 = "Sign In");
+	}
+
+	macro viewLoggedOutWithCASEnabledPG {
+		AssertTextEquals(
+			locator1 = "CAS#APP_NAME_HEADER",
+			value1 = "Central Authentication Service (CAS)");
+
+		AssertTextEquals(
+			locator1 = "CAS#LOGOUT_SUCCESSFUL_HEADER",
+			value1 = "Logout successful");
+
+		AssertTextEquals(
+			locator1 = "CAS#LOGOUT_SUCCESSFUL_MESSAGE_1",
+			value1 = "You have successfully logged out of the Central Authentication Service.");
+
+		AssertTextEquals(
+			locator1 = "CAS#LOGOUT_SUCCESSFUL_MESSAGE_2",
+			value1 = "For security reasons, exit your web browser.");
+	}
+
+	macro viewLoginPG {
+		if ("${authenticationMethod}" == "By Screen Name") {
+			AssertElementPresent(locator1 = "TextInput#SCREEN_NAME");
+		}
+		else {
+			AssertElementPresent(locator1 = "TextInput#EMAIL_ADDRESS");
+		}
+
+		AssertElementPresent(locator1 = "TextInput#PASSWORD");
+
+		AssertElementPresent(locator1 = "Checkbox#REMEMBER_ME");
+
+		AssertTextEquals(
+			locator1 = "Button#SIGN_IN",
+			value1 = "Sign In");
+	}
+
+	macro viewNotPrimary {
+		if (isSet(primaryValue)) {
+			var key_primaryValue = "${primaryValue}";
+
+			AssertElementNotPresent(locator1 = "UsersAndOrganizations#USER_ADDRESS_PRIMARY_TABLE");
+		}
+
+		if (isSet(searchContainerType)) {
+			var key_contactInfoPrimaryValue = "${contactInfoPrimaryValue}";
+			var key_searchContainerType = "${searchContainerType}";
+
+			AssertElementNotPresent(locator1 = "UsersAndOrganizations#USER_CONTACT_INFORMATION_PRIMARY_TABLE");
+		}
+	}
+
+	macro viewNoUsersFoundCP {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No users were found.");
+	}
+
+	macro viewUserCustomFieldsCP {
+		var key_customFieldName = "${customFieldName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizationsEditUser#CUSTOM_FIELDS_LABEL",
+			value1 = "${customFieldName}");
+
+		if (isSet(startingValue)) {
+			if ("${customFieldType}" == "Text Field") {
+				AssertTextEquals(
+					key_fieldLabel = "${customFieldName}",
+					locator1 = "TextInput#GENERIC_TEXT_INPUT",
+					value1 = "${startingValue}");
+			}
+		}
+	}
+
+	macro viewUserInfomationOrganizationSitesCP {
+		UserNavigator.gotoMemberships();
+
+		var key_siteName = "${siteName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_TABLE_NAME",
+			value1 = "${orgName}");
+	}
+
+	macro viewUserInfomationRolesCP {
+		UserNavigator.gotoRoles();
+
+		var key_roleTitle = "${roleTitle}";
+
+		if ("${roleType}" == "Inherited Site Roles") {
+			AssertTextEquals(
+				locator1 = "UsersAndOrganizationsEditUser#ROLES_INHERITED_SITE_ROLES_TABLE_TITLE",
+				value1 = "${roleTitle}");
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "Permissions#CONTENT_PERMISSIONS_ROLE_NAME",
+				value1 = "${roleTitle}");
+		}
+	}
+
+	macro viewUserInfomationSitesCP {
+		UserNavigator.gotoMemberships();
+
+		var key_siteName = "${siteName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_TABLE_NAME",
+			value1 = "${siteName}");
+	}
+
+	macro viewUserInfomationUserGroupsCP {
+		UserNavigator.gotoMemberships();
+
+		var key_userGroupName = "${userGroupName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizationsEditUser#USER_GROUPS_TABLE_NAME",
+			value1 = "${userGroupName}");
+	}
+
+	macro viewUserSiteCP {
+		UserNavigator.gotoMemberships();
+
+		var key_siteName = "${siteName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizationsEditUser#SITES_TABLE_NAME",
+			value1 = "${siteName}");
+	}
+
+}

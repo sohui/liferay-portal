@@ -1,234 +1,247 @@
-<definition>
-	<command name="deleteCP">
-		<var name="key_assetName" value="${assetName}" />
+definition {
 
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" value1="${assetName}" />
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_TYPE" value1="${assetType}" />
-		<execute function="Click" locator1="RecycleBin#RECYCLE_BIN_TABLE_ACTIONS" />
-		<execute function="AssertClickNoError" locator1="MenuItem#DELETE" value1="Delete" />
-		<execute function="Confirm#waitForConfirmation" value1="Are you sure you want to delete this? It will be deleted immediately." />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="The Recycle Bin is empty." />
-		<execute function="AssertTextNotPresent" value1="${assetName}" />
-	</command>
+	macro clickEllipsisItem {
+		LexiconTable.clickEllipsisItem(
+			item = "${item}",
+			tableEntry = "${assetName}");
+	}
 
-	<command name="disableRecycleBinViaSiteSettings">
-		<execute macro="Navigator#gotoTab">
-			<var name="tab" value="Advanced" />
-		</execute>
+	macro deleteCP {
+		var key_assetName = "${assetName}";
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Recycle Bin" />
-		</execute>
+		LexiconTable.viewTableEntryTitle(tableEntry = "${assetName}");
 
-		<execute function="Uncheck#uncheckToggleSwitchNoErrorNoAssert" locator1="Checkbox#ENABLE_RECYCLE_BIN" />
+		LexiconTable.viewTableEntryText(
+			tableEntry = "${assetName}",
+			tableEntryText = "${assetType}");
 
-		<execute function="Confirm" value1="Disabling the Recycle Bin prevents the restoring of content that has been moved to the Recycle Bin." />
+		LexiconTable.delete(tableEntry = "${assetName}");
 
-		<execute function="AssertNotChecked#assertNotCheckedToggleSwitch" locator1="Checkbox#ENABLE_RECYCLE_BIN" />
+		Alert.viewSuccessMessage();
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "The Recycle Bin is empty.");
 
-	<command name="dragAndDropContentToRecycleBin">
-		<var name="key_webContentTitle" value="${assetName}" />
+		LexiconTable.viewTableEntryNotPresent(tableEntry = "${assetName}");
+	}
 
-		<execute function="AssertTextEquals" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${assetName}" />
+	macro disableRecycleBinViaSiteSettings {
+		Navigator.gotoNavTab(navTab = "Advanced");
 
-		<execute function="DragAndDrop" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" locator2="RecycleBin#RECYCLE_BIN" value1="${assetName}" />
-	</command>
+		Panel.expandPanel(panel = "Recycle Bin");
 
-	<command name="emptyCP">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+		Uncheck.uncheckToggleSwitchNoErrorNoAssert(locator1 = "Checkbox#ENABLE_RECYCLE_BIN");
 
-		<if>
-			<condition function="IsElementPresent" locator1="RecycleBin#EMPTY_RECYCLE_BIN" />
-			<then>
-				<execute function="AssertClickNoError" locator1="RecycleBin#EMPTY_RECYCLE_BIN" value1="Empty the Recycle Bin" />
-				<execute function="Confirm#waitForConfirmation" value1="Are you sure you want to empty the Recycle Bin?" />
-				<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="The Recycle Bin is empty." />
-			</then>
-		</if>
-	</command>
+		AssertConfirm(value1 = "Disabling the Recycle Bin prevents the restoring of content that has been moved to the Recycle Bin.");
 
-	<command name="gotoEntryViaSuccessMessage">
-		<var name="key_assetName" value="${assetName}" />
+		AssertNotChecked.assertNotCheckedNotVisible(locator1 = "Checkbox#ENABLE_RECYCLE_BIN");
 
-		<execute function="AssertClick" locator1="RecycleBin#SUCCESS_MESSAGE_CONTENT_LINK" value1="the Recycle Bin" />
+		PortletEntry.save();
+	}
 
-		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="Recycle Bin" />
-		</execute>
-	</command>
+	macro emptyCP {
+		Click(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
 
-	<command name="restoreContentFromFolderCP">
-		<var name="key_assetName" value="${assetName}" />
+		if (IsElementPresent(locator1 = "RecycleBin#EMPTY_RECYCLE_BIN")) {
+			AssertClickNoError(
+				locator1 = "RecycleBin#EMPTY_RECYCLE_BIN",
+				value1 = "Empty the Recycle Bin");
 
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" value1="${assetName}" />
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_TYPE" value1="${assetType}" />
-		<execute function="AssertClick" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" value1="${assetName}" />
+			AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to empty the Recycle Bin?");
 
-		<var name="key_assetName" value="${documentName}" />
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "The Recycle Bin is empty.");
+		}
+	}
 
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_FOLDER_DOCUMENT_NAME" value1="${documentName}" />
+	macro gotoEntryViaSuccessMessage {
+		var key_assetName = "${assetName}";
 
-		<var name="key_rowEntry" value="${documentName}" />
+		AssertClick(
+			locator1 = "RecycleBin#SUCCESS_MESSAGE_CONTENT_LINK",
+			value1 = "the Recycle Bin");
 
-		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+		SiteAdmin.viewPortletTitle(portletTitle = "Recycle Bin");
+	}
 
-		<execute function="AssertClick" locator1="MenuItem#RESTORE" value1="Restore" />
-		<execute function="SelectFrame" locator1="RecycleBin#RECYCLE_BIN_FOLDER_WARNING_IFRAME" />
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_FOLDER_WARNING_INFO" value1="The original Folder does not exist anymore. Choose a different Folder to restore ${documentName}." />
-		<execute function="AssertClick" locator1="RecycleBin#RECYCLE_BIN_FOLDER_WARNING_CHOOSE_THIS_FOLDER_BUTTON" value1="Choose This Folder" />
-		<execute function="SelectFrameTop" value1="relative=top" />
+	macro openRecycleBinAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/recycle_bin/entries");
+	}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_RESTORE_SUCCESS" value1="The ${assetType2} ${documentName} was restored to ${assetRestoreLocation}." />
-	</command>
+	macro restoreContentFromFolderCP {
+		var key_assetName = "${assetName}";
 
-	<command name="restoreCP">
-		<var name="key_assetName" value="${assetName}" />
+		LexiconTable.viewTableEntryTitle(tableEntry = "${assetName}");
 
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" value1="${assetName}" />
-		<execute function="Click" locator1="RecycleBin#RECYCLE_BIN_TABLE_ACTIONS" />
-		<execute function="AssertClick" locator1="MenuItem#RESTORE" value1="Restore" />
+		LexiconTable.viewTableEntryText(
+			tableEntry = "${assetName}",
+			tableEntryText = "${assetType}");
 
-		<if>
-			<isset var="assetType" />
-			<then>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_RESTORE_SUCCESS" value1="${assetType}" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_RESTORE_SUCCESS" value1="The item was restored." />
-			</else>
-		</if>
+		LexiconTable.clickTableEntryTitle(tableEntry = "${assetName}");
 
-		<if>
-			<isset var="assetRestoreLocation" />
-			<then>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_RESTORE_SUCCESS" value1="${assetRestoreLocation}" />
-			</then>
-		</if>
+		AssertTextEquals(
+			key_assetName = "${documentName}",
+			locator1 = "RecycleBin#RECYCLE_BIN_FOLDER_DOCUMENT_NAME",
+			value1 = "${documentName}");
 
-		<if>
-			<equals arg1="${multipleAssets}" arg2="true" />
-			<then>
-				<execute function="AssertElementNotPresent" locator1="Message#EMPTY_INFO" value1="The Recycle Bin is empty." />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="The Recycle Bin is empty." />
-			</else>
-		</if>
+		RecycleBin.clickEllipsisItem(
+			assetName = "${documentName}",
+			item = "Restore");
 
-		<execute function="AssertElementNotPresent" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" />
-	</command>
+		SelectFrame(locator1 = "RecycleBin#RECYCLE_BIN_FOLDER_WARNING_IFRAME");
 
-	<command name="restoreOverwriteCP">
-		<var name="key_assetName" value="${assetName}" />
+		AssertTextEquals(
+			locator1 = "Message#USER_BLOCKED",
+			value1 = "The original Folder does not exist anymore. Choose a different Folder to restore ${documentName}.");
 
-		<execute function="Click" locator1="RecycleBin#RECYCLE_BIN_TABLE_ACTIONS" />
+		AssertClick(
+			locator1 = "Button#CHOOSE_THIS_FOLDER",
+			value1 = "Choose This Folder");
 
-		<execute function="AssertClick" locator1="MenuItem#RESTORE" value1="Restore" />
+		SelectFrameTop(value1 = "relative=top");
 
-		<execute function="AssertTextEquals" locator1="Message#ERROR" value1="An entry with name ${assetName} already exists." />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#RECYCLE_BIN_RESTORE_SUCCESS",
+			value1 = "The ${assetType2} ${documentName} was restored to ${assetRestoreLocation}.");
+	}
 
-		<execute function="Click" locator1="RecycleBin#RECYCLE_BIN_WARNING_OVERWRITE_RADIO" />
+	macro restoreCP {
+		var key_assetName = "${assetName}";
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		LexiconTable.viewTableEntryTitle(tableEntry = "${assetName}");
 
-	<command name="restoreWarningCP">
-		<var name="key_assetName" value="${assetName}" />
+		RecycleBin.clickEllipsisItem(
+			assetName = "${assetName}",
+			item = "Restore");
 
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" value1="${assetName}" />
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_TYPE" value1="${assetType}" />
-		<execute function="Click" locator1="RecycleBin#RECYCLE_BIN_TABLE_ACTIONS" />
-		<execute function="AssertClick" locator1="MenuItem#RESTORE" value1="Restore" />
-		<execute function="AssertTextEquals" locator1="Message#ERROR" value1="An entry with name ${assetName} already exists." />
-		<execute function="Click" locator1="RecycleBin#RECYCLE_BIN_WARNING_KEEP_AND_RENAME_RADIO" />
-		<execute function="Type" locator1="RecycleBin#RECYCLE_BIN_WARNING_KEEP_AND_RENAME_FIELD" value1="${newAssetName}" />
-		<execute macro="Button#clickSave" />
+		if (isSet(assetType)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#RECYCLE_BIN_RESTORE_SUCCESS",
+				value1 = "${assetType}");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#RECYCLE_BIN_RESTORE_SUCCESS",
+				value1 = "The item was restored.");
+		}
 
-		<var name="key_assetType" value="${newAssetName}" />
+		if (isSet(assetRestoreLocation)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#RECYCLE_BIN_RESTORE_SUCCESS",
+				value1 = "${assetRestoreLocation}");
+		}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS_CONTENT" value1="${newAssetName}" />
+		if ("${multipleAssets}" == "true") {
+			AssertNotVisible(locator1 = "Message#EMPTY_INFO");
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "Message#EMPTY_INFO",
+				value1 = "The Recycle Bin is empty.");
+		}
 
-		<var name="key_assetRestoreLocation" value="${assetRestoreLocation}" />
+		LexiconTable.viewTableEntryNotPresent(tableEntry = "${assetName}");
+	}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS_RESTORE_LOCATION" value1="${assetRestoreLocation}" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="The Recycle Bin is empty." />
-		<execute function="AssertElementNotPresent" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" />
-	</command>
+	macro restoreOverwriteCP {
+		RecycleBin.clickEllipsisItem(
+			assetName = "${assetName}",
+			item = "Restore");
 
-	<command name="searchCP">
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${assetName}" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-	</command>
+		Alert.viewErrorMessage(errorMessage = "An entry with name ${assetName} already exists.");
 
-	<command name="undoMoveToRecycleBin">
-		<execute function="AssertClick" locator1="Button#UNDO" value1="Undo" />
-	</command>
+		Click(locator1 = "RecycleBin#RECYCLE_BIN_WARNING_OVERWRITE_RADIO");
 
-	<command name="viewCP">
-		<var name="key_assetName" value="${assetName}" />
+		PortletEntry.save();
+	}
 
-		<if>
-			<condition function="IsElementPresent" locator1="RecycleBin#EMPTY_RECYCLE_BIN" />
+	macro undoMoveToRecycleBin {
+		AssertClick(
+			locator1 = "Button#UNDO",
+			value1 = "Undo");
+	}
 
-			<then>
-				<execute function="Click" locator1="Icon#TOOLTIP" />
-				<if>
-					<isset var="customMaxAgeMsg" />
-					<then>
-						<execute function="AssertTextEquals#assertPartialText" locator1="Message#RECYCLE_BIN_INFO" value1="${customMaxAgeMsg}" />
-					</then>
-					<else>
-						<execute function="AssertTextEquals" locator1="Message#RECYCLE_BIN_INFO" value1="The Recycle Bin shows all assets removed by users. Assets can be restored or permanently deleted.Entries that have been in the Recycle Bin for more than 1 month are automatically deleted." />
-					</else>
-				</if>
-			</then>
-		</if>
+	macro viewCP {
+		var key_assetName = "${assetName}";
 
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" value1="${assetName}" />
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_TYPE" value1="${assetType}" />
-		<execute function="AssertElementPresent" locator1="RecycleBin#RECYCLE_BIN_TABLE_REMOVED_DATE" />
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_REMOVED_BY" value1="${deleteUser}" />
-		<execute function="AssertElementPresent" locator1="RecycleBin#RECYCLE_BIN_TABLE_ACTIONS" />
-	</command>
+		if (IsElementPresent(locator1 = "RecycleBin#EMPTY_RECYCLE_BIN")) {
+			MouseOver(locator1 = "Icon#TOOLTIP");
 
-	<command name="viewDefaultCP">
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="The Recycle Bin is empty." />
-		<execute function="AssertTextNotPresent" value1="${assetName}" />
-	</command>
+			var maxAgeField = "1 month";
 
-	<command name="viewDuplicateNames">
-		<var name="key_assetName" value="${assetName}" />
+			if (isSet(customMaxAge)) {
+				var maxAgeField = "${customMaxAge}";
+			}
 
-		<var name="key_rowNumber" value="1" />
+			RecycleBin.viewRecycleBinMaxAge(maxAgeField = "${maxAgeField}");
 
-		<execute function="AssertTextEquals" locator1="ContentRow#ENTRY_CONTENT_ROW_NUMBER_TD_2" value1="${assetName}" />
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#TOOLTIP",
+				value1 = "The Recycle Bin shows all assets removed by users. Assets can be restored or permanently deleted.");
+		}
 
-		<var name="key_rowNumber" value="2" />
+		LexiconTable.viewTableEntryTitleLink(tableEntry = "${assetName}");
 
-		<execute function="AssertTextEquals" locator1="ContentRow#ENTRY_CONTENT_ROW_NUMBER_TD_2" value1="${assetName}" />
-	</command>
+		LexiconTable.viewTableEntryText(
+			tableEntry = "${assetName}",
+			tableEntryText = "${assetType}");
 
-	<command name="viewEntry">
-		<var name="key_assetName" value="${assetName}" />
+		LexiconTable.viewTableEntryPartialText(
+			tableEntry = "${assetName}",
+			tableEntryPartialText = "Ago");
 
-		<execute function="AssertTextEquals" locator1="RecycleBin#RECYCLE_BIN_TABLE_NAME" value1="${assetName}" />
+		LexiconTable.viewTableEntryText(
+			tableEntry = "${assetName}",
+			tableEntryText = "${deleteUser}");
 
-		<execute function="Click" locator1="RecycleBin#RECYCLE_BIN_TABLE_ACTIONS" />
+		AssertVisible(
+			key_tableEntry = "${assetName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+	}
 
-		<execute function="AssertElementPresent" locator1="MenuItem#RESTORE" />
-		<execute function="AssertElementPresent" locator1="MenuItem#DELETE" />
-	</command>
+	macro viewDefaultCP {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "The Recycle Bin is empty.");
 
-	<command name="viewRecycleBinMaxAge">
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#INFO" value1="Entries that have been in the Recycle Bin for more than ${maxAgeField} minute are automatically deleted." />
-	</command>
+		LexiconTable.viewTableEntryNotPresent(tableEntry = "${assetName}");
+	}
 
-	<command name="viewRecyclebinViaSiteSettingsCP">
-		<execute function="AssertClick" locator1="SitesEditSite#MENU_BASIC_INFORMATION_RECYCLE_BIN" value1="Recycle Bin" />
-		<execute function="AssertTextEquals#assertValue" locator1="TextInput#TRASH_ENTRIES_MAX_AGE" value1="${maxAgeField}" />
-	</command>
-</definition>
+	macro viewDuplicateNames {
+		var key_assetName = "${assetName}";
+		var key_rowNumber = "1";
+
+		AssertTextEquals(
+			locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER_TD_2",
+			value1 = "${assetName}");
+
+		var key_rowNumber = "2";
+
+		AssertTextEquals(
+			locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER_TD_2",
+			value1 = "${assetName}");
+	}
+
+	macro viewEntry {
+		var key_assetName = "${assetName}";
+
+		LexiconTable.viewTableEntryTitle(tableEntry = "${assetName}");
+
+		Click(
+			key_tableEntry = "${assetName}",
+			locator1 = "LexiconTable#TABLE_ENTRY_ELLIPSIS");
+
+		MenuItem.viewPresent(menuItem = "Restore");
+
+		MenuItem.viewPresent(menuItem = "Delete");
+	}
+
+	macro viewRecycleBinMaxAge {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#TOOLTIP",
+			value1 = "Entries that have been in the Recycle Bin for more than ${maxAgeField} are automatically deleted.");
+	}
+
+}

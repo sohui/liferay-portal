@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.highlight.HighlightUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -156,8 +156,9 @@ public class Summary {
 			text, _ESCAPE_SAFE_HIGHLIGHTS, HighlightUtil.HIGHLIGHTS);
 	}
 
-	private static final String[] _ESCAPE_SAFE_HIGHLIGHTS =
-		{"[@HIGHLIGHT1@]", "[@HIGHLIGHT2@]"};
+	private static final String[] _ESCAPE_SAFE_HIGHLIGHTS = {
+		"[@HIGHLIGHT1@]", "[@HIGHLIGHT2@]"
+	};
 
 	private String _content;
 	private boolean _escape = true;

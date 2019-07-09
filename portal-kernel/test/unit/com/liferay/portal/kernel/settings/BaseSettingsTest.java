@@ -19,12 +19,10 @@ import java.util.Collections;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.powermock.api.mockito.PowerMockito;
-
 /**
  * @author Iván Zaera
  */
-public class BaseSettingsTest extends PowerMockito {
+public class BaseSettingsTest {
 
 	public BaseSettingsTest() {
 		_parentSettings = new MemorySettings();
@@ -43,8 +41,9 @@ public class BaseSettingsTest extends PowerMockito {
 	@Test
 	public void testGetModifiableSettingsForUnmodifiableBaseSettings() {
 		ModifiableSettings modifiableSettings = new MemorySettings();
+
 		BaseSettings baseSettings = new ParameterMapSettings(
-			Collections.<String, String[]> emptyMap(), modifiableSettings);
+			Collections.<String, String[]>emptyMap(), modifiableSettings);
 
 		Assert.assertFalse(baseSettings instanceof ModifiableSettings);
 		Assert.assertSame(

@@ -14,9 +14,10 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.cache.PortalCache;
-import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.HashSet;
@@ -66,7 +67,7 @@ public class SQLQueryTableNamesUtil {
 			}
 		}
 
-		tableNames = tableNameSet.toArray(new String[tableNameSet.size()]);
+		tableNames = tableNameSet.toArray(new String[0]);
 
 		_portalCache.put(sql, tableNames);
 
@@ -109,6 +110,8 @@ public class SQLQueryTableNamesUtil {
 	}
 
 	private static final PortalCache<String, String[]> _portalCache =
-		SingleVMPoolUtil.getPortalCache(SQLQueryTableNamesUtil.class.getName());
+		PortalCacheHelperUtil.getPortalCache(
+			PortalCacheManagerNames.SINGLE_VM,
+			SQLQueryTableNamesUtil.class.getName());
 
 }

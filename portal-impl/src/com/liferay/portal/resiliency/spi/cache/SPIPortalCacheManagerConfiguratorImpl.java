@@ -14,6 +14,7 @@
 
 package com.liferay.portal.resiliency.spi.cache;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.PortalCacheManager;
 import com.liferay.portal.kernel.cache.PortalCacheManagerProvider;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.nio.intraband.proxy.TargetLocator;
 import com.liferay.portal.kernel.resiliency.spi.SPI;
 import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.resiliency.spi.cache.SPIPortalCacheManagerConfigurator;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.nio.intraband.cache.BaseIntrabandPortalCacheManager;
 import com.liferay.portal.nio.intraband.proxy.IntrabandProxyInstallationUtil;
 import com.liferay.portal.nio.intraband.proxy.IntrabandProxyUtil;
@@ -81,16 +81,13 @@ public class SPIPortalCacheManagerConfiguratorImpl
 
 		Class
 			<? extends PortalCacheManager
-				<? extends Serializable, ? extends Serializable>>
-					stubClass =
-						(Class
-							<? extends PortalCacheManager
-								<? extends Serializable,
-									? extends Serializable>>)
-										IntrabandProxyUtil.getStubClass(
-											BaseIntrabandPortalCacheManager.
-												class,
-											PortalCacheManager.class.getName());
+				<? extends Serializable, ? extends Serializable>> stubClass =
+					(Class
+						<? extends PortalCacheManager
+							<? extends Serializable, ? extends Serializable>>)
+								IntrabandProxyUtil.getStubClass(
+									BaseIntrabandPortalCacheManager.class,
+									PortalCacheManager.class.getName());
 
 		stubProxyMethodSignatures = IntrabandProxyUtil.getProxyMethodSignatures(
 			stubClass);

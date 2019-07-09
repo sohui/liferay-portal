@@ -14,14 +14,19 @@
 
 package com.liferay.portal.kernel.security.service.access.policy;
 
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
+import com.liferay.petra.lang.CentralizedThreadLocal;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Mika Koivisto
+ * @author     Mika Koivisto
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ *             com.liferay.portal.kernel.security.auth.verifier.AuthVerifierResult#getSettings(
+ *             )} with key {@link
+ *             ServiceAccessPolicy#SERVICE_ACCESS_POLICY_NAMES}
  */
+@Deprecated
 public class ServiceAccessPolicyThreadLocal {
 
 	public static void addActiveServiceAccessPolicyName(
@@ -50,7 +55,8 @@ public class ServiceAccessPolicyThreadLocal {
 	}
 
 	private static final ThreadLocal<List<String>>
-		_activeServiceAccessPolicyNames = new AutoResetThreadLocal<>(
-			AutoResetThreadLocal.class + "._activeServiceAccessPolicyNames");
+		_activeServiceAccessPolicyNames = new CentralizedThreadLocal<>(
+			ServiceAccessPolicyThreadLocal.class +
+				"._activeServiceAccessPolicyNames");
 
 }

@@ -14,22 +14,38 @@
 
 package com.liferay.exportimport.kernel.lar;
 
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.concurrent.Callable;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public class ExportImportProcessCallbackRegistryUtil {
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	public static void registerCallback(Callable<?> callable) {
 		_exportImportProcessCommitCallbackRegistry.registerCallback(callable);
 	}
 
-	private static final ExportImportProcessCallbackRegistry
+	public static void registerCallback(
+		String processId, Callable<?> callable) {
+
+		_exportImportProcessCommitCallbackRegistry.registerCallback(
+			processId, callable);
+	}
+
+	private static volatile ExportImportProcessCallbackRegistry
 		_exportImportProcessCommitCallbackRegistry =
-			ProxyFactory.newServiceTrackedInstance(
-				ExportImportProcessCallbackRegistry.class);
+			ServiceProxyFactory.newServiceTrackedInstance(
+				ExportImportProcessCallbackRegistry.class,
+				ExportImportProcessCallbackRegistryUtil.class,
+				"_exportImportProcessCommitCallbackRegistry", false);
 
 }

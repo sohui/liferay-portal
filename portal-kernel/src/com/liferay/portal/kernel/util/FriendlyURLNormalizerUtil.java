@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.util.regex.Pattern;
 
 /**
@@ -24,41 +22,47 @@ import java.util.regex.Pattern;
  */
 public class FriendlyURLNormalizerUtil {
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static FriendlyURLNormalizer getFriendlyURLNormalizer() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			FriendlyURLNormalizerUtil.class);
-
 		return _friendlyURLNormalizer;
 	}
 
 	public static String normalize(String friendlyURL) {
-		return getFriendlyURLNormalizer().normalize(friendlyURL);
+		return _friendlyURLNormalizer.normalize(friendlyURL);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public static String normalize(
 		String friendlyURL, Pattern friendlyURLPattern) {
 
-		return getFriendlyURLNormalizer().normalize(
+		return _friendlyURLNormalizer.normalize(
 			friendlyURL, friendlyURLPattern);
 	}
 
+	public static String normalizeWithEncoding(String friendlyURL) {
+		return _friendlyURLNormalizer.normalizeWithEncoding(friendlyURL);
+	}
+
 	public static String normalizeWithPeriodsAndSlashes(String friendlyURL) {
-		return getFriendlyURLNormalizer().normalizeWithPeriodsAndSlashes(
+		return _friendlyURLNormalizer.normalizeWithPeriodsAndSlashes(
 			friendlyURL);
 	}
 
 	public void setFriendlyURLNormalizer(
 		FriendlyURLNormalizer friendlyURLNormalizer) {
 
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_friendlyURLNormalizer = friendlyURLNormalizer;
 	}
 
-	private static FriendlyURLNormalizer _friendlyURLNormalizer;
+	private static volatile FriendlyURLNormalizer _friendlyURLNormalizer =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			FriendlyURLNormalizer.class, FriendlyURLNormalizerUtil.class,
+			"_friendlyURLNormalizer", true);
 
 }

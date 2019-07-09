@@ -14,10 +14,10 @@
 
 package com.liferay.portal.fabric.local.worker;
 
-import com.liferay.portal.fabric.status.JMXProxyUtil.ProcessCallableExecutor;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
-import com.liferay.portal.kernel.process.ProcessCallable;
-import com.liferay.portal.kernel.process.ProcessChannel;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.process.ProcessCallable;
+import com.liferay.petra.process.ProcessChannel;
+import com.liferay.portal.fabric.status.JMXProxyUtil;
 
 import java.io.Serializable;
 
@@ -25,7 +25,7 @@ import java.io.Serializable;
  * @author Shuyang Zhou
  */
 public class LocalFabricWorkerProcessCallableExecutor
-	implements ProcessCallableExecutor {
+	implements JMXProxyUtil.ProcessCallableExecutor {
 
 	public LocalFabricWorkerProcessCallableExecutor(
 		ProcessChannel<? extends Serializable> processChannel) {

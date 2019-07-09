@@ -1,11 +1,15 @@
-Liferay-Releng-App-Description: This app exposes additional classes and methods that are not present in Liferay's out-of-the-box API. These additional classes and methods are required for the Screenlets to work correctly.<br /><br />Please report issues with the Liferay Screens Compatibility Plugin by creating a ticket in https://issues.liferay.com/browse/LMW.
+Liferay-Releng-App-Description: %liferay-releng-app-description
 Liferay-Releng-App-Title: ${liferay.releng.app.title.prefix} Screens Compatibility
-Liferay-Releng-Bundle: false
+Liferay-Releng-Bundle: true
 Liferay-Releng-Category: Utility
 Liferay-Releng-Demo-Url:
-Liferay-Releng-Labs: true
+Liferay-Releng-Deprecated: false
+Liferay-Releng-Fix-Delivery-Method: core
+Liferay-Releng-Labs: false
 Liferay-Releng-Marketplace: true
+Liferay-Releng-Portal-Required: true
 Liferay-Releng-Public: ${liferay.releng.public}
 Liferay-Releng-Restart-Required: true
+Liferay-Releng-Suite: foundation
 Liferay-Releng-Support-Url: http://www.liferay.com
 Liferay-Releng-Supported: ${liferay.releng.supported}

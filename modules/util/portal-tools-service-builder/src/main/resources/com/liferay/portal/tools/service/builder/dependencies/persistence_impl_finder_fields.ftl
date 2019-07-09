@@ -1,12 +1,18 @@
-<#assign finderColsList = finder.getColumns()>
+<#if entityFinder.where?? && entityFinder.DBWhere?? && (entityFinder.where != entityFinder.DBWhere)>
+	<#assign entityFinderDBWhere = true />
+<#else>
+	<#assign entityFinderDBWhere = false />
+</#if>
 
-<#list finderColsList as finderCol>
-	<#assign finderColName = finderCol.name finderFieldSuffix = "">
+<#assign entityColumns = entityFinder.entityColumns />
+
+<#list entityColumns as entityColumn>
+	<#assign entityColumnName = entityColumn.name finderFieldSuffix = "" />
 
 	<#include "persistence_impl_finder_field.ftl">
 
-	<#if entity.isPermissionCheckEnabled(finder) && !entity.isPermissionedModel() && (finderCol.name != finderCol.DBName)>
-		<#assign finderColName = finderCol.DBName finderFieldSuffix = finderFieldSQLSuffix>
+	<#if entity.isPermissionCheckEnabled(entityFinder) && !entity.isPermissionedModel() && ((entityColumn.name != entityColumn.DBName) || entityFinderDBWhere)>
+		<#assign entityColumnName = entityColumn.DBName finderFieldSuffix = finderFieldSQLSuffix />
 
 		<#include "persistence_impl_finder_field.ftl">
 	</#if>

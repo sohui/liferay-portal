@@ -20,23 +20,13 @@
 </tr>
 <!--NAVIGATION-->
 <tr>
-	<td>NAVIGATION_PERMISSIONS</td>
-	<td>//ul[contains(@class,'nav') and contains(@class,'nav-pills')]/li/a[contains(.,'Permissions')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>NAVIGATION_SHARING</td>
-	<td>//ul[contains(@class,'nav') and contains(@class,'nav-pills')]/li/a[contains(.,'Sharing')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>NAVIGATION_SCOPE</td>
 	<td>//ul[contains(@class,'nav') and contains(@class,'nav-pills')]/li/a[contains(.,'Scope')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>NAVIGATION_OPTIONAL_CONFIGURATION</td>
-	<td>//ul[contains(@class,'nav-tabs')]/li/a[contains(.,'Optional Configuration')]</td>
+	<td>//*[contains(@class,'nav-link') and contains(.,'Optional Configuration')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -82,16 +72,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>LIST_TABLE_DESCRIPTION_1</td>
-	<td>xpath=(//div[contains(@id,'ddlRecordSetsSearchContainer')]//tr/td[2]//a)[1]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LIST_TABLE_DESCRIPTION_1</td>
-	<td>//div[contains(@id,'ddlRecordSetsSearchContainer')]//tr/td[2]//a[contains(.,'${key_ddlListDescription}')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>LIST_TABLE_ACTIONS_1</td>
 	<td>xpath=//td[contains(@class,'entry-action last')]//div/a/i[contains(@class,'menu-arrow caret')][1]</td>
 	<td></td>
@@ -108,8 +88,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>LIST_MENULIST_DELETE</td>
-	<td>//a[@role='menuitem' and contains(.,'Delete')]</td>
+	<td></td>
+	<td></td>
 	<td></td>
 </tr>
 <!--SEARCH-->

@@ -70,21 +70,25 @@ public interface Sites {
 	public static final String MERGE_FAIL_FRIENDLY_URL_LAYOUTS =
 		"merge-fail-friendly-url-layouts";
 
+	public static final String SHOW_SITE_NAME = "showSiteName";
+
 	public void addMergeFailFriendlyURLLayout(Layout layout)
 		throws PortalException;
 
 	public void addPortletBreadcrumbEntries(
-			Group group, HttpServletRequest request, PortletURL portletURL)
+			Group group, HttpServletRequest httpServletRequest,
+			PortletURL portletURL)
 		throws Exception;
 
 	public void addPortletBreadcrumbEntries(
-			Group group, HttpServletRequest request,
+			Group group, HttpServletRequest httpServletRequest,
 			RenderResponse renderResponse)
 		throws Exception;
 
 	public void addPortletBreadcrumbEntries(
 			Group group, String pagesName, PortletURL redirectURL,
-			HttpServletRequest request, RenderResponse renderResponse)
+			HttpServletRequest httpServletRequest,
+			RenderResponse renderResponse)
 		throws Exception;
 
 	public void applyLayoutPrototype(
@@ -110,7 +114,8 @@ public interface Sites {
 		throws Exception;
 
 	public Object[] deleteLayout(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception;
 
 	public Object[] deleteLayout(
@@ -184,7 +189,8 @@ public interface Sites {
 	public void mergeLayoutSetPrototypeLayouts(Group group, LayoutSet layoutSet)
 		throws Exception;
 
-	public void removeMergeFailFriendlyURLLayouts(LayoutSet layoutSet);
+	public void removeMergeFailFriendlyURLLayouts(LayoutSet layoutSet)
+		throws PortalException;
 
 	public void resetPrototype(Layout layout) throws PortalException;
 

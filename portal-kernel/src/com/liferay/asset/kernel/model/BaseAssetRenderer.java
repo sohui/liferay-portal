@@ -18,6 +18,8 @@ import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.dynamic.data.mapping.kernel.DDMForm;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -28,14 +30,12 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -55,6 +55,8 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Jorge Ferrer
  * @author Sergio González
@@ -62,7 +64,7 @@ import javax.portlet.WindowState;
 public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -105,7 +107,7 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -114,18 +116,8 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public String getIconCssClass() throws PortalException {
 		return getAssetRendererFactory().getIconCssClass();
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public String getIconPath(PortletRequest portletRequest) {
-		return StringPool.BLANK;
 	}
 
 	@Override
@@ -134,7 +126,7 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -160,16 +152,6 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 		return getSummary(null, null);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSummary(PortletRequest,
-	 *             PortletResponse)}
-	 */
-	@Deprecated
-	@Override
-	public String getSummary(Locale locale) {
-		return getSummary(null, null);
-	}
-
 	@Override
 	public String[] getSupportedConversions() {
 		return null;
@@ -189,6 +171,38 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 
 	@Override
 	public PortletURL getURLEdit(
+			HttpServletRequest httpServletRequest, WindowState windowState,
+			PortletURL redirectURL)
+		throws Exception {
+
+		String redirect = null;
+
+		if (redirectURL != null) {
+			redirect = redirectURL.toString();
+		}
+
+		return getURLEdit(httpServletRequest, windowState, redirect);
+	}
+
+	@Override
+	public PortletURL getURLEdit(
+			HttpServletRequest httpServletRequest, WindowState windowState,
+			String redirect)
+		throws Exception {
+
+		LiferayPortletURL editPortletURL = (LiferayPortletURL)getURLEdit(
+			httpServletRequest);
+
+		if (editPortletURL == null) {
+			return null;
+		}
+
+		return _getURLEdit(
+			editPortletURL, httpServletRequest, windowState, redirect);
+	}
+
+	@Override
+	public PortletURL getURLEdit(
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse)
 		throws Exception {
@@ -203,6 +217,24 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 			WindowState windowState, PortletURL redirectURL)
 		throws Exception {
 
+		String redirect = null;
+
+		if (redirectURL != null) {
+			redirect = redirectURL.toString();
+		}
+
+		return getURLEdit(
+			liferayPortletRequest, liferayPortletResponse, windowState,
+			redirect);
+	}
+
+	@Override
+	public PortletURL getURLEdit(
+			LiferayPortletRequest liferayPortletRequest,
+			LiferayPortletResponse liferayPortletResponse,
+			WindowState windowState, String redirect)
+		throws Exception {
+
 		LiferayPortletURL editPortletURL = (LiferayPortletURL)getURLEdit(
 			liferayPortletRequest, liferayPortletResponse);
 
@@ -210,43 +242,11 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 			return null;
 		}
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)liferayPortletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
+		HttpServletRequest httpServletRequest =
+			PortalUtil.getHttpServletRequest(liferayPortletRequest);
 
-		Group group = themeDisplay.getScopeGroup();
-
-		if (group.isLayout()) {
-			Layout layout = themeDisplay.getLayout();
-
-			group = layout.getGroup();
-		}
-
-		if (group.hasStagingGroup() && _STAGING_LIVE_GROUP_LOCKING_ENABLED) {
-			return null;
-		}
-
-		editPortletURL.setParameter("redirect", redirectURL.toString());
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		String portletResource = ParamUtil.getString(
-			liferayPortletRequest, "portletResource", portletDisplay.getId());
-
-		if (Validator.isNotNull(portletResource)) {
-			editPortletURL.setParameter(
-				"referringPortletResource", portletResource);
-		}
-		else {
-			editPortletURL.setParameter(
-				"referringPortletResource", portletDisplay.getId());
-		}
-
-		editPortletURL.setPortletMode(PortletMode.VIEW);
-		editPortletURL.setRefererPlid(themeDisplay.getPlid());
-		editPortletURL.setWindowState(windowState);
-
-		return editPortletURL;
+		return _getURLEdit(
+			editPortletURL, httpServletRequest, windowState, redirect);
 	}
 
 	@Override
@@ -268,6 +268,11 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 	@Override
 	public String getUrlTitle() {
 		return null;
+	}
+
+	@Override
+	public String getUrlTitle(Locale locale) {
+		return getUrlTitle();
 	}
 
 	@Override
@@ -304,7 +309,6 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean hasEditPermission(PermissionChecker permissionChecker)
 		throws PortalException {
 
@@ -312,7 +316,6 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean hasViewPermission(PermissionChecker permissionChecker)
 		throws PortalException {
 
@@ -366,7 +369,7 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -418,13 +421,60 @@ public abstract class BaseAssetRenderer<T> implements AssetRenderer<T> {
 		sb.append("?p_l_id=");
 		sb.append(themeDisplay.getPlid());
 		sb.append("&noSuchEntryRedirect=");
-		sb.append(HttpUtil.encodeURL(noSuchEntryRedirect));
+		sb.append(URLCodec.encodeURL(noSuchEntryRedirect));
 		sb.append(StringPool.AMPERSAND);
 		sb.append(primaryKeyParameterName);
 		sb.append(StringPool.EQUAL);
 		sb.append(primaryKeyParameterValue);
 
 		return PortalUtil.addPreservedParameters(themeDisplay, sb.toString());
+	}
+
+	private PortletURL _getURLEdit(
+			LiferayPortletURL editPortletURL,
+			HttpServletRequest httpServletRequest, WindowState windowState,
+			String redirect)
+		throws Exception {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Group group = themeDisplay.getScopeGroup();
+
+		if (group.isLayout()) {
+			Layout layout = themeDisplay.getLayout();
+
+			group = layout.getGroup();
+		}
+
+		if (group.hasStagingGroup() && _STAGING_LIVE_GROUP_LOCKING_ENABLED) {
+			return null;
+		}
+
+		if (Validator.isNotNull(redirect)) {
+			editPortletURL.setParameter("redirect", redirect);
+		}
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		String portletResource = ParamUtil.getString(
+			httpServletRequest, "portletResource", portletDisplay.getId());
+
+		if (Validator.isNotNull(portletResource)) {
+			editPortletURL.setParameter(
+				"referringPortletResource", portletResource);
+		}
+		else {
+			editPortletURL.setParameter(
+				"referringPortletResource", portletDisplay.getId());
+		}
+
+		editPortletURL.setPortletMode(PortletMode.VIEW);
+		editPortletURL.setRefererPlid(themeDisplay.getPlid());
+		editPortletURL.setWindowState(windowState);
+
+		return editPortletURL;
 	}
 
 	private static final String[] _AVAILABLE_LANGUAGE_IDS = new String[0];

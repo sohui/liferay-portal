@@ -1,106 +1,87 @@
-<definition default="assertTextEquals" summary="Assert that '${locator1}' equals the value '${value1}'">
-	<command name="assertCKEditorText">
-		<execute function="WaitForSPARefresh" />
+@default = "assertTextEquals"
+@summary = "Assert that '${locator1}' equals the value '${value1}'"
+definition {
 
-		<execute argument1="//a[contains(@class,'cke_button__unlink') and contains(@class,'cke_button_disabled')]" selenium="waitForVisible" />
+	@summary = "Assert that '${locator1}' contains the value '${value1}'"
+	function assertPartialText {
+		WaitForSPARefresh();
 
-		<execute argument1="1000" selenium="pause" />
+		selenium.waitForVisible();
 
-		<execute selenium="selectFrame" />
+		selenium.waitForPartialTextCaseInsensitive();
 
-		<execute argument1="//html/body" selenium="waitForVisible" />
+		selenium.assertPartialTextCaseInsensitive();
 
-		<execute argument1="//html/body" selenium="assertText" />
+		selenium.assertJavaScriptErrors();
 
-		<execute argument1="relative=parent" selenium="selectFrame" />
+		selenium.assertLiferayErrors();
+	}
 
-		<execute selenium="assertJavaScriptErrors" />
+	function assertPartialTextAceEditor {
+		WaitForSPARefresh();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
+		selenium.waitForVisible();
 
-	<command name="assertPartialText" summary="Assert that '${locator1}' contains the value '${value1}'">
-		<execute function="WaitForSPARefresh" />
+		selenium.waitForPartialTextAceEditor();
 
-		<execute selenium="waitForVisible" />
+		selenium.assertPartialTextAceEditor();
 
-		<execute selenium="waitForPartialText" />
+		selenium.assertJavaScriptErrors();
 
-		<execute selenium="assertPartialText" />
+		selenium.assertLiferayErrors();
+	}
 
-		<execute selenium="assertJavaScriptErrors" />
+	function assertText {
+		WaitForSPARefresh();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
+		selenium.waitForVisible();
 
-	<command name="assertText">
-		<execute function="WaitForSPARefresh" />
+		selenium.waitForTextCaseInsensitive();
 
-		<execute selenium="waitForVisible" />
+		selenium.assertTextCaseInsensitive();
 
-		<execute selenium="waitForText" />
+		selenium.assertJavaScriptErrors();
 
-		<execute selenium="assertText" />
+		selenium.assertLiferayErrors();
+	}
 
-		<execute selenium="assertJavaScriptErrors" />
+	function assertTextCaseSensitive {
+		WaitForSPARefresh();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
+		selenium.waitForVisible();
 
-	<command name="assertTextEquals">
-		<execute function="WaitForSPARefresh" />
+		selenium.waitForText();
 
-		<if>
-			<contains string="${locator1}" substring="/input" />
-			<then>
-				<execute function="AssertTextEquals#assertValue" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals#assertText" />
-			</else>
-		</if>
-	</command>
+		selenium.assertText();
 
-	<command name="assertTextWaitForCKEditor">
-		<execute function="WaitForSPARefresh" />
+		selenium.assertJavaScriptErrors();
 
-		<execute argument1="//a[contains(@class,'cke_button__unlink') and contains(@class,'cke_button_disabled')]" selenium="waitForVisible" />
+		selenium.assertLiferayErrors();
+	}
 
-		<execute function="AssertTextEquals#assertText" />
+	function assertTextEquals {
+		WaitForSPARefresh();
 
-		<execute selenium="assertJavaScriptErrors" />
+		if (contains("${locator1}", "/input")) {
+			AssertTextEquals.assertValue();
+		}
+		else {
+			AssertTextEquals.assertText();
+		}
+	}
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
+	function assertValue {
+		WaitForSPARefresh();
 
-	<command name="assertTextWaitForInlineCKEditor">
-		<execute function="WaitForSPARefresh" />
+		selenium.waitForVisible();
 
-		<if>
-			<condition argument1="//div[contains(@class,'cke_editable_inline')]" selenium="isElementPresent" />
-			<then>
-				<execute argument1="//script[contains(@src,'http://localhost:8080/o/frontend-editors-web/ckeditor/plugins/wsc/lang/en.js')]" selenium="waitForElementPresent" />
-			</then>
-		</if>
+		selenium.waitForValue();
 
-		<execute function="AssertTextEquals#assertText" />
+		selenium.assertValue();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.assertJavaScriptErrors();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
+		selenium.assertLiferayErrors();
+	}
 
-	<command name="assertValue">
-		<execute function="WaitForSPARefresh" />
-
-		<execute selenium="waitForVisible" />
-
-		<execute selenium="waitForValue" />
-
-		<execute selenium="assertValue" />
-
-		<execute selenium="assertJavaScriptErrors" />
-
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+}

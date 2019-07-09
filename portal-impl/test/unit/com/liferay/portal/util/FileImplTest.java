@@ -14,7 +14,7 @@
 
 package com.liferay.portal.util;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,9 +58,7 @@ public class FileImplTest {
 	}
 
 	@Test
-	public void
-		testAppendParentheticalSuffixWithMultipleStringWithSpaceValue() {
-
+	public void testAppendParentheticalSuffixWithMultipleStringWithSpaceValue() {
 		String fileName = _fileImpl.appendParentheticalSuffix(
 			"test.jsp", "A B");
 

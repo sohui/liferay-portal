@@ -52,21 +52,6 @@ public class PortalLoginModule implements LoginModule {
 					new com.liferay.portal.security.jaas.ext.jboss.
 						PortalLoginModule();
 			}
-			else if (ServerDetector.isJetty()) {
-				loginModule =
-					new com.liferay.portal.security.jaas.ext.jetty.
-						PortalLoginModule();
-			}
-			else if (ServerDetector.isJOnAS()) {
-				loginModule =
-					new com.liferay.portal.security.jaas.ext.jonas.
-						PortalLoginModule();
-			}
-			else if (ServerDetector.isResin()) {
-				loginModule =
-					new com.liferay.portal.security.jaas.ext.resin.
-						PortalLoginModule();
-			}
 			else if (ServerDetector.isTomcat()) {
 				loginModule =
 					new com.liferay.portal.security.jaas.ext.tomcat.

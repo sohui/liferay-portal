@@ -24,12 +24,18 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class InputRepeatTag extends IncludeTag {
 
+	public String getCssClass() {
+		return _cssClass;
+	}
+
 	public void setCssClass(String cssClass) {
 		_cssClass = cssClass;
 	}
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_cssClass = null;
 	}
 
@@ -39,8 +45,9 @@ public class InputRepeatTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute("liferay-ui:input-repeat:cssClass", _cssClass);
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-repeat:cssClass", _cssClass);
 	}
 
 	private static final String _PAGE = "/html/taglib/ui/input_repeat/page.jsp";

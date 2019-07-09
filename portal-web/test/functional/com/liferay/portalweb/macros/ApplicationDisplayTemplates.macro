@@ -1,219 +1,182 @@
-<definition>
-	<command name="addADTviaPortletPG">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="${portletName}" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+definition {
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
+	macro addADTWithFieldEntryCP {
+		AssertVisible(locator1 = "Button#PLUS");
 
-		<var name="key_tab" value="Display Settings" />
+		LexiconEntry.gotoAdd();
 
-		<if>
-			<condition function="IsElementPresent" locator1="NavTab#TAB_LINK" />
-			<then>
-				<execute macro="Navigator#gotoTab">
-					<var name="tab" value="Display Settings" />
-				</execute>
-			</then>
-		</if>
+		MenuItem.click(menuItem = "${portletName} Template");
 
-		<execute function="Select" locator1="Select#DISPLAY_TEMPLATE" value1="${adtType} Test ADT" />
+		SiteAdmin.viewPortletTitle(portletTitle = "New ${portletName} Template");
 
-		<execute macro="Button#clickSave" />
+		PortletEntry.inputName(name = "${portletName} Test ADT");
 
-		<execute macro="Alert#viewSuccessMessage" />
+		Click(
+			key_fieldName = "${fieldName}",
+			locator1 = "DDMEditTemplate#SCRIPT_FIELD");
 
-		<execute function="SelectFrameTop" />
-	</command>
+		PortletEntry.save();
 
-	<command name="addCP">
-		<var name="key_adtType" value="${adtType}" />
+		Refresh();
+	}
 
-		<execute macro="Portlet#viewEmptyMessage" />
+	macro addCP {
+		var key_adtType = "${adtType}";
 
-		<execute function="Click" locator1="Button#PLUS" />
+		Portlet.viewEmptyMessage(message = "There are no templates.");
 
-		<execute function="AssertClick" locator1="MenuItem#ADT_TEMPLATE" value1="${adtType} Template" />
+		LexiconEntry.gotoAdd();
 
-		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="New ${adtType} Template" />
-		</execute>
+		MenuItem.click(menuItem = "${adtType} Template");
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${adtType} Test ADT" />
+		SiteAdmin.viewPortletTitle(portletTitle = "New ${adtType} Template");
 
-		<execute function="UploadCommonFile" locator1="DDMEditTemplate#SCRIPT_FILE_FIELD" value1="${adtFile}" />
+		PortletEntry.inputName(name = "${adtType} Test ADT");
 
-		<execute macro="PortletEntry#save" />
+		UploadCommonFile(
+			locator1 = "DDMEditTemplate#SCRIPT_FILE_FIELD",
+			value1 = "${adtFile}");
 
-		<execute function="AssertTextEquals" locator1="ApplicationDisplayTemplates#ADT_TABLE_NAME_1" value1="${adtType} Test ADT" />
-	</command>
+		PortletEntry.save();
 
-	<command name="addManualViaRSS">
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		AssertTextEquals(
+			locator1 = "ApplicationDisplayTemplates#ADT_TABLE_NAME_1",
+			value1 = "${adtType} Test ADT");
+	}
 
-		<execute function="Pause" locator1="5000" />
+	macro addManualViaRSS {
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-		<if>
-			<condition function="IsElementPresent" locator1="Configuration#SETUP_DISPLAY_SETTINGS" />
-			<then>
-				<execute function="AssertClick" locator1="Configuration#SETUP_DISPLAY_SETTINGS" value1="Display Settings" />
-			</then>
-		</if>
+		Pause(locator1 = "5000");
 
-		<execute function="AssertClick" locator1="ApplicationDisplayTemplatesConfiguration#MANAGE_DISPLAY_TEMPLATES_LINK" value1="Manage Display Templates for ${siteName}" />
+		if (IsElementPresent(locator1 = "Configuration#SETUP_DISPLAY_SETTINGS")) {
+			AssertClick(
+				locator1 = "Configuration#SETUP_DISPLAY_SETTINGS",
+				value1 = "Display Settings");
+		}
 
-		<var name="key_adtType" value="RSS" />
+		AssertClick(
+			locator1 = "ApplicationDisplayTemplatesConfiguration#MANAGE_DISPLAY_TEMPLATES_LINK",
+			value1 = "Manage Templates");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
+		var key_adtType = "RSS";
 
-		<execute function="SelectFrame" locator1="ApplicationDisplayTemplates#ADT_IFRAME" />
+		SelectFrameTop(value1 = "relative=top");
 
-		<execute function="Click" locator1="Button#PLUS" />
+		SelectFrame(locator1 = "ApplicationDisplayTemplates#ADT_IFRAME");
 
-		<execute function="AssertVisible" locator1="ApplicationDisplayTemplates#RSS_FEEDS" />
-		<execute function="AssertElementPresent" locator1="ApplicationDisplayTemplates#RSS_FEEDS" />
+		LexiconEntry.gotoAdd();
 
-		<execute function="Type#mouseOverFocusType" locator1="TextInput#NAME" value1="RSS Test ADT" />
+		AssertVisible(locator1 = "ApplicationDisplayTemplates#RSS_FEEDS");
 
-		<execute function="Click" locator1="ApplicationDisplayTemplates#RSS_FEEDS" />
+		AssertElementPresent(locator1 = "ApplicationDisplayTemplates#RSS_FEEDS");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		PortletEntry.inputName(name = "RSS Test ADT");
 
-	<command name="addPG">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="${portletName}" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+		Click(locator1 = "ApplicationDisplayTemplates#RSS_FEEDS");
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
+		PortletEntry.save();
+	}
 
-		<execute function="Pause" locator1="5000" />
+	macro addPG {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
 
-		<if>
-			<condition function="IsElementPresent" locator1="Configuration#SETUP_DISPLAY_SETTINGS" />
-			<then>
-				<execute function="AssertClick" locator1="Configuration#SETUP_DISPLAY_SETTINGS" value1="Display Settings" />
-			</then>
-		</if>
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-		<execute function="AssertClick" locator1="ApplicationDisplayTemplatesConfiguration#MANAGE_DISPLAY_TEMPLATES_LINK" value1="Manage Display Templates for ${siteName}" />
+		Pause(locator1 = "5000");
 
-		<var name="key_adtType" value="${adtType}" />
+		if (IsElementPresent(locator1 = "NavTab#TAB_LINK", key_tab = "Display Settings")) {
+			Navigator.gotoNavTab(navTab = "Display Settings");
+		}
+		else if (IsElementPresent(locator1 = "Panel#PANEL", key_panel = "Display Settings")) {
+			Panel.expandPanel(panel = "Display Settings");
+		}
 
-		<execute function="SelectFrameTop" />
+		AssertClick(
+			locator1 = "ApplicationDisplayTemplatesConfiguration#MANAGE_DISPLAY_TEMPLATES_LINK",
+			value1 = "Manage Templates");
 
-		<execute function="SelectFrame" locator1="ApplicationDisplayTemplates#ADT_IFRAME" />
+		var key_adtType = "${adtType}";
 
-		<execute function="Click" locator1="Button#PLUS" />
+		SelectFrameTop();
 
-		<var name="key_adtType" value="${adtType}" />
+		SelectFrame(locator1 = "ApplicationDisplayTemplates#ADT_IFRAME");
 
-		<execute function="AssertVisible" locator1="ApplicationDisplayTemplates#PORTLET_PREFERENCES" />
-		<execute function="AssertElementPresent" locator1="ApplicationDisplayTemplates#PORTLET_PREFERENCES" />
+		LexiconEntry.gotoAdd();
 
-		<execute function="Type#mouseOverFocusType" locator1="TextInput#NAME" value1="${adtType} Test ADT" />
+		var key_adtType = "${adtType}";
 
-		<execute function="UploadCommonFile" locator1="DDMEditTemplate#SCRIPT_FILE_FIELD" value1="${adtFile}" />
+		AssertVisible(locator1 = "ApplicationDisplayTemplates#PORTLET_PREFERENCES");
 
-		<execute macro="PortletEntry#save" />
+		AssertElementPresent(locator1 = "ApplicationDisplayTemplates#PORTLET_PREFERENCES");
 
-		<execute function="AssertTextEquals" locator1="ApplicationDisplayTemplates#ADT_TABLE_NAME_1" value1="${adtType} Test ADT" />
+		PortletEntry.inputName(name = "${adtType} Test ADT");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
-	</command>
+		UploadCommonFile(
+			locator1 = "DDMEditTemplate#SCRIPT_FILE_FIELD",
+			value1 = "${adtFile}");
 
-	<command name="tearDownADTviaPortletPG">
-		<if>
-			<condition function="IsElementPresent" locator1="BasePortlet#OPTIONS_ICON" />
-			<then>
-				<execute macro="Portlet#gotoPortletOptions">
-					<var name="portletName" value="${portletName}" />
-					<var name="portletOption" value="Configuration" />
-				</execute>
+		PortletEntry.save();
 
-				<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
+		AssertTextEquals(
+			locator1 = "ApplicationDisplayTemplates#ADT_TABLE_NAME_1",
+			value1 = "${adtType} Test ADT");
 
-				<if>
-					<condition function="IsElementPresent" locator1="Configuration#SETUP_DISPLAY_SETTINGS" />
-					<then>
-						<execute function="AssertClick" locator1="Configuration#SETUP_DISPLAY_SETTINGS" value1="Display Settings" />
-					</then>
-				</if>
+		SelectFrameTop(value1 = "relative=top");
+	}
 
-				<execute function="Select" locator1="ApplicationDisplayTemplatesConfiguration#DISPLAY_TEMPLATE_SELECT" value1="${defaultADT}" />
+	macro addPortletADTWithFieldEntry {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
 
-				<execute macro="Button#clickSave" />
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-				<execute macro="Alert#viewSuccessMessage" />
+		Pause(locator1 = "3000");
 
-				<execute function="SelectFrameTop" locator1="IFrame#DIALOG" value1="relative=top" />
-			</then>
-		</if>
-	</command>
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "ApplicationDisplayTemplatesConfiguration#MANAGE_DISPLAY_TEMPLATES_LINK",
+			value1 = "Manage Templates");
 
-	<command name="tearDownPG">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="${portletName}" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+		SelectFrameTop();
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
+		SelectFrame(locator1 = "ApplicationDisplayTemplates#ADT_IFRAME");
 
-		<if>
-			<condition function="IsElementPresent" locator1="Configuration#SETUP_DISPLAY_SETTINGS" />
-			<then>
-				<execute function="AssertClick" locator1="Configuration#SETUP_DISPLAY_SETTINGS" value1="Display Settings" />
-			</then>
-		</if>
+		LexiconEntry.gotoAdd();
 
-		<execute function="Click" locator1="ApplicationDisplayTemplatesConfiguration#MANAGE_DISPLAY_TEMPLATES_LINK" />
+		PortletEntry.inputName(name = "${portletName} Test ADT");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
+		Click(
+			key_fieldName = "${fieldName}",
+			locator1 = "DDMEditTemplate#SCRIPT_FIELD");
 
-		<execute function="SelectFrame" locator1="ApplicationDisplayTemplates#ADT_IFRAME" />
+		PortletEntry.save();
 
-		<if>
-			<condition function="IsElementPresent#isVisible" locator1="ApplicationDisplayTemplates#ADT_TABLE_ALL_CHECKBOX" />
-			<then>
-				<execute function="Click" locator1="ApplicationDisplayTemplates#ADT_TABLE_ALL_CHECKBOX" />
+		SelectFrameTop(value1 = "relative=top");
+	}
 
-				<execute function="AssertClickNoError" locator1="Button#DELETE" value1="Delete" />
+	macro selectPortletADT {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
 
-				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-				<execute macro="Alert#viewSuccessMessage" />
-			</then>
-		</if>
+		var key_tab = "Display Settings";
 
-		<execute macro="Portlet#viewEmptyMessage" />
-	</command>
+		if (IsElementPresent(locator1 = "NavTab#TAB_LINK")) {
+			Navigator.gotoNavTab(navTab = "Display Settings");
+		}
 
-	<command name="viewADTviaPortletPG">
-		<if>
-			<condition function="IsElementPresent" locator1="BasePortlet#OPTIONS_ICON" />
-			<then>
-				<execute macro="Portlet#gotoPortletOptions">
-					<var name="portletName" value="${portletName}" />
-					<var name="portletOption" value="Configuration" />
-				</execute>
+		Select(
+			locator1 = "Select#DISPLAY_TEMPLATE",
+			value1 = "${templateName}");
 
-				<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
+		PortletEntry.save();
 
-				<if>
-					<condition function="IsElementPresent" locator1="Configuration#SETUP_DISPLAY_SETTINGS" />
-					<then>
-						<execute function="AssertClick" locator1="Configuration#SETUP_DISPLAY_SETTINGS" value1="Display Settings" />
-					</then>
-				</if>
+		SelectFrameTop();
+	}
 
-				<execute function="Select" locator1="ApplicationDisplayTemplatesConfiguration#DISPLAY_TEMPLATE_SELECT" value1="${adtType} Test ADT" />
-
-				<execute function="AssertSelectedLabel" locator1="ApplicationDisplayTemplatesConfiguration#DISPLAY_TEMPLATE_SELECT" value1="${adtType} Test ADT" />
-
-				<execute function="SelectFrameTop" locator1="IFrame#DIALOG" value1="relative=top" />
-			</then>
-		</if>
-	</command>
-</definition>
+}

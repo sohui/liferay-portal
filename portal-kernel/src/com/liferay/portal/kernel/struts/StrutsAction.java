@@ -24,12 +24,22 @@ import javax.servlet.http.HttpServletResponse;
 public interface StrutsAction {
 
 	public String execute(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception;
 
-	public String execute(
-			StrutsAction originalStrutsAction, HttpServletRequest request,
-			HttpServletResponse response)
-		throws Exception;
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #execute(HttpServletRequest, HttpServletResponse)}
+	 */
+	@Deprecated
+	public default String execute(
+			StrutsAction originalStrutsAction,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
+		throws Exception {
+
+		return execute(httpServletRequest, httpServletResponse);
+	}
 
 }

@@ -14,23 +14,23 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.MembershipRequestServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portal.service.http.MembershipRequestServiceSoap
  * @generated
  */
 @ProviderType
 public class MembershipRequestSoap implements Serializable {
+
 	public static MembershipRequestSoap toSoapModel(MembershipRequest model) {
 		MembershipRequestSoap soapModel = new MembershipRequestSoap();
 
@@ -51,7 +51,9 @@ public class MembershipRequestSoap implements Serializable {
 
 	public static MembershipRequestSoap[] toSoapModels(
 		MembershipRequest[] models) {
-		MembershipRequestSoap[] soapModels = new MembershipRequestSoap[models.length];
+
+		MembershipRequestSoap[] soapModels =
+			new MembershipRequestSoap[models.length];
 
 		for (int i = 0; i < models.length; i++) {
 			soapModels[i] = toSoapModel(models[i]);
@@ -62,10 +64,12 @@ public class MembershipRequestSoap implements Serializable {
 
 	public static MembershipRequestSoap[][] toSoapModels(
 		MembershipRequest[][] models) {
+
 		MembershipRequestSoap[][] soapModels = null;
 
 		if (models.length > 0) {
-			soapModels = new MembershipRequestSoap[models.length][models[0].length];
+			soapModels =
+				new MembershipRequestSoap[models.length][models[0].length];
 		}
 		else {
 			soapModels = new MembershipRequestSoap[0][0];
@@ -80,7 +84,9 @@ public class MembershipRequestSoap implements Serializable {
 
 	public static MembershipRequestSoap[] toSoapModels(
 		List<MembershipRequest> models) {
-		List<MembershipRequestSoap> soapModels = new ArrayList<MembershipRequestSoap>(models.size());
+
+		List<MembershipRequestSoap> soapModels =
+			new ArrayList<MembershipRequestSoap>(models.size());
 
 		for (MembershipRequest model : models) {
 			soapModels.add(toSoapModel(model));
@@ -199,4 +205,5 @@ public class MembershipRequestSoap implements Serializable {
 	private Date _replyDate;
 	private long _replierUserId;
 	private long _statusId;
+
 }

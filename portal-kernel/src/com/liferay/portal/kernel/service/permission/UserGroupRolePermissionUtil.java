@@ -14,13 +14,12 @@
 
 package com.liferay.portal.kernel.service.permission;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -60,16 +59,11 @@ public class UserGroupRolePermissionUtil {
 	}
 
 	public static UserGroupRolePermission getUserGroupRolePermission() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			UserGroupRolePermissionUtil.class);
-
 		return _userGroupRolePermission;
 	}
 
 	public void setUserGroupRolePermission(
 		UserGroupRolePermission userGroupRolePermission) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_userGroupRolePermission = userGroupRolePermission;
 	}

@@ -14,9 +14,9 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.OrgGroupRole;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the OrgGroupRole service. Represents a row in the &quot;OrgGroupRole&quot; database table, with each column mapped to a property of this class.
@@ -31,11 +31,13 @@ import com.liferay.portal.kernel.model.OrgGroupRole;
  * @generated
  */
 @ProviderType
-public abstract class OrgGroupRoleBaseImpl extends OrgGroupRoleModelImpl
-	implements OrgGroupRole {
+public abstract class OrgGroupRoleBaseImpl
+	extends OrgGroupRoleModelImpl implements OrgGroupRole {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a org group role model instance should use the {@link OrgGroupRole} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a org group role model instance should use the <code>OrgGroupRole</code> interface instead.
 	 */
+
 }

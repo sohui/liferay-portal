@@ -1,36 +1,10 @@
-FileTree modulesFileTree
-
-if (Boolean.getBoolean("portal.build")) {
-	modulesFileTree = fileTree(dir: rootDir, include: "*/**/.lfrbuild-portal")
-}
-else {
-	modulesFileTree = fileTree(rootDir) {
-		exclude "**/bin/"
-		exclude "**/tmp/"
-		exclude "sdk/*/samples/"
-		exclude "sdk/gradle-templates/classes/"
-		exclude "sdk/gradle-templates/src/"
-		exclude "util/*/samples/"
-
-		include "*/**/build.gradle"
-
-		if (!Boolean.getBoolean("modules.only.build")) {
-			include "**/apps/foundation/frontend-theme/*/gulpfile.js"
-			include "*/**/build.xml"
-		}
-	}
+buildscript {
+	apply from: "build-buildscript.gradle", to: buildscript
 }
 
-URI rootURI = rootDir.toURI()
+apply plugin: "com.liferay.settings.plugin"
 
-modulesFileTree.each {
-	String dirName = rootURI.relativize(it.parentFile.toURI())
-
-	dirName = dirName[0 .. -2]
-	dirName = dirName.replace("/" as char, ":" as char)
-
-	include ":" + dirName
-}
+enableFeaturePreview("STABLE_PUBLISHING")
 
 String testClassGroupIndex = System.getProperty("test.class.group.index")
 
@@ -41,10 +15,16 @@ if (testClassGroupIndex) {
 
 	properties.load(new StringReader(file.text.replace("\\", "/")))
 
-	String testClassGroup = properties["TEST_CLASS_GROUP_" + testClassGroupIndex]
-	String testClassGroups = properties["TEST_CLASS_GROUPS"]
+	List<String> testClasses = []
 
-	gradle.ext.testClasses = testClassGroup.tokenize(",")
+	String testClassGroup = properties["TEST_CLASS_GROUP_" + testClassGroupIndex]
+
+	if (testClassGroup != null) {
+		testClasses = testClassGroup.tokenize(",")
+	}
+
+	gradle.ext.testClasses = testClasses
+
 	gradle.ext.testClassGroupIndex = testClassGroupIndex
-	gradle.ext.testClassGroups = testClassGroups
+	gradle.ext.testClassGroups = properties["TEST_CLASS_GROUPS"]
 }

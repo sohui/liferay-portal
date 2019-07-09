@@ -14,12 +14,12 @@
 
 package com.liferay.portal.json;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Brian Wing Shun Chan
@@ -85,7 +86,17 @@ public class JSONObjectImpl implements JSONObject {
 
 	@Override
 	public Object get(String key) {
-		return _jsonObject.opt(key);
+		Object value = _jsonObject.opt(key);
+
+		if (value instanceof org.json.JSONArray) {
+			return new JSONArrayImpl((org.json.JSONArray)value);
+		}
+
+		if (value instanceof org.json.JSONObject) {
+			return new JSONObjectImpl((org.json.JSONObject)value);
+		}
+
+		return value;
 	}
 
 	@Override
@@ -180,6 +191,11 @@ public class JSONObjectImpl implements JSONObject {
 	}
 
 	@Override
+	public Set<String> keySet() {
+		return _jsonObject.keySet();
+	}
+
+	@Override
 	public int length() {
 		return _jsonObject.length();
 	}
@@ -187,6 +203,11 @@ public class JSONObjectImpl implements JSONObject {
 	@Override
 	public JSONArray names() {
 		return new JSONArrayImpl(_jsonObject.names());
+	}
+
+	@Override
+	public Object opt(String key) {
+		return get(key);
 	}
 
 	@Override
@@ -248,7 +269,9 @@ public class JSONObjectImpl implements JSONObject {
 	@Override
 	public JSONObject put(String key, JSONArray value) {
 		try {
-			_jsonObject.put(key, ((JSONArrayImpl)value).getJSONArray());
+			JSONArrayImpl jsonArrayImpl = (JSONArrayImpl)value;
+
+			_jsonObject.put(key, jsonArrayImpl.getJSONArray());
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
@@ -262,7 +285,9 @@ public class JSONObjectImpl implements JSONObject {
 	@Override
 	public JSONObject put(String key, JSONObject value) {
 		try {
-			_jsonObject.put(key, ((JSONObjectImpl)value).getJSONObject());
+			JSONObjectImpl jsonObjectImpl = (JSONObjectImpl)value;
+
+			_jsonObject.put(key, jsonObjectImpl.getJSONObject());
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
@@ -343,7 +368,8 @@ public class JSONObjectImpl implements JSONObject {
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		try {
-			_jsonObject = new org.json.JSONObject(objectInput.readUTF());
+			_jsonObject = new org.json.JSONObject(
+				(String)objectInput.readObject());
 		}
 		catch (Exception e) {
 			throw new IOException(e);
@@ -387,7 +413,7 @@ public class JSONObjectImpl implements JSONObject {
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
-		objectOutput.writeUTF(toString());
+		objectOutput.writeObject(toString());
 	}
 
 	private static final String _NULL_JSON = "{}";

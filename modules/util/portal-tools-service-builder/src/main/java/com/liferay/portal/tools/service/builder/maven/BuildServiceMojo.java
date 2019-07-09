@@ -30,7 +30,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Builds Liferay Service Builder services.
  *
  * @author Raymond Augé
- * @goal build-service
+ * @goal build
  */
 public class BuildServiceMojo extends AbstractMojo {
 
@@ -98,6 +98,13 @@ public class BuildServiceMojo extends AbstractMojo {
 	 */
 	public void setBuildNumberIncrement(boolean buildNumberIncrement) {
 		_serviceBuilderArgs.setBuildNumberIncrement(buildNumberIncrement);
+	}
+
+	/**
+	 * @parameter
+	 */
+	public void setDatabaseNameMaxLength(int databaseNameMaxLength) {
+		_serviceBuilderArgs.setDatabaseNameMaxLength(databaseNameMaxLength);
 	}
 
 	/**

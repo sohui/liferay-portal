@@ -15,18 +15,8 @@
 package com.liferay.screens.service.base;
 
 import com.liferay.asset.kernel.service.persistence.AssetEntryPersistence;
-
-import com.liferay.blogs.kernel.service.persistence.BlogsEntryPersistence;
-
-import com.liferay.document.library.kernel.service.persistence.DLFileEntryPersistence;
-
-import com.liferay.dynamic.data.lists.service.persistence.DDLRecordPersistence;
-import com.liferay.dynamic.data.lists.service.persistence.DDLRecordSetPersistence;
-import com.liferay.dynamic.data.mapping.service.persistence.DDMStructurePersistence;
-
 import com.liferay.journal.service.persistence.JournalArticlePersistence;
 import com.liferay.journal.service.persistence.JournalArticleResourcePersistence;
-
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -36,13 +26,13 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
+import com.liferay.portal.kernel.service.persistence.LayoutPersistence;
 import com.liferay.portal.kernel.service.persistence.PortletItemPersistence;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.spring.extender.service.ServiceReference;
-
 import com.liferay.screens.service.ScreensAssetEntryService;
 
 import javax.sql.DataSource;
@@ -56,15 +46,16 @@ import javax.sql.DataSource;
  *
  * @author José Manuel Navarro
  * @see com.liferay.screens.service.impl.ScreensAssetEntryServiceImpl
- * @see com.liferay.screens.service.ScreensAssetEntryServiceUtil
  * @generated
  */
-public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
+public abstract class ScreensAssetEntryServiceBaseImpl
+	extends BaseServiceImpl
 	implements ScreensAssetEntryService, IdentifiableOSGiService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link com.liferay.screens.service.ScreensAssetEntryServiceUtil} to access the screens asset entry remote service.
+	 * Never modify or reference this class directly. Use <code>ScreensAssetEntryService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.screens.service.ScreensAssetEntryServiceUtil</code>.
 	 */
 
 	/**
@@ -83,26 +74,78 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setScreensAssetEntryService(
 		ScreensAssetEntryService screensAssetEntryService) {
+
 		this.screensAssetEntryService = screensAssetEntryService;
 	}
 
 	/**
-	 * Returns the screens d d l record remote service.
+	 * Returns the screens comment remote service.
 	 *
-	 * @return the screens d d l record remote service
+	 * @return the screens comment remote service
 	 */
-	public com.liferay.screens.service.ScreensDDLRecordService getScreensDDLRecordService() {
+	public com.liferay.screens.service.ScreensCommentService
+		getScreensCommentService() {
+
+		return screensCommentService;
+	}
+
+	/**
+	 * Sets the screens comment remote service.
+	 *
+	 * @param screensCommentService the screens comment remote service
+	 */
+	public void setScreensCommentService(
+		com.liferay.screens.service.ScreensCommentService
+			screensCommentService) {
+
+		this.screensCommentService = screensCommentService;
+	}
+
+	/**
+	 * Returns the screens ddl record remote service.
+	 *
+	 * @return the screens ddl record remote service
+	 */
+	public com.liferay.screens.service.ScreensDDLRecordService
+		getScreensDDLRecordService() {
+
 		return screensDDLRecordService;
 	}
 
 	/**
-	 * Sets the screens d d l record remote service.
+	 * Sets the screens ddl record remote service.
 	 *
-	 * @param screensDDLRecordService the screens d d l record remote service
+	 * @param screensDDLRecordService the screens ddl record remote service
 	 */
 	public void setScreensDDLRecordService(
-		com.liferay.screens.service.ScreensDDLRecordService screensDDLRecordService) {
+		com.liferay.screens.service.ScreensDDLRecordService
+			screensDDLRecordService) {
+
 		this.screensDDLRecordService = screensDDLRecordService;
+	}
+
+	/**
+	 * Returns the screens ddm structure version remote service.
+	 *
+	 * @return the screens ddm structure version remote service
+	 */
+	public com.liferay.screens.service.ScreensDDMStructureVersionService
+		getScreensDDMStructureVersionService() {
+
+		return screensDDMStructureVersionService;
+	}
+
+	/**
+	 * Sets the screens ddm structure version remote service.
+	 *
+	 * @param screensDDMStructureVersionService the screens ddm structure version remote service
+	 */
+	public void setScreensDDMStructureVersionService(
+		com.liferay.screens.service.ScreensDDMStructureVersionService
+			screensDDMStructureVersionService) {
+
+		this.screensDDMStructureVersionService =
+			screensDDMStructureVersionService;
 	}
 
 	/**
@@ -110,7 +153,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the screens journal article remote service
 	 */
-	public com.liferay.screens.service.ScreensJournalArticleService getScreensJournalArticleService() {
+	public com.liferay.screens.service.ScreensJournalArticleService
+		getScreensJournalArticleService() {
+
 		return screensJournalArticleService;
 	}
 
@@ -120,8 +165,33 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param screensJournalArticleService the screens journal article remote service
 	 */
 	public void setScreensJournalArticleService(
-		com.liferay.screens.service.ScreensJournalArticleService screensJournalArticleService) {
+		com.liferay.screens.service.ScreensJournalArticleService
+			screensJournalArticleService) {
+
 		this.screensJournalArticleService = screensJournalArticleService;
+	}
+
+	/**
+	 * Returns the screens ratings entry remote service.
+	 *
+	 * @return the screens ratings entry remote service
+	 */
+	public com.liferay.screens.service.ScreensRatingsEntryService
+		getScreensRatingsEntryService() {
+
+		return screensRatingsEntryService;
+	}
+
+	/**
+	 * Sets the screens ratings entry remote service.
+	 *
+	 * @param screensRatingsEntryService the screens ratings entry remote service
+	 */
+	public void setScreensRatingsEntryService(
+		com.liferay.screens.service.ScreensRatingsEntryService
+			screensRatingsEntryService) {
+
+		this.screensRatingsEntryService = screensRatingsEntryService;
 	}
 
 	/**
@@ -129,7 +199,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the counter local service
 	 */
-	public com.liferay.counter.kernel.service.CounterLocalService getCounterLocalService() {
+	public com.liferay.counter.kernel.service.CounterLocalService
+		getCounterLocalService() {
+
 		return counterLocalService;
 	}
 
@@ -139,179 +211,10 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param counterLocalService the counter local service
 	 */
 	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService counterLocalService) {
+		com.liferay.counter.kernel.service.CounterLocalService
+			counterLocalService) {
+
 		this.counterLocalService = counterLocalService;
-	}
-
-	/**
-	 * Returns the d d l record local service.
-	 *
-	 * @return the d d l record local service
-	 */
-	public com.liferay.dynamic.data.lists.service.DDLRecordLocalService getDDLRecordLocalService() {
-		return ddlRecordLocalService;
-	}
-
-	/**
-	 * Sets the d d l record local service.
-	 *
-	 * @param ddlRecordLocalService the d d l record local service
-	 */
-	public void setDDLRecordLocalService(
-		com.liferay.dynamic.data.lists.service.DDLRecordLocalService ddlRecordLocalService) {
-		this.ddlRecordLocalService = ddlRecordLocalService;
-	}
-
-	/**
-	 * Returns the d d l record remote service.
-	 *
-	 * @return the d d l record remote service
-	 */
-	public com.liferay.dynamic.data.lists.service.DDLRecordService getDDLRecordService() {
-		return ddlRecordService;
-	}
-
-	/**
-	 * Sets the d d l record remote service.
-	 *
-	 * @param ddlRecordService the d d l record remote service
-	 */
-	public void setDDLRecordService(
-		com.liferay.dynamic.data.lists.service.DDLRecordService ddlRecordService) {
-		this.ddlRecordService = ddlRecordService;
-	}
-
-	/**
-	 * Returns the d d l record persistence.
-	 *
-	 * @return the d d l record persistence
-	 */
-	public DDLRecordPersistence getDDLRecordPersistence() {
-		return ddlRecordPersistence;
-	}
-
-	/**
-	 * Sets the d d l record persistence.
-	 *
-	 * @param ddlRecordPersistence the d d l record persistence
-	 */
-	public void setDDLRecordPersistence(
-		DDLRecordPersistence ddlRecordPersistence) {
-		this.ddlRecordPersistence = ddlRecordPersistence;
-	}
-
-	/**
-	 * Returns the d d l record set local service.
-	 *
-	 * @return the d d l record set local service
-	 */
-	public com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService getDDLRecordSetLocalService() {
-		return ddlRecordSetLocalService;
-	}
-
-	/**
-	 * Sets the d d l record set local service.
-	 *
-	 * @param ddlRecordSetLocalService the d d l record set local service
-	 */
-	public void setDDLRecordSetLocalService(
-		com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService ddlRecordSetLocalService) {
-		this.ddlRecordSetLocalService = ddlRecordSetLocalService;
-	}
-
-	/**
-	 * Returns the d d l record set remote service.
-	 *
-	 * @return the d d l record set remote service
-	 */
-	public com.liferay.dynamic.data.lists.service.DDLRecordSetService getDDLRecordSetService() {
-		return ddlRecordSetService;
-	}
-
-	/**
-	 * Sets the d d l record set remote service.
-	 *
-	 * @param ddlRecordSetService the d d l record set remote service
-	 */
-	public void setDDLRecordSetService(
-		com.liferay.dynamic.data.lists.service.DDLRecordSetService ddlRecordSetService) {
-		this.ddlRecordSetService = ddlRecordSetService;
-	}
-
-	/**
-	 * Returns the d d l record set persistence.
-	 *
-	 * @return the d d l record set persistence
-	 */
-	public DDLRecordSetPersistence getDDLRecordSetPersistence() {
-		return ddlRecordSetPersistence;
-	}
-
-	/**
-	 * Sets the d d l record set persistence.
-	 *
-	 * @param ddlRecordSetPersistence the d d l record set persistence
-	 */
-	public void setDDLRecordSetPersistence(
-		DDLRecordSetPersistence ddlRecordSetPersistence) {
-		this.ddlRecordSetPersistence = ddlRecordSetPersistence;
-	}
-
-	/**
-	 * Returns the d d m structure local service.
-	 *
-	 * @return the d d m structure local service
-	 */
-	public com.liferay.dynamic.data.mapping.service.DDMStructureLocalService getDDMStructureLocalService() {
-		return ddmStructureLocalService;
-	}
-
-	/**
-	 * Sets the d d m structure local service.
-	 *
-	 * @param ddmStructureLocalService the d d m structure local service
-	 */
-	public void setDDMStructureLocalService(
-		com.liferay.dynamic.data.mapping.service.DDMStructureLocalService ddmStructureLocalService) {
-		this.ddmStructureLocalService = ddmStructureLocalService;
-	}
-
-	/**
-	 * Returns the d d m structure remote service.
-	 *
-	 * @return the d d m structure remote service
-	 */
-	public com.liferay.dynamic.data.mapping.service.DDMStructureService getDDMStructureService() {
-		return ddmStructureService;
-	}
-
-	/**
-	 * Sets the d d m structure remote service.
-	 *
-	 * @param ddmStructureService the d d m structure remote service
-	 */
-	public void setDDMStructureService(
-		com.liferay.dynamic.data.mapping.service.DDMStructureService ddmStructureService) {
-		this.ddmStructureService = ddmStructureService;
-	}
-
-	/**
-	 * Returns the d d m structure persistence.
-	 *
-	 * @return the d d m structure persistence
-	 */
-	public DDMStructurePersistence getDDMStructurePersistence() {
-		return ddmStructurePersistence;
-	}
-
-	/**
-	 * Sets the d d m structure persistence.
-	 *
-	 * @param ddmStructurePersistence the d d m structure persistence
-	 */
-	public void setDDMStructurePersistence(
-		DDMStructurePersistence ddmStructurePersistence) {
-		this.ddmStructurePersistence = ddmStructurePersistence;
 	}
 
 	/**
@@ -319,7 +222,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the journal article local service
 	 */
-	public com.liferay.journal.service.JournalArticleLocalService getJournalArticleLocalService() {
+	public com.liferay.journal.service.JournalArticleLocalService
+		getJournalArticleLocalService() {
+
 		return journalArticleLocalService;
 	}
 
@@ -329,7 +234,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param journalArticleLocalService the journal article local service
 	 */
 	public void setJournalArticleLocalService(
-		com.liferay.journal.service.JournalArticleLocalService journalArticleLocalService) {
+		com.liferay.journal.service.JournalArticleLocalService
+			journalArticleLocalService) {
+
 		this.journalArticleLocalService = journalArticleLocalService;
 	}
 
@@ -338,7 +245,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the journal article remote service
 	 */
-	public com.liferay.journal.service.JournalArticleService getJournalArticleService() {
+	public com.liferay.journal.service.JournalArticleService
+		getJournalArticleService() {
+
 		return journalArticleService;
 	}
 
@@ -348,7 +257,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param journalArticleService the journal article remote service
 	 */
 	public void setJournalArticleService(
-		com.liferay.journal.service.JournalArticleService journalArticleService) {
+		com.liferay.journal.service.JournalArticleService
+			journalArticleService) {
+
 		this.journalArticleService = journalArticleService;
 	}
 
@@ -368,6 +279,7 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setJournalArticlePersistence(
 		JournalArticlePersistence journalArticlePersistence) {
+
 		this.journalArticlePersistence = journalArticlePersistence;
 	}
 
@@ -376,7 +288,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the journal article resource local service
 	 */
-	public com.liferay.journal.service.JournalArticleResourceLocalService getJournalArticleResourceLocalService() {
+	public com.liferay.journal.service.JournalArticleResourceLocalService
+		getJournalArticleResourceLocalService() {
+
 		return journalArticleResourceLocalService;
 	}
 
@@ -386,8 +300,11 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param journalArticleResourceLocalService the journal article resource local service
 	 */
 	public void setJournalArticleResourceLocalService(
-		com.liferay.journal.service.JournalArticleResourceLocalService journalArticleResourceLocalService) {
-		this.journalArticleResourceLocalService = journalArticleResourceLocalService;
+		com.liferay.journal.service.JournalArticleResourceLocalService
+			journalArticleResourceLocalService) {
+
+		this.journalArticleResourceLocalService =
+			journalArticleResourceLocalService;
 	}
 
 	/**
@@ -395,7 +312,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the journal article resource persistence
 	 */
-	public JournalArticleResourcePersistence getJournalArticleResourcePersistence() {
+	public JournalArticleResourcePersistence
+		getJournalArticleResourcePersistence() {
+
 		return journalArticleResourcePersistence;
 	}
 
@@ -406,7 +325,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setJournalArticleResourcePersistence(
 		JournalArticleResourcePersistence journalArticleResourcePersistence) {
-		this.journalArticleResourcePersistence = journalArticleResourcePersistence;
+
+		this.journalArticleResourcePersistence =
+			journalArticleResourcePersistence;
 	}
 
 	/**
@@ -414,7 +335,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the class name local service
 	 */
-	public com.liferay.portal.kernel.service.ClassNameLocalService getClassNameLocalService() {
+	public com.liferay.portal.kernel.service.ClassNameLocalService
+		getClassNameLocalService() {
+
 		return classNameLocalService;
 	}
 
@@ -424,7 +347,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param classNameLocalService the class name local service
 	 */
 	public void setClassNameLocalService(
-		com.liferay.portal.kernel.service.ClassNameLocalService classNameLocalService) {
+		com.liferay.portal.kernel.service.ClassNameLocalService
+			classNameLocalService) {
+
 		this.classNameLocalService = classNameLocalService;
 	}
 
@@ -433,7 +358,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the class name remote service
 	 */
-	public com.liferay.portal.kernel.service.ClassNameService getClassNameService() {
+	public com.liferay.portal.kernel.service.ClassNameService
+		getClassNameService() {
+
 		return classNameService;
 	}
 
@@ -444,6 +371,7 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setClassNameService(
 		com.liferay.portal.kernel.service.ClassNameService classNameService) {
+
 		this.classNameService = classNameService;
 	}
 
@@ -463,7 +391,69 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setClassNamePersistence(
 		ClassNamePersistence classNamePersistence) {
+
 		this.classNamePersistence = classNamePersistence;
+	}
+
+	/**
+	 * Returns the layout local service.
+	 *
+	 * @return the layout local service
+	 */
+	public com.liferay.portal.kernel.service.LayoutLocalService
+		getLayoutLocalService() {
+
+		return layoutLocalService;
+	}
+
+	/**
+	 * Sets the layout local service.
+	 *
+	 * @param layoutLocalService the layout local service
+	 */
+	public void setLayoutLocalService(
+		com.liferay.portal.kernel.service.LayoutLocalService
+			layoutLocalService) {
+
+		this.layoutLocalService = layoutLocalService;
+	}
+
+	/**
+	 * Returns the layout remote service.
+	 *
+	 * @return the layout remote service
+	 */
+	public com.liferay.portal.kernel.service.LayoutService getLayoutService() {
+		return layoutService;
+	}
+
+	/**
+	 * Sets the layout remote service.
+	 *
+	 * @param layoutService the layout remote service
+	 */
+	public void setLayoutService(
+		com.liferay.portal.kernel.service.LayoutService layoutService) {
+
+		this.layoutService = layoutService;
+	}
+
+	/**
+	 * Returns the layout persistence.
+	 *
+	 * @return the layout persistence
+	 */
+	public LayoutPersistence getLayoutPersistence() {
+		return layoutPersistence;
+	}
+
+	/**
+	 * Sets the layout persistence.
+	 *
+	 * @param layoutPersistence the layout persistence
+	 */
+	public void setLayoutPersistence(LayoutPersistence layoutPersistence) {
+		this.layoutPersistence = layoutPersistence;
 	}
 
 	/**
@@ -471,7 +461,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the portlet item local service
 	 */
-	public com.liferay.portal.kernel.service.PortletItemLocalService getPortletItemLocalService() {
+	public com.liferay.portal.kernel.service.PortletItemLocalService
+		getPortletItemLocalService() {
+
 		return portletItemLocalService;
 	}
 
@@ -481,7 +473,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param portletItemLocalService the portlet item local service
 	 */
 	public void setPortletItemLocalService(
-		com.liferay.portal.kernel.service.PortletItemLocalService portletItemLocalService) {
+		com.liferay.portal.kernel.service.PortletItemLocalService
+			portletItemLocalService) {
+
 		this.portletItemLocalService = portletItemLocalService;
 	}
 
@@ -501,6 +495,7 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setPortletItemPersistence(
 		PortletItemPersistence portletItemPersistence) {
+
 		this.portletItemPersistence = portletItemPersistence;
 	}
 
@@ -509,7 +504,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the portlet preferences local service
 	 */
-	public com.liferay.portal.kernel.service.PortletPreferencesLocalService getPortletPreferencesLocalService() {
+	public com.liferay.portal.kernel.service.PortletPreferencesLocalService
+		getPortletPreferencesLocalService() {
+
 		return portletPreferencesLocalService;
 	}
 
@@ -519,7 +516,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param portletPreferencesLocalService the portlet preferences local service
 	 */
 	public void setPortletPreferencesLocalService(
-		com.liferay.portal.kernel.service.PortletPreferencesLocalService portletPreferencesLocalService) {
+		com.liferay.portal.kernel.service.PortletPreferencesLocalService
+			portletPreferencesLocalService) {
+
 		this.portletPreferencesLocalService = portletPreferencesLocalService;
 	}
 
@@ -528,7 +527,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the portlet preferences remote service
 	 */
-	public com.liferay.portal.kernel.service.PortletPreferencesService getPortletPreferencesService() {
+	public com.liferay.portal.kernel.service.PortletPreferencesService
+		getPortletPreferencesService() {
+
 		return portletPreferencesService;
 	}
 
@@ -538,7 +539,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param portletPreferencesService the portlet preferences remote service
 	 */
 	public void setPortletPreferencesService(
-		com.liferay.portal.kernel.service.PortletPreferencesService portletPreferencesService) {
+		com.liferay.portal.kernel.service.PortletPreferencesService
+			portletPreferencesService) {
+
 		this.portletPreferencesService = portletPreferencesService;
 	}
 
@@ -558,6 +561,7 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setPortletPreferencesPersistence(
 		PortletPreferencesPersistence portletPreferencesPersistence) {
+
 		this.portletPreferencesPersistence = portletPreferencesPersistence;
 	}
 
@@ -566,7 +570,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the resource local service
 	 */
-	public com.liferay.portal.kernel.service.ResourceLocalService getResourceLocalService() {
+	public com.liferay.portal.kernel.service.ResourceLocalService
+		getResourceLocalService() {
+
 		return resourceLocalService;
 	}
 
@@ -576,7 +582,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param resourceLocalService the resource local service
 	 */
 	public void setResourceLocalService(
-		com.liferay.portal.kernel.service.ResourceLocalService resourceLocalService) {
+		com.liferay.portal.kernel.service.ResourceLocalService
+			resourceLocalService) {
+
 		this.resourceLocalService = resourceLocalService;
 	}
 
@@ -585,7 +593,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the user local service
 	 */
-	public com.liferay.portal.kernel.service.UserLocalService getUserLocalService() {
+	public com.liferay.portal.kernel.service.UserLocalService
+		getUserLocalService() {
+
 		return userLocalService;
 	}
 
@@ -596,6 +606,7 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserLocalService(
 		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
+
 		this.userLocalService = userLocalService;
 	}
 
@@ -615,6 +626,7 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserService(
 		com.liferay.portal.kernel.service.UserService userService) {
+
 		this.userService = userService;
 	}
 
@@ -641,7 +653,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset entry local service
 	 */
-	public com.liferay.asset.kernel.service.AssetEntryLocalService getAssetEntryLocalService() {
+	public com.liferay.asset.kernel.service.AssetEntryLocalService
+		getAssetEntryLocalService() {
+
 		return assetEntryLocalService;
 	}
 
@@ -651,7 +665,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 * @param assetEntryLocalService the asset entry local service
 	 */
 	public void setAssetEntryLocalService(
-		com.liferay.asset.kernel.service.AssetEntryLocalService assetEntryLocalService) {
+		com.liferay.asset.kernel.service.AssetEntryLocalService
+			assetEntryLocalService) {
+
 		this.assetEntryLocalService = assetEntryLocalService;
 	}
 
@@ -660,7 +676,9 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset entry remote service
 	 */
-	public com.liferay.asset.kernel.service.AssetEntryService getAssetEntryService() {
+	public com.liferay.asset.kernel.service.AssetEntryService
+		getAssetEntryService() {
+
 		return assetEntryService;
 	}
 
@@ -671,6 +689,7 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAssetEntryService(
 		com.liferay.asset.kernel.service.AssetEntryService assetEntryService) {
+
 		this.assetEntryService = assetEntryService;
 	}
 
@@ -690,159 +709,53 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAssetEntryPersistence(
 		AssetEntryPersistence assetEntryPersistence) {
+
 		this.assetEntryPersistence = assetEntryPersistence;
 	}
 
 	/**
-	 * Returns the blogs entry local service.
+	 * Returns the dl app local service.
 	 *
-	 * @return the blogs entry local service
+	 * @return the dl app local service
 	 */
-	public com.liferay.blogs.kernel.service.BlogsEntryLocalService getBlogsEntryLocalService() {
-		return blogsEntryLocalService;
-	}
+	public com.liferay.document.library.kernel.service.DLAppLocalService
+		getDLAppLocalService() {
 
-	/**
-	 * Sets the blogs entry local service.
-	 *
-	 * @param blogsEntryLocalService the blogs entry local service
-	 */
-	public void setBlogsEntryLocalService(
-		com.liferay.blogs.kernel.service.BlogsEntryLocalService blogsEntryLocalService) {
-		this.blogsEntryLocalService = blogsEntryLocalService;
-	}
-
-	/**
-	 * Returns the blogs entry remote service.
-	 *
-	 * @return the blogs entry remote service
-	 */
-	public com.liferay.blogs.kernel.service.BlogsEntryService getBlogsEntryService() {
-		return blogsEntryService;
-	}
-
-	/**
-	 * Sets the blogs entry remote service.
-	 *
-	 * @param blogsEntryService the blogs entry remote service
-	 */
-	public void setBlogsEntryService(
-		com.liferay.blogs.kernel.service.BlogsEntryService blogsEntryService) {
-		this.blogsEntryService = blogsEntryService;
-	}
-
-	/**
-	 * Returns the blogs entry persistence.
-	 *
-	 * @return the blogs entry persistence
-	 */
-	public BlogsEntryPersistence getBlogsEntryPersistence() {
-		return blogsEntryPersistence;
-	}
-
-	/**
-	 * Sets the blogs entry persistence.
-	 *
-	 * @param blogsEntryPersistence the blogs entry persistence
-	 */
-	public void setBlogsEntryPersistence(
-		BlogsEntryPersistence blogsEntryPersistence) {
-		this.blogsEntryPersistence = blogsEntryPersistence;
-	}
-
-	/**
-	 * Returns the d l app local service.
-	 *
-	 * @return the d l app local service
-	 */
-	public com.liferay.document.library.kernel.service.DLAppLocalService getDLAppLocalService() {
 		return dlAppLocalService;
 	}
 
 	/**
-	 * Sets the d l app local service.
+	 * Sets the dl app local service.
 	 *
-	 * @param dlAppLocalService the d l app local service
+	 * @param dlAppLocalService the dl app local service
 	 */
 	public void setDLAppLocalService(
-		com.liferay.document.library.kernel.service.DLAppLocalService dlAppLocalService) {
+		com.liferay.document.library.kernel.service.DLAppLocalService
+			dlAppLocalService) {
+
 		this.dlAppLocalService = dlAppLocalService;
 	}
 
 	/**
-	 * Returns the d l app remote service.
+	 * Returns the dl app remote service.
 	 *
-	 * @return the d l app remote service
+	 * @return the dl app remote service
 	 */
-	public com.liferay.document.library.kernel.service.DLAppService getDLAppService() {
+	public com.liferay.document.library.kernel.service.DLAppService
+		getDLAppService() {
+
 		return dlAppService;
 	}
 
 	/**
-	 * Sets the d l app remote service.
+	 * Sets the dl app remote service.
 	 *
-	 * @param dlAppService the d l app remote service
+	 * @param dlAppService the dl app remote service
 	 */
 	public void setDLAppService(
 		com.liferay.document.library.kernel.service.DLAppService dlAppService) {
+
 		this.dlAppService = dlAppService;
-	}
-
-	/**
-	 * Returns the document library file entry local service.
-	 *
-	 * @return the document library file entry local service
-	 */
-	public com.liferay.document.library.kernel.service.DLFileEntryLocalService getDLFileEntryLocalService() {
-		return dlFileEntryLocalService;
-	}
-
-	/**
-	 * Sets the document library file entry local service.
-	 *
-	 * @param dlFileEntryLocalService the document library file entry local service
-	 */
-	public void setDLFileEntryLocalService(
-		com.liferay.document.library.kernel.service.DLFileEntryLocalService dlFileEntryLocalService) {
-		this.dlFileEntryLocalService = dlFileEntryLocalService;
-	}
-
-	/**
-	 * Returns the document library file entry remote service.
-	 *
-	 * @return the document library file entry remote service
-	 */
-	public com.liferay.document.library.kernel.service.DLFileEntryService getDLFileEntryService() {
-		return dlFileEntryService;
-	}
-
-	/**
-	 * Sets the document library file entry remote service.
-	 *
-	 * @param dlFileEntryService the document library file entry remote service
-	 */
-	public void setDLFileEntryService(
-		com.liferay.document.library.kernel.service.DLFileEntryService dlFileEntryService) {
-		this.dlFileEntryService = dlFileEntryService;
-	}
-
-	/**
-	 * Returns the document library file entry persistence.
-	 *
-	 * @return the document library file entry persistence
-	 */
-	public DLFileEntryPersistence getDLFileEntryPersistence() {
-		return dlFileEntryPersistence;
-	}
-
-	/**
-	 * Sets the document library file entry persistence.
-	 *
-	 * @param dlFileEntryPersistence the document library file entry persistence
-	 */
-	public void setDLFileEntryPersistence(
-		DLFileEntryPersistence dlFileEntryPersistence) {
-		this.dlFileEntryPersistence = dlFileEntryPersistence;
 	}
 
 	public void afterPropertiesSet() {
@@ -875,8 +788,8 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 			sql = db.buildSQL(sql);
 			sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource,
-					sql);
+			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(
+				dataSource, sql);
 
 			sqlUpdate.update();
 		}
@@ -887,84 +800,166 @@ public abstract class ScreensAssetEntryServiceBaseImpl extends BaseServiceImpl
 
 	@BeanReference(type = ScreensAssetEntryService.class)
 	protected ScreensAssetEntryService screensAssetEntryService;
-	@BeanReference(type = com.liferay.screens.service.ScreensDDLRecordService.class)
-	protected com.liferay.screens.service.ScreensDDLRecordService screensDDLRecordService;
-	@BeanReference(type = com.liferay.screens.service.ScreensJournalArticleService.class)
-	protected com.liferay.screens.service.ScreensJournalArticleService screensJournalArticleService;
-	@ServiceReference(type = com.liferay.counter.kernel.service.CounterLocalService.class)
-	protected com.liferay.counter.kernel.service.CounterLocalService counterLocalService;
-	@ServiceReference(type = com.liferay.dynamic.data.lists.service.DDLRecordLocalService.class)
-	protected com.liferay.dynamic.data.lists.service.DDLRecordLocalService ddlRecordLocalService;
-	@ServiceReference(type = com.liferay.dynamic.data.lists.service.DDLRecordService.class)
-	protected com.liferay.dynamic.data.lists.service.DDLRecordService ddlRecordService;
-	@ServiceReference(type = DDLRecordPersistence.class)
-	protected DDLRecordPersistence ddlRecordPersistence;
-	@ServiceReference(type = com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService.class)
-	protected com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService ddlRecordSetLocalService;
-	@ServiceReference(type = com.liferay.dynamic.data.lists.service.DDLRecordSetService.class)
-	protected com.liferay.dynamic.data.lists.service.DDLRecordSetService ddlRecordSetService;
-	@ServiceReference(type = DDLRecordSetPersistence.class)
-	protected DDLRecordSetPersistence ddlRecordSetPersistence;
-	@ServiceReference(type = com.liferay.dynamic.data.mapping.service.DDMStructureLocalService.class)
-	protected com.liferay.dynamic.data.mapping.service.DDMStructureLocalService ddmStructureLocalService;
-	@ServiceReference(type = com.liferay.dynamic.data.mapping.service.DDMStructureService.class)
-	protected com.liferay.dynamic.data.mapping.service.DDMStructureService ddmStructureService;
-	@ServiceReference(type = DDMStructurePersistence.class)
-	protected DDMStructurePersistence ddmStructurePersistence;
-	@ServiceReference(type = com.liferay.journal.service.JournalArticleLocalService.class)
-	protected com.liferay.journal.service.JournalArticleLocalService journalArticleLocalService;
-	@ServiceReference(type = com.liferay.journal.service.JournalArticleService.class)
-	protected com.liferay.journal.service.JournalArticleService journalArticleService;
+
+	@BeanReference(
+		type = com.liferay.screens.service.ScreensCommentService.class
+	)
+	protected com.liferay.screens.service.ScreensCommentService
+		screensCommentService;
+
+	@BeanReference(
+		type = com.liferay.screens.service.ScreensDDLRecordService.class
+	)
+	protected com.liferay.screens.service.ScreensDDLRecordService
+		screensDDLRecordService;
+
+	@BeanReference(
+		type = com.liferay.screens.service.ScreensDDMStructureVersionService.class
+	)
+	protected com.liferay.screens.service.ScreensDDMStructureVersionService
+		screensDDMStructureVersionService;
+
+	@BeanReference(
+		type = com.liferay.screens.service.ScreensJournalArticleService.class
+	)
+	protected com.liferay.screens.service.ScreensJournalArticleService
+		screensJournalArticleService;
+
+	@BeanReference(
+		type = com.liferay.screens.service.ScreensRatingsEntryService.class
+	)
+	protected com.liferay.screens.service.ScreensRatingsEntryService
+		screensRatingsEntryService;
+
+	@ServiceReference(
+		type = com.liferay.counter.kernel.service.CounterLocalService.class
+	)
+	protected com.liferay.counter.kernel.service.CounterLocalService
+		counterLocalService;
+
+	@ServiceReference(
+		type = com.liferay.journal.service.JournalArticleLocalService.class
+	)
+	protected com.liferay.journal.service.JournalArticleLocalService
+		journalArticleLocalService;
+
+	@ServiceReference(
+		type = com.liferay.journal.service.JournalArticleService.class
+	)
+	protected com.liferay.journal.service.JournalArticleService
+		journalArticleService;
+
 	@ServiceReference(type = JournalArticlePersistence.class)
 	protected JournalArticlePersistence journalArticlePersistence;
-	@ServiceReference(type = com.liferay.journal.service.JournalArticleResourceLocalService.class)
-	protected com.liferay.journal.service.JournalArticleResourceLocalService journalArticleResourceLocalService;
+
+	@ServiceReference(
+		type = com.liferay.journal.service.JournalArticleResourceLocalService.class
+	)
+	protected com.liferay.journal.service.JournalArticleResourceLocalService
+		journalArticleResourceLocalService;
+
 	@ServiceReference(type = JournalArticleResourcePersistence.class)
-	protected JournalArticleResourcePersistence journalArticleResourcePersistence;
-	@ServiceReference(type = com.liferay.portal.kernel.service.ClassNameLocalService.class)
-	protected com.liferay.portal.kernel.service.ClassNameLocalService classNameLocalService;
-	@ServiceReference(type = com.liferay.portal.kernel.service.ClassNameService.class)
-	protected com.liferay.portal.kernel.service.ClassNameService classNameService;
+	protected JournalArticleResourcePersistence
+		journalArticleResourcePersistence;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.ClassNameLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.ClassNameLocalService
+		classNameLocalService;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.ClassNameService.class
+	)
+	protected com.liferay.portal.kernel.service.ClassNameService
+		classNameService;
+
 	@ServiceReference(type = ClassNamePersistence.class)
 	protected ClassNamePersistence classNamePersistence;
-	@ServiceReference(type = com.liferay.portal.kernel.service.PortletItemLocalService.class)
-	protected com.liferay.portal.kernel.service.PortletItemLocalService portletItemLocalService;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.LayoutLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.LayoutLocalService
+		layoutLocalService;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.LayoutService.class
+	)
+	protected com.liferay.portal.kernel.service.LayoutService layoutService;
+
+	@ServiceReference(type = LayoutPersistence.class)
+	protected LayoutPersistence layoutPersistence;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.PortletItemLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.PortletItemLocalService
+		portletItemLocalService;
+
 	@ServiceReference(type = PortletItemPersistence.class)
 	protected PortletItemPersistence portletItemPersistence;
-	@ServiceReference(type = com.liferay.portal.kernel.service.PortletPreferencesLocalService.class)
-	protected com.liferay.portal.kernel.service.PortletPreferencesLocalService portletPreferencesLocalService;
-	@ServiceReference(type = com.liferay.portal.kernel.service.PortletPreferencesService.class)
-	protected com.liferay.portal.kernel.service.PortletPreferencesService portletPreferencesService;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.PortletPreferencesLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.PortletPreferencesLocalService
+		portletPreferencesLocalService;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.PortletPreferencesService.class
+	)
+	protected com.liferay.portal.kernel.service.PortletPreferencesService
+		portletPreferencesService;
+
 	@ServiceReference(type = PortletPreferencesPersistence.class)
 	protected PortletPreferencesPersistence portletPreferencesPersistence;
-	@ServiceReference(type = com.liferay.portal.kernel.service.ResourceLocalService.class)
-	protected com.liferay.portal.kernel.service.ResourceLocalService resourceLocalService;
-	@ServiceReference(type = com.liferay.portal.kernel.service.UserLocalService.class)
-	protected com.liferay.portal.kernel.service.UserLocalService userLocalService;
-	@ServiceReference(type = com.liferay.portal.kernel.service.UserService.class)
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.ResourceLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.ResourceLocalService
+		resourceLocalService;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.UserLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserLocalService
+		userLocalService;
+
+	@ServiceReference(
+		type = com.liferay.portal.kernel.service.UserService.class
+	)
 	protected com.liferay.portal.kernel.service.UserService userService;
+
 	@ServiceReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
-	@ServiceReference(type = com.liferay.asset.kernel.service.AssetEntryLocalService.class)
-	protected com.liferay.asset.kernel.service.AssetEntryLocalService assetEntryLocalService;
-	@ServiceReference(type = com.liferay.asset.kernel.service.AssetEntryService.class)
-	protected com.liferay.asset.kernel.service.AssetEntryService assetEntryService;
+
+	@ServiceReference(
+		type = com.liferay.asset.kernel.service.AssetEntryLocalService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetEntryLocalService
+		assetEntryLocalService;
+
+	@ServiceReference(
+		type = com.liferay.asset.kernel.service.AssetEntryService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetEntryService
+		assetEntryService;
+
 	@ServiceReference(type = AssetEntryPersistence.class)
 	protected AssetEntryPersistence assetEntryPersistence;
-	@ServiceReference(type = com.liferay.blogs.kernel.service.BlogsEntryLocalService.class)
-	protected com.liferay.blogs.kernel.service.BlogsEntryLocalService blogsEntryLocalService;
-	@ServiceReference(type = com.liferay.blogs.kernel.service.BlogsEntryService.class)
-	protected com.liferay.blogs.kernel.service.BlogsEntryService blogsEntryService;
-	@ServiceReference(type = BlogsEntryPersistence.class)
-	protected BlogsEntryPersistence blogsEntryPersistence;
-	@ServiceReference(type = com.liferay.document.library.kernel.service.DLAppLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLAppLocalService dlAppLocalService;
-	@ServiceReference(type = com.liferay.document.library.kernel.service.DLAppService.class)
-	protected com.liferay.document.library.kernel.service.DLAppService dlAppService;
-	@ServiceReference(type = com.liferay.document.library.kernel.service.DLFileEntryLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLFileEntryLocalService dlFileEntryLocalService;
-	@ServiceReference(type = com.liferay.document.library.kernel.service.DLFileEntryService.class)
-	protected com.liferay.document.library.kernel.service.DLFileEntryService dlFileEntryService;
-	@ServiceReference(type = DLFileEntryPersistence.class)
-	protected DLFileEntryPersistence dlFileEntryPersistence;
+
+	@ServiceReference(
+		type = com.liferay.document.library.kernel.service.DLAppLocalService.class
+	)
+	protected com.liferay.document.library.kernel.service.DLAppLocalService
+		dlAppLocalService;
+
+	@ServiceReference(
+		type = com.liferay.document.library.kernel.service.DLAppService.class
+	)
+	protected com.liferay.document.library.kernel.service.DLAppService
+		dlAppService;
+
 }

@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of 7.0.0, moved to {@link
+ * @deprecated As of Wilberforce (7.0.x), moved to {@link
  *             com.liferay.portal.words.BasicSpellCheckListener}
  */
 @Deprecated
@@ -31,6 +31,7 @@ public class BasicSpellCheckListener implements SpellCheckListener {
 
 	public BasicSpellCheckListener(String text) {
 		_text = text;
+
 		_textCharArray = text.toCharArray();
 		_invalidWords = new ArrayList<>();
 	}
@@ -50,17 +51,18 @@ public class BasicSpellCheckListener implements SpellCheckListener {
 		int pos = event.getWordContextPosition();
 
 		if (pos >= 0) {
+			String invalidWord = event.getInvalidWord();
+
 			if ((pos == 0) ||
 				((pos > 0) &&
 				 //(_text.charAt(pos - 1) != '<') &&
 				 (!_isInsideHtmlTag(pos)) &&
 				 (_text.charAt(pos - 1) != '&') &&
-				 (event.getInvalidWord().length() > 1))) {
+				 (invalidWord.length() > 1))) {
 
 				_invalidWords.add(
 					new InvalidWord(
-						event.getInvalidWord(), suggestions,
-						event.getWordContext(), pos));
+						invalidWord, suggestions, event.getWordContext(), pos));
 			}
 		}
 	}

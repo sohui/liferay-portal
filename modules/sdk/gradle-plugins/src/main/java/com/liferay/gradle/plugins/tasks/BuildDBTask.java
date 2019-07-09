@@ -14,8 +14,8 @@
 
 package com.liferay.gradle.plugins.tasks;
 
-import com.liferay.gradle.plugins.util.FileUtil;
-import com.liferay.gradle.plugins.util.GradleUtil;
+import com.liferay.gradle.plugins.internal.util.FileUtil;
+import com.liferay.gradle.plugins.internal.util.GradleUtil;
 
 import java.io.File;
 
@@ -45,6 +45,7 @@ public class BuildDBTask extends JavaExec {
 			"com/liferay/portal/tools/dependencies/portal-tools.properties");
 	}
 
+	@SuppressWarnings("unchecked")
 	public BuildDBTask databaseTypes(Iterable<Object> databaseTypes) {
 		GUtil.addToCollection(_databaseTypes, databaseTypes);
 
@@ -57,7 +58,7 @@ public class BuildDBTask extends JavaExec {
 
 	@Override
 	public void exec() {
-		setArgs(getCompleteArgs());
+		setArgs(_getCompleteArgs());
 
 		super.exec();
 	}
@@ -104,7 +105,7 @@ public class BuildDBTask extends JavaExec {
 		_sqlDir = sqlDir;
 	}
 
-	protected List<String> getCompleteArgs() {
+	private List<String> _getCompleteArgs() {
 		List<String> args = new ArrayList<>(getArgs());
 
 		args.add("db.database.name=" + getDatabaseName());

@@ -1,40 +1,47 @@
-<definition component-name="portal-test-plugins">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Test Plugins" />
-	<property name="portlet.plugins.includes" value="test-jsr-286-plt-26-6-portlet" />
+@component-name = "portal-test-plugins"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Test Plugins";
+	property portlet.plugins.includes = "test-jsr-286-plt-26-6-portlet";
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+	setUp {
+		User.firstLoginPG();
+	}
 
-	<command name="ViewJSR" priority="4">
-		<execute macro="Page#add">
-			<var name="pageName" value="Test JSR 286 PLT.26.6 Page" />
-		</execute>
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Test JSR 286 PLT.26.6" />
-		</execute>
+	@priority = "4"
+	test ViewJSR {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute function="Click" locator1="TestJSR#TEST_ACTION_URL" />
-		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" value1="FAILED" />
+		SitePages.addPublicPage(pageName = "Test JSR 286 PLT.26.6 Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test JSR 286 PLT.26.6 Page" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test JSR 286 PLT.26.6 Page");
 
-		<execute function="Click" locator1="TestJSR#TEST_RENDER_URL" />
-		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" value1="FAILED" />
+		Portlet.addPG(portletName = "Test JSR 286 PLT.26.6");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test JSR 286 PLT.26.6 Page" />
-		</execute>
+		Click(locator1 = "TestJSR#TEST_ACTION_URL");
 
-		<execute function="Click" locator1="TestJSR#TEST_RESOURCE_URL" />
-		<execute function="AssertElementNotPresent" locator1="TestJSR#TEST_PORTLET_BODY_FAILED" value1="FAILED" />
-	</command>
-</definition>
+		AssertElementNotPresent(locator1 = "TestJSR#TEST_PORTLET_BODY_FAILED");
+
+		Navigator.gotoPage(pageName = "Test JSR 286 PLT.26.6 Page");
+
+		Click(locator1 = "TestJSR#TEST_RENDER_URL");
+
+		AssertElementNotPresent(locator1 = "TestJSR#TEST_PORTLET_BODY_FAILED");
+
+		Navigator.gotoPage(pageName = "Test JSR 286 PLT.26.6 Page");
+
+		Click(locator1 = "TestJSR#TEST_RESOURCE_URL");
+
+		AssertElementNotPresent(locator1 = "TestJSR#TEST_PORTLET_BODY_FAILED");
+	}
+
+}

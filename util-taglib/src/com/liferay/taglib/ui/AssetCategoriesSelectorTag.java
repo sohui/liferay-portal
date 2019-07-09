@@ -25,6 +25,38 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class AssetCategoriesSelectorTag extends IncludeTag {
 
+	public String getClassName() {
+		return _className;
+	}
+
+	public long getClassPK() {
+		return _classPK;
+	}
+
+	public long getClassTypePK() {
+		return _classTypePK;
+	}
+
+	public String getCurCategoryIds() {
+		return _curCategoryIds;
+	}
+
+	public long[] getGroupIds() {
+		return _groupIds;
+	}
+
+	public String getHiddenInput() {
+		return _hiddenInput;
+	}
+
+	public boolean isIgnoreRequestValue() {
+		return _ignoreRequestValue;
+	}
+
+	public boolean isShowRequiredLabel() {
+		return _showRequiredLabel;
+	}
+
 	public void setClassName(String className) {
 		_className = className;
 	}
@@ -59,6 +91,8 @@ public class AssetCategoriesSelectorTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_className = null;
 		_classPK = 0;
 		_classTypePK = AssetCategoryConstants.ALL_CLASS_TYPE_PK;
@@ -75,26 +109,26 @@ public class AssetCategoriesSelectorTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-selector:className", _className);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-selector:classPK",
 			String.valueOf(_classPK));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-selector:classTypePK",
 			String.valueOf(_classTypePK));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-selector:curCategoryIds",
 			_curCategoryIds);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-selector:groupIds", _groupIds);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-selector:hiddenInput", _hiddenInput);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-selector:ignoreRequestValue",
 			_ignoreRequestValue);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-selector:showRequiredLabel",
 			String.valueOf(_showRequiredLabel));
 	}
@@ -109,6 +143,6 @@ public class AssetCategoriesSelectorTag extends IncludeTag {
 	private long[] _groupIds;
 	private String _hiddenInput = "assetCategoryIds";
 	private boolean _ignoreRequestValue;
-	private boolean _showRequiredLabel;
+	private boolean _showRequiredLabel = true;
 
 }

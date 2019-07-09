@@ -14,30 +14,29 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.PluginSetting;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing PluginSetting in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see PluginSetting
  * @generated
  */
 @ProviderType
-public class PluginSettingCacheModel implements CacheModel<PluginSetting>,
-	Externalizable, MVCCModel {
+public class PluginSettingCacheModel
+	implements CacheModel<PluginSetting>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -48,10 +47,12 @@ public class PluginSettingCacheModel implements CacheModel<PluginSetting>,
 			return false;
 		}
 
-		PluginSettingCacheModel pluginSettingCacheModel = (PluginSettingCacheModel)obj;
+		PluginSettingCacheModel pluginSettingCacheModel =
+			(PluginSettingCacheModel)obj;
 
 		if ((pluginSettingId == pluginSettingCacheModel.pluginSettingId) &&
-				(mvccVersion == pluginSettingCacheModel.mvccVersion)) {
+			(mvccVersion == pluginSettingCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -107,21 +108,21 @@ public class PluginSettingCacheModel implements CacheModel<PluginSetting>,
 		pluginSettingImpl.setCompanyId(companyId);
 
 		if (pluginId == null) {
-			pluginSettingImpl.setPluginId(StringPool.BLANK);
+			pluginSettingImpl.setPluginId("");
 		}
 		else {
 			pluginSettingImpl.setPluginId(pluginId);
 		}
 
 		if (pluginType == null) {
-			pluginSettingImpl.setPluginType(StringPool.BLANK);
+			pluginSettingImpl.setPluginType("");
 		}
 		else {
 			pluginSettingImpl.setPluginType(pluginType);
 		}
 
 		if (roles == null) {
-			pluginSettingImpl.setRoles(StringPool.BLANK);
+			pluginSettingImpl.setRoles("");
 		}
 		else {
 			pluginSettingImpl.setRoles(roles);
@@ -149,8 +150,7 @@ public class PluginSettingCacheModel implements CacheModel<PluginSetting>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(pluginSettingId);
@@ -158,21 +158,21 @@ public class PluginSettingCacheModel implements CacheModel<PluginSetting>,
 		objectOutput.writeLong(companyId);
 
 		if (pluginId == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(pluginId);
 		}
 
 		if (pluginType == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(pluginType);
 		}
 
 		if (roles == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(roles);
@@ -188,4 +188,5 @@ public class PluginSettingCacheModel implements CacheModel<PluginSetting>,
 	public String pluginType;
 	public String roles;
 	public boolean active;
+
 }

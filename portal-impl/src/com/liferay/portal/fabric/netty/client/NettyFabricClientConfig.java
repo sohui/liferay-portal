@@ -14,10 +14,10 @@
 
 package com.liferay.portal.fabric.netty.client;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.fabric.netty.fileserver.CompressionLevel;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.SystemProperties;
 
 import java.io.File;
@@ -66,7 +66,8 @@ public class NettyFabricClientConfig implements Serializable {
 		return CompressionLevel.getCompressionLevel(
 			GetterUtil.getInteger(
 				_properties.getProperty(
-					PropsKeys.PORTAL_FABRIC_CLIENT_FILE_SERVER_FOLDER_COMPRESSION_LEVEL),
+					PropsKeys.
+						PORTAL_FABRIC_CLIENT_FILE_SERVER_FOLDER_COMPRESSION_LEVEL),
 				1));
 	}
 

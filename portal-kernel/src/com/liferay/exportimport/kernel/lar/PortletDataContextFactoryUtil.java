@@ -14,18 +14,18 @@
 
 package com.liferay.exportimport.kernel.lar;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipWriter;
 
 import java.util.Date;
 import java.util.Map;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
- * @author Mate Thurzo
+ * @author Máté Thurzó
  */
 @ProviderType
 public class PortletDataContextFactoryUtil {
@@ -64,6 +64,15 @@ public class PortletDataContextFactoryUtil {
 	}
 
 	public static PortletDataContext createPreparePortletDataContext(
+			long companyId, long groupId, String range, Date startDate,
+			Date endDate)
+		throws PortletDataException {
+
+		return _portletDataContextFactory.createPreparePortletDataContext(
+			companyId, groupId, range, startDate, endDate);
+	}
+
+	public static PortletDataContext createPreparePortletDataContext(
 			ThemeDisplay themeDisplay, Date startDate, Date endDate)
 		throws PortletDataException {
 
@@ -71,7 +80,11 @@ public class PortletDataContextFactoryUtil {
 			themeDisplay, startDate, endDate);
 	}
 
-	private static final PortletDataContextFactory _portletDataContextFactory =
-		ProxyFactory.newServiceTrackedInstance(PortletDataContextFactory.class);
+	private static volatile PortletDataContextFactory
+		_portletDataContextFactory =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				PortletDataContextFactory.class,
+				PortletDataContextFactoryUtil.class,
+				"_portletDataContextFactory", false);
 
 }

@@ -14,9 +14,12 @@
 
 package com.liferay.exportimport.kernel.lifecycle;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public interface ExportImportLifecycleConstants {
 
 	public static final int EVENT_LAYOUT_EXPORT_FAILED = 1;
@@ -60,6 +63,12 @@ public interface ExportImportLifecycleConstants {
 	public static final int EVENT_PUBLICATION_PORTLET_LOCAL_STARTED = 21;
 
 	public static final int EVENT_PUBLICATION_PORTLET_LOCAL_SUCCEEDED = 20;
+
+	public static final int EVENT_PUBLICATION_PORTLET_REMOTE_FAILED = 37;
+
+	public static final int EVENT_PUBLICATION_PORTLET_REMOTE_STARTED = 38;
+
+	public static final int EVENT_PUBLICATION_PORTLET_REMOTE_SUCCEEDED = 39;
 
 	public static final int EVENT_STAGED_MODEL_EXPORT_FAILED = 22;
 

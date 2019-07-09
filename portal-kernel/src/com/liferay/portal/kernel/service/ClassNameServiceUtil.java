@@ -14,61 +14,60 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the remote service utility for ClassName. This utility wraps
- * {@link com.liferay.portal.service.impl.ClassNameServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portal.service.impl.ClassNameServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see ClassNameService
- * @see com.liferay.portal.service.base.ClassNameServiceBaseImpl
- * @see com.liferay.portal.service.impl.ClassNameServiceImpl
  * @generated
  */
 @ProviderType
 public class ClassNameServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portal.service.impl.ClassNameServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.ClassNameServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static com.liferay.portal.kernel.model.ClassName fetchByClassNameId(
 		long classNameId) {
+
 		return getService().fetchByClassNameId(classNameId);
 	}
 
 	public static com.liferay.portal.kernel.model.ClassName fetchClassName(
-		java.lang.String value) {
+		String value) {
+
 		return getService().fetchClassName(value);
 	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
 	public static ClassNameService getService() {
 		if (_service == null) {
-			_service = (ClassNameService)PortalBeanLocatorUtil.locate(ClassNameService.class.getName());
-
-			ReferenceRegistry.registerReference(ClassNameServiceUtil.class,
-				"_service");
+			_service = (ClassNameService)PortalBeanLocatorUtil.locate(
+				ClassNameService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static ClassNameService _service;
+
 }

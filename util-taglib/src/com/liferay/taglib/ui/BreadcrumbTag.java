@@ -34,6 +34,34 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class BreadcrumbTag extends IncludeTag {
 
+	public long getDdmTemplateGroupId() {
+		return _ddmTemplateGroupId;
+	}
+
+	public String getDdmTemplateKey() {
+		return _ddmTemplateKey;
+	}
+
+	public boolean isShowCurrentGroup() {
+		return _showCurrentGroup;
+	}
+
+	public boolean isShowGuestGroup() {
+		return _showGuestGroup;
+	}
+
+	public boolean isShowLayout() {
+		return _showLayout;
+	}
+
+	public boolean isShowParentGroups() {
+		return _showParentGroups;
+	}
+
+	public boolean isShowPortletBreadcrumb() {
+		return _showPortletBreadcrumb;
+	}
+
 	public void setDdmTemplateGroupId(long ddmTemplateGroupId) {
 		_ddmTemplateGroupId = ddmTemplateGroupId;
 	}
@@ -64,6 +92,8 @@ public class BreadcrumbTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_ddmTemplateGroupId = 0;
 		_ddmTemplateKey = null;
 		_showCurrentGroup = true;
@@ -74,7 +104,7 @@ public class BreadcrumbTag extends IncludeTag {
 	}
 
 	protected List<BreadcrumbEntry> getBreadcrumbEntries(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
 		List<BreadcrumbEntry> breadcrumbEntries = Collections.emptyList();
 
@@ -102,7 +132,7 @@ public class BreadcrumbTag extends IncludeTag {
 
 		try {
 			breadcrumbEntries = BreadcrumbUtil.getBreadcrumbEntries(
-				request, ArrayUtil.toIntArray(breadcrumbEntryTypes));
+				httpServletRequest, ArrayUtil.toIntArray(breadcrumbEntryTypes));
 		}
 		catch (Exception e) {
 		}
@@ -136,13 +166,13 @@ public class BreadcrumbTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
 			"liferay-ui:breadcrumb:breadcrumbEntries",
-			getBreadcrumbEntries(request));
-		request.setAttribute(
+			getBreadcrumbEntries(httpServletRequest));
+		httpServletRequest.setAttribute(
 			"liferay-ui:breadcrumb:displayStyle", getDisplayStyle());
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:breadcrumb:displayStyleGroupId",
 			getDisplayStyleGroupId());
 	}

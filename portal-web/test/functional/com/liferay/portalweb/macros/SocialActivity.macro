@@ -1,101 +1,146 @@
-<definition>
-	<!--There is no need for a SocialActivity#tearDownCP, as the User Statistics will not be reset and Jenkins does not run teardowns. -->
+definition {
 
-	<command name="addActionCP">
-		<var name="key_userAction" value="${userAction}" />
+	// There is no need for a SocialActivity#tearDownCP, as the User Statistics will not be reset and Jenkins does not run teardowns.
 
-		<execute function="AssertClick" locator1="SocialActivity#POSSIBLE_USER_ACTIONS_BUTTON" value1="${userAction}" />
-		<execute macro="Button#clickSave" />
-	</command>
+	macro configureActionCP {
+		var key_userAction = "${userAction}";
 
-	<command name="configureActionCP">
-		<var name="key_userAction" value="${userAction}" />
+		if (isSet(participationIncrement)) {
+			Select(
+				locator1 = "SocialActivity#PARTICIPATION_INCREMENT_SELECT",
+				value1 = "${participationIncrement}");
+		}
 
-		<if>
-			<isset var="participationIncrement" />
-			<then>
-				<execute function="Select" locator1="SocialActivity#PARTICIPATION_INCREMENT_SELECT" value1="${participationIncrement}" />
-			</then>
-		</if>
+		if (isSet(contributionIncrement)) {
+			Select(
+				locator1 = "SocialActivity#CONTRIBUTION_INCREMENT_SELECT",
+				value1 = "${contributionIncrement}");
+		}
 
-		<if>
-			<isset var="contributionIncrement" />
-			<then>
-				<execute function="Select" locator1="SocialActivity#CONTRIBUTION_INCREMENT_SELECT" value1="${contributionIncrement}" />
-			</then>
-		</if>
+		if ((isSet(contributionLimitValue)) || (isSet(contributionLimitPeriod)) || (isSet(participationLimitValue)) || (isSet(participationLimitPeriod))) {
+			AssertClick(
+				locator1 = "SocialActivity#LIMIT_LINK",
+				value1 = "Limit");
 
-		<if>
-			<or>
-				<isset var="contributionLimitValue" />
-				<isset var="contributionLimitPeriod" />
-				<isset var="participationLimitValue" />
-				<isset var="participationLimitPeriod" />
-			</or>
-			<then>
-				<execute function="AssertClick" locator1="SocialActivity#LIMIT_LINK" value1="Limit" />
+			if (isSet(contributionLimitValue)) {
+				Select(
+					locator1 = "SocialActivity#CONTRIBUTION_LIMIT_VALUE_SELECT",
+					value1 = "${contributionLimitValue}");
+			}
 
-				<if>
-					<isset var="contributionLimitValue" />
-					<then>
-						<execute function="Select" locator1="SocialActivity#CONTRIBUTION_LIMIT_VALUE_SELECT" value1="${contributionLimitValue}" />
-					</then>
-				</if>
+			if (isSet(contributionLimitPeriod)) {
+				Select(
+					locator1 = "SocialActivity#CONTRIBUTION_LIMIT_PERIOD_SELECT",
+					value1 = "${contributionLimitPeriod}");
+			}
 
-				<if>
-					<isset var="contributionLimitPeriod" />
-					<then>
-						<execute function="Select" locator1="SocialActivity#CONTRIBUTION_LIMIT_PERIOD_SELECT" value1="${contributionLimitPeriod}" />
-					</then>
-				</if>
+			if (isSet(participationLimitValue)) {
+				Select(
+					locator1 = "SocialActivity#PARTICIPATION_LIMIT_VALUE_SELECT",
+					value1 = "${participationLimitValue}");
+			}
 
-				<if>
-					<isset var="participationLimitValue" />
-					<then>
-						<execute function="Select" locator1="SocialActivity#PARTICIPATION_LIMIT_VALUE_SELECT" value1="${participationLimitValue}" />
-					</then>
-				</if>
+			if (isSet(participationLimitPeriod)) {
+				Select(
+					locator1 = "SocialActivity#PARTICIPATION_LIMIT_PERIOD_SELECT",
+					value1 = "${participationLimitPeriod}");
+			}
+		}
 
-				<if>
-					<isset var="participationLimitPeriod" />
-					<then>
-						<execute function="Select" locator1="SocialActivity#PARTICIPATION_LIMIT_PERIOD_SELECT" value1="${participationLimitPeriod}" />
-					</then>
-				</if>
-			</then>
-		</if>
+		Button.clickSave();
+	}
 
-		<execute macro="Button#clickSave" />
-	</command>
+	macro enableBlogsCP {
+		Check(locator1 = "Checkbox#BLOGS_ENTRY");
 
-	<command name="enableCP">
-		<execute function="Check" locator1="Checkbox#BLOGS_ENTRY" />
-		<execute macro="Button#clickSave" />
-	</command>
+		Button.clickSave();
+	}
 
-	<command name="removeActionCP">
-		<var name="key_userAction" value="${userAction}" />
+	macro removeActionCP {
+		var key_userAction = "${userAction}";
 
-		<execute function="Click" locator1="SocialActivity#CLOSE_ICON" />
-		<execute function="AssertTextEquals" locator1="SocialActivity#POSSIBLE_USER_ACTIONS_BUTTON" value1="${userAction}" />
-		<execute macro="Button#clickSave" />
-	</command>
+		Click(locator1 = "SocialActivity#CLOSE_ICON");
 
-	<command name="viewPGViaUserStatistics">
-		<var name="key_userName" value="${userName}" />
+		AssertTextEquals(
+			locator1 = "SocialActivity#POSSIBLE_USER_ACTIONS_BUTTON",
+			value1 = "${userAction}");
 
-		<execute function="AssertTextEquals" locator1="UserStatistics#RANKING_TABLE_USER_NAME" value1="${userName}" />
+		Button.clickSave();
+	}
 
-		<var name="key_userRank" value="${userRank}" />
+	macro updateGroupStatisticsConfiguration {
+		Portlet.gotoPortletOptions(
+			portletName = "Group Statistics",
+			portletOption = "Configuration");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="UserStatistics#RANKING_TABLE_RANK" value1="${userRank}" />
+		SelectFrame(locator1 = "GroupStatisticsConfiguration#CONFIGURATION_IFRAME");
 
-		<var name="key_userContributionScore" value="${contributionScore}" />
+		var key_chartType = "${chartType}";
+		var key_chartWidth = "${chartWidth}";
+		var key_dataRange = "${dataRange}";
+		var key_displayActivityCounterName = "${displayActivityCounterName}";
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="UserStatistics#RANKING_TABLE_CONTRIBUTION_SCORE" value1="${contributionScore}" />
+		Select(
+			locator1 = "GroupStatisticsConfiguration#SETUP_COUNTERS_DISPLAY_ACTIVITY_COUNTER_NAME_DROPDOWN",
+			value1 = "${displayActivityCounterName}");
 
-		<var name="key_userParticipationScore" value="${participationScore}" />
+		Select(
+			locator1 = "GroupStatisticsConfiguration#SETUP_COUNTERS_CHART_TYPE_DROPDOWN",
+			value1 = "${chartType}");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="UserStatistics#RANKING_TABLE_PARTICIPATION_SCORE" value1="${participationScore}" />
-	</command>
-</definition>
+		Select(
+			locator1 = "GroupStatisticsConfiguration#SETUP_COUNTERS_CHART_WIDTH_DROPDOWN",
+			value1 = "${chartWidth}");
+
+		Select(
+			locator1 = "GroupStatisticsConfiguration#SETUP_COUNTERS_DATA_RANGE_DROPDOWN",
+			value1 = "${dataRange}");
+
+		PortletEntry.save();
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro viewPGViaGroupStatistics {
+		var key_siteStatistics = "${siteStatistics}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "GroupStatistics#SITE_STATISTICS_PANEL",
+			value1 = "${siteStatistics}");
+
+		var key_currentValue = "${currentValue}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "GroupStatistics#GROUP_STATISTICS_BODY_INFO",
+			value1 = "${currentValue}");
+
+		AssertElementPresent(locator1 = "GroupStatistics#GROUP_STATISTICS_BODY_CHART");
+	}
+
+	macro viewPGViaUserStatistics {
+		var key_userName = "${userName}";
+
+		AssertTextEquals(
+			locator1 = "UserStatistics#RANKING_TABLE_USER_NAME",
+			value1 = "${userName}");
+
+		var key_userRank = "${userRank}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UserStatistics#RANKING_TABLE_RANK",
+			value1 = "${userRank}");
+
+		var key_userContributionScore = "${contributionScore}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UserStatistics#RANKING_TABLE_CONTRIBUTION_SCORE",
+			value1 = "${contributionScore}");
+
+		var key_userParticipationScore = "${participationScore}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "UserStatistics#RANKING_TABLE_PARTICIPATION_SCORE",
+			value1 = "${participationScore}");
+	}
+
+}

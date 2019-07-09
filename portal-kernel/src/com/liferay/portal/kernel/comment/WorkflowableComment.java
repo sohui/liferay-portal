@@ -14,14 +14,15 @@
 
 package com.liferay.portal.kernel.comment;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Adolfo Pérez
  */
+@ProviderType
 public interface WorkflowableComment extends Comment {
 
 	public long getCompanyId();
-
-	public long getGroupId();
 
 	public long getPrimaryKey();
 

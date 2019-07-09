@@ -14,27 +14,46 @@
 
 package com.liferay.marketplace.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.marketplace.exception.ModuleNamespaceException;
+import com.liferay.marketplace.model.App;
 import com.liferay.marketplace.model.Module;
 import com.liferay.marketplace.service.base.ModuleLocalServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Ryan Park
  * @author Joan Kim
  */
-@ProviderType
+@Component(
+	property = "module.class.name=com.liferay.marketplace.model.Module",
+	service = AopService.class
+)
 public class ModuleLocalServiceImpl extends ModuleLocalServiceBaseImpl {
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #addModule(long,
+	 *             String, String, String)}
+	 */
+	@Deprecated
 	@Override
 	public Module addModule(
 			long userId, long appId, String bundleSymbolicName,
 			String bundleVersion, String contextName)
+		throws PortalException {
+
+		return addModule(appId, bundleSymbolicName, bundleVersion, contextName);
+	}
+
+	@Override
+	public Module addModule(
+			long appId, String bundleSymbolicName, String bundleVersion,
+			String contextName)
 		throws PortalException {
 
 		Module module = fetchModule(
@@ -44,6 +63,8 @@ public class ModuleLocalServiceImpl extends ModuleLocalServiceBaseImpl {
 			return module;
 		}
 
+		App app = appPersistence.findByPrimaryKey(appId);
+
 		validate(bundleSymbolicName, contextName);
 
 		long moduleId = counterLocalService.increment();
@@ -51,6 +72,8 @@ public class ModuleLocalServiceImpl extends ModuleLocalServiceBaseImpl {
 		module = modulePersistence.create(moduleId);
 
 		module.setModuleId(moduleId);
+
+		module.setCompanyId(app.getCompanyId());
 		module.setAppId(appId);
 		module.setBundleSymbolicName(bundleSymbolicName);
 		module.setBundleVersion(bundleVersion);
@@ -59,6 +82,11 @@ public class ModuleLocalServiceImpl extends ModuleLocalServiceBaseImpl {
 		modulePersistence.update(module);
 
 		return module;
+	}
+
+	@Override
+	public void deleteModules(long appId) {
+		modulePersistence.removeByAppId(appId);
 	}
 
 	@Override

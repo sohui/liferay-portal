@@ -18,9 +18,6 @@ import com.liferay.portal.kernel.exception.NoSuchResourceActionException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
-import java.io.InputStream;
 
 import java.util.List;
 import java.util.Locale;
@@ -33,14 +30,24 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class ResourceActionsUtil {
 
+	public static void check(Portlet portlet) {
+		getResourceActions().check(portlet);
+	}
+
+	public static void check(String portletName) {
+		getResourceActions().check(portletName);
+	}
+
 	public static void checkAction(String name, String actionId)
 		throws NoSuchResourceActionException {
 
 		getResourceActions().checkAction(name, actionId);
 	}
 
-	public static String getAction(HttpServletRequest request, String action) {
-		return getResourceActions().getAction(request, action);
+	public static String getAction(
+		HttpServletRequest httpServletRequest, String action) {
+
+		return getResourceActions().getAction(httpServletRequest, action);
 	}
 
 	public static String getAction(Locale locale, String action) {
@@ -49,26 +56,6 @@ public class ResourceActionsUtil {
 
 	public static String getActionNamePrefix() {
 		return getResourceActions().getActionNamePrefix();
-	}
-
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public static List<String> getActionsNames(
-		HttpServletRequest request, List<String> actions) {
-
-		return getResourceActions().getActionsNames(request, actions);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public static List<String> getActionsNames(
-		HttpServletRequest request, String name, long actionIds) {
-
-		return getResourceActions().getActionsNames(request, name, actionIds);
 	}
 
 	public static String getCompositeModelName(String... classNames) {
@@ -88,9 +75,9 @@ public class ResourceActionsUtil {
 	}
 
 	public static String getModelResource(
-		HttpServletRequest request, String name) {
+		HttpServletRequest httpServletRequest, String name) {
 
-		return getResourceActions().getModelResource(request, name);
+		return getResourceActions().getModelResource(httpServletRequest, name);
 	}
 
 	public static String getModelResource(Locale locale, String name) {
@@ -193,8 +180,6 @@ public class ResourceActionsUtil {
 	}
 
 	public static ResourceActions getResourceActions() {
-		PortalRuntimePermission.checkGetBeanProperty(ResourceActionsUtil.class);
-
 		return _resourceActions;
 	}
 
@@ -254,19 +239,28 @@ public class ResourceActionsUtil {
 		getResourceActions().read(servletContextName, classLoader, source);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public static void read(String servletContextName, InputStream inputStream)
+	public static void read(
+			String servletContextName, ClassLoader classLoader,
+			String... sources)
 		throws Exception {
 
-		getResourceActions().read(servletContextName, inputStream);
+		getResourceActions().read(servletContextName, classLoader, sources);
+	}
+
+	public static void readAndCheck(
+			String servletContextName, ClassLoader classLoader,
+			String... sources)
+		throws Exception {
+
+		getResourceActions().readAndCheck(
+			servletContextName, classLoader, sources);
+	}
+
+	public static void removePortletResource(String portletName) {
+		getResourceActions().removePortletResource(portletName);
 	}
 
 	public void setResourceActions(ResourceActions resourceActions) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_resourceActions = resourceActions;
 	}
 

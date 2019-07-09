@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.io.unsync;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Writer;
 
@@ -81,7 +81,9 @@ public class UnsyncStringWriter extends Writer {
 			charSequence = StringPool.NULL;
 		}
 
-		write(charSequence.subSequence(start, end).toString());
+		charSequence = charSequence.subSequence(start, end);
+
+		write(charSequence.toString());
 
 		return this;
 	}
@@ -116,9 +118,8 @@ public class UnsyncStringWriter extends Writer {
 		if (stringBundler != null) {
 			return stringBundler.toString();
 		}
-		else {
-			return stringBuilder.toString();
-		}
+
+		return stringBuilder.toString();
 	}
 
 	@Override

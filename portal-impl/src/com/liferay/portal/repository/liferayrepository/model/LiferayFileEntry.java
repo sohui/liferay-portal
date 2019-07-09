@@ -21,6 +21,7 @@ import com.liferay.document.library.kernel.service.DLAppHelperLocalServiceUtil;
 import com.liferay.document.library.kernel.service.DLFileVersionLocalServiceUtil;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.lock.Lock;
@@ -36,9 +37,9 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.model.RepositoryModelOperation;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portlet.documentlibrary.service.permission.DLFileEntryPermission;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portlet.documentlibrary.util.RepositoryModelUtil;
 
 import java.io.InputStream;
@@ -73,7 +74,7 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 			PermissionChecker permissionChecker, String actionId)
 		throws PortalException {
 
-		return DLFileEntryPermission.contains(
+		return _dlFileEntryModelResourcePermission.contains(
 			permissionChecker, _dlFileEntry, actionId);
 	}
 
@@ -132,7 +133,7 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 				PrincipalThreadLocal.getUserId(), this, true);
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error("Unable to get content stream", e);
 		}
 
 		return inputStream;
@@ -147,7 +148,7 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 				PrincipalThreadLocal.getUserId(), this, true);
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error("Error getting document stream", e);
 		}
 
 		return inputStream;
@@ -222,16 +223,16 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 
 	@Override
 	public Folder getFolder() {
-		Folder folder = null;
-
 		try {
-			folder = new LiferayFolder(_dlFileEntry.getFolder());
+			return new LiferayFolder(_dlFileEntry.getFolder());
 		}
 		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+
 			return null;
 		}
-
-		return folder;
 	}
 
 	@Override
@@ -292,9 +293,12 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 			return dlFileVersion.getMimeType();
 		}
 		catch (Exception e) {
-		}
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
 
-		return ContentTypes.APPLICATION_OCTET_STREAM;
+			return ContentTypes.APPLICATION_OCTET_STREAM;
+		}
 	}
 
 	@Override
@@ -387,7 +391,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link DLFileVersion#getUserId()}
+	 * @deprecated As of Newton (6.2.x), replaced by {@link
+	 *             DLFileVersion#getUserId()}
 	 */
 	@Deprecated
 	@Override
@@ -407,7 +412,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link DLFileVersion#getUserName()}
+	 * @deprecated As of Newton (6.2.x), replaced by {@link
+	 *             DLFileVersion#getUserName()}
 	 */
 	@Deprecated
 	@Override
@@ -427,7 +433,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link DLFileVersion#getUserUuid()}
+	 * @deprecated As of Newton (6.2.x), replaced by {@link
+	 *             DLFileVersion#getUserUuid()}
 	 */
 	@Deprecated
 	@Override
@@ -466,9 +473,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		if (_dlFileEntry.getGroupId() == _dlFileEntry.getRepositoryId()) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -487,6 +493,10 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 			return _dlFileEntry.isInTrashContainer();
 		}
 		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+
 			return false;
 		}
 	}
@@ -555,7 +565,7 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 
 	@Override
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		setPrimaryKey(((Long)primaryKeyObj).longValue());
+		setPrimaryKey((Long)primaryKeyObj);
 	}
 
 	@Override
@@ -583,9 +593,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		if (isEscapedModel()) {
 			return this;
 		}
-		else {
-			return new LiferayFileEntry(_dlFileEntry.toEscapedModel(), true);
-		}
+
+		return new LiferayFileEntry(_dlFileEntry.toEscapedModel(), true);
 	}
 
 	@Override
@@ -598,9 +607,8 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 		if (isEscapedModel()) {
 			return new LiferayFileEntry(_dlFileEntry.toUnescapedModel(), true);
 		}
-		else {
-			return this;
-		}
+
+		return this;
 	}
 
 	protected Repository getRepository() {
@@ -616,6 +624,13 @@ public class LiferayFileEntry extends LiferayModel implements FileEntry {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		LiferayFileEntry.class);
+
+	private static volatile ModelResourcePermission<DLFileEntry>
+		_dlFileEntryModelResourcePermission =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				ModelResourcePermission.class, LiferayFileEntry.class,
+				"_dlFileEntryModelResourcePermission",
+				"(model.class.name=" + DLFileEntry.class.getName() + ")", true);
 
 	private final DLFileEntry _dlFileEntry;
 	private DLFileVersion _dlFileVersion;

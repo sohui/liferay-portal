@@ -29,7 +29,6 @@ import aQute.lib.json.JSONCodec;
 import java.io.InputStream;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -325,7 +324,7 @@ public class NpmAnalyzerPlugin implements AnalyzerPlugin {
 
 		Parameters parameters = new Parameters();
 
-		for (Entry<String, String> entry : npmModule.runtime.entrySet()) {
+		for (Map.Entry<String, String> entry : npmModule.runtime.entrySet()) {
 			Attrs attrs = new Attrs();
 
 			StringBuilder sb = new StringBuilder();
@@ -378,34 +377,7 @@ public class NpmAnalyzerPlugin implements AnalyzerPlugin {
 			analyzer.setBundleVersion(version.toString());
 		}
 
-		Parameters parameters = new Parameters() {
-
-			@Override
-			public void mergeWith(Parameters parameters, boolean override) {
-				for (Map.Entry<String, Attrs> entry : parameters.entrySet()) {
-					Attrs existingAttrs = get(entry.getKey());
-
-					if (existingAttrs == null) {
-
-						// This is a workaround for a bug in Bnd
-
-						Attrs tempAttrs = new Attrs();
-
-						tempAttrs.put("____ignore____:Version", "0.0.0");
-
-						tempAttrs.remove("____ignore____");
-
-						tempAttrs.putAll(entry.getValue());
-
-						put(entry.getKey(), tempAttrs);
-					}
-					else {
-						existingAttrs.mergeWith(entry.getValue(), override);
-					}
-				}
-			}
-
-		};
+		Parameters parameters = new Parameters();
 
 		Attrs attrs = new Attrs();
 

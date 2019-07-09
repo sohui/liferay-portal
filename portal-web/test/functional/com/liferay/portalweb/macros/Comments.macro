@@ -1,0 +1,35 @@
+definition {
+
+	macro addComment {
+		Click(
+			key_editor = "postReply",
+			locator1 = "AlloyEditor#EDITOR");
+
+		AlloyEditor.typeEditor(
+			content = "${entryComment}",
+			editor = "postReply");
+
+		AssertClick(
+			locator1 = "Button#REPLY",
+			value1 = "Reply");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro subscribePG {
+		AssertClick(
+			locator1 = "Button#SUBSCRIBE",
+			value1 = "Subscribe");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro viewCommentReadOnly {
+		AssertElementNotPresent(locator1 = "Comments#COMMENT_FIELD");
+
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_INFO",
+			value1 = "Comments are read only in Staging.");
+	}
+
+}

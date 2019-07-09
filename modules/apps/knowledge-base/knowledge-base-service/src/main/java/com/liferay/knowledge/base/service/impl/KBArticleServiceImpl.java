@@ -14,25 +14,35 @@
 
 package com.liferay.knowledge.base.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.constants.KBActionKeys;
+import com.liferay.knowledge.base.constants.KBConstants;
+import com.liferay.knowledge.base.constants.KBFolderConstants;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
+import com.liferay.knowledge.base.internal.util.KBArticleSiblingNavigationHelper;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBArticleSearchDisplay;
+import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.model.impl.KBArticleSearchDisplayImpl;
 import com.liferay.knowledge.base.service.base.KBArticleServiceBaseImpl;
-import com.liferay.knowledge.base.service.permission.AdminPermission;
-import com.liferay.knowledge.base.service.permission.DisplayPermission;
-import com.liferay.knowledge.base.service.permission.KBArticlePermission;
-import com.liferay.knowledge.base.service.util.AdminUtil;
+import com.liferay.knowledge.base.util.AdminHelper;
 import com.liferay.knowledge.base.util.KnowledgeBaseUtil;
 import com.liferay.knowledge.base.util.comparator.KBArticleModifiedDateComparator;
+import com.liferay.knowledge.base.util.comparator.KBArticlePriorityComparator;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -40,21 +50,17 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.spring.extender.service.ServiceReference;
+import com.liferay.rss.export.RSSExporter;
+import com.liferay.rss.model.SyndContent;
+import com.liferay.rss.model.SyndEntry;
+import com.liferay.rss.model.SyndFeed;
+import com.liferay.rss.model.SyndLink;
+import com.liferay.rss.model.SyndModelFactory;
 import com.liferay.rss.util.RSSUtil;
-
-import com.sun.syndication.feed.synd.SyndContent;
-import com.sun.syndication.feed.synd.SyndContentImpl;
-import com.sun.syndication.feed.synd.SyndEntry;
-import com.sun.syndication.feed.synd.SyndEntryImpl;
-import com.sun.syndication.feed.synd.SyndFeed;
-import com.sun.syndication.feed.synd.SyndFeedImpl;
-import com.sun.syndication.feed.synd.SyndLink;
-import com.sun.syndication.feed.synd.SyndLinkImpl;
-import com.sun.syndication.io.FeedException;
 
 import java.io.InputStream;
 
@@ -68,7 +74,6 @@ import java.util.Map;
  * @author Peter Shin
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 
 	@Override
@@ -81,12 +86,12 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		throws PortalException {
 
 		if (portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_ADMIN)) {
-			AdminPermission.check(
+			_adminPortletResourcePermission.check(
 				getPermissionChecker(), serviceContext.getScopeGroupId(),
 				KBActionKeys.ADD_KB_ARTICLE);
 		}
 		else if (portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_DISPLAY)) {
-			DisplayPermission.check(
+			_displayPortletResourcePermission.check(
 				getPermissionChecker(), serviceContext.getScopeGroupId(),
 				KBActionKeys.ADD_KB_ARTICLE);
 		}
@@ -104,8 +109,8 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		AdminPermission.check(
-			getPermissionChecker(), groupId, KBActionKeys.ADD_KB_ARTICLE);
+		_adminPortletResourcePermission.check(
+			getPermissionChecker(), groupId, KBActionKeys.IMPORT_KB_ARTICLES);
 
 		return kbArticleLocalService.addKBArticlesMarkdown(
 			getUserId(), groupId, parentKBFolderId, fileName,
@@ -130,7 +135,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public KBArticle deleteKBArticle(long resourcePrimKey)
 		throws PortalException {
 
-		KBArticlePermission.check(
+		_kbArticleModelResourcePermission.check(
 			getPermissionChecker(), resourcePrimKey, KBActionKeys.DELETE);
 
 		return kbArticleLocalService.deleteKBArticle(resourcePrimKey);
@@ -140,7 +145,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public void deleteKBArticles(long groupId, long[] resourcePrimKeys)
 		throws PortalException {
 
-		AdminPermission.check(
+		_adminPortletResourcePermission.check(
 			getPermissionChecker(), groupId, KBActionKeys.DELETE_KB_ARTICLES);
 
 		kbArticleLocalService.deleteKBArticles(resourcePrimKeys);
@@ -160,20 +165,117 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	}
 
 	@Override
+	public KBArticle fetchFirstChildKBArticle(
+		long groupId, long parentResourcePrimKey) {
+
+		List<KBArticle> kbArticles = kbArticlePersistence.filterFindByG_P_L(
+			groupId, parentResourcePrimKey, true, 0, 1,
+			new KBArticlePriorityComparator(true));
+
+		if (kbArticles.isEmpty()) {
+			return null;
+		}
+
+		return kbArticles.get(0);
+	}
+
+	@Override
+	public KBArticle fetchFirstChildKBArticle(
+		long groupId, long parentResourcePrimKey, int status) {
+
+		List<KBArticle> kbArticles = kbArticlePersistence.filterFindByG_P_L_S(
+			groupId, parentResourcePrimKey, true,
+			WorkflowConstants.STATUS_APPROVED, 0, 1,
+			new KBArticlePriorityComparator(true));
+
+		if (kbArticles.isEmpty()) {
+			return null;
+		}
+
+		return kbArticles.get(0);
+	}
+
+	@Override
+	public KBArticle fetchKBArticleByUrlTitle(
+			long groupId, long kbFolderId, String urlTitle)
+		throws PortalException {
+
+		KBArticle kbArticle = kbArticleLocalService.fetchKBArticleByUrlTitle(
+			groupId, kbFolderId, urlTitle);
+
+		if ((kbArticle != null) &&
+			_kbArticleModelResourcePermission.contains(
+				getPermissionChecker(), kbArticle, ActionKeys.VIEW)) {
+
+			return kbArticle;
+		}
+
+		return null;
+	}
+
+	@Override
 	public KBArticle fetchLatestKBArticle(long resourcePrimKey, int status)
 		throws PortalException {
 
 		KBArticle kbArticle = kbArticleLocalService.fetchLatestKBArticle(
 			resourcePrimKey, status);
 
-		if (kbArticle == null) {
-			return null;
+		if ((kbArticle != null) &&
+			_kbArticleModelResourcePermission.contains(
+				getPermissionChecker(), kbArticle, ActionKeys.VIEW)) {
+
+			return kbArticle;
 		}
 
-		KBArticlePermission.check(
-			getPermissionChecker(), kbArticle, KBActionKeys.VIEW);
+		return null;
+	}
 
-		return kbArticle;
+	@Override
+	public KBArticle fetchLatestKBArticleByUrlTitle(
+			long groupId, long kbFolderId, String urlTitle, int status)
+		throws PortalException {
+
+		KBArticle kbArticle =
+			kbArticleLocalService.fetchLatestKBArticleByUrlTitle(
+				groupId, kbFolderId, urlTitle, status);
+
+		if ((kbArticle != null) &&
+			_kbArticleModelResourcePermission.contains(
+				getPermissionChecker(), kbArticle, ActionKeys.VIEW)) {
+
+			return kbArticle;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getAllDescendantKBArticles(long, long, int,
+	 *             OrderByComparator)}
+	 */
+	@Deprecated
+	@Override
+	public List<KBArticle> getAllDescendantKBArticles(
+			long resourcePrimKey, int status,
+			OrderByComparator<KBArticle> orderByComparator)
+		throws PortalException {
+
+		return getAllDescendantKBArticles(
+			GroupConstants.DEFAULT_PARENT_GROUP_ID, resourcePrimKey, status,
+			orderByComparator);
+	}
+
+	@Override
+	public List<KBArticle> getAllDescendantKBArticles(
+			long groupId, long resourcePrimKey, int status,
+			OrderByComparator<KBArticle> orderByComparator)
+		throws PortalException {
+
+		groupId = checkGroupId(groupId, resourcePrimKey);
+
+		return getAllDescendantKBArticles(
+			groupId, resourcePrimKey, status, orderByComparator, false);
 	}
 
 	@Override
@@ -235,7 +337,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public KBArticle getKBArticle(long resourcePrimKey, int version)
 		throws PortalException {
 
-		KBArticlePermission.check(
+		_kbArticleModelResourcePermission.check(
 			getPermissionChecker(), resourcePrimKey, KBActionKeys.VIEW);
 
 		return kbArticleLocalService.getKBArticle(resourcePrimKey, version);
@@ -243,51 +345,18 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 
 	@Override
 	public List<KBArticle> getKBArticleAndAllDescendantKBArticles(
-		long groupId, long resourcePrimKey, int status,
-		OrderByComparator<KBArticle> orderByComparator) {
+			long resourcePrimKey, int status,
+			OrderByComparator<KBArticle> orderByComparator)
+		throws PortalException {
 
-		List<KBArticle> kbArticles = getKBArticles(
-			groupId, new long[] {resourcePrimKey}, status, null);
-
-		kbArticles = ListUtil.copy(kbArticles);
-
-		Long[][] params = new Long[][] {new Long[] {resourcePrimKey}};
-
-		while ((params = KnowledgeBaseUtil.getParams(params[0])) != null) {
-			List<KBArticle> curKBArticles = null;
-
-			if (status == WorkflowConstants.STATUS_ANY) {
-				curKBArticles = kbArticlePersistence.filterFindByG_P_L(
-					groupId, ArrayUtil.toArray(params[1]), true);
-			}
-			else if (status == WorkflowConstants.STATUS_APPROVED) {
-				curKBArticles = kbArticlePersistence.filterFindByG_P_M(
-					groupId, ArrayUtil.toArray(params[1]), true);
-			}
-			else {
-				curKBArticles = kbArticlePersistence.filterFindByG_P_S(
-					groupId, ArrayUtil.toArray(params[1]), status);
-			}
-
-			kbArticles.addAll(curKBArticles);
-
-			long[] resourcePrimKeys = StringUtil.split(
-				ListUtil.toString(curKBArticles, "resourcePrimKey"), 0L);
-
-			params[0] = ArrayUtil.append(
-				params[0], ArrayUtil.toArray(resourcePrimKeys));
-		}
-
-		if (orderByComparator != null) {
-			kbArticles = ListUtil.sort(kbArticles, orderByComparator);
-		}
-
-		return Collections.unmodifiableList(kbArticles);
+		return getAllDescendantKBArticles(
+			GroupConstants.DEFAULT_PARENT_GROUP_ID, resourcePrimKey, status,
+			orderByComparator, true);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getKBArticleAndAllDescendantKBArticles(long, long, int,
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getKBArticleAndAllDescendantKBArticles(long, int,
 	 *             OrderByComparator)}
 	 */
 	@Deprecated
@@ -296,8 +365,20 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		long groupId, long resourcePrimKey, int status,
 		OrderByComparator<KBArticle> orderByComparator) {
 
-		return getKBArticleAndAllDescendantKBArticles(
-			groupId, resourcePrimKey, status, orderByComparator);
+		try {
+			return getKBArticleAndAllDescendantKBArticles(
+				resourcePrimKey, status, orderByComparator);
+		}
+		catch (PortalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
+			return Collections.emptyList();
+		}
 	}
 
 	@Override
@@ -316,8 +397,8 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			themeDisplay.getPlid(), resourcePrimKey, status,
 			themeDisplay.getPortalURL(), false);
 
-		List<KBArticle> kbArticles = getKBArticleAndAllDescendantKBArticles(
-			kbArticle.getGroupId(), resourcePrimKey, status,
+		List<KBArticle> kbArticles = getAllDescendantKBArticles(
+			GroupConstants.DEFAULT_PARENT_GROUP_ID, resourcePrimKey, status,
 			new KBArticleModifiedDateComparator());
 
 		return exportToRSS(
@@ -353,7 +434,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 
 		List<KBArticle> kbArticles = new ArrayList<>();
 
-		Long[][] params = new Long[][] {ArrayUtil.toArray(resourcePrimKeys)};
+		Long[][] params = {ArrayUtil.toArray(resourcePrimKeys)};
 
 		while ((params = KnowledgeBaseUtil.getParams(params[0])) != null) {
 			List<KBArticle> curKBArticles = null;
@@ -417,7 +498,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 
 		int count = 0;
 
-		Long[][] params = new Long[][] {ArrayUtil.toArray(resourcePrimKeys)};
+		Long[][] params = {ArrayUtil.toArray(resourcePrimKeys)};
 
 		while ((params = KnowledgeBaseUtil.getParams(params[0])) != null) {
 			if (status == WorkflowConstants.STATUS_ANY) {
@@ -479,7 +560,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			for (int i = 0; i < curKBArticles.size(); i++) {
 				KBArticle curKBArticle = curKBArticles.get(i);
 
-				if (!KBArticlePermission.contains(
+				if (!_kbArticleModelResourcePermission.contains(
 						getPermissionChecker(), curKBArticle,
 						KBActionKeys.VIEW)) {
 
@@ -496,6 +577,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			}
 
 			start = start + _INTERVAL;
+
 			end = start + _INTERVAL;
 		}
 
@@ -542,7 +624,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public KBArticle getLatestKBArticle(long resourcePrimKey, int status)
 		throws PortalException {
 
-		KBArticlePermission.check(
+		_kbArticleModelResourcePermission.check(
 			getPermissionChecker(), resourcePrimKey, KBActionKeys.VIEW);
 
 		return kbArticleLocalService.getLatestKBArticle(
@@ -550,11 +632,28 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	}
 
 	@Override
+	public KBArticle[] getPreviousAndNextKBArticles(long kbArticleId)
+		throws PortalException {
+
+		KBArticle kbArticle = kbArticlePersistence.findByPrimaryKey(
+			kbArticleId);
+
+		_kbArticleModelResourcePermission.check(
+			getPermissionChecker(), kbArticle, KBActionKeys.VIEW);
+
+		KBArticleSiblingNavigationHelper kbArticleSiblingNavigationHelper =
+			new KBArticleSiblingNavigationHelper(kbArticlePersistence);
+
+		return kbArticleSiblingNavigationHelper.getPreviousAndNextKBArticles(
+			kbArticleId);
+	}
+
+	@Override
 	public List<KBArticle> getSectionsKBArticles(
 		long groupId, String[] sections, int status, int start, int end,
 		OrderByComparator<KBArticle> orderByComparator) {
 
-		String[] array = AdminUtil.escapeSections(sections);
+		String[] array = _adminHelper.escapeSections(sections);
 
 		for (int i = 0; i < array.length; i++) {
 			array[i] = StringUtil.quote(array[i], StringPool.PERCENT);
@@ -577,7 +676,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public int getSectionsKBArticlesCount(
 		long groupId, String[] sections, int status) {
 
-		String[] array = AdminUtil.escapeSections(sections);
+		String[] array = _adminHelper.escapeSections(sections);
 
 		for (int i = 0; i < array.length; i++) {
 			array[i] = StringUtil.quote(array[i], StringPool.PERCENT);
@@ -596,9 +695,8 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getKBArticles(long, long,
-	 *             int, int, int,
-	 *             OrderByComparator)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getKBArticles(long,
+	 *             long, int, int, int, OrderByComparator)}
 	 */
 	@Deprecated
 	@Override
@@ -612,8 +710,8 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getKBArticlesCount(long,
-	 *             long, int)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getKBArticlesCount(long, long, int)}
 	 */
 	@Deprecated
 	@Override
@@ -637,7 +735,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			long parentResourcePrimKey, double priority)
 		throws PortalException {
 
-		KBArticlePermission.check(
+		_kbArticleModelResourcePermission.check(
 			getPermissionChecker(), resourcePrimKey,
 			KBActionKeys.MOVE_KB_ARTICLE);
 
@@ -651,7 +749,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			long resourcePrimKey, int version, ServiceContext serviceContext)
 		throws PortalException {
 
-		KBArticlePermission.check(
+		_kbArticleModelResourcePermission.check(
 			getPermissionChecker(), resourcePrimKey, KBActionKeys.UPDATE);
 
 		return kbArticleLocalService.revertKBArticle(
@@ -663,11 +761,11 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		throws PortalException {
 
 		if (portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_ADMIN)) {
-			AdminPermission.check(
+			_adminPortletResourcePermission.check(
 				getPermissionChecker(), groupId, KBActionKeys.SUBSCRIBE);
 		}
 		else if (portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_DISPLAY)) {
-			DisplayPermission.check(
+			_displayPortletResourcePermission.check(
 				getPermissionChecker(), groupId, KBActionKeys.SUBSCRIBE);
 		}
 
@@ -678,7 +776,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public void subscribeKBArticle(long groupId, long resourcePrimKey)
 		throws PortalException {
 
-		KBArticlePermission.check(
+		_kbArticleModelResourcePermission.check(
 			getPermissionChecker(), resourcePrimKey, KBActionKeys.SUBSCRIBE);
 
 		kbArticleLocalService.subscribeKBArticle(
@@ -690,11 +788,11 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		throws PortalException {
 
 		if (portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_ADMIN)) {
-			AdminPermission.check(
+			_adminPortletResourcePermission.check(
 				getPermissionChecker(), groupId, KBActionKeys.SUBSCRIBE);
 		}
 		else if (portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_DISPLAY)) {
-			DisplayPermission.check(
+			_displayPortletResourcePermission.check(
 				getPermissionChecker(), groupId, KBActionKeys.SUBSCRIBE);
 		}
 
@@ -705,7 +803,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public void unsubscribeKBArticle(long resourcePrimKey)
 		throws PortalException {
 
-		KBArticlePermission.check(
+		_kbArticleModelResourcePermission.check(
 			getPermissionChecker(), resourcePrimKey, KBActionKeys.SUBSCRIBE);
 
 		kbArticleLocalService.unsubscribeKBArticle(
@@ -720,7 +818,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		KBArticlePermission.check(
+		_kbArticleModelResourcePermission.check(
 			getPermissionChecker(), resourcePrimKey, KBActionKeys.UPDATE);
 
 		return kbArticleLocalService.updateKBArticle(
@@ -734,7 +832,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			long groupId, Map<Long, Double> resourcePrimKeyToPriorityMap)
 		throws PortalException {
 
-		AdminPermission.check(
+		_adminPortletResourcePermission.check(
 			getPermissionChecker(), groupId,
 			KBActionKeys.UPDATE_KB_ARTICLES_PRIORITIES);
 
@@ -742,12 +840,60 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 			resourcePrimKeyToPriorityMap);
 	}
 
+	protected long checkGroupId(long groupId, long resourcePrimKey)
+		throws PortalException {
+
+		if (groupId == GroupConstants.DEFAULT_PARENT_GROUP_ID) {
+			if (resourcePrimKey == KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+				throw new PrincipalException();
+			}
+
+			KBArticle kbArticle = fetchLatestKBArticle(
+				resourcePrimKey, WorkflowConstants.STATUS_ANY);
+
+			if (kbArticle != null) {
+				return kbArticle.getGroupId();
+			}
+
+			KBFolder kbFolder = kbFolderService.fetchKBFolder(resourcePrimKey);
+
+			if (kbFolder == null) {
+				throw new PrincipalException();
+			}
+
+			return kbFolder.getGroupId();
+		}
+
+		if (resourcePrimKey == KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+			return groupId;
+		}
+
+		KBArticle kbArticle = fetchLatestKBArticle(
+			resourcePrimKey, WorkflowConstants.STATUS_ANY);
+
+		if (kbArticle != null) {
+			if (kbArticle.getGroupId() != groupId) {
+				throw new PrincipalException();
+			}
+
+			return kbArticle.getGroupId();
+		}
+
+		KBFolder kbFolder = kbFolderService.fetchKBFolder(resourcePrimKey);
+
+		if ((kbFolder == null) || (kbFolder.getGroupId() != groupId)) {
+			throw new PrincipalException();
+		}
+
+		return kbFolder.getGroupId();
+	}
+
 	protected String exportToRSS(
 		String rssDisplayStyle, String rssFormat, String name,
 		String description, String feedURL, List<KBArticle> kbArticles,
 		ThemeDisplay themeDisplay) {
 
-		SyndFeed syndFeed = new SyndFeedImpl();
+		SyndFeed syndFeed = _syndModelFactory.createSyndFeed();
 
 		syndFeed.setDescription(description);
 
@@ -756,13 +902,13 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		syndFeed.setEntries(syndEntries);
 
 		for (KBArticle kbArticle : kbArticles) {
-			SyndEntry syndEntry = new SyndEntryImpl();
+			SyndEntry syndEntry = _syndModelFactory.createSyndEntry();
 
 			String author = PortalUtil.getUserName(kbArticle);
 
 			syndEntry.setAuthor(author);
 
-			SyndContent syndContent = new SyndContentImpl();
+			SyndContent syndContent = _syndModelFactory.createSyndContent();
 
 			syndContent.setType(RSSUtil.ENTRY_TYPE_DEFAULT);
 
@@ -798,10 +944,11 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 				kbArticle.getStatus(), themeDisplay.getPortalURL(), false);
 
 			syndEntry.setLink(link);
+
 			syndEntry.setPublishedDate(kbArticle.getCreateDate());
 			syndEntry.setTitle(kbArticle.getTitle());
 			syndEntry.setUpdatedDate(kbArticle.getModifiedDate());
-			syndEntry.setUri(syndEntry.getLink());
+			syndEntry.setUri(link);
 
 			syndEntries.add(syndEntry);
 		}
@@ -816,7 +963,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 
 		syndFeed.setLinks(syndLinks);
 
-		SyndLink selfSyndLink = new SyndLinkImpl();
+		SyndLink selfSyndLink = _syndModelFactory.createSyndLink();
 
 		syndLinks.add(selfSyndLink);
 
@@ -827,12 +974,48 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		syndFeed.setTitle(name);
 		syndFeed.setUri(feedURL);
 
-		try {
-			return RSSUtil.export(syndFeed);
+		return _rssExporter.export(syndFeed);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getAllDescendantKBArticles(long, long, int,
+	 *             OrderByComparator, boolean)}
+	 */
+	@Deprecated
+	protected List<KBArticle> getAllDescendantKBArticles(
+			long resourcePrimKey, int status,
+			OrderByComparator<KBArticle> orderByComparator,
+			boolean includeParentArticle)
+		throws PortalException {
+
+		return getAllDescendantKBArticles(
+			GroupConstants.DEFAULT_PARENT_GROUP_ID, resourcePrimKey, status,
+			orderByComparator, includeParentArticle);
+	}
+
+	protected List<KBArticle> getAllDescendantKBArticles(
+			long groupId, long resourcePrimKey, int status,
+			OrderByComparator<KBArticle> orderByComparator,
+			boolean includeParentArticle)
+		throws PortalException {
+
+		List<KBArticle> kbArticles = null;
+
+		if (includeParentArticle) {
+			kbArticles = getKBArticles(
+				groupId, new long[] {resourcePrimKey}, status, null);
+
+			kbArticles = ListUtil.copy(kbArticles);
 		}
-		catch (FeedException fe) {
-			throw new SystemException(fe);
+		else {
+			kbArticles = new ArrayList<>();
 		}
+
+		_getAllDescendantKBArticles(
+			kbArticles, groupId, resourcePrimKey, status, orderByComparator);
+
+		return Collections.unmodifiableList(kbArticles);
 	}
 
 	private void _checkAttachmentPermissions(
@@ -842,21 +1025,80 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		if ((resourcePrimKey <= 0) &&
 			portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_ADMIN)) {
 
-			AdminPermission.check(
+			_adminPortletResourcePermission.check(
 				getPermissionChecker(), groupId, KBActionKeys.ADD_KB_ARTICLE);
 		}
 		else if ((resourcePrimKey <= 0) &&
 				 portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_DISPLAY)) {
 
-			DisplayPermission.check(
+			_displayPortletResourcePermission.check(
 				getPermissionChecker(), groupId, KBActionKeys.ADD_KB_ARTICLE);
 		}
 		else {
-			KBArticlePermission.check(
+			_kbArticleModelResourcePermission.check(
 				getPermissionChecker(), resourcePrimKey, KBActionKeys.UPDATE);
 		}
 	}
 
+	private void _getAllDescendantKBArticles(
+		List<KBArticle> kbArticles, long groupId, long resourcePrimKey,
+		int status, OrderByComparator<KBArticle> orderByComparator) {
+
+		List<KBArticle> curKBArticles = null;
+
+		if (status == WorkflowConstants.STATUS_ANY) {
+			curKBArticles = kbArticlePersistence.filterFindByG_P_L(
+				groupId, resourcePrimKey, true, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, orderByComparator);
+		}
+		else if (status == WorkflowConstants.STATUS_APPROVED) {
+			curKBArticles = kbArticlePersistence.findByG_P_M(
+				groupId, resourcePrimKey, true, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, orderByComparator);
+		}
+		else {
+			curKBArticles = kbArticlePersistence.findByG_P_S(
+				groupId, resourcePrimKey, status, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, orderByComparator);
+		}
+
+		for (KBArticle curKBArticle : curKBArticles) {
+			kbArticles.add(curKBArticle);
+
+			_getAllDescendantKBArticles(
+				kbArticles, groupId, curKBArticle.getResourcePrimKey(), status,
+				orderByComparator);
+		}
+	}
+
 	private static final int _INTERVAL = 200;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		KBArticleServiceImpl.class);
+
+	private static volatile PortletResourcePermission
+		_adminPortletResourcePermission =
+			PortletResourcePermissionFactory.getInstance(
+				KBArticleServiceImpl.class, "_adminPortletResourcePermission",
+				KBConstants.RESOURCE_NAME_ADMIN);
+	private static volatile PortletResourcePermission
+		_displayPortletResourcePermission =
+			PortletResourcePermissionFactory.getInstance(
+				KBArticleServiceImpl.class, "_displayPortletResourcePermission",
+				KBConstants.RESOURCE_NAME_DISPLAY);
+	private static volatile ModelResourcePermission<KBArticle>
+		_kbArticleModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				KBArticleServiceImpl.class, "_kbArticleModelResourcePermission",
+				KBArticle.class);
+
+	@BeanReference(type = AdminHelper.class)
+	private AdminHelper _adminHelper;
+
+	@ServiceReference(type = RSSExporter.class)
+	private RSSExporter _rssExporter;
+
+	@ServiceReference(type = SyndModelFactory.class)
+	private SyndModelFactory _syndModelFactory;
 
 }

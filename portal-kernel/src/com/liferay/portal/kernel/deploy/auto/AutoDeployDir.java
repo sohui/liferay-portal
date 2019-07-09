@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.deploy.auto;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Ivica Cardic
@@ -50,16 +53,16 @@ public class AutoDeployDir {
 
 		AutoDeployListener autoDeployListener = _serviceTracker.getService();
 
-		if (autoDeployListener != null) {
-			if (autoDeployListener.isDeployable(autoDeploymentContext)) {
-				autoDeployListener.deploy(autoDeploymentContext);
+		if ((autoDeployListener != null) &&
+			autoDeployListener.isDeployable(autoDeploymentContext)) {
 
-				File file = autoDeploymentContext.getFile();
+			autoDeployListener.deploy(autoDeploymentContext);
 
-				file.delete();
+			File file = autoDeploymentContext.getFile();
 
-				return;
-			}
+			file.delete();
+
+			return;
 		}
 
 		String[] dirNames = PropsUtil.getArray(
@@ -104,6 +107,12 @@ public class AutoDeployDir {
 					break;
 				}
 			}
+
+			Matcher matcher = _versionPattern.matcher(fileName);
+
+			if (matcher.find()) {
+				fileName = matcher.replaceFirst(".war");
+			}
 		}
 		else {
 			for (String curDirName : dirNames) {
@@ -126,6 +135,7 @@ public class AutoDeployDir {
 		_deployDir = deployDir;
 		_destDir = destDir;
 		_interval = interval;
+
 		_autoDeployListeners = new CopyOnWriteArrayList<>(autoDeployListeners);
 		_blacklistFileTimestamps = new HashMap<>();
 	}
@@ -171,8 +181,6 @@ public class AutoDeployDir {
 			((_autoDeployScanner == null) || !_autoDeployScanner.isAlive())) {
 
 			try {
-				scanDirectory();
-
 				Thread currentThread = Thread.currentThread();
 
 				_autoDeployScanner = new AutoDeployScanner(
@@ -189,8 +197,6 @@ public class AutoDeployDir {
 				_log.error(e, e);
 
 				stop();
-
-				return;
 			}
 		}
 		else {
@@ -241,8 +247,9 @@ public class AutoDeployDir {
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Skip processing of " + fileName + " because it is " +
-						"blacklisted");
+					StringBundler.concat(
+						"Skip processing of ", fileName, " because it is ",
+						"blacklisted"));
 			}
 
 			return;
@@ -326,6 +333,8 @@ public class AutoDeployDir {
 	private static AutoDeployScanner _autoDeployScanner;
 	private static final ServiceTracker<AutoDeployListener, AutoDeployListener>
 		_serviceTracker;
+	private static final Pattern _versionPattern = Pattern.compile(
+		"-[\\d]+((\\.[\\d]+)+(-.+)*)\\.war$");
 
 	static {
 		Registry registry = RegistryUtil.getRegistry();

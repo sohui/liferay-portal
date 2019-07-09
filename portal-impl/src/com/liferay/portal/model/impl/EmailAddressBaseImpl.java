@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.EmailAddress;
 import com.liferay.portal.kernel.service.EmailAddressLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the EmailAddress service. Represents a row in the &quot;EmailAddress&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.portal.kernel.service.EmailAddressLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class EmailAddressBaseImpl extends EmailAddressModelImpl
-	implements EmailAddress {
+public abstract class EmailAddressBaseImpl
+	extends EmailAddressModelImpl implements EmailAddress {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a email address model instance should use the {@link EmailAddress} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a email address model instance should use the <code>EmailAddress</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class EmailAddressBaseImpl extends EmailAddressModelImpl
 			EmailAddressLocalServiceUtil.updateEmailAddress(this);
 		}
 	}
+
 }

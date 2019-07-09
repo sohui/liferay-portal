@@ -14,8 +14,8 @@
 
 package com.liferay.portal.tools.sample.sql.builder;
 
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -57,7 +57,7 @@ public class SequentialUUID {
 		int index = digits;
 
 		do {
-			buffer[--index] = _HEX_DIGITS[(int) (number & 15)];
+			buffer[--index] = _HEX_DIGITS[(int)(number & 15)];
 
 			number >>>= 4;
 		}

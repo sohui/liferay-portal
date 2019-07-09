@@ -15,7 +15,6 @@
 package com.liferay.taglib.ui;
 
 import com.liferay.portal.kernel.util.IntegerWrapper;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.BaseBodyTagSupport;
 import com.liferay.taglib.FileAvailabilityUtil;
@@ -34,13 +33,14 @@ public class IconListTag extends BaseBodyTagSupport implements BodyTag {
 
 	@Override
 	public int doAfterBody() {
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
 
-		IntegerWrapper iconCount = (IntegerWrapper)request.getAttribute(
-			"liferay-ui:icon-list:icon-count");
+		IntegerWrapper iconCount =
+			(IntegerWrapper)httpServletRequest.getAttribute(
+				"liferay-ui:icon-list:icon-count");
 
-		Boolean singleIcon = (Boolean)request.getAttribute(
+		Boolean singleIcon = (Boolean)httpServletRequest.getAttribute(
 			"liferay-ui:icon-list:single-icon");
 
 		if ((iconCount != null) && (iconCount.getValue() == 1) &&
@@ -48,31 +48,33 @@ public class IconListTag extends BaseBodyTagSupport implements BodyTag {
 
 			bodyContent.clearBody();
 
-			request.setAttribute(
+			httpServletRequest.setAttribute(
 				"liferay-ui:icon-list:single-icon", Boolean.TRUE);
 
 			return EVAL_BODY_AGAIN;
 		}
-		else {
-			return SKIP_BODY;
-		}
+
+		return SKIP_BODY;
 	}
 
 	@Override
 	public int doEndTag() throws JspException {
 		try {
-			HttpServletRequest request =
+			HttpServletRequest httpServletRequest =
 				(HttpServletRequest)pageContext.getRequest();
 
-			IntegerWrapper iconCount = (IntegerWrapper)request.getAttribute(
+			IntegerWrapper iconCount =
+				(IntegerWrapper)httpServletRequest.getAttribute(
+					"liferay-ui:icon-list:icon-count");
+
+			httpServletRequest.removeAttribute(
 				"liferay-ui:icon-list:icon-count");
 
-			request.removeAttribute("liferay-ui:icon-list:icon-count");
-
-			Boolean singleIcon = (Boolean)request.getAttribute(
+			Boolean singleIcon = (Boolean)httpServletRequest.getAttribute(
 				"liferay-ui:icon-list:single-icon");
 
-			request.removeAttribute("liferay-ui:icon-list:single-icon");
+			httpServletRequest.removeAttribute(
+				"liferay-ui:icon-list:single-icon");
 
 			JspWriter jspWriter = pageContext.getOut();
 
@@ -105,7 +107,8 @@ public class IconListTag extends BaseBodyTagSupport implements BodyTag {
 				}
 			}
 
-			request.removeAttribute("liferay-ui:icon-list:showWhenSingleIcon");
+			httpServletRequest.removeAttribute(
+				"liferay-ui:icon-list:showWhenSingleIcon");
 
 			return EVAL_PAGE;
 		}
@@ -113,22 +116,20 @@ public class IconListTag extends BaseBodyTagSupport implements BodyTag {
 			throw new JspException(e);
 		}
 		finally {
-			if (!ServerDetector.isResin()) {
-				_endPage = null;
-				_showWhenSingleIcon = false;
-				_startPage = null;
-			}
+			_endPage = null;
+			_showWhenSingleIcon = false;
+			_startPage = null;
 		}
 	}
 
 	@Override
 	public int doStartTag() {
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:icon-list:icon-count", new IntegerWrapper());
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:icon-list:showWhenSingleIcon",
 			String.valueOf(_showWhenSingleIcon));
 
@@ -151,18 +152,16 @@ public class IconListTag extends BaseBodyTagSupport implements BodyTag {
 		if (Validator.isNull(_endPage)) {
 			return _END_PAGE;
 		}
-		else {
-			return _endPage;
-		}
+
+		return _endPage;
 	}
 
 	protected String getStartPage() {
 		if (Validator.isNull(_startPage)) {
 			return _START_PAGE;
 		}
-		else {
-			return _startPage;
-		}
+
+		return _startPage;
 	}
 
 	private static final String _END_PAGE = "/html/taglib/ui/icon_list/end.jsp";

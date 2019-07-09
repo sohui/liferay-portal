@@ -22,6 +22,7 @@ import java.io.File;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,12 +72,8 @@ public class FormatSourceTask extends Task {
 		_sourceFormatterArgs.setAutoFix(autoFix);
 	}
 
-	public void setBaseDir(String baseDir) {
-		_sourceFormatterArgs.setBaseDirName(baseDir);
-	}
-
-	public void setCopyright(String copyright) {
-		_sourceFormatterArgs.setCopyrightFileName(copyright);
+	public void setBaseDir(String baseDirName) {
+		_sourceFormatterArgs.setBaseDirName(baseDirName);
 	}
 
 	public void setFileNames(String fileNames) {
@@ -96,6 +93,14 @@ public class FormatSourceTask extends Task {
 		_sourceFormatterArgs.setFormatLocalChanges(formatLocalChanges);
 	}
 
+	public void setGitWorkingBranchName(String gitWorkingBranchName) {
+		_sourceFormatterArgs.setGitWorkingBranchName(gitWorkingBranchName);
+	}
+
+	public void setIncludeSubrepositories(boolean includeSubrepositories) {
+		_sourceFormatterArgs.setIncludeSubrepositories(includeSubrepositories);
+	}
+
 	public void setMaxLineLength(int maxLineLength) {
 		_sourceFormatterArgs.setMaxLineLength(maxLineLength);
 	}
@@ -108,12 +113,20 @@ public class FormatSourceTask extends Task {
 		_sourceFormatterArgs.setProcessorThreadCount(processorThreadCount);
 	}
 
-	public void setThrowException(boolean throwException) {
-		_sourceFormatterArgs.setThrowException(throwException);
+	public void setShowDebugInformation(boolean showDebugInformation) {
+		_sourceFormatterArgs.setShowDebugInformation(showDebugInformation);
 	}
 
-	public void setUseProperties(boolean useProperties) {
-		_sourceFormatterArgs.setUseProperties(useProperties);
+	public void setShowDocumentation(boolean showDocumentation) {
+		_sourceFormatterArgs.setShowDocumentation(showDocumentation);
+	}
+
+	public void setShowStatusUpdates(boolean showStatusUpdates) {
+		_sourceFormatterArgs.setShowStatusUpdates(showStatusUpdates);
+	}
+
+	public void setThrowException(boolean throwException) {
+		_sourceFormatterArgs.setThrowException(throwException);
 	}
 
 	private void _collectFromFileSets() {
@@ -133,7 +146,7 @@ public class FormatSourceTask extends Task {
 				includedFiles[i] = file.getAbsolutePath();
 			}
 
-			fileNames.addAll(Arrays.asList(includedFiles));
+			Collections.addAll(fileNames, includedFiles);
 		}
 
 		_sourceFormatterArgs.setFileNames(fileNames);

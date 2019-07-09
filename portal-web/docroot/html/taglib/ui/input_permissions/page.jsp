@@ -30,15 +30,15 @@ if (!uniqueNamespace.endsWith(StringPool.UNDERLINE)) {
 	uniqueNamespace = uniqueNamespace.concat(StringPool.UNDERLINE);
 }
 
-String formName = namespace + request.getAttribute("liferay-ui:input-permissions:formName");
 String modelName = (String)request.getAttribute("liferay-ui:input-permissions:modelName");
+boolean reverse = GetterUtil.getBoolean(request.getAttribute("liferay-ui:input-permissions:reverse"));
 %>
 
 <c:choose>
 	<c:when test="<%= user.getDefaultUser() %>">
 		<liferay-ui:message key="not-available" />
 	</c:when>
-	<c:when test="<%= modelName != null %>">
+	<c:otherwise>
 
 		<%
 		Group siteGroup = GroupLocalServiceUtil.getGroup(themeDisplay.getSiteGroupId());
@@ -49,7 +49,7 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 
 		Role guestRole = RoleLocalServiceUtil.getRole(themeDisplay.getCompanyId(), RoleConstants.GUEST);
 
-		String[] roleNames = new String[] {RoleConstants.GUEST};
+		String[] roleNames = {RoleConstants.GUEST};
 
 		if (hasViewDefaultGroupRolePermission) {
 			roleNames = ArrayUtil.append(roleNames, defaultGroupRole.getName());
@@ -82,7 +82,7 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 
 		<c:if test="<%= supportedActions.contains(ActionKeys.VIEW) %>">
 			<p>
-				<label class="inline-label" for="<%= namespace %>inputPermissionsViewRole">
+				<label class="control-label" for="<%= namespace %>inputPermissionsViewRole">
 					<liferay-ui:message key="viewable-by" />
 				</label>
 
@@ -96,10 +96,10 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 					}
 					%>
 
-					<option <%= (inputPermissionsViewRole.equals(RoleConstants.GUEST)) ? "selected=\"selected\"" : "" %> value="<%= RoleConstants.GUEST %>"><%= guestRoleLabel %></option>
+					<option <%= inputPermissionsViewRole.equals(RoleConstants.GUEST) ? "selected=\"selected\"" : "" %> value="<%= RoleConstants.GUEST %>"><%= guestRoleLabel %></option>
 
 					<c:if test="<%= hasViewDefaultGroupRolePermission %>">
-						<option <%= (inputPermissionsViewRole.equals(defaultGroupRole.getName())) ? "selected=\"selected\"" : "" %> value="<%= defaultGroupRole.getName() %>">
+						<option <%= inputPermissionsViewRole.equals(defaultGroupRole.getName()) ? "selected=\"selected\"" : "" %> value="<%= defaultGroupRole.getName() %>">
 							<c:choose>
 								<c:when test="<%= defaultGroupRole.getName().equals(RoleConstants.ORGANIZATION_USER) %>">
 									<liferay-ui:message key="organization-members" />
@@ -117,115 +117,27 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 						</option>
 					</c:if>
 
-					<option <%= (inputPermissionsViewRole.equals(RoleConstants.OWNER)) ? "selected=\"selected\"" : "" %> value="<%= RoleConstants.OWNER %>"><liferay-ui:message key="owner" /></option>
+					<option <%= inputPermissionsViewRole.equals(RoleConstants.OWNER) ? "selected=\"selected\"" : "" %> value="<%= RoleConstants.OWNER %>"><liferay-ui:message key="owner" /></option>
 				</select>
 
-				<span <%= inputPermissionsShowOptions ? "class=\"hide\"" : "" %> id="<%= uniqueNamespace %>inputPermissionsShowOptionsLink">
-					<a href="javascript:<%= uniqueNamespace %>inputPermissionsShowOptions();"><liferay-ui:message key="more-options" /></a> <liferay-ui:icon-help message="input-permissions-more-options-help" />
-				</span>
+				<div class="mt-3 <%= inputPermissionsShowOptions ? "hide" : "" %>" id="<%= uniqueNamespace %>inputPermissionsShowOptionsLink">
+					<a class="btn btn-secondary btn-sm" href="javascript:<%= uniqueNamespace %>inputPermissionsShowOptions();"><liferay-ui:message key="more-options" /></a> <liferay-ui:icon-help message="input-permissions-more-options-help" />
+				</div>
 
-				<a <%= inputPermissionsShowOptions ? "" : "class=\"hide\"" %> href="javascript:<%= uniqueNamespace %>inputPermissionsHideOptions();" id="<%= uniqueNamespace %>inputPermissionsHideOptionsLink"><liferay-ui:message key="hide-options" /></a>
+				<a class="btn btn-secondary btn-sm mt-3 <%= inputPermissionsShowOptions ? "" : "hide" %>" href="javascript:<%= uniqueNamespace %>inputPermissionsHideOptions();" id="<%= uniqueNamespace %>inputPermissionsHideOptionsLink"><liferay-ui:message key="hide-options" /></a>
 			</p>
 		</c:if>
 
-		<div class="permissions-table-container">
-			<table class="lfr-table responsive-table-horizontal <%= (inputPermissionsShowOptions || !supportedActions.contains(ActionKeys.VIEW)) ? "" : "hide" %>" id="<%= uniqueNamespace %>inputPermissionsTable">
-				<thead>
-					<tr>
-						<th>
-							<liferay-ui:message key="roles" />
-						</th>
+		<c:choose>
+			<c:when test="<%= reverse %>">
+				<%@ include file="/html/taglib/ui/input_permissions/vertical.jspf" %>
+			</c:when>
+			<c:otherwise>
+				<%@ include file="/html/taglib/ui/input_permissions/horizontal.jspf" %>
+			</c:otherwise>
+		</c:choose>
 
-						<%
-						for (int i = 0; i < supportedActions.size(); i++) {
-							String action = (String)supportedActions.get(i);
-						%>
-
-							<th <%= (action.equals(ActionKeys.VIEW)) ? "class=\"hide\"" : "" %>>
-								<%= ResourceActionsUtil.getAction(request, action) %>
-							</th>
-
-						<%
-						}
-						%>
-
-					</tr>
-				</thead>
-
-				<%
-				for (String roleName : roleNames) {
-					Role role = RoleLocalServiceUtil.getRole(themeDisplay.getCompanyId(), roleName);
-				%>
-
-					<tr>
-						<td>
-							<%= role.getTitle(themeDisplay.getLocale()) %>
-						</td>
-
-						<%
-						for (int i = 0; i < supportedActions.size(); i++) {
-							String action = (String)supportedActions.get(i);
-
-							boolean checked = false;
-							boolean disabled = false;
-
-							if (roleName.equals(RoleConstants.GUEST)) {
-								disabled = guestUnsupportedActions.contains(action);
-
-								if (disabled) {
-									checked = false;
-								}
-								else if (submitted) {
-									checked = guestPermissions.contains(action);
-								}
-								else {
-									checked = guestDefaultActions.contains(action) && (inputPermissionsViewRole.equals(RoleConstants.GUEST));
-								}
-							}
-							else if (roleName.equals(defaultGroupRole.getName())) {
-								if (submitted) {
-									checked = groupPermissions.contains(action);
-								}
-								else {
-									checked = groupDefaultActions.contains(action);
-								}
-							}
-
-							String checkboxFieldId = null;
-							String checkboxFieldName = null;
-
-							if (roleName.equals(RoleConstants.GUEST)) {
-								checkboxFieldId = uniqueNamespace + "guestPermissions";
-								checkboxFieldName = namespace + guestPermissionsName;
-							}
-							else {
-								checkboxFieldId = uniqueNamespace + "groupPermissions";
-								checkboxFieldName = namespace + groupPermissionsName;
-							}
-
-							checkboxFieldId = checkboxFieldId + StringPool.UNDERLINE + action;
-						%>
-
-							<td <%= (action.equals(ActionKeys.VIEW)) ? "class=\"hide\"" : "" %>>
-								<label class="hidden-label" for="<%= checkboxFieldId %>"><liferay-ui:message arguments="<%= new Object[] {ResourceActionsUtil.getAction(request, action), role.getTitle(themeDisplay.getLocale())} %>" key="give-x-permission-to-users-with-role-x" translateArguments="<%= false %>" /></label>
-
-								<input <%= checked ? "checked" : "" %> <%= disabled ? "disabled" : "" %> id="<%= checkboxFieldId %>" name="<%= checkboxFieldName %>" title='<%= LanguageUtil.format(request, "give-x-permission-to-users-with-role-x", new Object[] {ResourceActionsUtil.getAction(request, action), role.getTitle(themeDisplay.getLocale())}, false) %>' type="checkbox" value="<%= action %>" />
-							</td>
-
-						<%
-						}
-						%>
-
-					</tr>
-
-				<%
-				}
-				%>
-
-			</table>
-		</div>
-
-		<aui:script>
+		<script>
 			function <%= uniqueNamespace %>inputPermissionsHideOptions() {
 				<%= uniqueNamespace %>togglePermissionsOptions(false);
 			}
@@ -235,83 +147,81 @@ String modelName = (String)request.getAttribute("liferay-ui:input-permissions:mo
 			}
 
 			function <%= uniqueNamespace %>togglePermissionsOptions(force) {
-				var $ = AUI.$;
+				var inputPermissionsHideOptionsLink = document.getElementById('<%= uniqueNamespace %>inputPermissionsHideOptionsLink');
 
-				$('#<%= uniqueNamespace %>inputPermissionsHideOptionsLink').toggleClass('hide', !force);
-				$('#<%= uniqueNamespace %>inputPermissionsTable').toggleClass('hide', !force);
+				if (inputPermissionsHideOptionsLink) {
+					if (force) {
+						inputPermissionsHideOptionsLink.classList.remove('hide');
+					}
+					else {
+						inputPermissionsHideOptionsLink.classList.add('hide');
+					}
+				}
 
-				$('#<%= uniqueNamespace %>inputPermissionsShowOptionsLink').toggleClass('hide', force);
-				$('#<%= uniqueNamespace %>inputPermissionsShowOptions').val(force);
+				var inputPermissionsTable = document.getElementById('<%= uniqueNamespace %>inputPermissionsTable');
+
+				if (inputPermissionsTable) {
+					if (force) {
+						inputPermissionsTable.classList.remove('hide');
+					}
+					else {
+						inputPermissionsTable.classList.add('hide');
+					}
+				}
+
+				var inputPermissionsShowOptionsLink = document.getElementById('<%= uniqueNamespace %>inputPermissionsShowOptionsLink');
+
+				if (inputPermissionsShowOptionsLink) {
+					if (force) {
+						inputPermissionsShowOptionsLink.classList.add('hide');
+					}
+					else {
+						inputPermissionsShowOptionsLink.classList.remove('hide');
+					}
+				}
+
+				var inputPermissionsShowOptions = document.getElementById('<%= uniqueNamespace %>inputPermissionsShowOptions');
+
+				if (inputPermissionsShowOptions) {
+					inputPermissionsShowOptions.value = force;
+				}
 			}
 
 			function <%= uniqueNamespace %>updatePermissionsView() {
-				var $ = AUI.$;
+				var permissionsViewRoleInput = document.getElementById('<%= uniqueNamespace %>inputPermissionsViewRole');
 
-				var viewableBy = $('#<%= uniqueNamespace %>inputPermissionsViewRole').val();
+				if (permissionsViewRoleInput) {
+					var viewableBy = permissionsViewRoleInput.value;
 
-				var checkGroupViewPermissions = false;
-				var checkGuestViewPermissions = false;
+					var checkGroupViewPermissions = false;
+					var checkGuestViewPermissions = false;
 
-				if (viewableBy == '<%= RoleConstants.GUEST %>') {
-					checkGuestViewPermissions = true;
+					if (viewableBy === '<%= RoleConstants.GUEST %>') {
+						checkGuestViewPermissions = true;
+						checkGroupViewPermissions = true;
+					}
+					else if (viewableBy === '<%= defaultGroupRole.getName() %>') {
+						checkGroupViewPermissions = true;
+					}
+
+					<%= uniqueNamespace %>doUpdateViewValue('<%= uniqueNamespace %>guestPermissions_VIEW', checkGuestViewPermissions);
+					<%= uniqueNamespace %>doUpdateViewValue('<%= uniqueNamespace %>groupPermissions_VIEW', checkGroupViewPermissions);
 				}
-				else if (viewableBy == '<%= defaultGroupRole.getName() %>') {
-					checkGroupViewPermissions = true;
-				}
-
-				$('#<%= uniqueNamespace %>guestPermissions_VIEW').prop('checked', checkGuestViewPermissions);
-				$('#<%= uniqueNamespace %>groupPermissions_VIEW').prop('checked', checkGroupViewPermissions);
-			}
-		</aui:script>
-	</c:when>
-	<c:otherwise>
-
-		<%
-		boolean addGroupPermissions = ParamUtil.getBoolean(request, "addGroupPermissions", true);
-		boolean addGuestPermissions = ParamUtil.getBoolean(request, "addGuestPermissions", true);
-		%>
-
-		<input name="<%= namespace %>addGroupPermissions" type="hidden" value="<%= addGroupPermissions %>" />
-		<input name="<%= namespace %>addGuestPermissions" type="hidden" value="<%= addGuestPermissions %>" />
-
-		<input <%= addGroupPermissions ? "checked" : "" %> name="<%= namespace %>addGroupPermissionsBox" onClick="<%= namespace %>checkGroupAndGuestPermissions();" type="checkbox" /> <liferay-ui:message key="assign-default-permissions-to-site" /><br />
-		<input <%= addGuestPermissions ? "checked" : "" %> name="<%= namespace %>addGuestPermissionsBox" onClick="<%= namespace %>checkGroupAndGuestPermissions();" type="checkbox" /> <liferay-ui:message key="assign-default-permissions-to-guest" /><br />
-		<input <%= !addGroupPermissions && !addGuestPermissions ? "checked" : "" %> name="<%= namespace %>addUserPermissionsBox" onClick="<%= namespace %>checkUserPermissions();" type="checkbox" /> <liferay-ui:message key="only-assign-permissions-to-me" />
-
-		<aui:script>
-			function <%= namespace %>checkGroupAndGuestPermissions() {
-				var form = AUI.$(document.<%= formName %>);
-
-				var groupPermissionsChecked = form.fm('addGroupPermissionsBox').prop('checked');
-				var guestPermissionsChecked = form.fm('addGuestPermissionsBox').prop('checked');
-
-				var checkUserPermissions = true;
-
-				if (groupPermissionsChecked || guestPermissionsChecked) {
-					checkUserPermissions = false;
-				}
-
-				form.fm('addUserPermissionsBox').prop('checked', checkUserPermissions);
-
-				form.fm('addGroupPermissions').val(groupPermissionsChecked);
-				form.fm('addGuestPermissions').val(guestPermissionsChecked);
 			}
 
-			function <%= namespace %>checkUserPermissions() {
-				var form = AUI.$(document.<%= formName %>);
+			function <%= uniqueNamespace %>doUpdateViewValue(id, checkPermission) {
+				var element = document.getElementById(id);
 
-				var checkGroupAndGuestPermissions = true;
-
-				if (form.fm('addUserPermissionsBox').prop('checked')) {
-					checkGroupAndGuestPermissions = false;
+				if (element) {
+					element.checked = checkPermission;
 				}
 
-				form.fm('addGroupPermissionsBox').prop('checked', checkGroupAndGuestPermissions);
-				form.fm('addGuestPermissionsBox').prop('checked', checkGroupAndGuestPermissions);
+				var displayElement = document.getElementById(id + '_display');
 
-				form.fm('addGroupPermissions').val(checkGroupAndGuestPermissions);
-				form.fm('addGuestPermissions').val(checkGroupAndGuestPermissions);
+				if (displayElement) {
+					displayElement.checked = checkPermission;
+				}
 			}
-		</aui:script>
+		</script>
 	</c:otherwise>
 </c:choose>

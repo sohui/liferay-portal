@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.module.framework.service;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
@@ -37,26 +39,17 @@ public class IdentifiableOSGiServiceUtil {
 	private IdentifiableOSGiServiceUtil() {
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		IdentifiableOSGiServiceUtil.class);
+
 	private static final Map<String, IdentifiableOSGiService>
 		_identifiableOSGiServices = new ConcurrentHashMap<>();
-	private static final
-		ServiceTracker<IdentifiableOSGiService, IdentifiableOSGiService>
-			_serviceTracker;
-
-	static {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(
-			IdentifiableOSGiService.class,
-			new IdentifiableOSGiServiceServiceTrackerCustomizer());
-
-		_serviceTracker.open();
-	}
+	private static final ServiceTracker
+		<IdentifiableOSGiService, IdentifiableOSGiService> _serviceTracker;
 
 	private static class IdentifiableOSGiServiceServiceTrackerCustomizer
-		implements
-			ServiceTrackerCustomizer
-				<IdentifiableOSGiService, IdentifiableOSGiService> {
+		implements ServiceTrackerCustomizer
+			<IdentifiableOSGiService, IdentifiableOSGiService> {
 
 		@Override
 		public IdentifiableOSGiService addingService(
@@ -67,9 +60,21 @@ public class IdentifiableOSGiServiceUtil {
 			IdentifiableOSGiService identifiableOSGiService =
 				registry.getService(serviceReference);
 
-			_identifiableOSGiServices.put(
-				identifiableOSGiService.getOSGiServiceIdentifier(),
-				identifiableOSGiService);
+			try {
+				_identifiableOSGiServices.put(
+					identifiableOSGiService.getOSGiServiceIdentifier(),
+					identifiableOSGiService);
+			}
+			catch (UnsupportedOperationException uoe) {
+
+				// LPS-89569
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(uoe, uoe);
+				}
+
+				return null;
+			}
 
 			return identifiableOSGiService;
 		}
@@ -97,6 +102,16 @@ public class IdentifiableOSGiServiceUtil {
 				identifiableOSGiService.getOSGiServiceIdentifier());
 		}
 
+	}
+
+	static {
+		Registry registry = RegistryUtil.getRegistry();
+
+		_serviceTracker = registry.trackServices(
+			IdentifiableOSGiService.class,
+			new IdentifiableOSGiServiceServiceTrackerCustomizer());
+
+		_serviceTracker.open();
 	}
 
 }

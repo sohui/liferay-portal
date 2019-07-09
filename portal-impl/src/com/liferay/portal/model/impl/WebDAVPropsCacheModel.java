@@ -14,14 +14,11 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.WebDAVProps;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,16 +27,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing WebDAVProps in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see WebDAVProps
  * @generated
  */
 @ProviderType
-public class WebDAVPropsCacheModel implements CacheModel<WebDAVProps>,
-	Externalizable, MVCCModel {
+public class WebDAVPropsCacheModel
+	implements CacheModel<WebDAVProps>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -50,10 +49,12 @@ public class WebDAVPropsCacheModel implements CacheModel<WebDAVProps>,
 			return false;
 		}
 
-		WebDAVPropsCacheModel webDAVPropsCacheModel = (WebDAVPropsCacheModel)obj;
+		WebDAVPropsCacheModel webDAVPropsCacheModel =
+			(WebDAVPropsCacheModel)obj;
 
 		if ((webDavPropsId == webDAVPropsCacheModel.webDavPropsId) &&
-				(mvccVersion == webDAVPropsCacheModel.mvccVersion)) {
+			(mvccVersion == webDAVPropsCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -128,7 +129,7 @@ public class WebDAVPropsCacheModel implements CacheModel<WebDAVProps>,
 		webDAVPropsImpl.setClassPK(classPK);
 
 		if (props == null) {
-			webDAVPropsImpl.setProps(StringPool.BLANK);
+			webDAVPropsImpl.setProps("");
 		}
 		else {
 			webDAVPropsImpl.setProps(props);
@@ -156,8 +157,7 @@ public class WebDAVPropsCacheModel implements CacheModel<WebDAVProps>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(webDavPropsId);
@@ -171,7 +171,7 @@ public class WebDAVPropsCacheModel implements CacheModel<WebDAVProps>,
 		objectOutput.writeLong(classPK);
 
 		if (props == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(props);
@@ -186,4 +186,5 @@ public class WebDAVPropsCacheModel implements CacheModel<WebDAVProps>,
 	public long classNameId;
 	public long classPK;
 	public String props;
+
 }

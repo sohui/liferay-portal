@@ -1,11 +1,10 @@
 package ${servicePropsUtilPackagePath};
 
-import aQute.bnd.annotation.ProviderType;
+import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
 
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.configuration.Filter;
-import com.liferay.portal.kernel.portlet.PortletClassLoaderUtil;
 
 import java.util.Properties;
 

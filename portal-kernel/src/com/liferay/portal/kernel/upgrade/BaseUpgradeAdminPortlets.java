@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.upgrade;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -99,17 +100,20 @@ public abstract class BaseUpgradeAdminPortlets extends UpgradeProcess {
 
 				try (ResultSet rs = ps.executeQuery()) {
 					while (rs.next()) {
-						long resourcePermissionId = rs.getLong(
-							"resourcePermissionId");
 						long actionIds = rs.getLong("actionIds");
 
 						if ((actionIds & bitwiseValue) != 0) {
-							actionIds = actionIds & (~bitwiseValue);
+							actionIds = actionIds & ~bitwiseValue;
+
+							long resourcePermissionId = rs.getLong(
+								"resourcePermissionId");
 
 							runSQL(
-								"update ResourcePermission set actionIds = " +
-									actionIds + " where resourcePermissionId " +
-										"= " + resourcePermissionId);
+								StringBundler.concat(
+									"update ResourcePermission set actionIds ",
+									"= ", actionIds,
+									" where resourcePermissionId = ",
+									resourcePermissionId));
 
 							resourcePermissionId = increment(
 								ResourcePermission.class.getName());

@@ -14,26 +14,27 @@
 
 package com.liferay.portal.tools.service.builder;
 
-import com.liferay.portal.freemarker.FreeMarkerUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
+import com.liferay.petra.xml.Dom4jUtil;
 import com.liferay.portal.kernel.dao.db.IndexMetadata;
 import com.liferay.portal.kernel.dao.db.IndexMetadataFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
+import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.cache.CacheField;
 import com.liferay.portal.kernel.plugin.Version;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.ArrayUtil_IW;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClearThreadLocalUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.StringUtil_IW;
 import com.liferay.portal.kernel.util.TextFormatter;
@@ -41,24 +42,32 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.Validator_IW;
 import com.liferay.portal.tools.ArgumentsUtil;
 import com.liferay.portal.tools.ToolsUtil;
+import com.liferay.portal.tools.java.parser.JavaParser;
 import com.liferay.portal.xml.SAXReaderFactory;
-import com.liferay.util.xml.Dom4jUtil;
 import com.liferay.util.xml.XMLSafeReader;
 
-import com.thoughtworks.qdox.JavaDocBuilder;
-import com.thoughtworks.qdox.model.AbstractBaseJavaEntity;
-import com.thoughtworks.qdox.model.Annotation;
-import com.thoughtworks.qdox.model.ClassLibrary;
+import com.thoughtworks.qdox.JavaProjectBuilder;
+import com.thoughtworks.qdox.library.ClassLibraryBuilder;
+import com.thoughtworks.qdox.library.SortedClassLibraryBuilder;
 import com.thoughtworks.qdox.model.DocletTag;
+import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaField;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaParameter;
 import com.thoughtworks.qdox.model.JavaSource;
-import com.thoughtworks.qdox.model.Type;
+import com.thoughtworks.qdox.model.JavaType;
+import com.thoughtworks.qdox.model.impl.AbstractBaseJavaEntity;
+import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
+import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
+
+import freemarker.cache.ClassTemplateLoader;
 
 import freemarker.ext.beans.BeansWrapper;
 
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapperBuilder;
+import freemarker.template.Template;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModelException;
 
@@ -96,6 +105,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -107,9 +117,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
+import org.dom4j.DocumentType;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.dom4j.io.SAXReader;
@@ -137,16 +149,15 @@ public class ServiceBuilder {
 	public static boolean hasAnnotation(
 		AbstractBaseJavaEntity abstractBaseJavaEntity, String annotationName) {
 
-		Annotation[] annotations = abstractBaseJavaEntity.getAnnotations();
+		List<JavaAnnotation> javaAnnotations =
+			abstractBaseJavaEntity.getAnnotations();
 
-		if (annotations == null) {
+		if (javaAnnotations == null) {
 			return false;
 		}
 
-		for (int i = 0; i < annotations.length; i++) {
-			Type type = annotations[i].getType();
-
-			JavaClass javaClass = type.getJavaClass();
+		for (JavaAnnotation javaAnnotation : javaAnnotations) {
+			JavaClass javaClass = javaAnnotation.getType();
 
 			if (annotationName.equals(javaClass.getName())) {
 				return true;
@@ -169,6 +180,8 @@ public class ServiceBuilder {
 			arguments.get("service.build.number"), 1);
 		boolean buildNumberIncrement = GetterUtil.getBoolean(
 			arguments.get("service.build.number.increment"), true);
+		int databaseNameMaxLength = GetterUtil.getInteger(
+			arguments.get("service.database.name.max.length"), 30);
 		String hbmFileName = arguments.get("service.hbm.file");
 		String implDirName = arguments.get("service.impl.dir");
 		String inputFileName = arguments.get("service.input.file");
@@ -200,6 +213,7 @@ public class ServiceBuilder {
 			"service.sql.sequences.file");
 		String targetEntityName = arguments.get("service.target.entity.name");
 		String testDirName = arguments.get("service.test.dir");
+		String uadDirName = arguments.get("service.uad.dir");
 
 		Set<String> resourceActionModels = readResourceActionModels(
 			implDirName, resourcesDirName, resourceActionsConfigs);
@@ -217,12 +231,13 @@ public class ServiceBuilder {
 		try {
 			ServiceBuilder serviceBuilder = new ServiceBuilder(
 				apiDirName, autoImportDefaultReferences, autoNamespaceTables,
-				beanLocatorUtil, buildNumber, buildNumberIncrement, hbmFileName,
-				implDirName, inputFileName, modelHintsFileName, osgiModule,
-				pluginName, propsUtil, readOnlyPrefixes, resourceActionModels,
-				resourcesDirName, springFileName, springNamespaces, sqlDirName,
-				sqlFileName, sqlIndexesFileName, sqlSequencesFileName,
-				targetEntityName, testDirName, true);
+				beanLocatorUtil, buildNumber, buildNumberIncrement,
+				databaseNameMaxLength, hbmFileName, implDirName, inputFileName,
+				modelHintsFileName, osgiModule, pluginName, propsUtil,
+				readOnlyPrefixes, resourceActionModels, resourcesDirName,
+				springFileName, springNamespaces, sqlDirName, sqlFileName,
+				sqlIndexesFileName, sqlSequencesFileName, targetEntityName,
+				testDirName, uadDirName, true);
 
 			String modifiedFileNames = StringUtil.merge(
 				serviceBuilder.getModifiedFileNames());
@@ -231,95 +246,116 @@ public class ServiceBuilder {
 				ServiceBuilderArgs.OUTPUT_KEY_MODIFIED_FILES,
 				modifiedFileNames);
 		}
-		catch (Throwable t) {
-			String message =
-				"Please set these arguments. Sample values are:\n" +
-				"\n" +
-				"\tservice.api.dir=${basedir}/../portal-kernel/src\n" +
-				"\tservice.auto.import.default.references=true\n" +
-				"\tservice.auto.namespace.tables=false\n" +
-				"\tservice.bean.locator.util=com.liferay.portal.kernel.bean.PortalBeanLocatorUtil\n" +
-				"\tservice.build.number=1\n" +
-				"\tservice.build.number.increment=true\n" +
-				"\tservice.hbm.file=${basedir}/src/META-INF/portal-hbm.xml\n" +
-				"\tservice.impl.dir=${basedir}/src\n" +
-				"\tservice.input.file=${service.file}\n" +
-				"\tservice.model.hints.configs=" + StringUtil.merge(ServiceBuilderArgs.MODEL_HINTS_CONFIGS) + "\n" +
-				"\tservice.model.hints.file=${basedir}/src/META-INF/portal-model-hints.xml\n" +
-				"\tservice.osgi.module=false\n" +
-				"\tservice.plugin.name=\n" +
-				"\tservice.props.util=com.liferay.portal.util.PropsUtil\n" +
-				"\tservice.read.only.prefixes=" + StringUtil.merge(ServiceBuilderArgs.READ_ONLY_PREFIXES) + "\n" +
-				"\tservice.resource.actions.configs=" + StringUtil.merge(ServiceBuilderArgs.RESOURCE_ACTION_CONFIGS) + "\n" +
-				"\tservice.resources.dir=${basedir}/src\n" +
-				"\tservice.spring.file=${basedir}/src/META-INF/portal-spring.xml\n" +
-				"\tservice.spring.namespaces=beans\n" +
-				"\tservice.sql.dir=${basedir}/../sql\n" +
-				"\tservice.sql.file=portal-tables.sql\n" +
-				"\tservice.sql.indexes.file=indexes.sql\n" +
-				"\tservice.sql.sequences.file=sequences.sql\n" +
-				"\tservice.target.entity.name=${service.target.entity.name}\n" +
-				"\tservice.test.dir=${basedir}/test/integration\n" +
-				"\n" +
-				"You can also customize the generated code by overriding the default templates with these optional system properties:\n" +
-				"\n" +
-				"\t-Dservice.tpl.bad_alias_names=" + _TPL_ROOT + "bad_alias_names.txt\n"+
-				"\t-Dservice.tpl.bad_column_names=" + _TPL_ROOT + "bad_column_names.txt\n"+
-				"\t-Dservice.tpl.bad_json_types=" + _TPL_ROOT + "bad_json_types.txt\n"+
-				"\t-Dservice.tpl.bad_table_names=" + _TPL_ROOT + "bad_table_names.txt\n"+
-				"\t-Dservice.tpl.base_mode_impl=" + _TPL_ROOT + "base_mode_impl.ftl\n"+
-				"\t-Dservice.tpl.blob_model=" + _TPL_ROOT + "blob_model.ftl\n"+
-				"\t-Dservice.tpl.copyright.txt=copyright.txt\n"+
-				"\t-Dservice.tpl.ejb_pk=" + _TPL_ROOT + "ejb_pk.ftl\n"+
-				"\t-Dservice.tpl.exception=" + _TPL_ROOT + "exception.ftl\n"+
-				"\t-Dservice.tpl.extended_model=" + _TPL_ROOT + "extended_model.ftl\n"+
-				"\t-Dservice.tpl.extended_model_base_impl=" + _TPL_ROOT + "extended_model_base_impl.ftl\n"+
-				"\t-Dservice.tpl.extended_model_impl=" + _TPL_ROOT + "extended_model_impl.ftl\n"+
-				"\t-Dservice.tpl.finder=" + _TPL_ROOT + "finder.ftl\n"+
-				"\t-Dservice.tpl.finder_base_impl=" + _TPL_ROOT + "finder_base_impl.ftl\n"+
-				"\t-Dservice.tpl.finder_util=" + _TPL_ROOT + "finder_util.ftl\n"+
-				"\t-Dservice.tpl.hbm_xml=" + _TPL_ROOT + "hbm_xml.ftl\n"+
-				"\t-Dservice.tpl.json_js=" + _TPL_ROOT + "json_js.ftl\n"+
-				"\t-Dservice.tpl.json_js_method=" + _TPL_ROOT + "json_js_method.ftl\n"+
-				"\t-Dservice.tpl.model=" + _TPL_ROOT + "model.ftl\n"+
-				"\t-Dservice.tpl.model_cache=" + _TPL_ROOT + "model_cache.ftl\n"+
-				"\t-Dservice.tpl.model_hints_xml=" + _TPL_ROOT + "model_hints_xml.ftl\n"+
-				"\t-Dservice.tpl.model_impl=" + _TPL_ROOT + "model_impl.ftl\n"+
-				"\t-Dservice.tpl.model_soap=" + _TPL_ROOT + "model_soap.ftl\n"+
-				"\t-Dservice.tpl.model_wrapper=" + _TPL_ROOT + "model_wrapper.ftl\n"+
-				"\t-Dservice.tpl.persistence=" + _TPL_ROOT + "persistence.ftl\n"+
-				"\t-Dservice.tpl.persistence_impl=" + _TPL_ROOT + "persistence_impl.ftl\n"+
-				"\t-Dservice.tpl.persistence_util=" + _TPL_ROOT + "persistence_util.ftl\n"+
-				"\t-Dservice.tpl.props=" + _TPL_ROOT + "props.ftl\n"+
-				"\t-Dservice.tpl.service=" + _TPL_ROOT + "service.ftl\n"+
-				"\t-Dservice.tpl.service_base_impl=" + _TPL_ROOT + "service_base_impl.ftl\n"+
-				"\t-Dservice.tpl.service_clp=" + _TPL_ROOT + "service_clp.ftl\n"+
-				"\t-Dservice.tpl.service_clp_invoker=" + _TPL_ROOT + "service_clp_invoker.ftl\n"+
-				"\t-Dservice.tpl.service_clp_message_listener=" + _TPL_ROOT + "service_clp_message_listener.ftl\n"+
-				"\t-Dservice.tpl.service_clp_serializer=" + _TPL_ROOT + "service_clp_serializer.ftl\n"+
-				"\t-Dservice.tpl.service_http=" + _TPL_ROOT + "service_http.ftl\n"+
-				"\t-Dservice.tpl.service_impl=" + _TPL_ROOT + "service_impl.ftl\n"+
-				"\t-Dservice.tpl.service_props_util=" + _TPL_ROOT + "service_props_util.ftl\n"+
-				"\t-Dservice.tpl.service_soap=" + _TPL_ROOT + "service_soap.ftl\n"+
-				"\t-Dservice.tpl.service_util=" + _TPL_ROOT + "service_util.ftl\n"+
-				"\t-Dservice.tpl.service_wrapper=" + _TPL_ROOT + "service_wrapper.ftl\n"+
-				"\t-Dservice.tpl.spring_xml=" + _TPL_ROOT + "spring_xml.ftl\n"+
-				"\t-Dservice.tpl.spring_xml_session=" + _TPL_ROOT + "spring_xml_session.ftl";
-
-			if (t instanceof ServiceBuilderException) {
-				ServiceBuilderException serviceBuilderException =
-					(ServiceBuilderException)t;
-
-				System.err.println(serviceBuilderException.getMessage());
-			}
-			else if (t instanceof Exception) {
-				System.out.println(message);
-
-				ArgumentsUtil.processMainException(arguments, (Exception)t);
+		catch (Exception e) {
+			if (e instanceof ServiceBuilderException) {
+				System.err.println(e.getMessage());
 			}
 			else {
-				t.printStackTrace();
+				String message = StringBundler.concat(
+					"Please set these arguments. Sample values are:\n\n",
+					"\tservice.api.dir=${basedir}/../portal-kernel/src\n",
+					"\tservice.auto.import.default.references=true\n",
+					"\tservice.auto.namespace.tables=false\n",
+					"\tservice.bean.locator.util=com.liferay.portal.kernel.",
+					"bean.PortalBeanLocatorUtil\n",
+					"\tservice.build.number=1\n",
+					"\tservice.build.number.increment=true\n",
+					"\tservice.hbm.file=",
+					"${basedir}/src/META-INF/portal-hbm.xml\n",
+					"\tservice.impl.dir=${basedir}/src\n",
+					"\tservice.input.file=${service.file}\n",
+					"\tservice.model.hints.configs=",
+					StringUtil.merge(ServiceBuilderArgs.MODEL_HINTS_CONFIGS),
+					"\n", "\tservice.model.hints.file=",
+					"${basedir}/src/META-INF/portal-model-hints.xml\n",
+					"\tservice.osgi.module=false\n", "\tservice.plugin.name=\n",
+					"\tservice.props.util=com.liferay.portal.util.PropsUtil\n",
+					"\tservice.read.only.prefixes=",
+					StringUtil.merge(ServiceBuilderArgs.READ_ONLY_PREFIXES),
+					"\n", "\tservice.resource.actions.configs=",
+					StringUtil.merge(
+						ServiceBuilderArgs.RESOURCE_ACTION_CONFIGS),
+					"\n", "\tservice.resources.dir=${basedir}/src\n",
+					"\tservice.spring.file=",
+					"${basedir}/src/META-INF/portal-spring.xml\n",
+					"\tservice.spring.namespaces=beans\n",
+					"\tservice.sql.dir=${basedir}/../sql\n",
+					"\tservice.sql.file=portal-tables.sql\n",
+					"\tservice.sql.indexes.file=indexes.sql\n",
+					"\tservice.sql.sequences.file=sequences.sql\n",
+					"\tservice.target.entity.name=",
+					"${service.target.entity.name}\n",
+					"\tservice.test.dir=${basedir}/test/integration\n\n",
+					"You can also customize the generated code by overriding ",
+					"the default templates with these optional system ",
+					"properties:\n\n", "\t-Dservice.tpl.bad_alias_names=",
+					_TPL_ROOT, "bad_alias_names.txt\n",
+					"\t-Dservice.tpl.bad_column_names=", _TPL_ROOT,
+					"bad_column_names.txt\n", "\t-Dservice.tpl.bad_json_types=",
+					_TPL_ROOT, "bad_json_types.txt\n",
+					"\t-Dservice.tpl.bad_table_names=", _TPL_ROOT,
+					"bad_table_names.txt\n", "\t-Dservice.tpl.base_mode_impl=",
+					_TPL_ROOT, "base_mode_impl.ftl\n",
+					"\t-Dservice.tpl.blob_model=", _TPL_ROOT,
+					"blob_model.ftl\n",
+					"\t-Dservice.tpl.copyright.txt=copyright.txt\n",
+					"\t-Dservice.tpl.ejb_pk=", _TPL_ROOT, "ejb_pk.ftl\n",
+					"\t-Dservice.tpl.exception=", _TPL_ROOT, "exception.ftl\n",
+					"\t-Dservice.tpl.extended_model=", _TPL_ROOT,
+					"extended_model.ftl\n",
+					"\t-Dservice.tpl.extended_model_base_impl=", _TPL_ROOT,
+					"extended_model_base_impl.ftl\n",
+					"\t-Dservice.tpl.extended_model_impl=", _TPL_ROOT,
+					"extended_model_impl.ftl\n", "\t-Dservice.tpl.finder=",
+					_TPL_ROOT, "finder.ftl\n",
+					"\t-Dservice.tpl.finder_base_impl=", _TPL_ROOT,
+					"finder_base_impl.ftl\n", "\t-Dservice.tpl.finder_util=",
+					_TPL_ROOT, "finder_util.ftl\n", "\t-Dservice.tpl.hbm_xml=",
+					_TPL_ROOT, "hbm_xml.ftl\n", "\t-Dservice.tpl.json_js=",
+					_TPL_ROOT, "json_js.ftl\n",
+					"\t-Dservice.tpl.json_js_method=", _TPL_ROOT,
+					"json_js_method.ftl\n", "\t-Dservice.tpl.model=", _TPL_ROOT,
+					"model.ftl\n", "\t-Dservice.tpl.model_cache=", _TPL_ROOT,
+					"model_cache.ftl\n", "\t-Dservice.tpl.model_hints_xml=",
+					_TPL_ROOT, "model_hints_xml.ftl\n",
+					"\t-Dservice.tpl.model_impl=", _TPL_ROOT,
+					"model_impl.ftl\n", "\t-Dservice.tpl.model_soap=",
+					_TPL_ROOT, "model_soap.ftl\n",
+					"\t-Dservice.tpl.model_wrapper=", _TPL_ROOT,
+					"model_wrapper.ftl\n", "\t-Dservice.tpl.persistence=",
+					_TPL_ROOT, "persistence.ftl\n",
+					"\t-Dservice.tpl.persistence_impl=", _TPL_ROOT,
+					"persistence_impl.ftl\n",
+					"\t-Dservice.tpl.persistence_util=", _TPL_ROOT,
+					"persistence_util.ftl\n", "\t-Dservice.tpl.props=",
+					_TPL_ROOT, "props.ftl\n", "\t-Dservice.tpl.service=",
+					_TPL_ROOT, "service.ftl\n",
+					"\t-Dservice.tpl.service_base_impl=", _TPL_ROOT,
+					"service_base_impl.ftl\n", "\t-Dservice.tpl.service_clp=",
+					_TPL_ROOT, "service_clp.ftl\n",
+					"\t-Dservice.tpl.service_clp_invoker=", _TPL_ROOT,
+					"service_clp_invoker.ftl\n",
+					"\t-Dservice.tpl.service_clp_message_listener=", _TPL_ROOT,
+					"service_clp_message_listener.ftl\n",
+					"\t-Dservice.tpl.service_clp_serializer=", _TPL_ROOT,
+					"service_clp_serializer.ftl\n",
+					"\t-Dservice.tpl.service_http=", _TPL_ROOT,
+					"service_http.ftl\n", "\t-Dservice.tpl.service_impl=",
+					_TPL_ROOT, "service_impl.ftl\n",
+					"\t-Dservice.tpl.service_props_util=", _TPL_ROOT,
+					"service_props_util.ftl\n", "\t-Dservice.tpl.service_soap=",
+					_TPL_ROOT, "service_soap.ftl\n",
+					"\t-Dservice.tpl.service_util=", _TPL_ROOT,
+					"service_util.ftl\n", "\t-Dservice.tpl.service_wrapper=",
+					_TPL_ROOT, "service_wrapper.ftl\n",
+					"\t-Dservice.tpl.spring_xml=", _TPL_ROOT,
+					"spring_xml.ftl\n", "\t-Dservice.tpl.spring_xml_session=",
+					_TPL_ROOT, "spring_xml_session.ftl");
+
+				System.out.println(message);
 			}
+
+			ArgumentsUtil.processMainException(arguments, e);
 		}
 
 		try {
@@ -333,7 +369,7 @@ public class ServiceBuilder {
 	}
 
 	public static Set<String> readResourceActionModels(
-			String implDir, String resourcesDir,
+			String implDirName, String resourcesDirName,
 			String[] resourceActionsConfigs)
 		throws Exception {
 
@@ -353,7 +389,7 @@ public class ServiceBuilder {
 					InputStream inputStream = url.openStream();
 
 					_readResourceActionModels(
-						implDir, resourcesDir, inputStream,
+						implDirName, resourcesDirName, inputStream,
 						resourceActionModels);
 				}
 			}
@@ -366,7 +402,7 @@ public class ServiceBuilder {
 
 						try (InputStream inputStream = url.openStream()) {
 							_readResourceActionModels(
-								implDir, resourcesDir, inputStream,
+								implDirName, resourcesDirName, inputStream,
 								resourceActionModels);
 						}
 					}
@@ -375,11 +411,13 @@ public class ServiceBuilder {
 					File file = new File(config);
 
 					if (!file.exists()) {
-						file = new File(implDir, config);
+						file = new File(implDirName, config);
 					}
 
-					if (!file.exists() && Validator.isNotNull(resourcesDir)) {
-						file = new File(resourcesDir, config);
+					if (!file.exists() &&
+						Validator.isNotNull(resourcesDirName)) {
+
+						file = new File(resourcesDirName, config);
 					}
 
 					if (!file.exists()) {
@@ -388,7 +426,7 @@ public class ServiceBuilder {
 
 					try (InputStream inputStream = new FileInputStream(file)) {
 						_readResourceActionModels(
-							implDir, resourcesDir, inputStream,
+							implDirName, resourcesDirName, inputStream,
 							resourceActionModels);
 					}
 				}
@@ -432,14 +470,38 @@ public class ServiceBuilder {
 	public ServiceBuilder(
 			String apiDirName, boolean autoImportDefaultReferences,
 			boolean autoNamespaceTables, String beanLocatorUtil,
-			long buildNumber, boolean buildNumberIncrement, String hbmFileName,
-			String implDirName, String inputFileName, String modelHintsFileName,
-			boolean osgiModule, String pluginName, String propsUtil,
-			String[] readOnlyPrefixes, Set<String> resourceActionModels,
-			String resourcesDirName, String springFileName,
-			String[] springNamespaces, String sqlDirName, String sqlFileName,
-			String sqlIndexesFileName, String sqlSequencesFileName,
-			String targetEntityName, String testDirName, boolean build)
+			int databaseNameMaxLength, String hbmFileName, String implDirName,
+			String inputFileName, String modelHintsFileName, boolean osgiModule,
+			String pluginName, String propsUtil, String[] readOnlyPrefixes,
+			Set<String> resourceActionModels, String resourcesDirName,
+			String springFileName, String[] springNamespaces, String sqlDirName,
+			String sqlFileName, String sqlIndexesFileName,
+			String sqlSequencesFileName, String targetEntityName,
+			String testDirName, String uadDirName)
+		throws Exception {
+
+		this(
+			apiDirName, autoImportDefaultReferences, autoNamespaceTables,
+			beanLocatorUtil, 1, true, databaseNameMaxLength, hbmFileName,
+			implDirName, inputFileName, modelHintsFileName, osgiModule,
+			pluginName, propsUtil, readOnlyPrefixes, resourceActionModels,
+			resourcesDirName, springFileName, springNamespaces, sqlDirName,
+			sqlFileName, sqlIndexesFileName, sqlSequencesFileName,
+			targetEntityName, testDirName, uadDirName, true);
+	}
+
+	public ServiceBuilder(
+			String apiDirName, boolean autoImportDefaultReferences,
+			boolean autoNamespaceTables, String beanLocatorUtil,
+			long buildNumber, boolean buildNumberIncrement,
+			int databaseNameMaxLength, String hbmFileName, String implDirName,
+			String inputFileName, String modelHintsFileName, boolean osgiModule,
+			String pluginName, String propsUtil, String[] readOnlyPrefixes,
+			Set<String> resourceActionModels, String resourcesDirName,
+			String springFileName, String[] springNamespaces, String sqlDirName,
+			String sqlFileName, String sqlIndexesFileName,
+			String sqlSequencesFileName, String targetEntityName,
+			String testDirName, String uadDirName, boolean build)
 		throws Exception {
 
 		_tplBadAliasNames = _getTplProperty(
@@ -449,7 +511,7 @@ public class ServiceBuilder {
 		_tplBadTableNames = _getTplProperty(
 			"bad_table_names", _tplBadTableNames);
 		_tplBlobModel = _getTplProperty("blob_model", _tplBlobModel);
-		_tplEjbPk = _getTplProperty("ejb_pk", _tplEjbPk);
+		_tplEjbPK = _getTplProperty("ejb_pk", _tplEjbPK);
 		_tplException = _getTplProperty("exception", _tplException);
 		_tplExtendedModel = _getTplProperty(
 			"extended_model", _tplExtendedModel);
@@ -466,7 +528,6 @@ public class ServiceBuilder {
 		_tplJsonJsMethod = _getTplProperty("json_js_method", _tplJsonJsMethod);
 		_tplModel = _getTplProperty("model", _tplModel);
 		_tplModelCache = _getTplProperty("model_cache", _tplModelCache);
-		_tplModelClp = _getTplProperty("model", _tplModelClp);
 		_tplModelHintsXml = _getTplProperty(
 			"model_hints_xml", _tplModelHintsXml);
 		_tplModelImpl = _getTplProperty("model_impl", _tplModelImpl);
@@ -481,13 +542,6 @@ public class ServiceBuilder {
 		_tplService = _getTplProperty("service", _tplService);
 		_tplServiceBaseImpl = _getTplProperty(
 			"service_base_impl", _tplServiceBaseImpl);
-		_tplServiceClp = _getTplProperty("service_clp", _tplServiceClp);
-		_tplServiceClpInvoker = _getTplProperty(
-			"service_clp_invoker", _tplServiceClpInvoker);
-		_tplServiceClpMessageListener = _getTplProperty(
-			"service_clp_message_listener", _tplServiceClpMessageListener);
-		_tplServiceClpSerializer = _getTplProperty(
-			"service_clp_serializer", _tplServiceClpSerializer);
 		_tplServiceHttp = _getTplProperty("service_http", _tplServiceHttp);
 		_tplServiceImpl = _getTplProperty("service_impl", _tplServiceImpl);
 		_tplServicePropsUtil = _getTplProperty(
@@ -531,20 +585,49 @@ public class ServiceBuilder {
 			_sqlSequencesFileName = sqlSequencesFileName;
 			_targetEntityName = targetEntityName;
 			_testDirName = _normalize(testDirName);
+			_uadDirName = _normalize(uadDirName);
 			_build = build;
 
-			_badTableNames = _readLines(_tplBadTableNames);
 			_badAliasNames = _readLines(_tplBadAliasNames);
 			_badColumnNames = _readLines(_tplBadColumnNames);
+			_badTableNames = _readLines(_tplBadTableNames);
 
-			_beanLocatorUtilShortName = _beanLocatorUtil.substring(
-				_beanLocatorUtil.lastIndexOf(".") + 1);
+			_commercialPlugin = _isCommercialPlugin(Paths.get("."));
 
 			SAXReader saxReader = _getSAXReader();
 
 			Document document = saxReader.read(
 				new XMLSafeReader(
 					ToolsUtil.getContent(_normalize(inputFileName))));
+
+			DocumentType documentType = document.getDocType();
+
+			Matcher matcher = _dtdVersionPattern.matcher(
+				documentType.getSystemID());
+
+			if (matcher.matches()) {
+				_dtdVersion = Version.getInstance(
+					StringUtil.replace(matcher.group(1), '_', '.'));
+			}
+			else {
+				throw new IllegalArgumentException(
+					"Unable to parse DTD version for " + inputFileName);
+			}
+
+			_compatProperties = _getCompatProperties(matcher.group(1));
+
+			Collections.addAll(
+				_badAliasNames,
+				StringUtil.split(
+					_compatProperties.getProperty("bad.alias.names.extra")));
+			Collections.addAll(
+				_badColumnNames,
+				StringUtil.split(
+					_compatProperties.getProperty("bad.column.names.extra")));
+			Collections.addAll(
+				_badTableNames,
+				StringUtil.split(
+					_compatProperties.getProperty("bad.table.names.extra")));
 
 			Element rootElement = document.getRootElement();
 
@@ -557,6 +640,9 @@ public class ServiceBuilder {
 
 			_apiPackagePath = GetterUtil.getString(
 				rootElement.attributeValue("api-package-path"), packagePath);
+			_databaseNameMaxLength = GetterUtil.getInteger(
+				rootElement.attributeValue("database-name-max-length"),
+				databaseNameMaxLength);
 			_oldServiceOutputPath =
 				_apiDirName + "/" + StringUtil.replace(packagePath, '.', '/');
 			_outputPath =
@@ -574,12 +660,45 @@ public class ServiceBuilder {
 
 			_packagePath = packagePath;
 
+			if (Validator.isNull(_uadDirName)) {
+				_uadDirName = _apiDirName.replace("-api/", "-uad/");
+			}
+
 			_autoImportDefaultReferences = GetterUtil.getBoolean(
 				rootElement.attributeValue("auto-import-default-references"),
 				_autoImportDefaultReferences);
 			_autoNamespaceTables = GetterUtil.getBoolean(
 				rootElement.attributeValue("auto-namespace-tables"),
 				_autoNamespaceTables);
+
+			String dependencyInjector = rootElement.attributeValue(
+				"dependency-injector");
+
+			File springFile = new File(_springFileName);
+
+			if ((dependencyInjector != null) || !_osgiModule ||
+				isVersionLTE_7_1_0() || springFile.exists()) {
+
+				_dependencyInjectorDS = StringUtil.equalsIgnoreCase(
+					dependencyInjector, "ds");
+			}
+			else {
+				_dependencyInjectorDS = true;
+			}
+
+			if (_dependencyInjectorDS) {
+				if (isVersionLTE_7_1_0()) {
+					throw new IllegalArgumentException(
+						"Cannot use dependency-injector=\"ds\" without using " +
+							"at least DTD version 7.2.0");
+				}
+
+				if (!_osgiModule) {
+					throw new IllegalArgumentException(
+						"Cannot use dependency-injector=\"ds\" with a WAR");
+				}
+			}
+
 			_mvccEnabled = GetterUtil.getBoolean(
 				rootElement.attributeValue("mvcc-enabled"));
 
@@ -593,23 +712,22 @@ public class ServiceBuilder {
 			}
 
 			Element portletElement = rootElement.element("portlet");
-			Element namespaceElement = rootElement.element("namespace");
 
 			if (portletElement != null) {
-				_portletName = portletElement.attributeValue("name");
-
 				_portletShortName = portletElement.attributeValue("short-name");
 
-				_portletPackageName = TextFormatter.format(
-					_portletName, TextFormatter.B);
+				String portletPackageName = TextFormatter.format(
+					portletElement.attributeValue("name"), TextFormatter.B);
 
-				_apiPackagePath += "." + _portletPackageName;
-				_outputPath += "/" + _portletPackageName;
-				_packagePath += "." + _portletPackageName;
-				_serviceOutputPath += "/" + _portletPackageName;
-				_testOutputPath += "/" + _portletPackageName;
+				_apiPackagePath += "." + portletPackageName;
+				_outputPath += "/" + portletPackageName;
+				_packagePath += "." + portletPackageName;
+				_serviceOutputPath += "/" + portletPackageName;
+				_testOutputPath += "/" + portletPackageName;
 			}
 			else {
+				Element namespaceElement = rootElement.element("namespace");
+
 				_portletShortName = namespaceElement.getText();
 			}
 
@@ -622,7 +740,7 @@ public class ServiceBuilder {
 				}
 			}
 
-			_ejbList = new ArrayList<>();
+			_entities = new ArrayList<>();
 			_entityMappings = new HashMap<>();
 
 			List<Element> entityElements = rootElement.elements("entity");
@@ -645,9 +763,9 @@ public class ServiceBuilder {
 			}
 
 			if (build) {
-				for (int x = 0; x < _ejbList.size(); x++) {
-					Entity entity = _ejbList.get(x);
+				Collections.sort(_entities);
 
+				for (Entity entity : _entities) {
 					if (_isTargetEntity(entity)) {
 						System.out.println("Building " + entity.getName());
 
@@ -658,7 +776,7 @@ public class ServiceBuilder {
 						_removeActionableDynamicQuery(entity);
 						_removeExportActionableDynamicQuery(entity);
 
-						if (entity.hasColumns()) {
+						if (entity.hasEntityColumns()) {
 							_createHbm(entity);
 							_createHbmUtil(entity);
 
@@ -682,7 +800,6 @@ public class ServiceBuilder {
 							_createExtendedModel(entity);
 
 							_createModelCache(entity);
-							_createModelClp(entity);
 							_createModelWrapper(entity);
 
 							_createModelSoap(entity);
@@ -704,10 +821,6 @@ public class ServiceBuilder {
 							_createService(entity, _SESSION_TYPE_LOCAL);
 							_createServiceFactory(entity, _SESSION_TYPE_LOCAL);
 							_createServiceUtil(entity, _SESSION_TYPE_LOCAL);
-
-							_createServiceClp(entity, _SESSION_TYPE_LOCAL);
-							_createServiceClpInvoker(
-								entity, _SESSION_TYPE_LOCAL);
 							_createServiceWrapper(entity, _SESSION_TYPE_LOCAL);
 						}
 						else {
@@ -719,11 +832,6 @@ public class ServiceBuilder {
 							_removeServiceUtil(
 								entity, _SESSION_TYPE_LOCAL,
 								_serviceOutputPath);
-							_removeServiceClp(
-								entity, _SESSION_TYPE_LOCAL,
-								_serviceOutputPath);
-							_removeServiceClpInvoker(
-								entity, _SESSION_TYPE_LOCAL);
 							_removeServiceWrapper(
 								entity, _SESSION_TYPE_LOCAL,
 								_serviceOutputPath);
@@ -736,17 +844,13 @@ public class ServiceBuilder {
 							_createService(entity, _SESSION_TYPE_REMOTE);
 							_createServiceFactory(entity, _SESSION_TYPE_REMOTE);
 							_createServiceUtil(entity, _SESSION_TYPE_REMOTE);
-
-							_createServiceClp(entity, _SESSION_TYPE_REMOTE);
-							_createServiceClpInvoker(
-								entity, _SESSION_TYPE_REMOTE);
 							_createServiceWrapper(entity, _SESSION_TYPE_REMOTE);
 
 							_createServiceHttp(entity);
 
 							_removeServiceJson(entity);
 
-							if (entity.hasColumns()) {
+							if (entity.hasEntityColumns()) {
 								_removeServiceJsonSerializer(entity);
 							}
 
@@ -762,11 +866,6 @@ public class ServiceBuilder {
 							_removeServiceUtil(
 								entity, _SESSION_TYPE_REMOTE,
 								_serviceOutputPath);
-							_removeServiceClp(
-								entity, _SESSION_TYPE_REMOTE,
-								_serviceOutputPath);
-							_removeServiceClpInvoker(
-								entity, _SESSION_TYPE_REMOTE);
 							_removeServiceWrapper(
 								entity, _SESSION_TYPE_REMOTE,
 								_serviceOutputPath);
@@ -775,9 +874,41 @@ public class ServiceBuilder {
 
 							_removeServiceSoap(entity);
 						}
+
+						if (entity.isUADEnabled()) {
+							_createBaseUADAnonymizer(entity);
+							_createBaseUADExporter(entity);
+							_createUADAnonymizer(entity);
+							_createUADExporter(entity);
+
+							if (ListUtil.isEmpty(
+									entity.
+										getUADNonanonymizableEntityColumns())) {
+
+								_removeBaseUADDisplay(entity);
+								_removeUADDisplay(entity);
+								_removeUADDisplayTest(entity);
+							}
+							else {
+								_createBaseUADDisplay(entity);
+								_createUADDisplay(entity);
+							}
+						}
+						else {
+							//_removeBaseUADAnonymizer(entity);
+							//_removeBaseUADDisplay(entity);
+							//_removeBaseUADExporter(entity);
+							//_removeUADAnonymizer(entity);
+							//_removeUADAnonymizerTest(entity);
+							//_removeUADDisplay(entity);
+							//_removeUADDisplayTest(entity);
+							//_removeUADExporter(entity);
+							//_removeUADExporterTest(entity);
+							//_removeUADTestHelper(entity);
+						}
 					}
 					else {
-						if (entity.hasColumns()) {
+						if (entity.hasEntityColumns()) {
 							entity.setTransients(_getTransients(entity, false));
 							entity.setParentTransients(
 								_getTransients(entity, true));
@@ -791,15 +922,23 @@ public class ServiceBuilder {
 
 				_createExceptions(exceptionList);
 
-				_createServiceClpMessageListener();
-				_createServiceClpSerializer(exceptionList);
+				_createPersistenceConstants();
+
 				_createServicePropsUtil();
+				_createServletContextUtil();
 
 				_createSQLIndexes();
 				_createSQLTables();
 				_createSQLSequences();
 
 				_createProps();
+
+				for (String uadApplicationName :
+						_uadApplicationEntities.keySet()) {
+
+					_createUADBnd(uadApplicationName);
+					_createUADConstants(uadApplicationName);
+				}
 
 				_deleteOrmXml();
 				_deleteSpringLegacyXml();
@@ -810,101 +949,18 @@ public class ServiceBuilder {
 		}
 	}
 
-	public ServiceBuilder(
-			String apiDir, boolean autoImportDefaultReferences,
-			boolean autoNamespaceTables, String beanLocatorUtil,
-			String hbmFileName, String implDir, String inputFileName,
-			String modelHintsFileName, boolean osgiModule, String pluginName,
-			String propsUtil, String[] readOnlyPrefixes,
-			Set<String> resourceActionModels, String resourcesDir,
-			String springFileName, String[] springNamespaces, String sqlDir,
-			String sqlFileName, String sqlIndexesFileName,
-			String sqlSequencesFileName, String targetEntityName,
-			String testDir)
-		throws Exception {
-
-		this(
-			apiDir, autoImportDefaultReferences, autoNamespaceTables,
-			beanLocatorUtil, 1, true, hbmFileName, implDir, inputFileName,
-			modelHintsFileName, osgiModule, pluginName, propsUtil,
-			readOnlyPrefixes, resourceActionModels, resourcesDir,
-			springFileName, springNamespaces, sqlDir, sqlFileName,
-			sqlIndexesFileName, sqlSequencesFileName, targetEntityName, testDir,
-			true);
-	}
-
-	public String annotationToString(Annotation annotation) {
-		StringBundler sb = new StringBundler();
-
-		sb.append(StringPool.AT);
-
-		Type type = annotation.getType();
-
-		sb.append(type.getValue());
-
-		Map<String, Object> namedParameters = annotation.getNamedParameterMap();
-
-		if (namedParameters.isEmpty()) {
-			return sb.toString();
-		}
-
-		sb.append(StringPool.OPEN_PARENTHESIS);
-
-		for (Map.Entry<String, Object> entry : namedParameters.entrySet()) {
-			sb.append(entry.getKey());
-
-			sb.append(StringPool.EQUAL);
-
-			Object value = entry.getValue();
-
-			if (value instanceof List) {
-				List<?> values = (List<?>)value;
-
-				sb.append(StringPool.OPEN_CURLY_BRACE);
-
-				for (Object object : values) {
-					if (object instanceof Annotation) {
-						sb.append(annotationToString((Annotation)object));
-					}
-					else {
-						sb.append(object);
-					}
-
-					sb.append(StringPool.COMMA_AND_SPACE);
-				}
-
-				if (!values.isEmpty()) {
-					sb.setIndex(sb.index() - 1);
-				}
-
-				sb.append(StringPool.CLOSE_CURLY_BRACE);
-			}
-			else {
-				sb.append(value);
-			}
-
-			sb.append(StringPool.COMMA_AND_SPACE);
-		}
-
-		sb.setIndex(sb.index() - 1);
-
-		sb.append(StringPool.CLOSE_PARENTHESIS);
-
-		return sb.toString();
-	}
-
 	public String getCacheFieldMethodName(JavaField javaField) {
-		Annotation[] annotations = javaField.getAnnotations();
+		List<JavaAnnotation> javaAnnotations = javaField.getAnnotations();
 
-		for (Annotation annotation : annotations) {
-			Type type = annotation.getType();
+		for (JavaAnnotation javaAnnotation : javaAnnotations) {
+			JavaClass type = javaAnnotation.getType();
 
 			String className = type.getFullyQualifiedName();
 
 			if (className.equals(CacheField.class.getName())) {
 				String methodName = null;
 
-				Object namedParameter = annotation.getNamedParameter(
+				Object namedParameter = javaAnnotation.getNamedParameter(
 					"methodName");
 
 				if (namedParameter != null) {
@@ -924,9 +980,11 @@ public class ServiceBuilder {
 		throw new IllegalArgumentException(javaField + " is not a cache field");
 	}
 
-	public String getClassName(Type type) {
-		int dimensions = type.getDimensions();
-		String name = type.getValue();
+	public String getClassName(
+		DefaultJavaParameterizedType defaultJavaParameterizedType) {
+
+		int dimensions = defaultJavaParameterizedType.getDimensions();
+		String name = defaultJavaParameterizedType.getFullyQualifiedName();
 
 		if (dimensions == 0) {
 			return name;
@@ -939,32 +997,43 @@ public class ServiceBuilder {
 		}
 
 		if (name.equals("boolean")) {
-			return sb.append("Z").toString();
+			sb.append("Z");
 		}
 		else if (name.equals("byte")) {
-			return sb.append("B").toString();
+			sb.append("B");
 		}
 		else if (name.equals("char")) {
-			return sb.append("C").toString();
+			sb.append("C");
 		}
 		else if (name.equals("double")) {
-			return sb.append("D").toString();
+			sb.append("D");
 		}
 		else if (name.equals("float")) {
-			return sb.append("F").toString();
+			sb.append("F");
 		}
 		else if (name.equals("int")) {
-			return sb.append("I").toString();
+			sb.append("I");
 		}
 		else if (name.equals("long")) {
-			return sb.append("J").toString();
+			sb.append("J");
 		}
 		else if (name.equals("short")) {
-			return sb.append("S").toString();
+			sb.append("S");
 		}
 		else {
-			return sb.append("L").append(name).append(";").toString();
+			sb.append("L");
+			sb.append(name);
+			sb.append(";");
 		}
+
+		return sb.toString();
+	}
+
+	public String getCompatJavaClassName(String key) {
+		return _compatProperties.getProperty(
+			StringBundler.concat(
+				"java.class.name", StringPool.OPEN_BRACKET, key,
+				StringPool.CLOSE_BRACKET));
 	}
 
 	public String getCreateMappingTableSQL(EntityMapping entityMapping)
@@ -1017,15 +1086,16 @@ public class ServiceBuilder {
 		int pos = name.lastIndexOf(".");
 
 		if (pos == -1) {
-			pos = _ejbList.indexOf(new Entity(name));
+			pos = _entities.indexOf(new Entity(this, name));
 
 			if (pos == -1) {
 				throw new ServiceBuilderException(
-					"Unable to find " + name + " in " +
-						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR));
+					StringBundler.concat(
+						"Unable to find ", name, " in ",
+						ListUtil.toString(_entities, Entity.NAME_ACCESSOR)));
 			}
 
-			entity = _ejbList.get(pos);
+			entity = _entities.get(pos);
 
 			_entityPool.put(name, entity);
 
@@ -1036,22 +1106,23 @@ public class ServiceBuilder {
 		String refEntity = name.substring(pos + 1);
 
 		if (refPackage.equals(_packagePath)) {
-			pos = _ejbList.indexOf(new Entity(refEntity));
+			pos = _entities.indexOf(new Entity(this, refEntity));
 
 			if (pos == -1) {
 				throw new ServiceBuilderException(
-					"Unable to find " + refEntity + " in " +
-						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR));
+					StringBundler.concat(
+						"Unable to find ", refEntity, " in ",
+						ListUtil.toString(_entities, Entity.NAME_ACCESSOR)));
 			}
 
-			entity = _ejbList.get(pos);
+			entity = _entities.get(pos);
 
 			_entityPool.put(name, entity);
 
 			return entity;
 		}
 
-		Set<Entity> entities = new HashSet<>(_ejbList);
+		Set<Entity> entities = new HashSet<>(_entities);
 
 		entities.addAll(_entityPool.values());
 
@@ -1065,8 +1136,8 @@ public class ServiceBuilder {
 
 		String refPackageDirName = StringUtil.replace(refPackage, '.', '/');
 
-		String refFileName =
-			_implDirName + "/" + refPackageDirName + "/service.xml";
+		String refFileName = StringBundler.concat(
+			_implDirName, "/", refPackageDirName, "/service.xml");
 
 		File refFile = new File(refFileName);
 
@@ -1074,7 +1145,8 @@ public class ServiceBuilder {
 
 		if (!refFile.exists()) {
 			refFileName = String.valueOf(System.currentTimeMillis());
-			refFile = new File(_TMP_DIR, refFileName);
+
+			refFile = new File(_TMP_DIR_NAME, refFileName);
 
 			Class<?> clazz = getClass();
 
@@ -1088,8 +1160,10 @@ public class ServiceBuilder {
 			}
 			catch (IOException ioe) {
 				throw new ServiceBuilderException(
-					"Unable to find " + refEntity + " in " +
-						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR));
+					StringBundler.concat(
+						"Unable to find ", refEntity, " in ",
+						ListUtil.toString(_entities, Entity.NAME_ACCESSOR)),
+					ioe);
 			}
 
 			_write(refFile, refContent);
@@ -1099,12 +1173,13 @@ public class ServiceBuilder {
 
 		ServiceBuilder serviceBuilder = new ServiceBuilder(
 			_apiDirName, _autoImportDefaultReferences, _autoNamespaceTables,
-			_beanLocatorUtil, _buildNumber, _buildNumberIncrement, _hbmFileName,
-			_implDirName, refFile.getAbsolutePath(), _modelHintsFileName,
-			_osgiModule, _pluginName, _propsUtil, _readOnlyPrefixes,
-			_resourceActionModels, _resourcesDirName, _springFileName,
-			_springNamespaces, _sqlDirName, _sqlFileName, _sqlIndexesFileName,
-			_sqlSequencesFileName, _targetEntityName, _testDirName, false);
+			_beanLocatorUtil, _buildNumber, _buildNumberIncrement,
+			_databaseNameMaxLength, _hbmFileName, _implDirName,
+			refFile.getAbsolutePath(), _modelHintsFileName, _osgiModule,
+			_pluginName, _propsUtil, _readOnlyPrefixes, _resourceActionModels,
+			_resourcesDirName, _springFileName, _springNamespaces, _sqlDirName,
+			_sqlFileName, _sqlIndexesFileName, _sqlSequencesFileName,
+			_targetEntityName, _testDirName, _uadDirName, false);
 
 		entity = serviceBuilder.getEntity(refEntity);
 
@@ -1163,6 +1238,10 @@ public class ServiceBuilder {
 		return idType;
 	}
 
+	public String getGenericValue(JavaClass javaClass) {
+		return StringUtil.replace(javaClass.getFullyQualifiedName(), '$', '.');
+	}
+
 	public String getJavadocComment(JavaClass javaClass) {
 		return _formatComment(
 			javaClass.getComment(), javaClass.getTags(), StringPool.BLANK);
@@ -1173,50 +1252,55 @@ public class ServiceBuilder {
 			javaMethod.getComment(), javaMethod.getTags(), StringPool.TAB);
 	}
 
-	public String getListActualTypeArguments(Type type) {
-		if (type.getValue().equals("java.util.List")) {
-			Type[] types = type.getActualTypeArguments();
+	public String getListActualTypeArguments(
+		DefaultJavaParameterizedType defaultJavaParameterizedType) {
+
+		String typeName = defaultJavaParameterizedType.getFullyQualifiedName();
+
+		if (typeName.equals("java.util.List")) {
+			List<JavaType> types =
+				defaultJavaParameterizedType.getActualTypeArguments();
 
 			if (types != null) {
-				return getTypeGenericsName(types[0]);
+				return getTypeGenericsName(types.get(0));
 			}
 		}
 
-		return getTypeGenericsName(type);
+		return getTypeGenericsName(defaultJavaParameterizedType);
 	}
 
-	public String getLiteralClass(Type type) {
-		StringBundler sb = new StringBundler(type.getDimensions() + 2);
+	public String getLiteralClass(
+		DefaultJavaParameterizedType defaultJavaParameterizedType) {
 
-		sb.append(type.getValue());
+		StringBundler sb = new StringBundler(
+			defaultJavaParameterizedType.getDimensions() + 2);
 
-		for (int i = 0; i < type.getDimensions(); i++) {
-			sb.append("[]");
-		}
+		sb.append(defaultJavaParameterizedType.getFullyQualifiedName());
 
 		sb.append(".class");
 
 		return sb.toString();
 	}
 
-	public List<EntityColumn> getMappingEntities(String mappingTable)
+	public Map<String, List<EntityColumn>> getMappingEntities(
+			String mappingTable)
 		throws Exception {
 
-		List<EntityColumn> mappingEntitiesPKList = new ArrayList<>();
+		Map<String, List<EntityColumn>> mappingEntities = new LinkedHashMap<>();
 
 		EntityMapping entityMapping = _entityMappings.get(mappingTable);
 
 		for (int i = 0; i < 3; i++) {
-			Entity entity = getEntity(entityMapping.getEntity(i));
+			Entity entity = getEntity(entityMapping.getEntityName(i));
 
 			if (entity == null) {
 				return null;
 			}
 
-			mappingEntitiesPKList.addAll(entity.getPKList());
+			mappingEntities.put(entity.getName(), entity.getPKEntityColumns());
 		}
 
-		return mappingEntitiesPKList;
+		return mappingEntities;
 	}
 
 	public int getMaxLength(String model, String field) {
@@ -1238,12 +1322,14 @@ public class ServiceBuilder {
 	public String getNoSuchEntityException(Entity entity) {
 		String noSuchEntityException = entity.getName();
 
-		if (Validator.isNull(entity.getPortletShortName()) ||
-			(noSuchEntityException.startsWith(entity.getPortletShortName()) &&
-			 !noSuchEntityException.equals(entity.getPortletShortName()))) {
+		String portletShortName = entity.getPortletShortName();
+
+		if (Validator.isNull(portletShortName) ||
+			(noSuchEntityException.startsWith(portletShortName) &&
+			 !noSuchEntityException.equals(portletShortName))) {
 
 			noSuchEntityException = noSuchEntityException.substring(
-				entity.getPortletShortName().length());
+				portletShortName.length());
 		}
 
 		noSuchEntityException = "NoSuch" + noSuchEntityException;
@@ -1252,7 +1338,7 @@ public class ServiceBuilder {
 	}
 
 	public String getParameterType(JavaParameter parameter) {
-		Type returnType = parameter.getType();
+		JavaType returnType = parameter.getType();
 
 		return getTypeGenericsName(returnType);
 	}
@@ -1276,9 +1362,8 @@ public class ServiceBuilder {
 		else if (type.equals("short")) {
 			return "Short";
 		}
-		else {
-			return type;
-		}
+
+		return type;
 	}
 
 	public String getPrimitiveObjValue(String colType) {
@@ -1323,13 +1408,12 @@ public class ServiceBuilder {
 		else if (type.equals("Short")) {
 			return "short";
 		}
-		else {
-			return type;
-		}
+
+		return type;
 	}
 
 	public String getReturnType(JavaMethod method) {
-		Type returnType = method.getReturnType();
+		JavaType returnType = method.getReturnType();
 
 		return getTypeGenericsName(returnType);
 	}
@@ -1341,22 +1425,25 @@ public class ServiceBuilder {
 		boolean foundMethod = false;
 
 		for (JavaMethod method : methods) {
-			JavaParameter[] parameters = method.getParameters();
+			List<JavaParameter> parameters = method.getParameters();
 
-			if (method.getName().equals(methodName) &&
-				(parameters.length == args.size())) {
+			String curMethodName = method.getName();
 
-				for (int i = 0; i < parameters.length; i++) {
-					JavaParameter parameter = parameters[i];
+			if (curMethodName.equals(methodName) &&
+				(parameters.size() == args.size())) {
 
-					String arg = args.get(i);
+				for (int i = 0; i < parameters.size(); i++) {
+					JavaParameter parameter = parameters.get(i);
 
-					if (getParameterType(parameter).equals(arg)) {
+					if (Objects.equals(
+							getParameterType(parameter), args.get(i))) {
+
 						exceptions = ListUtil.copy(exceptions);
 
-						Type[] methodExceptions = method.getExceptions();
+						List<JavaClass> methodExceptions =
+							method.getExceptions();
 
-						for (Type methodException : methodExceptions) {
+						for (JavaClass methodException : methodExceptions) {
 							String exception = methodException.getValue();
 
 							if (exception.equals(
@@ -1393,9 +1480,8 @@ public class ServiceBuilder {
 		if (!exceptions.isEmpty()) {
 			return exceptions;
 		}
-		else {
-			return Collections.emptyList();
-		}
+
+		return Collections.emptyList();
 	}
 
 	public String getSqlType(String type) {
@@ -1417,12 +1503,17 @@ public class ServiceBuilder {
 		else if (type.equals("short") || type.equals("Short")) {
 			return "INTEGER";
 		}
+		else if (type.equals("BigDecimal")) {
+			return "DECIMAL";
+		}
 		else if (type.equals("Date")) {
 			return "TIMESTAMP";
 		}
-		else {
-			return null;
+		else if (type.equals("String")) {
+			return "VARCHAR";
 		}
+
+		return null;
 	}
 
 	public String getSqlType(String model, String field, String type) {
@@ -1444,6 +1535,9 @@ public class ServiceBuilder {
 		else if (type.equals("short") || type.equals("Short")) {
 			return "INTEGER";
 		}
+		else if (type.equals("BigDecimal")) {
+			return "DECIMAL";
+		}
 		else if (type.equals("Blob")) {
 			return "BLOB";
 		}
@@ -1462,33 +1556,42 @@ public class ServiceBuilder {
 
 			return "VARCHAR";
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
-	public String getTypeGenericsName(Type type) {
-		StringBundler sb = new StringBundler();
-
-		sb.append(type.getValue());
-
-		Type[] actualTypeArguments = type.getActualTypeArguments();
-
-		if (actualTypeArguments != null) {
-			sb.append(StringPool.LESS_THAN);
-
-			for (Type actualTypeArgument : actualTypeArguments) {
-				sb.append(getTypeGenericsName(actualTypeArgument));
-
-				sb.append(StringPool.COMMA_AND_SPACE);
-			}
-
-			sb.setIndex(sb.index() - 1);
-
-			sb.append(StringPool.GREATER_THAN);
+	public String getTypeGenericsName(JavaType javaType) {
+		if (!(javaType instanceof DefaultJavaParameterizedType)) {
+			return javaType.getFullyQualifiedName();
 		}
 
-		sb.append(getDimensions(type.getDimensions()));
+		DefaultJavaParameterizedType defaultJavaParameterizedType =
+			(DefaultJavaParameterizedType)javaType;
+
+		List<JavaType> actualTypeArguments =
+			defaultJavaParameterizedType.getActualTypeArguments();
+
+		if (ListUtil.isEmpty(actualTypeArguments)) {
+			return javaType.getFullyQualifiedName();
+		}
+
+		StringBundler sb = new StringBundler();
+
+		sb.append(javaType.getFullyQualifiedName());
+
+		sb.append(StringPool.LESS_THAN);
+
+		for (JavaType actualTypeArgument : actualTypeArguments) {
+			sb.append(getTypeGenericsName(actualTypeArgument));
+
+			sb.append(StringPool.COMMA_AND_SPACE);
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		sb.append(StringPool.GREATER_THAN);
+
+		sb.append(getDimensions(defaultJavaParameterizedType.getDimensions()));
 
 		return sb.toString();
 	}
@@ -1515,9 +1618,8 @@ public class ServiceBuilder {
 		if (getEntityByGenericsName(genericsName) == null) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	public boolean hasEntityByParameterTypeValue(String parameterTypeValue) {
@@ -1532,35 +1634,45 @@ public class ServiceBuilder {
 		if (getEntityByParameterTypeValue(parameterTypeValue) == null) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	public boolean isBasePersistenceMethod(JavaMethod method) {
 		String methodName = method.getName();
 
 		if (methodName.equals("clearCache") ||
-			methodName.equals("findWithDynamicQuery")) {
+			methodName.equals("fetchByPrimaryKeys") ||
+			methodName.equals("findWithDynamicQuery") ||
+			methodName.equals("setConfiguration") ||
+			methodName.equals("setDataSource") ||
+			methodName.equals("setSessionFactory")) {
 
 			return true;
+		}
+		else if (methodName.equals("getBadColumnNames")) {
+			return !isVersionLTE_7_1_0();
 		}
 		else if (methodName.equals("findByPrimaryKey") ||
 				 methodName.equals("fetchByPrimaryKey") ||
 				 methodName.equals("remove")) {
 
-			JavaParameter[] parameters = method.getParameters();
+			List<JavaParameter> parameters = method.getParameters();
 
-			if ((parameters.length == 1) &&
-				parameters[0].getName().equals("primaryKey")) {
+			if (parameters.size() == 1) {
+				JavaParameter parameter = parameters.get(0);
 
-				return true;
+				String parameterName = parameter.getName();
+
+				if (parameterName.equals("primaryKey")) {
+					return true;
+				}
 			}
 
 			if (methodName.equals("remove")) {
-				Type[] methodExceptions = method.getExceptions();
+				List<JavaClass> methodExceptions = method.getExceptions();
 
-				for (Type methodException : methodExceptions) {
+				for (JavaClass methodException : methodExceptions) {
 					String exception = methodException.getValue();
 
 					if (exception.contains("NoSuch")) {
@@ -1578,10 +1690,18 @@ public class ServiceBuilder {
 	public boolean isCustomMethod(JavaMethod method) {
 		String methodName = method.getName();
 
-		if (methodName.equals("afterPropertiesSet") ||
-			methodName.equals("destroy") || methodName.equals("equals") ||
-			methodName.equals("getClass") || methodName.equals("hashCode") ||
-			methodName.equals("notify") || methodName.equals("notifyAll") ||
+		if (methodName.equals("activate") ||
+			methodName.equals("afterPropertiesSet") ||
+			methodName.equals("clearService") ||
+			methodName.equals("deactivate") || methodName.equals("destroy") ||
+			methodName.equals("equals") ||
+			methodName.equals("getAopInterfaces") ||
+			methodName.equals("getClass") || methodName.equals("getService") ||
+			methodName.equals("getWrappedService") ||
+			methodName.equals("hashCode") || methodName.equals("notify") ||
+			methodName.equals("notifyAll") ||
+			methodName.equals("setAopProxy") ||
+			methodName.equals("setWrappedService") ||
 			methodName.equals("toString") || methodName.equals("wait")) {
 
 			return false;
@@ -1589,37 +1709,67 @@ public class ServiceBuilder {
 		else if (methodName.equals("getPermissionChecker")) {
 			return false;
 		}
-		else if (methodName.equals("getUser") &&
-				 (method.getParameters().length == 0)) {
+		else if (methodName.equals("getUser") ||
+				 methodName.equals("getUserId")) {
 
-			return false;
-		}
-		else if (methodName.equals("getUserId") &&
-				 (method.getParameters().length == 0)) {
+			List<JavaParameter> parameters = method.getParameters();
 
-			return false;
+			if (parameters.isEmpty()) {
+				return false;
+			}
 		}
-		else if (methodName.endsWith("Finder") &&
-				 (methodName.startsWith("get") ||
-				  methodName.startsWith("set"))) {
 
-			return false;
-		}
-		else if (methodName.endsWith("Persistence") &&
-				 (methodName.startsWith("get") ||
-				  methodName.startsWith("set"))) {
+		JavaClass javaClass = method.getDeclaringClass();
 
-			return false;
-		}
-		else if (methodName.endsWith("Service") &&
-				 (methodName.startsWith("get") ||
-				  methodName.startsWith("set"))) {
+		String packageName = javaClass.getPackageName();
 
-			return false;
-		}
-		else {
+		if (!packageName.endsWith(".service.base")) {
 			return true;
 		}
+
+		if (!methodName.endsWith("Finder") &&
+			!methodName.endsWith("Persistence") &&
+			!methodName.endsWith("Service")) {
+
+			return true;
+		}
+
+		JavaType javaType = null;
+
+		List<JavaType> parameterTypes = method.getParameterTypes(true);
+
+		if (methodName.startsWith("get")) {
+			if (ListUtil.isEmpty(parameterTypes)) {
+				javaType = method.getReturnType(true);
+			}
+		}
+		else if (methodName.startsWith("set")) {
+			if ((parameterTypes != null) && (parameterTypes.size() == 1)) {
+				javaType = parameterTypes.get(0);
+			}
+		}
+
+		if (javaType == null) {
+			return true;
+		}
+
+		String typeClassName = javaType.getFullyQualifiedName();
+
+		int index = typeClassName.lastIndexOf(CharPool.PERIOD);
+
+		if (index == -1) {
+			return true;
+		}
+
+		String typePackageName = typeClassName.substring(0, index);
+
+		if (typePackageName.endsWith(".persistence") ||
+			typePackageName.endsWith(".service")) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	public boolean isHBMCamelCasePropertyAccessor(String propertyName) {
@@ -1643,11 +1793,26 @@ public class ServiceBuilder {
 	}
 
 	public boolean isReadOnlyMethod(
-		JavaMethod method, List<String> txRequiredList, String[] prefixes) {
+		JavaMethod javaMethod, List<String> txRequiredMethodNames,
+		String[] prefixes) {
 
-		String methodName = method.getName();
+		List<JavaAnnotation> javaAnnotations = javaMethod.getAnnotations();
 
-		if (isTxRequiredMethod(method, txRequiredList)) {
+		if (javaAnnotations != null) {
+			for (JavaAnnotation javaAnnotation : javaAnnotations) {
+				JavaClass type = javaAnnotation.getType();
+
+				String className = type.getFullyQualifiedName();
+
+				if (className.equals(Transactional.class.getName())) {
+					return false;
+				}
+			}
+		}
+
+		String methodName = javaMethod.getName();
+
+		if (isTxRequiredMethod(javaMethod, txRequiredMethodNames)) {
 			return false;
 		}
 
@@ -1661,26 +1826,31 @@ public class ServiceBuilder {
 	}
 
 	public boolean isServiceReadOnlyMethod(
-		JavaMethod method, List<String> txRequiredList) {
+		JavaMethod method, List<String> txRequiredMethodNames) {
 
-		return isReadOnlyMethod(method, txRequiredList, _readOnlyPrefixes);
+		return isReadOnlyMethod(
+			method, txRequiredMethodNames, _readOnlyPrefixes);
 	}
 
 	public boolean isSoapMethod(JavaMethod method) {
-		Type returnType = method.getReturnType();
+		JavaType returnType = method.getReturnType();
 
 		String returnTypeGenericsName = getTypeGenericsName(returnType);
-		String returnValueName = returnType.getValue();
+		String returnValueName = returnType.getFullyQualifiedName();
 
 		if (returnTypeGenericsName.contains(
 				"com.liferay.portal.kernel.search.") ||
-			returnTypeGenericsName.contains("com.liferay.portal.kernel.model.Theme") ||
+			returnTypeGenericsName.contains(
+				"com.liferay.portal.kernel.model.Theme") ||
 			returnTypeGenericsName.contains(
 				"com.liferay.social.kernel.model.SocialActivityDefinition") ||
 			returnTypeGenericsName.equals("java.util.List<java.lang.Object>") ||
-			returnValueName.equals("com.liferay.portal.kernel.lock.model.Lock") ||
+			returnValueName.equals(
+				"com.liferay.portal.kernel.lock.model.Lock") ||
 			returnValueName.equals(
 				"com.liferay.message.boards.kernel.model.MBMessageDisplay") ||
+			returnValueName.equals(
+				"com.liferay.message.boards.model.MBMessageDisplay") ||
 			returnValueName.startsWith("java.io") ||
 			returnValueName.equals("java.util.Map") ||
 			returnValueName.equals("java.util.Properties") ||
@@ -1700,12 +1870,12 @@ public class ServiceBuilder {
 			return false;
 		}
 
-		JavaParameter[] parameters = method.getParameters();
+		List<JavaParameter> parameters = method.getParameters();
 
 		for (JavaParameter javaParameter : parameters) {
-			Type type = javaParameter.getType();
+			JavaType type = javaParameter.getType();
 
-			String parameterTypeName = type.getValue() + _getDimensions(type);
+			String parameterTypeName = type.getFullyQualifiedName();
 
 			if (parameterTypeName.equals(
 					"com.liferay.portal.kernel.util.UnicodeProperties") ||
@@ -1732,17 +1902,130 @@ public class ServiceBuilder {
 	}
 
 	public boolean isTxRequiredMethod(
-		JavaMethod method, List<String> txRequiredList) {
+		JavaMethod javaMethod, List<String> txRequiredMethodNames) {
 
-		if (txRequiredList == null) {
+		if (txRequiredMethodNames == null) {
 			return false;
 		}
 
-		if (txRequiredList.contains(method.getName())) {
+		if (txRequiredMethodNames.contains(javaMethod.getName())) {
 			return true;
 		}
 
 		return false;
+	}
+
+	public boolean isVersionGTE_7_1_0() {
+		if (_dtdVersion.isLaterVersionThan("7.1.0") ||
+			_dtdVersion.isSameVersionAs("7.1.0")) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isVersionGTE_7_2_0() {
+		if (_dtdVersion.isLaterVersionThan("7.2.0") ||
+			_dtdVersion.isSameVersionAs("7.2.0")) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isVersionLTE_7_1_0() {
+		if (_dtdVersion.isPreviousVersionThan("7.1.0") ||
+			_dtdVersion.isSameVersionAs("7.1.0")) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public String javaAnnotationToString(JavaAnnotation javaAnnotation) {
+		StringBundler sb = new StringBundler();
+
+		sb.append(StringPool.AT);
+
+		JavaClass type = javaAnnotation.getType();
+
+		sb.append(type.getFullyQualifiedName());
+
+		Map<String, Object> namedParameters =
+			javaAnnotation.getNamedParameterMap();
+
+		if (namedParameters.isEmpty()) {
+			return sb.toString();
+		}
+
+		sb.append(StringPool.OPEN_PARENTHESIS);
+
+		for (Map.Entry<String, Object> entry : namedParameters.entrySet()) {
+			sb.append(entry.getKey());
+
+			sb.append(StringPool.EQUAL);
+
+			Object value = entry.getValue();
+
+			if (value instanceof List) {
+				List<?> values = (List<?>)value;
+
+				sb.append(StringPool.OPEN_CURLY_BRACE);
+
+				for (Object object : values) {
+					if (object instanceof JavaAnnotation) {
+						sb.append(
+							javaAnnotationToString((JavaAnnotation)object));
+					}
+					else {
+						sb.append(object);
+					}
+
+					sb.append(StringPool.COMMA_AND_SPACE);
+				}
+
+				if (!values.isEmpty()) {
+					sb.setIndex(sb.index() - 1);
+				}
+
+				sb.append(StringPool.CLOSE_CURLY_BRACE);
+			}
+			else {
+				sb.append(value);
+			}
+
+			sb.append(StringPool.COMMA_AND_SPACE);
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		sb.append(StringPool.CLOSE_PARENTHESIS);
+
+		return sb.toString();
+	}
+
+	private static Configuration _getConfiguration() {
+		if (_configuration != null) {
+			return _configuration;
+		}
+
+		_configuration = new Configuration(Configuration.getVersion());
+
+		_configuration.setNumberFormat("computer");
+
+		DefaultObjectWrapperBuilder defaultObjectWrapperBuilder =
+			new DefaultObjectWrapperBuilder(Configuration.getVersion());
+
+		_configuration.setObjectWrapper(defaultObjectWrapperBuilder.build());
+
+		_configuration.setTemplateLoader(
+			new ClassTemplateLoader(ServiceBuilder.class, StringPool.SLASH));
+		_configuration.setTemplateUpdateDelayMilliseconds(Long.MAX_VALUE);
+
+		return _configuration;
 	}
 
 	private static SAXReader _getSAXReader() {
@@ -1756,13 +2039,15 @@ public class ServiceBuilder {
 	private static void _move(File sourceFile, File destinationFile)
 		throws IOException {
 
-		Path destinationPath = destinationFile.toPath();
+		File parentFile = destinationFile.getParentFile();
 
-		if (!Files.exists(destinationPath)) {
-			Files.createDirectories(destinationPath);
+		Path parentPath = parentFile.toPath();
+
+		if (!Files.exists(parentPath)) {
+			Files.createDirectories(parentPath);
 		}
 
-		Files.move(sourceFile.toPath(), destinationPath);
+		Files.move(sourceFile.toPath(), destinationFile.toPath());
 	}
 
 	private static String _normalize(String fileName) {
@@ -1779,8 +2064,8 @@ public class ServiceBuilder {
 	}
 
 	private static void _readResourceActionModels(
-			String implDir, String resourcesDir, InputStream inputStream,
-			Set<String> resourceActionModels)
+			String implDirName, String resourcesDirName,
+			InputStream inputStream, Set<String> resourceActionModels)
 		throws Exception {
 
 		SAXReader saxReader = _getSAXReader();
@@ -1794,7 +2079,7 @@ public class ServiceBuilder {
 		for (Element resourceElement : resourceElements) {
 			resourceActionModels.addAll(
 				readResourceActionModels(
-					implDir, resourcesDir,
+					implDirName, resourcesDirName,
 					new String[] {resourceElement.attributeValue("file")}));
 		}
 
@@ -1803,7 +2088,7 @@ public class ServiceBuilder {
 		List<Element> elements = xPath.selectNodes(rootElement);
 
 		for (Element element : elements) {
-			resourceActionModels.add(element.getText().trim());
+			resourceActionModels.add(StringUtil.trim(element.getText()));
 		}
 	}
 
@@ -1822,18 +2107,40 @@ public class ServiceBuilder {
 	}
 
 	private void _addIndexMetadata(
-		Map<String, List<IndexMetadata>> indexMetadataMap, String tableName,
-		IndexMetadata indexMetadata) {
+		Map<String, List<IndexMetadata>> indexMetadatasMap, String tableName,
+		List<String> pkEntityColumnDBNames, IndexMetadata indexMetadata) {
 
-		List<IndexMetadata> indexMetadataList = indexMetadataMap.get(tableName);
+		if ((pkEntityColumnDBNames != null) &&
+			(pkEntityColumnDBNames.size() > 1)) {
 
-		if (indexMetadataList == null) {
-			indexMetadataList = new ArrayList<>();
+			String[] columnNames = indexMetadata.getColumnNames();
 
-			indexMetadataMap.put(tableName, indexMetadataList);
+			if (columnNames.length <= pkEntityColumnDBNames.size()) {
+				boolean redundant = true;
+
+				for (int i = 0; i < columnNames.length; i++) {
+					if (!columnNames[i].equals(pkEntityColumnDBNames.get(i))) {
+						redundant = false;
+
+						break;
+					}
+				}
+
+				if (redundant) {
+					return;
+				}
+			}
 		}
 
-		Iterator<IndexMetadata> iterator = indexMetadataList.iterator();
+		List<IndexMetadata> indexMetadatas = indexMetadatasMap.get(tableName);
+
+		if (indexMetadatas == null) {
+			indexMetadatas = new ArrayList<>();
+
+			indexMetadatasMap.put(tableName, indexMetadatas);
+		}
+
+		Iterator<IndexMetadata> iterator = indexMetadatas.iterator();
 
 		while (iterator.hasNext()) {
 			IndexMetadata currentIndexMetadata = iterator.next();
@@ -1855,14 +2162,69 @@ public class ServiceBuilder {
 		}
 
 		if (indexMetadata != null) {
-			indexMetadataList.add(indexMetadata);
+			indexMetadatas.add(indexMetadata);
 		}
 	}
 
-	private void _createBlobModels(Entity entity) throws Exception {
-		List<EntityColumn> blobList = _getBlobList(entity);
+	private void _createBaseUADAnonymizer(Entity entity) throws Exception {
+		Map<String, Object> context = _getContext();
 
-		if (blobList.isEmpty()) {
+		JavaClass javaClass = _getJavaClass(
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				_getSessionTypeName(_SESSION_TYPE_LOCAL), "ServiceImpl.java"));
+
+		String deleteUADEntityMethodName = _getDeleteUADEntityMethodName(
+			javaClass, entity.getName());
+
+		context.put("deleteUADEntityMethodName", deleteUADEntityMethodName);
+
+		context.put("entity", entity);
+
+		String content = _processTemplate(_tplBaseUADAnonymizer, context);
+
+		File file = new File(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/anonymizer/Base",
+				entity.getName(), "UADAnonymizer.java"));
+
+		_write(file, content, _modifiedFileNames);
+	}
+
+	private void _createBaseUADDisplay(Entity entity) throws Exception {
+		Map<String, Object> context = _getContext();
+
+		context.put("entity", entity);
+
+		String content = _processTemplate(_tplBaseUADDisplay, context);
+
+		File file = new File(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/display/Base",
+				entity.getName(), "UADDisplay.java"));
+
+		_write(file, content, _modifiedFileNames);
+	}
+
+	private void _createBaseUADExporter(Entity entity) throws Exception {
+		Map<String, Object> context = _getContext();
+
+		context.put("entity", entity);
+
+		String content = _processTemplate(_tplBaseUADExporter, context);
+
+		File file = new File(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/exporter/Base",
+				entity.getName(), "UADExporter.java"));
+
+		_write(file, content, _modifiedFileNames);
+	}
+
+	private void _createBlobModels(Entity entity) throws Exception {
+		List<EntityColumn> blobEntityColumns = _getBlobEntityColumns(entity);
+
+		if (blobEntityColumns.isEmpty()) {
 			return;
 		}
 
@@ -1870,28 +2232,24 @@ public class ServiceBuilder {
 
 		context.put("entity", entity);
 
-		for (EntityColumn col : blobList) {
-			context.put("column", col);
-
-			// Content
+		for (EntityColumn blobEntityColumn : blobEntityColumns) {
+			context.put("column", blobEntityColumn);
 
 			String content = _processTemplate(_tplBlobModel, context);
 
-			// Write file
-
 			File blobModelFile = new File(
-				_serviceOutputPath + "/model/" + entity.getName() +
-					col.getMethodName() + "BlobModel.java");
+				StringBundler.concat(
+					_serviceOutputPath, "/model/", entity.getName(),
+					blobEntityColumn.getMethodName(), "BlobModel.java"));
 
-			ToolsUtil.writeFile(
-				blobModelFile, content, _author, _modifiedFileNames);
+			_write(blobModelFile, content, _modifiedFileNames);
 		}
 	}
 
 	private void _createEJBPK(Entity entity) throws Exception {
-		List<EntityColumn> pkList = entity.getPKList();
+		List<EntityColumn> pkEntityColumns = entity.getPKEntityColumns();
 
-		if (pkList.size() <= 1) {
+		if (pkEntityColumns.size() <= 1) {
 			return;
 		}
 
@@ -1899,48 +2257,49 @@ public class ServiceBuilder {
 
 		context.put("entity", entity);
 
-		// Content
+		String content = _processTemplate(_tplEjbPK, context);
 
-		String content = _processTemplate(_tplEjbPk, context);
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/",
+				entity.getPKClassName(), ".java"));
 
-		// Write file
-
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" +
-				entity.getPKClassName() + ".java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createExceptions(List<String> exceptions) throws Exception {
-		for (Entity entity : _ejbList) {
+		for (Entity entity : _entities) {
 			if (!_isTargetEntity(entity)) {
 				continue;
 			}
 
-			if (entity.hasColumns()) {
+			if (entity.hasEntityColumns()) {
 				exceptions.add(getNoSuchEntityException(entity));
 			}
 		}
 
 		for (String exception : exceptions) {
 			File oldExceptionFile = new File(
-				_oldServiceOutputPath + "/" + exception + "Exception.java");
+				StringBundler.concat(
+					_oldServiceOutputPath, "/", exception, "Exception.java"));
 
 			if (!oldExceptionFile.exists()) {
 				oldExceptionFile = new File(
-					_oldServiceOutputPath + "/exception/" + exception +
-						"Exception.java");
+					StringBundler.concat(
+						_oldServiceOutputPath, "/exception/", exception,
+						"Exception.java"));
 			}
 
 			if (!oldExceptionFile.exists()) {
 				oldExceptionFile = new File(
-					_serviceOutputPath + "/" + exception + "Exception.java");
+					StringBundler.concat(
+						_serviceOutputPath, "/", exception, "Exception.java"));
 			}
 
 			File exceptionFile = new File(
-				_serviceOutputPath + "/exception/" + exception +
-					"Exception.java");
+				StringBundler.concat(
+					_serviceOutputPath, "/exception/", exception,
+					"Exception.java"));
 
 			if (oldExceptionFile.exists() &&
 				!oldExceptionFile.equals(exceptionFile)) {
@@ -1966,7 +2325,8 @@ public class ServiceBuilder {
 						"package " + _apiPackagePath + ".exception;",
 						"package " + _apiPackagePath + ".exception;",
 						"package " + _apiPackagePath + ".exception;",
-						"com.liferay.portal.kernel.exception.NoSuchModelException"
+						"com.liferay.portal.kernel.exception." +
+							"NoSuchModelException"
 					});
 
 				_write(exceptionFile, content);
@@ -2019,39 +2379,39 @@ public class ServiceBuilder {
 
 	private void _createExtendedModel(Entity entity) throws Exception {
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		Map<String, JavaMethod> methods = new LinkedHashMap<>();
 
 		for (JavaMethod method : _getMethods(modelImplJavaClass)) {
-			String methodSignature = _getMethodSignature(
-				method, modelImplJavaClass.getPackageName());
+			String methodSignature = _getMethodSignature(method, false);
 
 			methods.put(methodSignature, method);
 		}
 
 		Set<Map.Entry<String, JavaMethod>> entrySet = methods.entrySet();
 
-		Iterator<Map.Entry<String, JavaMethod>> itr = entrySet.iterator();
+		Iterator<Map.Entry<String, JavaMethod>> iterator = entrySet.iterator();
 
-		while (itr.hasNext()) {
-			Map.Entry<String, JavaMethod> entry = itr.next();
+		while (iterator.hasNext()) {
+			Map.Entry<String, JavaMethod> entry = iterator.next();
 
 			JavaMethod method = entry.getValue();
 
 			String methodName = method.getName();
 
 			if (methodName.equals("getStagedModelType")) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
 		JavaClass modelJavaClass = _getJavaClass(
-			_serviceOutputPath + "/model/" + entity.getName() + "Model.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Model.java"));
 
 		for (JavaMethod method : _getMethods(modelJavaClass)) {
-			String methodSignature = _getMethodSignature(
-				method, modelJavaClass.getPackageName());
+			String methodSignature = _getMethodSignature(method, false);
 
 			methods.remove(methodSignature);
 		}
@@ -2063,16 +2423,13 @@ public class ServiceBuilder {
 
 		context = _putDeprecatedKeys(context, modelJavaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplExtendedModel, context);
 
-		// Write file
-
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + ".java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), ".java"));
 
-		ToolsUtil.writeFile(modelFile, content, _author, _modifiedFileNames);
+		_write(modelFile, content, _modifiedFileNames);
 	}
 
 	private void _createExtendedModelBaseImpl(Entity entity) throws Exception {
@@ -2081,20 +2438,19 @@ public class ServiceBuilder {
 		context.put("entity", entity);
 
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplExtendedModelBaseImpl, context);
 
-		// Write file
-
 		File modelFile = new File(
-			_outputPath + "/model/impl/" + entity.getName() + "BaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(),
+				"BaseImpl.java"));
 
-		ToolsUtil.writeFile(modelFile, content, _author, _modifiedFileNames);
+		_write(modelFile, content, _modifiedFileNames);
 	}
 
 	private void _createExtendedModelImpl(Entity entity) throws Exception {
@@ -2102,41 +2458,39 @@ public class ServiceBuilder {
 
 		context.put("entity", entity);
 
-		// Content
-
 		String content = _processTemplate(_tplExtendedModelImpl, context);
 
-		// Write file
-
 		File modelFile = new File(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		if (modelFile.exists()) {
 			content = _read(modelFile);
 
 			content = content.replaceAll(
-				"extends\\s+" + entity.getName() +
-					"ModelImpl\\s+implements\\s+" + entity.getName(),
+				StringBundler.concat(
+					"extends\\s+", entity.getName(),
+					"ModelImpl\\s+implements\\s+", entity.getName()),
 				"extends " + entity.getName() + "BaseImpl");
 
 			ToolsUtil.writeFileRaw(modelFile, content, _modifiedFileNames);
 		}
 		else {
-			ToolsUtil.writeFile(
-				modelFile, content, _author, _modifiedFileNames);
+			_write(modelFile, content, _modifiedFileNames);
 		}
 	}
 
 	private void _createFinder(Entity entity) throws Exception {
-		if (!entity.hasFinderClass()) {
+		if (!entity.hasFinderClassName()) {
 			_removeFinder(entity, _serviceOutputPath);
 
 			return;
 		}
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -2145,21 +2499,18 @@ public class ServiceBuilder {
 
 		context = _putDeprecatedKeys(context, javaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplFinder, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"Finder.java"));
 
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"Finder.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createFinderBaseImpl(Entity entity) throws Exception {
-		if (!entity.hasFinderClass() ||
+		if (!entity.hasFinderClassName() ||
 			_packagePath.equals("com.liferay.counter")) {
 
 			_removeFinderBaseImpl(entity);
@@ -2168,8 +2519,9 @@ public class ServiceBuilder {
 		}
 
 		File finderImplFile = new File(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderImpl.java"));
 
 		if (finderImplFile.exists()) {
 			String content = _read(finderImplFile);
@@ -2192,32 +2544,31 @@ public class ServiceBuilder {
 		Map<String, Object> context = _getContext();
 
 		context.put("entity", entity);
+		context.put("persistence", Boolean.FALSE);
 
 		context = _putDeprecatedKeys(context, javaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplFinderBaseImpl, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderBaseImpl.java"));
 
-		File ejbFile = new File(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderBaseImpl.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createFinderUtil(Entity entity) throws Exception {
-		if (!entity.hasFinderClass() || _osgiModule) {
+		if (!entity.hasFinderClassName() || _osgiModule) {
 			_removeFinderUtil(entity, _serviceOutputPath);
 
 			return;
 		}
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -2226,73 +2577,100 @@ public class ServiceBuilder {
 
 		context = _putDeprecatedKeys(context, javaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplFinderUtil, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"FinderUtil.java"));
 
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"FinderUtil.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createHbm(Entity entity) {
-		File ejbFile = new File(
-			_outputPath + "/service/persistence/" + entity.getName() +
-				"HBM.java");
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entity.getName(),
+				"HBM.java"));
 
-		if (ejbFile.exists()) {
-			System.out.println("Removing deprecated " + ejbFile);
+		if (file.exists()) {
+			System.out.println("Removing deprecated " + file);
 
-			ejbFile.delete();
+			file.delete();
 		}
 	}
 
 	private void _createHbmUtil(Entity entity) {
-		File ejbFile = new File(
-			_outputPath + "/service/persistence/" + entity.getName() +
-				"HBMUtil.java");
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entity.getName(),
+				"HBMUtil.java"));
 
-		if (ejbFile.exists()) {
-			System.out.println("Removing deprecated " + ejbFile);
+		if (file.exists()) {
+			System.out.println("Removing deprecated " + file);
 
-			ejbFile.delete();
+			file.delete();
 		}
 	}
 
 	private void _createHbmXml() throws Exception {
+		File xmlFile = new File(_hbmFileName);
+
+		List<Entity> entities = new ArrayList<>();
+
+		boolean hasDeprecated = false;
+
+		for (Entity entity : _entities) {
+			if (entity.hasEntityColumns() &&
+				(entity.hasFinderClassName() || entity.hasPersistence())) {
+
+				if (entity.isDeprecated()) {
+					hasDeprecated = true;
+				}
+				else {
+					entities.add(entity);
+				}
+			}
+		}
+
+		if (entities.isEmpty()) {
+			if (!hasDeprecated) {
+				System.out.println("Removing " + xmlFile);
+
+				xmlFile.delete();
+			}
+
+			return;
+		}
+
 		Map<String, Object> context = _getContext();
 
-		context.put("entities", _ejbList);
-
-		// Content
+		context.put("entities", entities);
 
 		String content = _processTemplate(_tplHbmXml, context);
 
 		int lastImportStart = content.lastIndexOf("<import class=");
+
 		int lastImportEnd = content.indexOf("/>", lastImportStart) + 3;
 
 		String imports = content.substring(0, lastImportEnd);
 
 		content = content.substring(lastImportEnd + 1);
 
-		File xmlFile = new File(_hbmFileName);
-
 		if (!xmlFile.exists()) {
-			String xml =
-				"<?xml version=\"1.0\"?>\n" +
-				"<!DOCTYPE hibernate-mapping PUBLIC \"-//Hibernate/Hibernate Mapping DTD 3.0//EN\" \"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd\">\n" +
-				"\n" +
-				"<hibernate-mapping default-lazy=\"false\" auto-import=\"false\">\n" +
-				"</hibernate-mapping>";
+			String xml = StringBundler.concat(
+				"<?xml version=\"1.0\"?>\n",
+				"<!DOCTYPE hibernate-mapping PUBLIC \"-//Hibernate/Hibernate ",
+				"Mapping DTD 3.0//EN\" \"http://hibernate.sourceforge.net",
+				"/hibernate-mapping-3.0.dtd\">\n\n",
+				"<hibernate-mapping auto-import=\"false\" default-lazy=",
+				"\"false\">\n", "</hibernate-mapping>");
 
 			_write(xmlFile, xml);
 		}
 
 		String oldContent = _read(xmlFile);
+
 		String newContent = _fixHbmXml(oldContent);
 
 		int firstImport = newContent.indexOf(
@@ -2328,51 +2706,13 @@ public class ServiceBuilder {
 					newContent.substring(lastImport);
 		}
 
-		int firstClass = -1;
+		int firstClass = newContent.lastIndexOf(
+			"<class ",
+			newContent.indexOf(" name=\"" + _packagePath + ".model.") - 6);
 
-		int firstClass1 = newContent.indexOf(
-			"<class dynamic-update=\"true\" name=\"" + _packagePath +
-				".model.");
-		int firstClass2 = newContent.indexOf(
-			"<class name=\"" + _packagePath + ".model.");
-
-		if ((firstClass1 != -1) && (firstClass2 != -1)) {
-			if (firstClass2 < firstClass1) {
-				firstClass = firstClass2;
-			}
-			else {
-				firstClass = firstClass1;
-			}
-		}
-		else if (firstClass1 != -1) {
-			firstClass = firstClass1;
-		}
-		else if (firstClass2 != -1) {
-			firstClass = firstClass2;
-		}
-
-		int lastClass = -1;
-
-		int lastClass1 = newContent.lastIndexOf(
-			"<class dynamic-update=\"true\" name=\"" + _packagePath +
-				".model.");
-		int lastClass2 = newContent.lastIndexOf(
-			"<class name=\"" + _packagePath + ".model.");
-
-		if ((lastClass1 != -1) && (lastClass2 != -1)) {
-			if (lastClass2 > lastClass1) {
-				lastClass = lastClass2;
-			}
-			else {
-				lastClass = lastClass1;
-			}
-		}
-		else if (lastClass1 != -1) {
-			lastClass = lastClass1;
-		}
-		else if (lastClass2 != -1) {
-			lastClass = lastClass2;
-		}
+		int lastClass = newContent.lastIndexOf(
+			"<class ",
+			newContent.lastIndexOf(" name=\"" + _packagePath + ".model.") - 6);
 
 		if (firstClass == -1) {
 			int x = newContent.indexOf("</hibernate-mapping>");
@@ -2402,127 +2742,59 @@ public class ServiceBuilder {
 		context.put("entity", entity);
 
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplModel, context);
 
-		// Write file
-
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + "Model.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Model.java"));
 
-		ToolsUtil.writeFile(modelFile, content, _author, _modifiedFileNames);
+		_write(modelFile, content, _modifiedFileNames);
 	}
 
 	private void _createModelCache(Entity entity) throws Exception {
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		Map<String, Object> context = _getContext();
 
-		context.put("entity", entity);
 		context.put("cacheFields", _getCacheFields(modelImplJavaClass));
+		context.put("entity", entity);
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplModelCache, context);
 
-		// Write file
-
 		File modelFile = new File(
-			_outputPath + "/model/impl/" + entity.getName() +
-				"CacheModel.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(),
+				"CacheModel.java"));
 
-		ToolsUtil.writeFile(modelFile, content, _author, _modifiedFileNames);
-	}
-
-	private void _createModelClp(Entity entity) throws Exception {
-		if (Validator.isNull(_pluginName)) {
-			return;
-		}
-
-		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
-
-		Map<String, JavaMethod> methods = new LinkedHashMap<>();
-
-		for (JavaMethod method : modelImplJavaClass.getMethods()) {
-			methods.put(method.getDeclarationSignature(false), method);
-		}
-
-		Type superClass = modelImplJavaClass.getSuperClass();
-
-		String superClassValue = superClass.getValue();
-
-		while (!superClassValue.endsWith("BaseModelImpl")) {
-			int pos = superClassValue.lastIndexOf(StringPool.PERIOD);
-
-			if (pos > 0) {
-				superClassValue = superClassValue.substring(pos + 1);
-			}
-
-			JavaClass javaClass = _getJavaClass(
-				_outputPath + "/model/impl/" + superClassValue + ".java");
-
-			for (JavaMethod method : _getMethods(javaClass)) {
-				String methodName = method.getName();
-
-				if (methodName.equals("hasSetModifiedDate")) {
-					continue;
-				}
-
-				methods.remove(method.getDeclarationSignature(false));
-			}
-
-			superClass = javaClass.getSuperClass();
-			superClassValue = superClass.getValue();
-		}
-
-		Map<String, Object> context = _getContext();
-
-		context.put("entity", entity);
-		context.put("methods", methods.values());
-
-		// Content
-
-		String content = _processTemplate(_tplModelClp, context);
-
-		// Write file
-
-		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + "Clp.java");
-
-		ToolsUtil.writeFile(modelFile, content, _author, _modifiedFileNames);
+		_write(modelFile, content, _modifiedFileNames);
 	}
 
 	private void _createModelHintsXml() throws Exception {
 		Map<String, Object> context = _getContext();
 
-		context.put("entities", _ejbList);
-
-		// Content
+		context.put("entities", _entities);
 
 		String content = _processTemplate(_tplModelHintsXml, context);
 
 		File xmlFile = new File(_modelHintsFileName);
 
 		if (!xmlFile.exists()) {
-			String xml =
-				"<?xml version=\"1.0\"?>\n" +
-				"\n" +
-				"<model-hints>\n" +
-				"</model-hints>";
-
-			_write(xmlFile, xml);
+			_write(
+				xmlFile,
+				"<?xml version=\"1.0\"?>\n\n<model-hints>\n</model-hints>");
 		}
 
 		String oldContent = _read(xmlFile);
+
 		String newContent = oldContent;
 
 		int firstModel = newContent.indexOf(
@@ -2558,63 +2830,77 @@ public class ServiceBuilder {
 
 	private void _createModelImpl(Entity entity) throws Exception {
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		Map<String, Object> context = _getContext();
 
-		context.put("entity", entity);
+		boolean hasClassNameCacheField = false;
+
+		JavaField[] cacheFields = _getCacheFields(modelImplJavaClass);
+
+		for (JavaField javaField : cacheFields) {
+			if (Objects.equals(javaField.getName(), "_className")) {
+				hasClassNameCacheField = true;
+
+				break;
+			}
+		}
+
 		context.put("cacheFields", _getCacheFields(modelImplJavaClass));
+		context.put("entity", entity);
+		context.put("hasClassNameCacheField", hasClassNameCacheField);
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplModelImpl, context);
 
-		// Write file
-
 		File modelFile = new File(
-			_outputPath + "/model/impl/" + entity.getName() + "ModelImpl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(),
+				"ModelImpl.java"));
 
-		ToolsUtil.writeFile(modelFile, content, _author, _modifiedFileNames);
+		_write(modelFile, content, _modifiedFileNames);
 	}
 
 	private void _createModelSoap(Entity entity) throws Exception {
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + "Soap.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Soap.java"));
 
 		Map<String, Object> context = _getContext();
 
 		context.put("entity", entity);
 
 		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(), "Impl.java"));
 
 		context = _putDeprecatedKeys(context, modelImplJavaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplModelSoap, context);
 
-		// Write file
-
-		ToolsUtil.writeFile(modelFile, content, _author, _modifiedFileNames);
+		_write(modelFile, content, _modifiedFileNames);
 	}
 
 	private void _createModelWrapper(Entity entity) throws Exception {
 		JavaClass modelJavaClass = _getJavaClass(
-			_serviceOutputPath + "/model/" + entity.getName() + "Model.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), "Model.java"));
 
-		JavaMethod[] methods = _getMethods(modelJavaClass);
+		List<JavaMethod> methods = _getMethods(modelJavaClass);
 
 		JavaClass extendedModelBaseImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "BaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/model/impl/", entity.getName(),
+				"BaseImpl.java"));
 
 		methods = _mergeMethods(
 			methods, _getMethods(extendedModelBaseImplJavaClass), false);
 
 		JavaClass extendedModelJavaClass = _getJavaClass(
-			_serviceOutputPath + "/model/" + entity.getName() + ".java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(), ".java"));
 
 		methods = _mergeMethods(
 			methods, _getMethods(extendedModelJavaClass), false);
@@ -2626,144 +2912,190 @@ public class ServiceBuilder {
 
 		context = _putDeprecatedKeys(context, modelJavaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplModelWrapper, context);
 
-		// Write file
-
 		File modelFile = new File(
-			_serviceOutputPath + "/model/" + entity.getName() + "Wrapper.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/model/", entity.getName(),
+				"Wrapper.java"));
 
-		ToolsUtil.writeFile(modelFile, content, _author, _modifiedFileNames);
+		_write(modelFile, content, _modifiedFileNames);
 	}
 
 	private void _createPersistence(Entity entity) throws Exception {
-		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"PersistenceImpl.java");
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"Persistence.java"));
 
-		Map<String, Object> context = _getContext();
+		if (entity.hasPersistence()) {
+			JavaClass javaClass = _getJavaClass(
+				StringBundler.concat(
+					_outputPath, "/service/persistence/impl/", entity.getName(),
+					"PersistenceImpl.java"));
 
-		context.put("entity", entity);
-		context.put("methods", _getMethods(javaClass));
+			Map<String, Object> context = _getContext();
 
-		context = _putDeprecatedKeys(context, javaClass);
+			context.put("entity", entity);
+			context.put("methods", _getMethods(javaClass));
 
-		// Content
+			context = _putDeprecatedKeys(context, javaClass);
 
-		String content = _processTemplate(_tplPersistence, context);
+			String content = _processTemplate(_tplPersistence, context);
 
-		// Write file
+			_write(file, content, _modifiedFileNames);
+		}
+		else {
+			System.out.println("Removing " + file);
 
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"Persistence.java");
+			if (file.exists()) {
+				file.delete();
+			}
+		}
+	}
 
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+	private void _createPersistenceConstants() throws Exception {
+		if (!_dependencyInjectorDS) {
+			return;
+		}
+
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/constants/",
+				_portletShortName, "PersistenceConstants.java"));
+
+		String content = _processTemplate(
+			_tplPersistenceConstants, _getContext());
+
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createPersistenceImpl(Entity entity) throws Exception {
-		Map<String, Object> context = _getContext();
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"PersistenceImpl.java"));
 
-		context.put("entity", entity);
-		context.put("referenceList", _mergeReferenceList(entity));
+		if (entity.hasPersistence()) {
+			Map<String, Object> context = _getContext();
 
-		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			context.put("entity", entity);
+			context.put("persistence", Boolean.TRUE);
+			context.put("referenceEntities", _mergeReferenceEntities(entity));
 
-		context = _putDeprecatedKeys(context, modelImplJavaClass);
+			JavaClass modelImplJavaClass = _getJavaClass(
+				StringBundler.concat(
+					_outputPath, "/model/impl/", entity.getName(),
+					"Impl.java"));
 
-		// Content
+			context = _putDeprecatedKeys(context, modelImplJavaClass);
 
-		String content = _processTemplate(_tplPersistenceImpl, context);
+			String content = _processTemplate(_tplPersistenceImpl, context);
 
-		// Write file
+			_write(file, content, _modifiedFileNames);
+		}
+		else {
+			System.out.println("Removing " + file);
 
-		File ejbFile = new File(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"PersistenceImpl.java");
+			if (file.exists()) {
+				file.delete();
+			}
+		}
 
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entity.getName(),
+				"PersistenceImpl.java"));
 
-		ejbFile = new File(
-			_outputPath + "/service/persistence/" + entity.getName() +
-				"PersistenceImpl.java");
+		if (file.exists()) {
+			System.out.println("Relocating " + file);
 
-		if (ejbFile.exists()) {
-			System.out.println("Relocating " + ejbFile);
-
-			ejbFile.delete();
+			file.delete();
 		}
 	}
 
 	private void _createPersistenceTest(Entity entity) throws Exception {
-		Map<String, Object> context = _getContext();
+		File file = new File(
+			StringBundler.concat(
+				_testOutputPath, "/service/persistence/test/", entity.getName(),
+				"PersistenceTest.java"));
 
-		context.put("entity", entity);
+		if (entity.isDeprecated() || !entity.hasPersistence()) {
+			System.out.println("Removing " + file);
 
-		JavaClass modelImplJavaClass = _getJavaClass(
-			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+			file.delete();
+		}
+		else {
+			Map<String, Object> context = _getContext();
 
-		context = _putDeprecatedKeys(context, modelImplJavaClass);
+			context.put("entity", entity);
 
-		// Content
+			JavaClass modelImplJavaClass = _getJavaClass(
+				StringBundler.concat(
+					_outputPath, "/model/impl/", entity.getName(),
+					"Impl.java"));
 
-		String content = _processTemplate(_tplPersistenceTest, context);
+			context = _putDeprecatedKeys(context, modelImplJavaClass);
 
-		// Write file
+			String content = _processTemplate(_tplPersistenceTest, context);
 
-		File ejbFile = new File(
-			_testOutputPath + "/service/persistence/test/" + entity.getName() +
-				"PersistenceTest.java");
+			_write(file, content, _modifiedFileNames);
+		}
 
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		file = new File(
+			StringBundler.concat(
+				_testOutputPath, "/service/persistence/", entity.getName(),
+				"PersistenceTest.java"));
 
-		ejbFile = new File(
-			_testOutputPath + "/service/persistence/" + entity.getName() +
-				"PersistenceTest.java");
+		if (file.exists()) {
+			System.out.println("Relocating " + file);
 
-		if (ejbFile.exists()) {
-			System.out.println("Relocating " + ejbFile);
-
-			ejbFile.delete();
+			file.delete();
 		}
 	}
 
 	private void _createPersistenceUtil(Entity entity) throws Exception {
-		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"PersistenceImpl.java");
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"Util.java"));
 
-		Map<String, Object> context = _getContext();
+		if (entity.hasPersistence()) {
+			JavaClass javaClass = _getJavaClass(
+				StringBundler.concat(
+					_outputPath, "/service/persistence/impl/", entity.getName(),
+					"PersistenceImpl.java"));
 
-		context.put("entity", entity);
-		context.put("methods", _getMethods(javaClass));
+			Map<String, Object> context = _getContext();
 
-		context = _putDeprecatedKeys(context, javaClass);
+			context.put("entity", entity);
+			context.put("methods", _getMethods(javaClass));
 
-		// Content
+			context = _putDeprecatedKeys(context, javaClass);
 
-		String content = _processTemplate(_tplPersistenceUtil, context);
+			String content = _processTemplate(_tplPersistenceUtil, context);
 
-		// Write file
+			_write(file, content, _modifiedFileNames);
+		}
+		else {
+			System.out.println("Removing " + file);
 
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"Util.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+			if (file.exists()) {
+				file.delete();
+			}
+		}
 	}
 
 	private void _createPool(Entity entity) {
-		File ejbFile = new File(
-			_outputPath + "/service/persistence/" + entity.getName() +
-				"Pool.java");
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entity.getName(),
+				"Pool.java"));
 
-		if (ejbFile.exists()) {
-			System.out.println("Removing deprecated " + ejbFile);
+		if (file.exists()) {
+			System.out.println("Removing deprecated " + file);
 
-			ejbFile.delete();
+			file.delete();
 		}
 	}
 
@@ -2771,8 +3103,6 @@ public class ServiceBuilder {
 		if (Validator.isNull(_pluginName) && !_osgiModule) {
 			return;
 		}
-
-		// Content
 
 		File propsFile = null;
 
@@ -2799,8 +3129,9 @@ public class ServiceBuilder {
 					properties.getProperty("build.number"));
 			}
 			else {
-				buildNumber = GetterUtil.getLong(
-					properties.getProperty("build.number")) + 1;
+				buildNumber =
+					GetterUtil.getLong(properties.getProperty("build.number")) +
+						1;
 			}
 		}
 
@@ -2816,8 +3147,6 @@ public class ServiceBuilder {
 
 		String content = _processTemplate(_tplProps, context);
 
-		// Write file
-
 		ToolsUtil.writeFileRaw(propsFile, content, _modifiedFileNames);
 	}
 
@@ -2827,16 +3156,17 @@ public class ServiceBuilder {
 		Set<String> imports = new HashSet<>();
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceImpl.java"));
 
 		JavaSource javaSource = javaClass.getSource();
 
-		imports.addAll(Arrays.asList(javaSource.getImports()));
+		imports.addAll(javaSource.getImports());
 
-		JavaMethod[] methods = _getMethods(javaClass);
+		List<JavaMethod> methods = _getMethods(javaClass);
 
-		Type superClass = javaClass.getSuperClass();
+		JavaType superClass = javaClass.getSuperClass();
 
 		String superClassValue = superClass.getValue();
 
@@ -2845,12 +3175,13 @@ public class ServiceBuilder {
 					"ServiceBaseImpl")) {
 
 			JavaClass parentJavaClass = _getJavaClass(
-				_outputPath + "/service/base/" + entity.getName() +
-					_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
+				StringBundler.concat(
+					_outputPath, "/service/base/", entity.getName(),
+					_getSessionTypeName(sessionType), "ServiceBaseImpl.java"));
 
 			JavaSource parentJavaSource = parentJavaClass.getSource();
 
-			imports.addAll(Arrays.asList(parentJavaSource.getImports()));
+			imports.addAll(parentJavaSource.getImports());
 
 			methods = _mergeMethods(
 				methods, parentJavaClass.getMethods(), true);
@@ -2865,247 +3196,114 @@ public class ServiceBuilder {
 
 		context = _putDeprecatedKeys(context, javaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplService, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createServiceBaseImpl(Entity entity, int sessionType)
 		throws Exception {
 
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				(sessionType != _SESSION_TYPE_REMOTE ? "Local" : "") +
-					"ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				(sessionType != _SESSION_TYPE_REMOTE) ? "Local" : "",
+				"ServiceImpl.java"));
 
-		JavaMethod[] methods = _getMethods(javaClass);
+		List<JavaMethod> methods = _getMethods(javaClass);
 
 		Map<String, Object> context = _getContext();
 
 		context.put("entity", entity);
 		context.put("methods", methods);
+		context.put("referenceEntities", _mergeReferenceEntities(entity));
 		context.put("sessionTypeName", _getSessionTypeName(sessionType));
-		context.put("referenceList", _mergeReferenceList(entity));
 
 		context = _putDeprecatedKeys(context, javaClass);
-
-		// Content
 
 		String content = _processTemplate(_tplServiceBaseImpl, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/base/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceBaseImpl.java"));
 
-		File ejbFile = new File(
-			_outputPath + "/service/base/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
-	}
-
-	private void _createServiceClp(Entity entity, int sessionType)
-		throws Exception {
-
-		if (Validator.isNull(_pluginName)) {
-			return;
-		}
-
-		JavaClass javaClass = _getJavaClass(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
-
-		Map<String, Object> context = _getContext();
-
-		context.put("entity", entity);
-		context.put("methods", _getMethods(javaClass));
-		context.put("sessionTypeName", _getSessionTypeName(sessionType));
-
-		context = _putDeprecatedKeys(context, javaClass);
-
-		// Content
-
-		String content = _processTemplate(_tplServiceClp, context);
-
-		// Write file
-
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceClp.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
-	}
-
-	private void _createServiceClpInvoker(Entity entity, int sessionType)
-		throws Exception {
-
-		if (Validator.isNull(_pluginName)) {
-			return;
-		}
-
-		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceImpl.java");
-
-		JavaMethod[] methods = _getMethods(javaClass);
-
-		Type superClass = javaClass.getSuperClass();
-
-		String superClassValue = superClass.getValue();
-
-		if (superClassValue.endsWith(
-				entity.getName() + _getSessionTypeName(sessionType) +
-					"ServiceBaseImpl")) {
-
-			JavaClass parentJavaClass = _getJavaClass(
-				_outputPath + "/service/base/" + entity.getName() +
-					_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
-
-			methods = ArrayUtil.append(parentJavaClass.getMethods(), methods);
-		}
-
-		Map<String, Object> context = _getContext();
-
-		context.put("entity", entity);
-		context.put("methods", methods);
-		context.put("sessionTypeName", _getSessionTypeName(sessionType));
-
-		context = _putDeprecatedKeys(context, javaClass);
-
-		// Content
-
-		String content = _processTemplate(_tplServiceClpInvoker, context);
-
-		// Write file
-
-		File ejbFile = new File(
-			_outputPath + "/service/base/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceClpInvoker.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
-	}
-
-	private void _createServiceClpMessageListener() throws Exception {
-		if (Validator.isNull(_pluginName)) {
-			return;
-		}
-
-		Map<String, Object> context = _getContext();
-
-		context.put("entities", _ejbList);
-
-		// Content
-
-		String content = _processTemplate(
-			_tplServiceClpMessageListener, context);
-
-		// Write file
-
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/messaging/ClpMessageListener.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
-	}
-
-	private void _createServiceClpSerializer(List<String> exceptions)
-		throws Exception {
-
-		if (Validator.isNull(_pluginName)) {
-			return;
-		}
-
-		Map<String, Object> context = _getContext();
-
-		context.put("entities", _ejbList);
-		context.put("exceptions", exceptions);
-
-		// Content
-
-		String content = _processTemplate(_tplServiceClpSerializer, context);
-
-		// Write file
-
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/ClpSerializer.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createServiceFactory(Entity entity, int sessionType) {
-		File ejbFile = new File(
-			_oldServiceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceFactory.java");
+		File file = new File(
+			StringBundler.concat(
+				_oldServiceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceFactory.java"));
 
-		if (ejbFile.exists()) {
-			System.out.println("Removing deprecated " + ejbFile);
+		if (file.exists()) {
+			System.out.println("Removing deprecated " + file);
 
-			ejbFile.delete();
+			file.delete();
 		}
 
-		ejbFile = new File(
-			_outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceFactory.java");
+		file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceFactory.java"));
 
-		if (ejbFile.exists()) {
-			System.out.println("Removing deprecated " + ejbFile);
+		if (file.exists()) {
+			System.out.println("Removing deprecated " + file);
 
-			ejbFile.delete();
+			file.delete();
 		}
 	}
 
 	private void _createServiceHttp(Entity entity) throws Exception {
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				"ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				"ServiceImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
 		context.put("entity", entity);
-		context.put("methods", _getMethods(javaClass));
 		context.put("hasHttpMethods", _hasHttpMethods(javaClass));
+		context.put("methods", _getMethods(javaClass));
 
 		context = _putDeprecatedKeys(context, javaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplServiceHttp, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceHttp.java"));
 
-		File ejbFile = new File(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceHttp.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createServiceImpl(Entity entity, int sessionType)
 		throws Exception {
+
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceImpl.java"));
+
+		if (file.exists()) {
+			return;
+		}
 
 		Map<String, Object> context = _getContext();
 
 		context.put("entity", entity);
 		context.put("sessionTypeName", _getSessionTypeName(sessionType));
 
-		// Content
-
 		String content = _processTemplate(_tplServiceImpl, context);
 
-		// Write file
-
-		File ejbFile = new File(
-			_outputPath + "/service/impl/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceImpl.java");
-
-		if (!ejbFile.exists()) {
-			ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
-		}
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createServicePropsUtil() throws Exception {
@@ -3114,8 +3312,19 @@ public class ServiceBuilder {
 		}
 
 		File file = new File(
-			_implDirName + "/" + StringUtil.replace(_propsUtil, '.', '/') +
-				".java");
+			StringBundler.concat(
+				_implDirName, "/", StringUtil.replace(_propsUtil, '.', '/'),
+				".java"));
+
+		if (_dependencyInjectorDS) {
+			if (file.exists()) {
+				file.delete();
+
+				System.out.println("Removing " + file);
+			}
+
+			return;
+		}
 
 		Map<String, Object> context = _getContext();
 
@@ -3128,13 +3337,14 @@ public class ServiceBuilder {
 
 		String content = _processTemplate(_tplServicePropsUtil, context);
 
-		ToolsUtil.writeFile(file, content, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createServiceSoap(Entity entity) throws Exception {
 		JavaClass javaClass = _getJavaClass(
-			_outputPath + "/service/impl/" + entity.getName() +
-				"ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				"ServiceImpl.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3143,25 +3353,23 @@ public class ServiceBuilder {
 
 		context = _putDeprecatedKeys(context, javaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplServiceSoap, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceSoap.java"));
 
-		File ejbFile = new File(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceSoap.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createServiceUtil(Entity entity, int sessionType)
 		throws Exception {
 
 		JavaClass javaClass = _getJavaClass(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3171,25 +3379,23 @@ public class ServiceBuilder {
 
 		context = _putDeprecatedKeys(context, javaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplServiceUtil, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceUtil.java"));
 
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceUtil.java");
-
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createServiceWrapper(Entity entity, int sessionType)
 		throws Exception {
 
 		JavaClass javaClass = _getJavaClass(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 
 		Map<String, Object> context = _getContext();
 
@@ -3199,17 +3405,29 @@ public class ServiceBuilder {
 
 		context = _putDeprecatedKeys(context, javaClass);
 
-		// Content
-
 		String content = _processTemplate(_tplServiceWrapper, context);
 
-		// Write file
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceWrapper.java"));
 
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceWrapper.java");
+		_write(file, content, _modifiedFileNames);
+	}
 
-		ToolsUtil.writeFile(ejbFile, content, _author, _modifiedFileNames);
+	private void _createServletContextUtil() throws Exception {
+		if (Validator.isNull(_pluginName)) {
+			return;
+		}
+
+		Map<String, Object> context = _getContext();
+
+		String content = _processTemplate(_tplServletContextUtil, context);
+
+		File file = new File(
+			_serviceOutputPath + "/service/ServletContextUtil.java");
+
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _createSpringXml() throws Exception {
@@ -3217,26 +3435,39 @@ public class ServiceBuilder {
 			return;
 		}
 
+		File xmlFile = new File(_springFileName);
+
+		if (_dependencyInjectorDS) {
+			if (xmlFile.exists()) {
+				xmlFile.delete();
+
+				System.out.println("Removing " + xmlFile);
+			}
+
+			return;
+		}
+
 		Map<String, Object> context = _getContext();
 
-		context.put("entities", _ejbList);
-
-		// Content
+		context.put("entities", _entities);
 
 		String content = _processTemplate(_tplSpringXml, context);
 
-		File xmlFile = new File(_springFileName);
+		StringBundler sb = new StringBundler(11);
 
-		String xml =
-			"<?xml version=\"1.0\"?>\n" +
-			"\n" +
-			"<beans\n" +
-			"\tdefault-destroy-method=\"destroy\"\n" +
-			"\tdefault-init-method=\"afterPropertiesSet\"\n" +
-			_getSpringNamespacesDeclarations() +
-			"\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-			"\txsi:schemaLocation=\"" + _getSpringSchemaLocations() + "\">\n" +
-			"</beans>";
+		sb.append("<?xml version=\"1.0\"?>\n\n");
+		sb.append("<beans\n");
+		sb.append("\tdefault-destroy-method=\"destroy\"\n");
+		sb.append("\tdefault-init-method=\"afterPropertiesSet\"\n");
+		sb.append(_getSpringNamespacesDeclarations());
+		sb.append("\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
+		sb.append("\n");
+		sb.append("\txsi:schemaLocation=\"");
+		sb.append(StringUtil.trim(_getSpringSchemaLocations()));
+		sb.append("\">\n");
+		sb.append("</beans>");
+
+		String xml = sb.toString();
 
 		if (!xmlFile.exists()) {
 			_write(xmlFile, xml);
@@ -3292,8 +3523,40 @@ public class ServiceBuilder {
 					newContent.substring(lastSession);
 		}
 
-		ToolsUtil.writeFileRaw(
-			xmlFile, _formatXml(newContent), _modifiedFileNames);
+		newContent = _formatXml(newContent);
+
+		Matcher matcher = _beansPattern.matcher(newContent);
+
+		if (matcher.find()) {
+			String beans = matcher.group();
+			Map<String, String> beansAttributes = new TreeMap<>(
+				String.CASE_INSENSITIVE_ORDER);
+
+			matcher = _beansAttributePattern.matcher(beans);
+
+			while (matcher.find()) {
+				String beanAttribute = StringBundler.concat(
+					StringUtil.trim(matcher.group(1)), "=\"",
+					StringUtil.trim(matcher.group(2)), "\"");
+
+				beansAttributes.put(
+					StringUtil.trim(matcher.group(1)), beanAttribute);
+			}
+
+			sb.setIndex(0);
+
+			for (Map.Entry<String, String> beanAttribute :
+					beansAttributes.entrySet()) {
+
+				sb.append("\n\t");
+				sb.append(beanAttribute.getValue());
+			}
+
+			newContent = StringUtil.replaceFirst(
+				newContent, beans, "<beans" + sb.toString() + "\n>");
+		}
+
+		ToolsUtil.writeFileRaw(xmlFile, newContent, _modifiedFileNames);
 	}
 
 	private void _createSQLIndexes() throws Exception {
@@ -3311,11 +3574,12 @@ public class ServiceBuilder {
 			_touch(sqlFile);
 		}
 
-		Map<String, List<IndexMetadata>> indexMetadataMap = new TreeMap<>();
+		Map<String, List<IndexMetadata>> indexMetadatasMap = new TreeMap<>();
 
 		try (UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(new FileReader(sqlFile))) {
 
+			iterate:
 			while (true) {
 				String indexSQL = unsyncBufferedReader.readLine();
 
@@ -3332,6 +3596,8 @@ public class ServiceBuilder {
 				IndexMetadata indexMetadata =
 					IndexMetadataFactoryUtil.createIndexMetadata(indexSQL);
 
+				List<String> pkEntityColumnDBNames = null;
+
 				Entity entity = _getEntityByTableName(
 					indexMetadata.getTableName());
 
@@ -3340,19 +3606,43 @@ public class ServiceBuilder {
 						indexMetadata.getIndexName(),
 						indexMetadata.getTableName(), indexMetadata.isUnique(),
 						indexMetadata.getColumnNames());
+
+					for (String columnName : indexMetadata.getColumnNames()) {
+						EntityColumn entityColumn =
+							_fetchEntityColumnByColumnDBName(
+								entity, columnName);
+
+						if (entityColumn == null) {
+							System.out.println(
+								StringBundler.concat(
+									"Removing index ",
+									indexMetadata.getIndexName(),
+									" because column \"", columnName,
+									"\" does not exist"));
+
+							continue iterate;
+						}
+					}
+
+					pkEntityColumnDBNames = entity.getPKEntityColumnDBNames();
+				}
+				else {
+					EntityMapping entityMapping = _entityMappings.get(
+						indexMetadata.getTableName());
+
+					pkEntityColumnDBNames =
+						_getEntityMappingPKEntityColumnDBNames(entityMapping);
 				}
 
 				_addIndexMetadata(
-					indexMetadataMap, indexMetadata.getTableName(),
-					indexMetadata);
+					indexMetadatasMap, indexMetadata.getTableName(),
+					pkEntityColumnDBNames, indexMetadata);
 			}
 		}
 
 		// indexes.sql appending
 
-		for (int i = 0; i < _ejbList.size(); i++) {
-			Entity entity = _ejbList.get(i);
-
+		for (Entity entity : _entities) {
 			if (!_isTargetEntity(entity)) {
 				continue;
 			}
@@ -3361,36 +3651,46 @@ public class ServiceBuilder {
 				continue;
 			}
 
-			List<EntityFinder> finderList = entity.getFinderList();
+			if (entity.isDeprecated()) {
+				continue;
+			}
 
-			for (int j = 0; j < finderList.size(); j++) {
-				EntityFinder finder = finderList.get(j);
+			if (!entity.hasFinderClassName() && !entity.hasPersistence()) {
+				continue;
+			}
 
-				if (finder.isDBIndex()) {
-					List<String> finderColsNames = new ArrayList<>();
+			List<EntityFinder> entityFinders = entity.getEntityFinders();
 
-					List<EntityColumn> finderColsList = finder.getColumns();
-
-					for (int k = 0; k < finderColsList.size(); k++) {
-						EntityColumn col = finderColsList.get(k);
-
-						finderColsNames.add(col.getDBName());
-					}
-
-					if (finderColsNames.isEmpty()) {
-						continue;
-					}
-
-					IndexMetadata indexMetadata =
-						IndexMetadataFactoryUtil.createIndexMetadata(
-							finder.isUnique(), entity.getTable(),
-							finderColsNames.toArray(
-								new String[finderColsNames.size()]));
-
-					_addIndexMetadata(
-						indexMetadataMap, indexMetadata.getTableName(),
-						indexMetadata);
+			for (EntityFinder entityFinder : entityFinders) {
+				if (!entityFinder.isDBIndex()) {
+					continue;
 				}
+
+				List<EntityColumn> entityColumns =
+					entityFinder.getEntityColumns();
+
+				if (entityColumns.equals(entity.getPKEntityColumns())) {
+					continue;
+				}
+
+				List<String> dbNames = new ArrayList<>();
+
+				for (EntityColumn entityColumn : entityColumns) {
+					dbNames.add(entityColumn.getDBName());
+				}
+
+				if (dbNames.isEmpty()) {
+					continue;
+				}
+
+				IndexMetadata indexMetadata =
+					IndexMetadataFactoryUtil.createIndexMetadata(
+						entityFinder.isUnique(), entity.getTable(),
+						dbNames.toArray(new String[0]));
+
+				_addIndexMetadata(
+					indexMetadatasMap, indexMetadata.getTableName(),
+					entity.getPKEntityColumnDBNames(), indexMetadata);
 			}
 		}
 
@@ -3399,17 +3699,15 @@ public class ServiceBuilder {
 
 			EntityMapping entityMapping = entry.getValue();
 
-			_getCreateMappingTableIndex(entityMapping, indexMetadataMap);
+			_getCreateMappingTableIndex(entityMapping, indexMetadatasMap);
 		}
 
 		StringBundler sb = new StringBundler();
 
-		for (List<IndexMetadata> indexMetadataList :
-				indexMetadataMap.values()) {
+		for (List<IndexMetadata> indexMetadatas : indexMetadatasMap.values()) {
+			Collections.sort(indexMetadatas);
 
-			Collections.sort(indexMetadataList);
-
-			for (IndexMetadata indexMetadata : indexMetadataList) {
+			for (IndexMetadata indexMetadata : indexMetadatas) {
 				sb.append(
 					indexMetadata.getCreateSQL(
 						_getColumnLengths(indexMetadata)));
@@ -3420,7 +3718,7 @@ public class ServiceBuilder {
 			sb.append(StringPool.NEW_LINE);
 		}
 
-		if (!indexMetadataMap.isEmpty()) {
+		if (!indexMetadatasMap.isEmpty()) {
 			sb.setIndex(sb.index() - 2);
 		}
 
@@ -3445,7 +3743,8 @@ public class ServiceBuilder {
 		String content = _read(sqlFile);
 
 		int x = content.indexOf(
-			_SQL_CREATE_TABLE + entityMapping.getTable() + " (");
+			_SQL_CREATE_TABLE + entityMapping.getTableName() + " (");
+
 		int y = content.indexOf(");", x);
 
 		if (x != -1) {
@@ -3471,11 +3770,14 @@ public class ServiceBuilder {
 				while ((line = unsyncBufferedReader.readLine()) != null) {
 					if (appendNewTable && line.startsWith(_SQL_CREATE_TABLE)) {
 						x = _SQL_CREATE_TABLE.length();
+
 						y = line.indexOf(" ", x);
 
 						String tableName = line.substring(x, y);
 
-						if (tableName.compareTo(entityMapping.getTable()) > 0) {
+						if (tableName.compareTo(entityMapping.getTableName()) >
+								0) {
+
 							sb.append(newCreateTableString);
 							sb.append("\n\n");
 
@@ -3529,9 +3831,7 @@ public class ServiceBuilder {
 			}
 		}
 
-		for (int i = 0; i < _ejbList.size(); i++) {
-			Entity entity = _ejbList.get(i);
-
+		for (Entity entity : _entities) {
 			if (!_isTargetEntity(entity)) {
 				continue;
 			}
@@ -3540,15 +3840,17 @@ public class ServiceBuilder {
 				continue;
 			}
 
-			List<EntityColumn> columnList = entity.getColumnList();
+			if (!entity.hasFinderClassName() && !entity.hasPersistence()) {
+				continue;
+			}
 
-			for (int j = 0; j < columnList.size(); j++) {
-				EntityColumn column = columnList.get(j);
+			List<EntityColumn> entityColumns = entity.getEntityColumns();
 
-				if ("sequence".equals(column.getIdType())) {
-					StringBundler sb = new StringBundler();
+			for (EntityColumn entityColumn : entityColumns) {
+				if (Objects.equals(entityColumn.getIdType(), "sequence")) {
+					StringBundler sb = new StringBundler(3);
 
-					String sequenceName = column.getIdParam();
+					String sequenceName = entityColumn.getIdParam();
 
 					if (sequenceName.length() > 30) {
 						sequenceName = sequenceName.substring(0, 30);
@@ -3594,9 +3896,7 @@ public class ServiceBuilder {
 			_touch(sqlFile);
 		}
 
-		for (int i = 0; i < _ejbList.size(); i++) {
-			Entity entity = _ejbList.get(i);
-
+		for (Entity entity : _entities) {
 			if (!_isTargetEntity(entity)) {
 				continue;
 			}
@@ -3605,20 +3905,33 @@ public class ServiceBuilder {
 				continue;
 			}
 
+			if (entity.isDeprecated()) {
+				continue;
+			}
+
+			if (!entity.hasFinderClassName() && !entity.hasPersistence()) {
+				continue;
+			}
+
 			String createTableSQL = _getCreateTableSQL(entity);
 
 			if (Validator.isNotNull(createTableSQL)) {
 				_createSQLTables(sqlFile, createTableSQL, entity, true);
 
-				List<Path> updateSQLFilePaths = _getUpdateSQLFilePaths();
+				if (GetterUtil.getBoolean(
+						_compatProperties.getProperty(
+							"update.sql.file.auto.update"))) {
 
-				for (Path updateSQLFilePath : updateSQLFilePaths) {
-					if ((updateSQLFilePath != null) &&
-						Files.exists(updateSQLFilePath)) {
+					List<Path> updateSQLFilePaths = _getUpdateSQLFilePaths();
 
-						_createSQLTables(
-							updateSQLFilePath.toFile(), createTableSQL, entity,
-							false);
+					for (Path updateSQLFilePath : updateSQLFilePaths) {
+						if ((updateSQLFilePath != null) &&
+							Files.exists(updateSQLFilePath)) {
+
+							_createSQLTables(
+								updateSQLFilePath.toFile(), createTableSQL,
+								entity, false);
+						}
 					}
 				}
 			}
@@ -3655,6 +3968,7 @@ public class ServiceBuilder {
 		String content = _read(sqlFile);
 
 		int x = content.indexOf(_SQL_CREATE_TABLE + entity.getTable() + " (");
+
 		int y = content.indexOf(");", x);
 
 		if (x != -1) {
@@ -3680,6 +3994,7 @@ public class ServiceBuilder {
 				while ((line = unsyncBufferedReader.readLine()) != null) {
 					if (appendNewTable && line.startsWith(_SQL_CREATE_TABLE)) {
 						x = _SQL_CREATE_TABLE.length();
+
 						y = line.indexOf(" ", x);
 
 						String tableName = line.substring(x, y);
@@ -3705,6 +4020,121 @@ public class ServiceBuilder {
 					sqlFile, sb.toString(), _modifiedFileNames);
 			}
 		}
+	}
+
+	private void _createUADAnonymizer(Entity entity) throws Exception {
+		File file = new File(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/anonymizer/", entity.getName(),
+				"UADAnonymizer.java"));
+
+		if (file.exists()) {
+			return;
+		}
+
+		Map<String, Object> context = _getContext();
+
+		context.put("entity", entity);
+
+		String content = _processTemplate(_tplUADAnonymizer, context);
+
+		_write(file, content, _modifiedFileNames);
+	}
+
+	private void _createUADBnd(String uadApplicationName) throws Exception {
+		List<Entity> entities = _uadApplicationEntities.get(uadApplicationName);
+
+		Entity entity = entities.get(0);
+
+		String uadOutputPath = entity.getUADOutputPath();
+
+		int index = uadOutputPath.indexOf("/src/");
+
+		String uadDirName = uadOutputPath.substring(0, index);
+
+		File file = new File(uadDirName + "/bnd.bnd");
+
+		if (file.exists()) {
+			return;
+		}
+
+		Map<String, Object> context = _getContext();
+
+		context.put(
+			"uadBundleName",
+			StringBundler.concat(
+				"Liferay ",
+				TextFormatter.format(
+					TextFormatter.format(uadApplicationName, TextFormatter.K),
+					TextFormatter.J),
+				" UAD"));
+		context.put("uadPackagePath", entity.getUADPackagePath());
+
+		String content = _processTemplate(_tplUADBnd, context);
+
+		ToolsUtil.writeFileRaw(file, content, _modifiedFileNames);
+	}
+
+	private void _createUADConstants(String uadApplicationName)
+		throws Exception {
+
+		Map<String, Object> context = _getContext();
+
+		List<Entity> entities = _uadApplicationEntities.get(uadApplicationName);
+
+		context.put("entities", entities);
+
+		Entity entity = entities.get(0);
+
+		context.put("uadApplicationName", uadApplicationName);
+		context.put("uadPackagePath", entity.getUADPackagePath());
+
+		String content = _processTemplate(_tplUADConstants, context);
+
+		File file = new File(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/constants/",
+				uadApplicationName, "UADConstants.java"));
+
+		_write(file, content, _modifiedFileNames);
+	}
+
+	private void _createUADDisplay(Entity entity) throws Exception {
+		File file = new File(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/display/", entity.getName(),
+				"UADDisplay.java"));
+
+		if (file.exists()) {
+			return;
+		}
+
+		Map<String, Object> context = _getContext();
+
+		context.put("entity", entity);
+
+		String content = _processTemplate(_tplUADDisplay, context);
+
+		_write(file, content, _modifiedFileNames);
+	}
+
+	private void _createUADExporter(Entity entity) throws Exception {
+		File file = new File(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/exporter/", entity.getName(),
+				"UADExporter.java"));
+
+		if (file.exists()) {
+			return;
+		}
+
+		Map<String, Object> context = _getContext();
+
+		context.put("entity", entity);
+
+		String content = _processTemplate(_tplUADExporter, context);
+
+		_write(file, content, _modifiedFileNames);
 	}
 
 	private void _deleteFile(String fileName) {
@@ -3734,6 +4164,24 @@ public class ServiceBuilder {
 		_deleteFile("docroot/WEB-INF/src/META-INF/hibernate-spring.xml");
 		_deleteFile("docroot/WEB-INF/src/META-INF/infrastructure-spring.xml");
 		_deleteFile("docroot/WEB-INF/src/META-INF/misc-spring.xml");
+	}
+
+	private EntityColumn _fetchEntityColumnByColumnDBName(
+		Entity entity, String columnDBName) {
+
+		for (EntityColumn entityColumn : entity.getFinderEntityColumns()) {
+			if (columnDBName.equals(entityColumn.getDBName())) {
+				return entityColumn;
+			}
+		}
+
+		for (EntityColumn entityColumn : entity.getEntityColumns()) {
+			if (columnDBName.equals(entityColumn.getDBName())) {
+				return entityColumn;
+			}
+		}
+
+		return null;
 	}
 
 	private String _fixHbmXml(String content) throws IOException {
@@ -3766,7 +4214,7 @@ public class ServiceBuilder {
 				sb.append('\n');
 			}
 
-			return sb.toString().trim();
+			return StringUtil.trim(sb.toString());
 		}
 	}
 
@@ -3775,11 +4223,11 @@ public class ServiceBuilder {
 	}
 
 	private String _formatComment(
-		String comment, DocletTag[] tags, String indentation) {
+		String comment, List<DocletTag> tags, String indentation) {
 
 		StringBundler sb = new StringBundler();
 
-		if (Validator.isNull(comment) && (tags.length <= 0)) {
+		if (Validator.isNull(comment) && tags.isEmpty()) {
 			return sb.toString();
 		}
 
@@ -3790,9 +4238,10 @@ public class ServiceBuilder {
 			comment = comment.replaceAll("(?m)^", indentation + " * ");
 
 			sb.append(comment);
+
 			sb.append("\n");
 
-			if (tags.length > 0) {
+			if (!tags.isEmpty()) {
 				sb.append(indentation);
 				sb.append(" *\n");
 			}
@@ -3852,26 +4301,28 @@ public class ServiceBuilder {
 		if (Validator.isNotNull(doctype)) {
 			x = xml.indexOf("?>") + 2;
 
-			xml = xml.substring(0, x) + "\n" + doctype + xml.substring(x);
+			xml = StringBundler.concat(
+				xml.substring(0, x), "\n", doctype, xml.substring(x));
 		}
 
 		return xml;
 	}
 
-	private List<EntityColumn> _getBlobList(Entity entity) {
-		List<EntityColumn> blobList = new ArrayList<>(entity.getBlobList());
+	private List<EntityColumn> _getBlobEntityColumns(Entity entity) {
+		List<EntityColumn> blobEntityColumns = new ArrayList<>(
+			entity.getBlobEntityColumns());
 
-		Iterator<EntityColumn> itr = blobList.iterator();
+		Iterator<EntityColumn> iterator = blobEntityColumns.iterator();
 
-		while (itr.hasNext()) {
-			EntityColumn col = itr.next();
+		while (iterator.hasNext()) {
+			EntityColumn entityColumn = iterator.next();
 
-			if (!col.isLazy()) {
-				itr.remove();
+			if (!entityColumn.isLazy()) {
+				iterator.remove();
 			}
 		}
 
-		return blobList;
+		return blobEntityColumns;
 	}
 
 	private JavaField[] _getCacheFields(JavaClass javaClass) {
@@ -3882,12 +4333,12 @@ public class ServiceBuilder {
 		List<JavaField> javaFields = new ArrayList<>();
 
 		for (JavaField javaField : javaClass.getFields()) {
-			Annotation[] annotations = javaField.getAnnotations();
+			List<JavaAnnotation> javaAnnotations = javaField.getAnnotations();
 
-			for (Annotation annotation : annotations) {
-				Type type = annotation.getType();
+			for (JavaAnnotation javaAnnotation : javaAnnotations) {
+				JavaClass javaAnnotationClass = javaAnnotation.getType();
 
-				String className = type.getFullyQualifiedName();
+				String className = javaAnnotationClass.getFullyQualifiedName();
 
 				if (className.equals(CacheField.class.getName())) {
 					javaFields.add(javaField);
@@ -3897,7 +4348,7 @@ public class ServiceBuilder {
 			}
 		}
 
-		return javaFields.toArray(new JavaField[javaFields.size()]);
+		return javaFields.toArray(new JavaField[0]);
 	}
 
 	private int[] _getColumnLengths(IndexMetadata indexMetadata) {
@@ -3926,39 +4377,38 @@ public class ServiceBuilder {
 		return columnLengths;
 	}
 
-	private Map<String, Object> _getContext() throws TemplateModelException {
-		BeansWrapper wrapper = BeansWrapper.getDefaultInstance();
+	private Properties _getCompatProperties(String version) throws IOException {
+		Properties properties = new Properties();
 
-		TemplateHashModel staticModels = wrapper.getStaticModels();
+		try (InputStream is = ServiceBuilder.class.getResourceAsStream(
+				"dependencies/" + version + "/compatibility.properties")) {
+
+			properties.load(is);
+		}
+
+		return properties;
+	}
+
+	private Map<String, Object> _getContext() throws TemplateModelException {
+		BeansWrapper beansWrapper = BeansWrapper.getDefaultInstance();
+
+		TemplateHashModel staticModels = beansWrapper.getStaticModels();
 
 		Map<String, Object> context = new HashMap<>();
 
-		context.put("apiDir", _apiDirName);
 		context.put("apiPackagePath", _apiPackagePath);
-		context.put("arrayUtil", ArrayUtil_IW.getInstance());
 		context.put("author", _author);
 		context.put("beanLocatorUtil", _beanLocatorUtil);
-		context.put("beanLocatorUtilShortName", _beanLocatorUtilShortName);
-		context.put("hbmFileName", _hbmFileName);
-		context.put("implDir", _implDirName);
-		context.put("modelHintsFileName", _modelHintsFileName);
+		context.put("dependencyInjectorDS", _dependencyInjectorDS);
 		context.put("modelHintsUtil", ModelHintsUtil.getModelHints());
 		context.put("osgiModule", _osgiModule);
-		context.put("outputPath", _outputPath);
 		context.put("packagePath", _packagePath);
 		context.put("pluginName", _pluginName);
-		context.put("portletName", _portletName);
-		context.put("portletPackageName", _portletPackageName);
 		context.put("portletShortName", _portletShortName);
 		context.put("propsUtil", _propsUtil);
 		context.put("serviceBuilder", this);
-		context.put("serviceOutputPath", _serviceOutputPath);
-		context.put("springFileName", _springFileName);
-		context.put("sqlDir", _sqlDirName);
-		context.put("sqlFileName", _sqlFileName);
 		context.put("stringUtil", StringUtil_IW.getInstance());
-		context.put("system", staticModels.get("java.lang.System"));
-		context.put("tempMap", wrapper.wrap(new HashMap<String, Object>()));
+		//context.put("system", staticModels.get("java.lang.System"));
 		context.put(
 			"textFormatter", staticModels.get(TextFormatter.class.getName()));
 		context.put("validator", Validator_IW.getInstance());
@@ -3968,34 +4418,33 @@ public class ServiceBuilder {
 
 	private void _getCreateMappingTableIndex(
 			EntityMapping entityMapping,
-			Map<String, List<IndexMetadata>> indexMetadataMap)
+			Map<String, List<IndexMetadata>> indexMetadatasMap)
 		throws Exception {
 
 		Entity[] entities = new Entity[3];
 
 		for (int i = 0; i < entities.length; i++) {
-			entities[i] = getEntity(entityMapping.getEntity(i));
+			entities[i] = getEntity(entityMapping.getEntityName(i));
 
 			if (entities[i] == null) {
 				return;
 			}
 		}
 
-		String tableName = entityMapping.getTable();
+		List<String> mappingPKEntityColumnDBNames =
+			_getEntityMappingPKEntityColumnDBNames(entityMapping);
+
+		String tableName = entityMapping.getTableName();
 
 		for (Entity entity : entities) {
-			List<EntityColumn> pkList = entity.getPKList();
-
-			for (int j = 0; j < pkList.size(); j++) {
-				EntityColumn col = pkList.get(j);
-
-				String colDBName = col.getDBName();
-
+			for (String dbName : entity.getPKEntityColumnDBNames()) {
 				IndexMetadata indexMetadata =
 					IndexMetadataFactoryUtil.createIndexMetadata(
-						false, tableName, colDBName);
+						false, tableName, dbName);
 
-				_addIndexMetadata(indexMetadataMap, tableName, indexMetadata);
+				_addIndexMetadata(
+					indexMetadatasMap, tableName, mappingPKEntityColumnDBNames,
+					indexMetadata);
 			}
 		}
 	}
@@ -4006,7 +4455,7 @@ public class ServiceBuilder {
 		Entity[] entities = new Entity[3];
 
 		for (int i = 0; i < entities.length; i++) {
-			entities[i] = getEntity(entityMapping.getEntity(i));
+			entities[i] = getEntity(entityMapping.getEntityName(i));
 
 			if (entities[i] == null) {
 				return null;
@@ -4020,7 +4469,6 @@ public class ServiceBuilder {
 				@Override
 				public int compare(Entity entity1, Entity entity2) {
 					String name1 = entity1.getName();
-					String name2 = entity2.getName();
 
 					if (Objects.equals(
 							entity1.getPackagePath(), "com.liferay.portal") &&
@@ -4028,6 +4476,8 @@ public class ServiceBuilder {
 
 						return -1;
 					}
+
+					String name2 = entity2.getName();
 
 					if (Objects.equals(
 							entity2.getPackagePath(), "com.liferay.portal") &&
@@ -4044,45 +4494,79 @@ public class ServiceBuilder {
 		StringBundler sb = new StringBundler();
 
 		sb.append(_SQL_CREATE_TABLE);
-		sb.append(entityMapping.getTable());
+
+		String tableName = entityMapping.getTableName();
+
+		if ((_databaseNameMaxLength > 0) &&
+			(tableName.length() > _databaseNameMaxLength)) {
+
+			throw new ServiceBuilderException(
+				StringBundler.concat(
+					"Unable to create entity mapping \"", tableName,
+					"\" because table name exceeds ",
+					String.valueOf(_databaseNameMaxLength), " characters. ",
+					"Some databases do not allow table names longer than 30 ",
+					"characters. To disable this warning set the ",
+					"\"service-builder\" attribute ",
+					"\"database-name-max-length\" to the max length that your ",
+					"database supports."));
+		}
+
+		sb.append(tableName);
+
 		sb.append(" (\n");
 
 		for (Entity entity : entities) {
-			List<EntityColumn> pkList = entity.getPKList();
+			List<EntityColumn> pkEntityColumns = entity.getPKEntityColumns();
 
-			for (int i = 0; i < pkList.size(); i++) {
-				EntityColumn col = pkList.get(i);
+			for (EntityColumn entityColumn : pkEntityColumns) {
+				String dbName = entityColumn.getDBName();
 
-				String colName = col.getName();
-				String colType = col.getType();
+				if ((_databaseNameMaxLength > 0) &&
+					(dbName.length() > _databaseNameMaxLength)) {
+
+					throw new ServiceBuilderException(
+						StringBundler.concat(
+							"Unable to create entity mapping \"", tableName,
+							"\" because column name \"", dbName, "\" exceeds ",
+							String.valueOf(_databaseNameMaxLength),
+							" characters. Some databases do not allow column ",
+							"names longer than 30 characters. To disable this ",
+							"warning set the \"service-builder\" attribute ",
+							"\"database-name-max-length\" to the max length ",
+							"that your database supports."));
+				}
+
+				String type = entityColumn.getType();
 
 				sb.append("\t");
-				sb.append(col.getDBName());
+				sb.append(dbName);
 				sb.append(" ");
 
-				if (StringUtil.equalsIgnoreCase(colType, "boolean")) {
+				if (StringUtil.equalsIgnoreCase(type, "boolean")) {
 					sb.append("BOOLEAN");
 				}
-				else if (StringUtil.equalsIgnoreCase(colType, "double") ||
-						 StringUtil.equalsIgnoreCase(colType, "float")) {
+				else if (StringUtil.equalsIgnoreCase(type, "double") ||
+						 StringUtil.equalsIgnoreCase(type, "float")) {
 
 					sb.append("DOUBLE");
 				}
-				else if (colType.equals("int") || colType.equals("Integer") ||
-						 StringUtil.equalsIgnoreCase(colType, "short")) {
+				else if (type.equals("int") || type.equals("Integer") ||
+						 StringUtil.equalsIgnoreCase(type, "short")) {
 
 					sb.append("INTEGER");
 				}
-				else if (StringUtil.equalsIgnoreCase(colType, "long")) {
+				else if (StringUtil.equalsIgnoreCase(type, "long")) {
 					sb.append("LONG");
 				}
-				else if (colType.equals("Map")) {
+				else if (type.equals("Map")) {
 					sb.append("TEXT");
 				}
-				else if (colType.equals("String")) {
-					int maxLength = getMaxLength(entity.getName(), colName);
+				else if (type.equals("String")) {
+					int maxLength = getMaxLength(
+						entity.getName(), entityColumn.getName());
 
-					if (col.isLocalized()) {
+					if (entityColumn.isLocalized()) {
 						maxLength = 4000;
 					}
 
@@ -4098,18 +4582,18 @@ public class ServiceBuilder {
 						sb.append("TEXT");
 					}
 				}
-				else if (colType.equals("Date")) {
+				else if (type.equals("Date")) {
 					sb.append("DATE");
 				}
 				else {
 					sb.append("invalid");
 				}
 
-				if (col.isPrimary()) {
+				if (entityColumn.isPrimary()) {
 					sb.append(" not null");
 				}
-				else if (colType.equals("Date") || colType.equals("Map") ||
-						 colType.equals("String")) {
+				else if (type.equals("Date") || type.equals("Map") ||
+						 type.equals("String")) {
 
 					sb.append(" null");
 				}
@@ -4123,18 +4607,16 @@ public class ServiceBuilder {
 		for (int i = 1; i < entities.length; i++) {
 			Entity entity = entities[i];
 
-			List<EntityColumn> pkList = entity.getPKList();
+			List<EntityColumn> pkEntityColumns = entity.getPKEntityColumns();
 
-			for (int j = 0; j < pkList.size(); j++) {
-				EntityColumn col = pkList.get(j);
-
-				String colDBName = col.getDBName();
+			for (int j = 0; j < pkEntityColumns.size(); j++) {
+				EntityColumn entityColumn = pkEntityColumns.get(j);
 
 				if ((i != 1) || (j != 0)) {
 					sb.append(", ");
 				}
 
-				sb.append(colDBName);
+				sb.append(entityColumn.getDBName());
 			}
 		}
 
@@ -4145,59 +4627,114 @@ public class ServiceBuilder {
 	}
 
 	private String _getCreateTableSQL(Entity entity) {
-		List<EntityColumn> pkList = entity.getPKList();
-		List<EntityColumn> regularColList = entity.getRegularColList();
+		List<EntityColumn> databaseRegularEntityColumns =
+			entity.getDatabaseRegularEntityColumns();
 
-		if (regularColList.isEmpty()) {
+		if (databaseRegularEntityColumns.isEmpty()) {
 			return null;
 		}
 
 		StringBundler sb = new StringBundler();
 
 		sb.append(_SQL_CREATE_TABLE);
-		sb.append(entity.getTable());
+
+		String tableName = entity.getTable();
+
+		if ((_databaseNameMaxLength > 0) &&
+			(tableName.length() > _databaseNameMaxLength)) {
+
+			throw new ServiceBuilderException(
+				StringBundler.concat(
+					"Unable to create entity \"", tableName,
+					"\" because table name exceeds ",
+					String.valueOf(_databaseNameMaxLength), " characters. ",
+					"Some databases do not allow table names longer than 30 ",
+					"characters. To disable this warning set the ",
+					"\"service-builder\" attribute ",
+					"\"database-name-max-length\" to the max length that your ",
+					"database supports."));
+		}
+
+		sb.append(tableName);
+
 		sb.append(" (\n");
 
-		for (int i = 0; i < regularColList.size(); i++) {
-			EntityColumn col = regularColList.get(i);
+		for (int i = 0; i < databaseRegularEntityColumns.size(); i++) {
+			EntityColumn entityColumn = databaseRegularEntityColumns.get(i);
 
-			String colName = col.getName();
-			String colType = col.getType();
-			String colIdType = col.getIdType();
+			String dbName = entityColumn.getDBName();
+
+			if ((_databaseNameMaxLength > 0) &&
+				(dbName.length() > _databaseNameMaxLength)) {
+
+				throw new ServiceBuilderException(
+					StringBundler.concat(
+						"Unable to create entity \"", tableName,
+						"\" because column name \"", dbName, "\" exceeds ",
+						String.valueOf(_databaseNameMaxLength), " characters. ",
+						"Some databases do not allow column names longer than ",
+						"30 characters. To disable this warning set the ",
+						"\"service-builder\" attribute ",
+						"\"database-name-max-length\" to the max length that ",
+						"your database supports"));
+			}
+
+			String type = entityColumn.getType();
+			String idType = entityColumn.getIdType();
 
 			sb.append("\t");
-			sb.append(col.getDBName());
+			sb.append(dbName);
 			sb.append(" ");
 
-			if (StringUtil.equalsIgnoreCase(colType, "boolean")) {
+			if (StringUtil.equalsIgnoreCase(type, "boolean")) {
 				sb.append("BOOLEAN");
 			}
-			else if (StringUtil.equalsIgnoreCase(colType, "double") ||
-					 StringUtil.equalsIgnoreCase(colType, "float")) {
+			else if (StringUtil.equalsIgnoreCase(type, "double") ||
+					 StringUtil.equalsIgnoreCase(type, "float")) {
 
 				sb.append("DOUBLE");
 			}
-			else if (colType.equals("int") || colType.equals("Integer") ||
-					 StringUtil.equalsIgnoreCase(colType, "short")) {
+			else if (type.equals("int") || type.equals("Integer") ||
+					 StringUtil.equalsIgnoreCase(type, "short")) {
 
 				sb.append("INTEGER");
 			}
-			else if (StringUtil.equalsIgnoreCase(colType, "long")) {
+			else if (StringUtil.equalsIgnoreCase(type, "long")) {
 				sb.append("LONG");
 			}
-			else if (colType.equals("Blob")) {
+			else if (type.equals("BigDecimal")) {
+				Map<String, String> hints = ModelHintsUtil.getHints(
+					_apiPackagePath + ".model." + entity.getName(),
+					entityColumn.getName());
+
+				String precision = "30";
+				String scale = "16";
+
+				if (hints != null) {
+					precision = hints.getOrDefault("precision", precision);
+					scale = hints.getOrDefault("scale", scale);
+				}
+
+				sb.append("DECIMAL(");
+				sb.append(precision);
+				sb.append(", ");
+				sb.append(scale);
+				sb.append(")");
+			}
+			else if (type.equals("Blob")) {
 				sb.append("BLOB");
 			}
-			else if (colType.equals("Date")) {
+			else if (type.equals("Date")) {
 				sb.append("DATE");
 			}
-			else if (colType.equals("Map")) {
+			else if (type.equals("Map")) {
 				sb.append("TEXT");
 			}
-			else if (colType.equals("String")) {
-				int maxLength = getMaxLength(entity.getName(), colName);
+			else if (type.equals("String")) {
+				int maxLength = getMaxLength(
+					entity.getName(), entityColumn.getName());
 
-				if (col.isLocalized() && (maxLength < 4000)) {
+				if (entityColumn.isLocalized() && (maxLength < 4000)) {
 					maxLength = 4000;
 				}
 
@@ -4217,30 +4754,30 @@ public class ServiceBuilder {
 				sb.append("invalid");
 			}
 
-			if (col.isPrimary()) {
+			if (entityColumn.isPrimary()) {
 				sb.append(" not null");
 
 				if (!entity.hasCompoundPK()) {
 					sb.append(" primary key");
 				}
 			}
-			else if (colType.equals("Date") || colType.equals("Map") ||
-					 colType.equals("String")) {
+			else if (type.equals("BigDecimal") || type.equals("Date") ||
+					 type.equals("Map") || type.equals("String")) {
 
 				sb.append(" null");
 			}
 
-			if (Validator.isNotNull(colIdType) &&
-				colIdType.equals("identity")) {
-
+			if (Validator.isNotNull(idType) && idType.equals("identity")) {
 				sb.append(" IDENTITY");
 			}
 
-			if (colName.equals("mvccVersion")) {
+			if (Objects.equals(entityColumn.getName(), "mvccVersion")) {
 				sb.append(" default 0 not null");
 			}
 
-			if (((i + 1) != regularColList.size()) || entity.hasCompoundPK()) {
+			if (((i + 1) != databaseRegularEntityColumns.size()) ||
+				entity.hasCompoundPK()) {
+
 				sb.append(",");
 			}
 
@@ -4250,12 +4787,14 @@ public class ServiceBuilder {
 		if (entity.hasCompoundPK()) {
 			sb.append("\tprimary key (");
 
-			for (int j = 0; j < pkList.size(); j++) {
-				EntityColumn pk = pkList.get(j);
+			List<EntityColumn> pkEntityColumns = entity.getPKEntityColumns();
+
+			for (int j = 0; j < pkEntityColumns.size(); j++) {
+				EntityColumn pk = pkEntityColumns.get(j);
 
 				sb.append(pk.getDBName());
 
-				if ((j + 1) != pkList.size()) {
+				if ((j + 1) != pkEntityColumns.size()) {
 					sb.append(", ");
 				}
 			}
@@ -4268,18 +4807,44 @@ public class ServiceBuilder {
 		return sb.toString();
 	}
 
-	private String _getDimensions(Type type) {
-		String dimensions = "";
+	private String _getDeleteUADEntityMethodName(
+		JavaClass javaClass, String entityName) {
 
-		for (int i = 0; i < type.getDimensions(); i++) {
-			dimensions += "[]";
+		List<String> methodNames = new ArrayList<>();
+
+		for (JavaMethod javaMethod : javaClass.getMethods(false)) {
+			String javaMethodName = javaMethod.getName();
+
+			if (javaMethodName.startsWith("delete")) {
+				List<JavaType> javaTypes = javaMethod.getParameterTypes();
+
+				if (javaTypes.size() == 1) {
+					JavaType parameterType = javaTypes.get(0);
+
+					if (StringUtil.equals(
+							parameterType.getValue(), entityName)) {
+
+						methodNames.add(javaMethodName);
+					}
+				}
+			}
 		}
 
-		return dimensions;
+		String deleteEntityMethodName = "delete" + entityName;
+
+		if (methodNames.isEmpty() ||
+			methodNames.contains(deleteEntityMethodName)) {
+
+			return deleteEntityMethodName;
+		}
+
+		methodNames.sort(null);
+
+		return methodNames.get(0);
 	}
 
 	private Entity _getEntityByTableName(String tableName) {
-		for (Entity entity : _ejbList) {
+		for (Entity entity : _entities) {
 			if (tableName.equals(entity.getTable())) {
 				return entity;
 			}
@@ -4291,15 +4856,62 @@ public class ServiceBuilder {
 	private EntityColumn _getEntityColumnByColumnDBName(
 		Entity entity, String columnDBName) {
 
-		for (EntityColumn entityColumn : entity.getFinderColumnsList()) {
-			if (columnDBName.equals(entityColumn.getDBName())) {
-				return entityColumn;
-			}
+		EntityColumn entityColumn = _fetchEntityColumnByColumnDBName(
+			entity, columnDBName);
+
+		if (entityColumn != null) {
+			return entityColumn;
 		}
 
 		throw new IllegalArgumentException(
-			"No entity column exist with column database name " + columnDBName +
-				" for entity " + entity.getName());
+			StringBundler.concat(
+				"No entity column exist with column database name ",
+				columnDBName, " for entity ", entity.getName()));
+	}
+
+	private List<String> _getEntityMappingPKEntityColumnDBNames(
+			EntityMapping entityMapping)
+		throws Exception {
+
+		if (entityMapping == null) {
+			return null;
+		}
+
+		List<String> mappingPKEntityColumnDBNames = new ArrayList<>();
+
+		for (int i = 0; i < 3; i++) {
+			Entity entity = getEntity(entityMapping.getEntityName(i));
+
+			if (entity == null) {
+				return null;
+			}
+
+			String entityName = entity.getName();
+
+			if (entityName.equals("Company")) {
+				continue;
+			}
+
+			mappingPKEntityColumnDBNames.addAll(
+				entity.getPKEntityColumnDBNames());
+		}
+
+		return mappingPKEntityColumnDBNames;
+	}
+
+	private String _getFileContent(String fileName) throws IOException {
+		Class<?> clazz = getClass();
+
+		ClassLoader classLoader = clazz.getClassLoader();
+
+		String resourceName = _TPL_ROOT + fileName;
+
+		InputStream inputStream = classLoader.getResourceAsStream(resourceName);
+
+		String content = StringUtil.read(inputStream);
+
+		return StringUtil.replace(
+			content, StringPool.RETURN_NEW_LINE, StringPool.NEW_LINE);
 	}
 
 	private JavaClass _getJavaClass(String fileName) throws IOException {
@@ -4324,19 +4936,21 @@ public class ServiceBuilder {
 		JavaClass javaClass = _javaClasses.get(fullyQualifiedClassName);
 
 		if (javaClass == null) {
-			ClassLibrary classLibrary = new ClassLibrary();
-
-			Class<?> clazz = getClass();
-
-			classLibrary.addClassLoader(clazz.getClassLoader());
-
-			JavaDocBuilder builder = new JavaDocBuilder(classLibrary);
-
 			File file = new File(fileName);
 
 			if (!file.exists()) {
 				return null;
 			}
+
+			ClassLibraryBuilder classLibraryBuilder =
+				new SortedClassLibraryBuilder();
+
+			Class<?> clazz = getClass();
+
+			classLibraryBuilder.appendClassLoader(clazz.getClassLoader());
+
+			JavaProjectBuilder builder = new JavaProjectBuilder(
+				classLibraryBuilder);
 
 			builder.addSource(file);
 
@@ -4351,23 +4965,22 @@ public class ServiceBuilder {
 	private String _getMethodKey(JavaMethod javaMethod) {
 		StringBundler sb = new StringBundler();
 
-		if (!javaMethod.isConstructor()) {
-			sb.append(getTypeGenericsName(javaMethod.getReturnType()));
-			sb.append(StringPool.SPACE);
-		}
-
+		sb.append(getTypeGenericsName(javaMethod.getReturnType()));
+		sb.append(StringPool.SPACE);
 		sb.append(javaMethod.getName());
 		sb.append(StringPool.OPEN_PARENTHESIS);
 
-		JavaParameter[] javaParameters = javaMethod.getParameters();
+		List<JavaParameter> javaParameters = javaMethod.getParameters();
 
 		for (JavaParameter javaParameter : javaParameters) {
-			sb.append(getTypeGenericsName(javaParameter.getType()));
+			JavaType type = javaParameter.getType();
+
+			sb.append(type.getGenericValue());
 
 			sb.append(StringPool.COMMA);
 		}
 
-		if (javaParameters.length > 0) {
+		if (!javaParameters.isEmpty()) {
 			sb.setIndex(sb.index() - 1);
 		}
 
@@ -4376,33 +4989,34 @@ public class ServiceBuilder {
 		return sb.toString();
 	}
 
-	private JavaMethod[] _getMethods(JavaClass javaClass) {
+	private List<JavaMethod> _getMethods(JavaClass javaClass) {
 		return _getMethods(javaClass, false);
 	}
 
-	private JavaMethod[] _getMethods(
+	private List<JavaMethod> _getMethods(
 		JavaClass javaClass, boolean superclasses) {
 
 		List<String> cacheFieldMethods = new ArrayList<>();
 
 		for (JavaField javaField : javaClass.getFields()) {
-			Annotation[] annotations = javaField.getAnnotations();
+			List<JavaAnnotation> javaAnnotations = javaField.getAnnotations();
 
-			for (Annotation annotation : annotations) {
-				Type type = annotation.getType();
+			for (JavaAnnotation javaAnnotation : javaAnnotations) {
+				JavaClass javaAnnotationClass = javaAnnotation.getType();
 
-				String className = type.getFullyQualifiedName();
+				String className = javaAnnotationClass.getFullyQualifiedName();
 
 				if (!className.equals(CacheField.class.getName())) {
 					continue;
 				}
 
 				if (!GetterUtil.getBoolean(
-						annotation.getNamedParameter("propagateToInterface"))) {
+						javaAnnotation.getNamedParameter(
+							"propagateToInterface"))) {
 
 					String methodName = null;
 
-					Object namedParameter = annotation.getNamedParameter(
+					Object namedParameter = javaAnnotation.getNamedParameter(
 						"methodName");
 
 					if (namedParameter != null) {
@@ -4431,25 +5045,28 @@ public class ServiceBuilder {
 			}
 		}
 
-		for (JavaMethod method : methods) {
-			Arrays.sort(method.getExceptions());
-		}
-
-		return methods.toArray(new JavaMethod[methods.size()]);
+		return methods;
 	}
 
-	private String _getMethodSignature(JavaMethod method, String packagePath) {
+	private String _getMethodSignature(
+		JavaMethod method, boolean useFullyQualifiedNames) {
+
 		StringBundler sb = new StringBundler();
 
 		sb.append(method.getName());
 		sb.append(StringPool.OPEN_PARENTHESIS);
 
 		for (JavaParameter parameter : method.getParameters()) {
-			String parameterValue = parameter.getResolvedValue();
+			JavaType type = parameter.getType();
 
-			if (parameterValue.matches("[A-Z]\\w+")) {
-				parameterValue =
-					packagePath + StringPool.PERIOD + parameterValue;
+			String parameterValue = type.getFullyQualifiedName();
+
+			if (!useFullyQualifiedNames) {
+				int pos = parameterValue.lastIndexOf(CharPool.PERIOD);
+
+				if (pos != -1) {
+					parameterValue = parameterValue.substring(pos + 1);
+				}
 			}
 
 			sb.append(parameterValue);
@@ -4469,9 +5086,8 @@ public class ServiceBuilder {
 		if (sessionType == _SESSION_TYPE_LOCAL) {
 			return "Local";
 		}
-		else {
-			return "";
-		}
+
+		return "";
 	}
 
 	private String _getSpringNamespacesDeclarations() {
@@ -4497,7 +5113,7 @@ public class ServiceBuilder {
 		StringBundler sb = new StringBundler(_springNamespaces.length * 7);
 
 		for (String namespace : _springNamespaces) {
-			sb.append("\thttp://www.springframework.org/schema/");
+			sb.append(" http://www.springframework.org/schema/");
 			sb.append(namespace);
 			sb.append(" http://www.springframework.org/schema/");
 			sb.append(namespace);
@@ -4520,12 +5136,15 @@ public class ServiceBuilder {
 
 		if (parent) {
 			modelFile = new File(
-				_outputPath + "/model/impl/" + entity.getName() +
-					"ModelImpl.java");
+				StringBundler.concat(
+					_outputPath, "/model/impl/", entity.getName(),
+					"ModelImpl.java"));
 		}
 		else {
 			modelFile = new File(
-				_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
+				StringBundler.concat(
+					_outputPath, "/model/impl/", entity.getName(),
+					"Impl.java"));
 		}
 
 		String content = _read(modelFile);
@@ -4549,8 +5168,9 @@ public class ServiceBuilder {
 						property.indexOf("is") + 2, property.length() - 1);
 				}
 
-				if (!entity.hasColumn(property) &&
-					!entity.hasColumn(Introspector.decapitalize(property))) {
+				if (!entity.hasEntityColumn(property) &&
+					!entity.hasEntityColumn(
+						Introspector.decapitalize(property))) {
 
 					property = Introspector.decapitalize(property);
 
@@ -4572,8 +5192,9 @@ public class ServiceBuilder {
 				property = property.substring(
 					property.indexOf("set") + 3, property.length() - 1);
 
-				if (!entity.hasColumn(property) &&
-					!entity.hasColumn(Introspector.decapitalize(property))) {
+				if (!entity.hasEntityColumn(property) &&
+					!entity.hasEntityColumn(
+						Introspector.decapitalize(property))) {
 
 					property = Introspector.decapitalize(property);
 
@@ -4661,12 +5282,8 @@ public class ServiceBuilder {
 	}
 
 	private boolean _hasHttpMethods(JavaClass javaClass) {
-		JavaMethod[] methods = _getMethods(javaClass);
-
-		for (JavaMethod javaMethod : methods) {
-			if (!javaMethod.isConstructor() && javaMethod.isPublic() &&
-				isCustomMethod(javaMethod)) {
-
+		for (JavaMethod javaMethod : _getMethods(javaClass)) {
+			if (javaMethod.isPublic() && isCustomMethod(javaMethod)) {
 				return true;
 			}
 		}
@@ -4674,17 +5291,67 @@ public class ServiceBuilder {
 		return false;
 	}
 
-	private boolean _isStringLocaleMap(JavaParameter javaParameter) {
-		Type type = javaParameter.getType();
-
-		Type[] actualArgumentTypes = type.getActualTypeArguments();
-
-		if (actualArgumentTypes.length != 2) {
+	private boolean _isCommercialPlugin(Path pluginPath) throws IOException {
+		if (pluginPath == null) {
 			return false;
 		}
 
-		if (!_isTypeValue(actualArgumentTypes[0], Locale.class.getName()) ||
-			!_isTypeValue(actualArgumentTypes[1], String.class.getName())) {
+		Path absolutePath = pluginPath.toAbsolutePath();
+
+		absolutePath = absolutePath.normalize();
+
+		String absoluteFileName = _normalize(absolutePath.toString());
+
+		if (absoluteFileName.contains("/modules/private/apps/")) {
+			return true;
+		}
+
+		File dir = absolutePath.toFile();
+
+		while (dir != null) {
+			File file = new File(dir, "gradle.properties");
+
+			if (file.exists()) {
+				Properties properties = new Properties();
+
+				properties.load(new FileInputStream(file));
+
+				if (properties.containsKey("project.path.prefix")) {
+					String s = properties.getProperty("project.path.prefix");
+
+					if (s.startsWith(":private:apps")) {
+						return true;
+					}
+
+					return false;
+				}
+			}
+
+			dir = dir.getParentFile();
+		}
+
+		return false;
+	}
+
+	private boolean _isStringLocaleMap(JavaParameter javaParameter) {
+		JavaType type = javaParameter.getType();
+
+		if (!(type instanceof DefaultJavaParameterizedType)) {
+			return false;
+		}
+
+		DefaultJavaParameterizedType defaultJavaParameterizedType =
+			(DefaultJavaParameterizedType)type;
+
+		List<JavaType> actualArgumentTypes =
+			defaultJavaParameterizedType.getActualTypeArguments();
+
+		if (actualArgumentTypes.size() != 2) {
+			return false;
+		}
+
+		if (!_isTypeValue(actualArgumentTypes.get(0), Locale.class.getName()) ||
+			!_isTypeValue(actualArgumentTypes.get(1), String.class.getName())) {
 
 			return false;
 		}
@@ -4700,44 +5367,51 @@ public class ServiceBuilder {
 		return _targetEntityName.equals(entity.getName());
 	}
 
-	private boolean _isTypeValue(Type type, String value) {
-		return value.equals(type.getValue());
+	private boolean _isTypeValue(JavaType type, String value) {
+		return value.equals(type.getFullyQualifiedName());
 	}
 
-	private Annotation[] _mergeAnnotations(
-		Annotation[] annotations1, Annotation[] annotations2) {
+	private List<JavaAnnotation> _mergeAnnotations(
+		List<JavaAnnotation> javaAnnotations1,
+		List<JavaAnnotation> javaAnnotations2) {
 
-		Map<Type, Annotation> annotationsMap = new HashMap<>();
+		Map<JavaType, JavaAnnotation> javaAnnotationsMap = new HashMap<>();
 
-		for (Annotation annotation : annotations2) {
-			annotationsMap.put(annotation.getType(), annotation);
+		for (JavaAnnotation javaAnnotation : javaAnnotations2) {
+			javaAnnotationsMap.put(javaAnnotation.getType(), javaAnnotation);
 		}
 
-		for (Annotation annotation : annotations1) {
-			annotationsMap.put(annotation.getType(), annotation);
+		for (JavaAnnotation javaAnnotation : javaAnnotations1) {
+			javaAnnotationsMap.put(javaAnnotation.getType(), javaAnnotation);
 		}
 
-		List<Annotation> annotations = new ArrayList<>(annotationsMap.values());
+		List<JavaAnnotation> javaAnnotations = new ArrayList<>(
+			javaAnnotationsMap.values());
 
-		Comparator<Annotation> comparator = new Comparator<Annotation>() {
+		Comparator<JavaAnnotation> comparator =
+			new Comparator<JavaAnnotation>() {
 
-			@Override
-			public int compare(Annotation annotation1, Annotation annotation2) {
-				String annotationString1 = annotation1.toString();
-				String annotationString2 = annotation2.toString();
+				@Override
+				public int compare(
+					JavaAnnotation javaAnnotation1,
+					JavaAnnotation javaAnnotation2) {
 
-				return annotationString1.compareTo(annotationString2);
-			}
+					String javaAnnotationString1 = javaAnnotation1.toString();
+					String javaAnnotationString2 = javaAnnotation2.toString();
 
-		};
+					return javaAnnotationString1.compareTo(
+						javaAnnotationString2);
+				}
 
-		Collections.sort(annotations, comparator);
+			};
 
-		return annotations.toArray(new Annotation[annotations.size()]);
+		Collections.sort(javaAnnotations, comparator);
+
+		return javaAnnotations;
 	}
 
-	private JavaMethod[] _mergeMethods(
-		JavaMethod[] javaMethods1, JavaMethod[] javaMethods2,
+	private List<JavaMethod> _mergeMethods(
+		List<JavaMethod> javaMethods1, List<JavaMethod> javaMethods2,
 		boolean mergeAnnotations) {
 
 		Map<String, JavaMethod> javaMethodMap = new HashMap<>();
@@ -4754,12 +5428,19 @@ public class ServiceBuilder {
 			if (existingJavaMethod == null) {
 				javaMethodMap.put(javaMethodKey, javaMethod);
 			}
-			else if (mergeAnnotations) {
-				Annotation[] annotations = _mergeAnnotations(
+			else if (mergeAnnotations &&
+					 (existingJavaMethod instanceof DefaultJavaMethod)) {
+
+				DefaultJavaMethod newJavaMethod =
+					(DefaultJavaMethod)existingJavaMethod;
+
+				List<JavaAnnotation> javaAnnotations = _mergeAnnotations(
 					javaMethod.getAnnotations(),
 					existingJavaMethod.getAnnotations());
 
-				existingJavaMethod.setAnnotations(annotations);
+				newJavaMethod.setAnnotations(javaAnnotations);
+
+				javaMethodMap.put(javaMethodKey, newJavaMethod);
 			}
 		}
 
@@ -4769,52 +5450,59 @@ public class ServiceBuilder {
 
 			@Override
 			public int compare(JavaMethod javaMethod1, JavaMethod javaMethod2) {
-				String declarationSignature =
-					javaMethod1.getDeclarationSignature(false);
+				String methodSignature1 = _getMethodSignature(
+					javaMethod1, false);
+				String methodSignature2 = _getMethodSignature(
+					javaMethod2, false);
 
-				return declarationSignature.compareTo(
-					javaMethod2.getDeclarationSignature(false));
+				if (methodSignature1.equals(methodSignature2)) {
+					methodSignature1 = _getMethodSignature(javaMethod1, true);
+					methodSignature2 = _getMethodSignature(javaMethod2, true);
+				}
+
+				return methodSignature1.compareToIgnoreCase(methodSignature2);
 			}
 
 		};
 
 		Collections.sort(javaMethods, comparator);
 
-		return javaMethods.toArray(new JavaMethod[javaMethods.size()]);
+		return javaMethods;
 	}
 
-	private List<Entity> _mergeReferenceList(Entity entity) {
-		List<Entity> referenceList = entity.getReferenceList();
+	private List<Entity> _mergeReferenceEntities(Entity entity) {
+		List<Entity> referenceEntities = entity.getReferenceEntities();
 
 		Set<Entity> set = new LinkedHashSet<>();
 
 		if (_autoImportDefaultReferences) {
-			set.addAll(_ejbList);
+			set.addAll(_entities);
 		}
 		else {
 			set.add(entity);
 		}
 
-		set.addAll(referenceList);
+		set.addAll(referenceEntities);
 
 		return new ArrayList<>(set);
 	}
 
-	private void _parseEntity(Element entityElement) throws Exception {
-		String ejbName = entityElement.attributeValue("name");
+	private Entity _parseEntity(Element entityElement) throws Exception {
+		String entityName = entityElement.attributeValue("name");
 		String humanName = entityElement.attributeValue("human-name");
 
-		String table = entityElement.attributeValue("table");
+		String tableName = entityElement.attributeValue("table");
 
-		if (Validator.isNull(table)) {
-			table = ejbName;
+		if (Validator.isNull(tableName)) {
+			tableName = entityName;
 
-			if (_badTableNames.contains(ejbName)) {
-				table += StringPool.UNDERLINE;
+			if (_badTableNames.contains(entityName)) {
+				tableName += StringPool.UNDERLINE;
 			}
 
 			if (_autoNamespaceTables) {
-				table = _portletShortName + StringPool.UNDERLINE + ejbName;
+				tableName =
+					_portletShortName + StringPool.UNDERLINE + entityName;
 			}
 		}
 
@@ -4822,30 +5510,37 @@ public class ServiceBuilder {
 			entityElement.attributeValue("uuid"));
 		boolean uuidAccessor = GetterUtil.getBoolean(
 			entityElement.attributeValue("uuid-accessor"));
+		boolean externalReferenceCode = GetterUtil.getBoolean(
+			entityElement.attributeValue("external-reference-code"));
 		boolean localService = GetterUtil.getBoolean(
 			entityElement.attributeValue("local-service"));
 		boolean remoteService = GetterUtil.getBoolean(
 			entityElement.attributeValue("remote-service"), true);
-		String persistenceClass = GetterUtil.getString(
+		boolean persistence = GetterUtil.getBoolean(
+			entityElement.attributeValue("persistence"), true);
+		String persistenceClassName = GetterUtil.getString(
 			entityElement.attributeValue("persistence-class"),
-			_packagePath + ".service.persistence.impl." + ejbName +
-				"PersistenceImpl");
+			StringBundler.concat(
+				_packagePath, ".service.persistence.impl.", entityName,
+				"PersistenceImpl"));
 
-		String finderClass = "";
+		String finderClassName = "";
 
 		File originalFinderImplFile = new File(
-			_outputPath + "/service/persistence/" + ejbName +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/", entityName,
+				"FinderImpl.java"));
 		File newFinderImplFile = new File(
-			_outputPath + "/service/persistence/impl/" + ejbName +
-				"FinderImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entityName,
+				"FinderImpl.java"));
 
 		if (originalFinderImplFile.exists()) {
 			_move(originalFinderImplFile, newFinderImplFile);
 
 			String content = _read(newFinderImplFile);
 
-			StringBundler sb = new StringBundler();
+			StringBundler sb = new StringBundler(13);
 
 			sb.append("package ");
 			sb.append(_packagePath);
@@ -4854,13 +5549,13 @@ public class ServiceBuilder {
 			sb.append("import ");
 			sb.append(_apiPackagePath);
 			sb.append(".service.persistence.");
-			sb.append(ejbName);
+			sb.append(entityName);
 			sb.append("Finder;\n");
 
 			sb.append("import ");
 			sb.append(_apiPackagePath);
 			sb.append(".service.persistence.");
-			sb.append(ejbName);
+			sb.append(entityName);
 			sb.append("Util;");
 
 			content = StringUtil.replace(
@@ -4872,9 +5567,9 @@ public class ServiceBuilder {
 		}
 
 		if (newFinderImplFile.exists()) {
-			finderClass =
-				_packagePath + ".service.persistence.impl." + ejbName +
-					"FinderImpl";
+			finderClassName = StringBundler.concat(
+				_packagePath, ".service.persistence.impl.", entityName,
+				"FinderImpl");
 		}
 
 		String dataSource = entityElement.attributeValue("data-source");
@@ -4882,37 +5577,72 @@ public class ServiceBuilder {
 		String txManager = entityElement.attributeValue("tx-manager");
 		boolean cacheEnabled = GetterUtil.getBoolean(
 			entityElement.attributeValue("cache-enabled"), true);
-		boolean jsonEnabled = GetterUtil.getBoolean(
-			entityElement.attributeValue("json-enabled"), remoteService);
+
 		boolean mvccEnabled = GetterUtil.getBoolean(
 			entityElement.attributeValue("mvcc-enabled"), _mvccEnabled);
-		boolean trashEnabled = GetterUtil.getBoolean(
-			entityElement.attributeValue("trash-enabled"));
-		boolean deprecated = GetterUtil.getBoolean(
-			entityElement.attributeValue("deprecated"));
 
 		boolean dynamicUpdateEnabled = GetterUtil.getBoolean(
 			entityElement.attributeValue("dynamic-update-enabled"),
 			mvccEnabled);
 
-		List<EntityColumn> pkList = new ArrayList<>();
-		List<EntityColumn> regularColList = new ArrayList<>();
-		List<EntityColumn> blobList = new ArrayList<>();
-		List<EntityColumn> collectionList = new ArrayList<>();
-		List<EntityColumn> columnList = new ArrayList<>();
+		boolean jsonEnabled = GetterUtil.getBoolean(
+			entityElement.attributeValue("json-enabled"), remoteService);
+		boolean trashEnabled = GetterUtil.getBoolean(
+			entityElement.attributeValue("trash-enabled"));
+
+		String uadApplicationName = GetterUtil.getString(
+			entityElement.attributeValue("uad-application-name"),
+			_portletShortName);
+
+		uadApplicationName = TextFormatter.format(
+			uadApplicationName, TextFormatter.D);
+
+		boolean uadAutoDelete = GetterUtil.getBoolean(
+			entityElement.attributeValue("uad-auto-delete"));
+
+		String uadDirPath = GetterUtil.getString(
+			entityElement.attributeValue("uad-dir-path"), _uadDirName);
+		String uadPackagePath = GetterUtil.getString(
+			entityElement.attributeValue("uad-package-path"), _packagePath);
+
+		String uadOutputPath =
+			uadDirPath + "/" + StringUtil.replace(uadPackagePath, '.', '/');
+
+		boolean versioned = GetterUtil.getBoolean(
+			entityElement.attributeValue("versioned"));
+
+		if (versioned) {
+			mvccEnabled = GetterUtil.getBoolean(
+				entityElement.attributeValue("mvcc-enabled"), true);
+
+			if (!mvccEnabled) {
+				throw new IllegalArgumentException(
+					"Cannot use versioned entity with mvccEnabled disabled " +
+						"for " + entityName);
+			}
+
+			if (!persistence) {
+				throw new IllegalArgumentException(
+					"Cannot use versioned entity with persistence disabled " +
+						"for " + entityName);
+			}
+		}
+
+		boolean deprecated = GetterUtil.getBoolean(
+			entityElement.attributeValue("deprecated"));
+
+		List<EntityColumn> pkEntityColumns = new ArrayList<>();
+		List<EntityColumn> regularEntityColumns = new ArrayList<>();
+		List<EntityColumn> blobEntityColumns = new ArrayList<>();
+		List<EntityColumn> collectionEntityColumns = new ArrayList<>();
+		List<EntityColumn> entityColumns = new ArrayList<>();
 
 		boolean permissionedModel = false;
+		boolean resourcedModel = false;
 
 		List<Element> columnElements = entityElement.elements("column");
 
-		if (uuid) {
-			Element columnElement = DocumentHelper.createElement("column");
-
-			columnElement.addAttribute("name", "uuid");
-			columnElement.addAttribute("type", "String");
-
-			columnElements.add(0, columnElement);
-		}
+		List<Element> derivedColumnElements = new ArrayList<>();
 
 		if (mvccEnabled && !columnElements.isEmpty()) {
 			Element columnElement = DocumentHelper.createElement("column");
@@ -4920,17 +5650,58 @@ public class ServiceBuilder {
 			columnElement.addAttribute("name", "mvccVersion");
 			columnElement.addAttribute("type", "long");
 
-			columnElements.add(0, columnElement);
+			derivedColumnElements.add(columnElement);
 		}
+
+		if (uuid) {
+			Element columnElement = DocumentHelper.createElement("column");
+
+			columnElement.addAttribute("name", "uuid");
+			columnElement.addAttribute("type", "String");
+
+			derivedColumnElements.add(columnElement);
+		}
+
+		if (externalReferenceCode) {
+			Element columnElement = DocumentHelper.createElement("column");
+
+			columnElement.addAttribute("name", "externalReferenceCode");
+			columnElement.addAttribute("type", "String");
+
+			derivedColumnElements.add(columnElement);
+		}
+
+		if (versioned) {
+			Element columnElement = DocumentHelper.createElement("column");
+
+			columnElement.addAttribute("name", "headId");
+			columnElement.addAttribute("type", "long");
+
+			derivedColumnElements.add(columnElement);
+		}
+
+		Element localizedEntityElement = entityElement.element(
+			"localized-entity");
+
+		if (localizedEntityElement != null) {
+			Element columnElement = DocumentHelper.createElement("column");
+
+			columnElement.addAttribute("name", "defaultLanguageId");
+			columnElement.addAttribute("type", "String");
+
+			derivedColumnElements.add(columnElement);
+
+			if (!persistence) {
+				throw new IllegalArgumentException(
+					"Cannot use localized-entity with persistence disabled " +
+						"for " + entityName);
+			}
+		}
+
+		columnElements.addAll(0, derivedColumnElements);
 
 		for (Element columnElement : columnElements) {
 			String columnName = columnElement.attributeValue("name");
-
-			if (columnName.equals("resourceBlockId") &&
-				!ejbName.equals("ResourceBlock")) {
-
-				permissionedModel = true;
-			}
 
 			String columnDBName = columnElement.attributeValue("db-name");
 
@@ -4949,18 +5720,26 @@ public class ServiceBuilder {
 				columnElement.attributeValue("accessor"));
 			boolean filterPrimary = GetterUtil.getBoolean(
 				columnElement.attributeValue("filter-primary"));
-			String collectionEntity = columnElement.attributeValue("entity");
+			String columnEntityName = columnElement.attributeValue("entity");
 
-			String mappingTable = columnElement.attributeValue("mapping-table");
+			String mappingTableName = columnElement.attributeValue(
+				"mapping-table");
 
-			if (Validator.isNotNull(mappingTable)) {
-				if (_badTableNames.contains(mappingTable)) {
-					mappingTable += StringPool.UNDERLINE;
+			if (Validator.isNotNull(mappingTableName)) {
+				if (!persistence) {
+					throw new IllegalArgumentException(
+						"Cannot have mapping-table without persistence for " +
+							"entity " + entityName);
+				}
+
+				if (_badTableNames.contains(mappingTableName)) {
+					mappingTableName += StringPool.UNDERLINE;
 				}
 
 				if (_autoNamespaceTables) {
-					mappingTable =
-						_portletShortName + StringPool.UNDERLINE + mappingTable;
+					mappingTableName =
+						_portletShortName + StringPool.UNDERLINE +
+							mappingTableName;
 				}
 			}
 
@@ -4978,43 +5757,73 @@ public class ServiceBuilder {
 				columnElement.attributeValue("container-model"));
 			boolean parentContainerModel = GetterUtil.getBoolean(
 				columnElement.attributeValue("parent-container-model"));
+			String uadAnonymizeFieldName = GetterUtil.getString(
+				columnElement.attributeValue("uad-anonymize-field-name"));
+			boolean uadNonanonymizable = GetterUtil.getBoolean(
+				columnElement.attributeValue("uad-nonanonymizable"));
 
-			EntityColumn col = new EntityColumn(
+			if (columnName.equals("resourceBlockId") &&
+				!entityName.equals("ResourceBlock")) {
+
+				permissionedModel = true;
+			}
+
+			if (columnName.equals("resourcePrimKey") && !primary) {
+				resourcedModel = true;
+			}
+
+			EntityColumn entityColumn = new EntityColumn(
 				columnName, columnDBName, columnType, primary, accessor,
-				filterPrimary, collectionEntity, mappingTable, idType, idParam,
-				convertNull, lazy, localized, colJsonEnabled, containerModel,
-				parentContainerModel);
+				filterPrimary, columnEntityName, mappingTableName, idType,
+				idParam, convertNull, lazy, localized, colJsonEnabled,
+				containerModel, parentContainerModel, uadAnonymizeFieldName,
+				uadNonanonymizable);
 
 			if (primary) {
-				pkList.add(col);
+				if (!columnType.equals("int") && !columnType.equals("long") &&
+					!columnType.equals("String")) {
+
+					throw new IllegalArgumentException(
+						StringBundler.concat(
+							"Primary key ", columnName, " of entity ",
+							entityName, " must be an int, long, or String"));
+				}
+
+				pkEntityColumns.add(entityColumn);
 			}
 
 			if (columnType.equals("Collection")) {
-				collectionList.add(col);
+				collectionEntityColumns.add(entityColumn);
 			}
 			else {
-				regularColList.add(col);
+				regularEntityColumns.add(entityColumn);
 
 				if (columnType.equals("Blob")) {
-					blobList.add(col);
+					blobEntityColumns.add(entityColumn);
 				}
 			}
 
-			columnList.add(col);
+			entityColumns.add(entityColumn);
 
-			if (Validator.isNotNull(collectionEntity) &&
-				Validator.isNotNull(mappingTable)) {
+			if (Validator.isNotNull(columnEntityName) &&
+				Validator.isNotNull(mappingTableName)) {
 
 				EntityMapping entityMapping = new EntityMapping(
-					mappingTable, ejbName, collectionEntity);
+					mappingTableName, entityName, columnEntityName);
 
-				if (!_entityMappings.containsKey(mappingTable)) {
-					_entityMappings.put(mappingTable, entityMapping);
+				if (!_entityMappings.containsKey(mappingTableName)) {
+					_entityMappings.put(mappingTableName, entityMapping);
 				}
 			}
 		}
 
-		EntityOrder order = null;
+		if (uuid && pkEntityColumns.isEmpty()) {
+			throw new ServiceBuilderException(
+				"Unable to create entity \"" + entityName +
+					"\" with a UUID without a primary key");
+		}
+
+		EntityOrder entityOrder = null;
 
 		Element orderElement = entityElement.element("order");
 
@@ -5022,27 +5831,27 @@ public class ServiceBuilder {
 			boolean asc = true;
 
 			if ((orderElement.attribute("by") != null) &&
-				orderElement.attributeValue("by").equals("desc")) {
+				Objects.equals(orderElement.attributeValue("by"), "desc")) {
 
 				asc = false;
 			}
 
-			List<EntityColumn> orderColsList = new ArrayList<>();
+			List<EntityColumn> orderEntityColumns = new ArrayList<>();
 
-			order = new EntityOrder(asc, orderColsList);
+			entityOrder = new EntityOrder(asc, orderEntityColumns);
 
 			List<Element> orderColumnElements = orderElement.elements(
 				"order-column");
 
-			for (Element orderColElement : orderColumnElements) {
-				String orderColName = orderColElement.attributeValue("name");
+			for (Element orderColumnElement : orderColumnElements) {
+				String orderColName = orderColumnElement.attributeValue("name");
 				boolean orderColCaseSensitive = GetterUtil.getBoolean(
-					orderColElement.attributeValue("case-sensitive"), true);
+					orderColumnElement.attributeValue("case-sensitive"), true);
 
 				boolean orderColByAscending = asc;
 
 				String orderColBy = GetterUtil.getString(
-					orderColElement.attributeValue("order-by"));
+					orderColumnElement.attributeValue("order-by"));
 
 				if (orderColBy.equals("asc")) {
 					orderColByAscending = true;
@@ -5051,25 +5860,33 @@ public class ServiceBuilder {
 					orderColByAscending = false;
 				}
 
-				EntityColumn col = Entity.getColumn(orderColName, columnList);
+				int index = entityColumns.indexOf(
+					new EntityColumn(orderColName));
 
-				col.setOrderColumn(true);
+				if (index < 0) {
+					throw new IllegalArgumentException(
+						"Invalid order by column " + orderColName);
+				}
 
-				col = (EntityColumn)col.clone();
+				EntityColumn entityColumn = entityColumns.get(index);
 
-				col.setCaseSensitive(orderColCaseSensitive);
-				col.setOrderByAscending(orderColByAscending);
+				entityColumn.setOrderColumn(true);
 
-				orderColsList.add(col);
+				entityColumn = (EntityColumn)entityColumn.clone();
+
+				entityColumn.setCaseSensitive(orderColCaseSensitive);
+				entityColumn.setOrderByAscending(orderColByAscending);
+
+				orderEntityColumns.add(entityColumn);
 			}
 		}
 
-		List<EntityFinder> finderList = new ArrayList<>();
+		List<EntityFinder> entityFinders = new ArrayList<>();
 
 		List<Element> finderElements = entityElement.elements("finder");
 
 		if (uuid) {
-			if (columnList.contains(new EntityColumn("companyId"))) {
+			if (entityColumns.contains(new EntityColumn("companyId"))) {
 				Element finderElement = DocumentHelper.createElement("finder");
 
 				finderElement.addAttribute("name", "Uuid_C");
@@ -5087,17 +5904,17 @@ public class ServiceBuilder {
 				finderElements.add(0, finderElement);
 			}
 
-			if (columnList.contains(new EntityColumn("groupId"))) {
+			if (entityColumns.contains(new EntityColumn("groupId"))) {
 				Element finderElement = DocumentHelper.createElement("finder");
 
-				if (ejbName.equals("Layout")) {
+				if (entityName.equals("Layout")) {
 					finderElement.addAttribute("name", "UUID_G_P");
 				}
 				else {
 					finderElement.addAttribute("name", "UUID_G");
 				}
 
-				finderElement.addAttribute("return-type", ejbName);
+				finderElement.addAttribute("return-type", entityName);
 				finderElement.addAttribute("unique", "true");
 
 				Element finderColumnElement = finderElement.addElement(
@@ -5109,7 +5926,7 @@ public class ServiceBuilder {
 
 				finderColumnElement.addAttribute("name", "groupId");
 
-				if (ejbName.equals("Layout")) {
+				if (entityName.equals("Layout")) {
 					finderColumnElement = finderElement.addElement(
 						"finder-column");
 
@@ -5132,6 +5949,26 @@ public class ServiceBuilder {
 			finderElements.add(0, finderElement);
 		}
 
+		if (externalReferenceCode &&
+			entityColumns.contains(new EntityColumn("companyId"))) {
+
+			Element finderElement = DocumentHelper.createElement("finder");
+
+			finderElement.addAttribute("name", "C_ERC");
+			finderElement.addAttribute("return-type", entityName);
+
+			Element finderColumnElement = finderElement.addElement(
+				"finder-column");
+
+			finderColumnElement.addAttribute("name", "companyId");
+
+			finderColumnElement = finderElement.addElement("finder-column");
+
+			finderColumnElement.addAttribute("name", "externalReferenceCode");
+
+			finderElements.add(finderElement);
+		}
+
 		if (permissionedModel) {
 			Element finderElement = DocumentHelper.createElement("finder");
 
@@ -5146,7 +5983,36 @@ public class ServiceBuilder {
 			finderElements.add(0, finderElement);
 		}
 
-		String alias = TextFormatter.format(ejbName, TextFormatter.I);
+		if (resourcedModel) {
+			Element finderElement = DocumentHelper.createElement("finder");
+
+			finderElement.addAttribute("name", "ResourcePrimKey");
+			finderElement.addAttribute("return-type", "Collection");
+
+			Element finderColumnElement = finderElement.addElement(
+				"finder-column");
+
+			finderColumnElement.addAttribute("name", "resourcePrimKey");
+
+			finderElements.add(0, finderElement);
+		}
+
+		if (versioned) {
+			Element finderElement = DocumentHelper.createElement("finder");
+
+			finderElement.addAttribute("name", "HeadId");
+			finderElement.addAttribute("return-type", entityName);
+			finderElement.addAttribute("unique", "true");
+
+			Element finderColumnElement = finderElement.addElement(
+				"finder-column");
+
+			finderColumnElement.addAttribute("name", "headId");
+
+			finderElements.add(finderElement);
+		}
+
+		String alias = TextFormatter.format(entityName, TextFormatter.I);
 
 		if (_badAliasNames.contains(StringUtil.toLowerCase(alias))) {
 			alias += StringPool.UNDERLINE;
@@ -5160,25 +6026,29 @@ public class ServiceBuilder {
 
 			String finderWhere = finderElement.attributeValue("where");
 
+			String finderDBWhere = finderWhere;
+
 			if (Validator.isNotNull(finderWhere)) {
-				for (EntityColumn column : columnList) {
+				for (EntityColumn column : entityColumns) {
 					String name = column.getName();
 
 					finderWhere = StringUtil.replace(
 						finderWhere, name, alias + "." + name);
+					finderDBWhere = StringUtil.replace(
+						finderDBWhere, name, alias + "." + column.getDBName());
 				}
 			}
 
 			boolean finderDBIndex = GetterUtil.getBoolean(
 				finderElement.attributeValue("db-index"), true);
 
-			List<EntityColumn> finderColsList = new ArrayList<>();
+			List<EntityColumn> finderEntityColumns = new ArrayList<>();
 
 			List<Element> finderColumnElements = finderElement.elements(
 				"finder-column");
 
 			for (Element finderColumnElement : finderColumnElements) {
-				String finderColName = finderColumnElement.attributeValue(
+				String finderColumnName = finderColumnElement.attributeValue(
 					"name");
 				boolean finderColCaseSensitive = GetterUtil.getBoolean(
 					finderColumnElement.attributeValue("case-sensitive"), true);
@@ -5186,92 +6056,692 @@ public class ServiceBuilder {
 					finderColumnElement.attributeValue("comparator"), "=");
 				String finderColArrayableOperator = GetterUtil.getString(
 					finderColumnElement.attributeValue("arrayable-operator"));
+				boolean finderColArrayablePagination = GetterUtil.getBoolean(
+					finderColumnElement.attributeValue("arrayable-pagination"));
 
-				EntityColumn col = Entity.getColumn(finderColName, columnList);
+				EntityColumn entityColumn = Entity.getEntityColumn(
+					finderColumnName, entityColumns);
 
-				if (!col.isFinderPath()) {
-					col.setFinderPath(true);
+				if (!entityColumn.isFinderPath()) {
+					entityColumn.setFinderPath(true);
 				}
 
-				col = (EntityColumn)col.clone();
+				entityColumn = (EntityColumn)entityColumn.clone();
 
-				col.setCaseSensitive(finderColCaseSensitive);
-				col.setComparator(finderColComparator);
-				col.setArrayableOperator(finderColArrayableOperator);
+				entityColumn.setCaseSensitive(finderColCaseSensitive);
+				entityColumn.setComparator(finderColComparator);
+				entityColumn.setArrayableOperator(finderColArrayableOperator);
+				entityColumn.setArrayablePagination(
+					finderColArrayablePagination);
 
-				col.validate();
+				entityColumn.validate();
 
-				finderColsList.add(col);
+				finderEntityColumns.add(entityColumn);
 			}
 
-			finderList.add(
+			entityFinders.add(
 				new EntityFinder(
 					finderName, finderReturn, finderUnique, finderWhere,
-					finderDBIndex, finderColsList));
+					finderDBWhere, finderDBIndex, finderEntityColumns));
 		}
 
-		List<Entity> referenceList = new ArrayList<>();
-		List<String> unresolvedReferenceList = new ArrayList<>();
+		List<Entity> referenceEntities = new ArrayList<>();
+		List<String> unresolvedReferenceEntityNames = new ArrayList<>();
 
 		if (_build) {
+			Set<String> referenceEntityNames = new TreeSet<>();
+
 			List<Element> referenceElements = entityElement.elements(
 				"reference");
 
-			Set<String> referenceSet = new TreeSet<>();
-
 			for (Element referenceElement : referenceElements) {
-				String referencePackage = referenceElement.attributeValue(
+				String referencePackagePath = referenceElement.attributeValue(
 					"package-path");
-				String referenceEntity = referenceElement.attributeValue(
+				String referenceEntityName = referenceElement.attributeValue(
 					"entity");
 
-				referenceSet.add(referencePackage + "." + referenceEntity);
+				referenceEntityNames.add(
+					referencePackagePath + "." + referenceEntityName);
 			}
 
 			if (!_packagePath.equals("com.liferay.counter")) {
-				referenceSet.add("com.liferay.counter.Counter");
+				referenceEntityNames.add("com.liferay.counter.Counter");
 			}
 
 			if (_autoImportDefaultReferences) {
-				referenceSet.add("com.liferay.portal.ClassName");
-				referenceSet.add("com.liferay.portal.Resource");
-				referenceSet.add("com.liferay.portal.User");
+				referenceEntityNames.add("com.liferay.portal.ClassName");
+				referenceEntityNames.add("com.liferay.portal.Resource");
+				referenceEntityNames.add("com.liferay.portal.User");
 			}
 
-			for (String referenceName : referenceSet) {
+			for (String referenceEntityName : referenceEntityNames) {
 				try {
-					referenceList.add(getEntity(referenceName));
+					Entity entity = getEntity(referenceEntityName);
+
+					if (_dtdVersion.isPreviousVersionThan("7.1.0")) {
+
+						// See LPS-76509. Added this hack for
+						// c9c1fcef14c5cdc1325ae97fee79dbc138728c3c in 7.1.x.
+
+						String apiPackagePath = entity.getApiPackagePath();
+
+						if (apiPackagePath.equals(
+								"com.liferay.message.boards")) {
+
+							entity.setApiPackagePath(
+								apiPackagePath + ".kernel");
+						}
+					}
+
+					referenceEntities.add(entity);
 				}
 				catch (RuntimeException re) {
-					unresolvedReferenceList.add(referenceName);
+					unresolvedReferenceEntityNames.add(referenceEntityName);
 				}
 			}
 		}
 
-		List<String> txRequiredList = new ArrayList<>();
+		List<String> txRequiredMethodNames = new ArrayList<>();
 
 		List<Element> txRequiredElements = entityElement.elements(
 			"tx-required");
 
-		for (Element txRequiredEl : txRequiredElements) {
-			String txRequired = txRequiredEl.getText();
+		if (!txRequiredElements.isEmpty()) {
+			System.err.println(
+				"The tx-required attribute is deprecated in favor annotating " +
+					"the service impl method with " +
+						"com.liferay.portal.kernel.transaction.Transactional");
 
-			txRequiredList.add(txRequired);
+			for (Element txRequiredElement : txRequiredElements) {
+				String txRequired = txRequiredElement.getText();
+
+				txRequiredMethodNames.add(txRequired);
+			}
 		}
 
 		boolean resourceActionModel = _resourceActionModels.contains(
-			_apiPackagePath + ".model." + ejbName);
+			_apiPackagePath + ".model." + entityName);
 
-		_ejbList.add(
-			new Entity(
-				_packagePath, _apiPackagePath, _portletName, _portletShortName,
-				ejbName, humanName, table, alias, uuid, uuidAccessor,
-				localService, remoteService, persistenceClass, finderClass,
-				dataSource, sessionFactory, txManager, cacheEnabled,
-				dynamicUpdateEnabled, jsonEnabled, mvccEnabled, trashEnabled,
-				deprecated, pkList, regularColList, blobList, collectionList,
-				columnList, order, finderList, referenceList,
-				unresolvedReferenceList, txRequiredList, resourceActionModel));
+		Entity entity = new Entity(
+			this, _packagePath, _apiPackagePath, _portletShortName, entityName,
+			humanName, tableName, alias, uuid, uuidAccessor,
+			externalReferenceCode, localService, remoteService, persistence,
+			persistenceClassName, finderClassName, dataSource, sessionFactory,
+			txManager, cacheEnabled, dynamicUpdateEnabled, jsonEnabled,
+			mvccEnabled, trashEnabled, uadApplicationName, uadAutoDelete,
+			uadOutputPath, uadPackagePath, deprecated, pkEntityColumns,
+			regularEntityColumns, blobEntityColumns, collectionEntityColumns,
+			entityColumns, entityOrder, entityFinders, referenceEntities,
+			unresolvedReferenceEntityNames, txRequiredMethodNames,
+			resourceActionModel);
+
+		_entities.add(entity);
+
+		if (entity.isUADEnabled()) {
+			if (!_uadApplicationEntities.containsKey(uadApplicationName)) {
+				_uadApplicationEntities.put(
+					uadApplicationName, ListUtil.toList(entity));
+			}
+			else {
+				List<Entity> uadApplicationEntities =
+					_uadApplicationEntities.get(uadApplicationName);
+
+				uadApplicationEntities.add(entity);
+			}
+		}
+
+		if (versioned) {
+			_parseVersionEntity(entity, columnElements);
+		}
+
+		if (localizedEntityElement != null) {
+			_parseLocalizedEntity(entity, localizedEntityElement);
+
+			if (versioned) {
+				Entity localizedEntity = entity.getLocalizedEntity();
+
+				entity.addReferenceEntity(localizedEntity.getVersionEntity());
+			}
+		}
+
+		if (versioned) {
+			EntityColumn headEntityColumn = new EntityColumn(
+				"head", "head", "boolean", false, false, false, null, null,
+				null, null, true, false, false, false, false, false, null,
+				false);
+
+			headEntityColumn.setComparator("=");
+			headEntityColumn.setFinderPath(true);
+			headEntityColumn.setInterfaceColumn(false);
+
+			List<EntityColumn> databaseRegularEntityColumns =
+				entity.getDatabaseRegularEntityColumns();
+
+			int index = databaseRegularEntityColumns.indexOf(
+				new EntityColumn("headId"));
+
+			databaseRegularEntityColumns.add(index + 1, headEntityColumn);
+
+			List<EntityColumn> entityFinderColumns =
+				entity.getFinderEntityColumns();
+
+			entityFinderColumns.add(headEntityColumn);
+
+			Collections.sort(entityFinderColumns);
+
+			String localizedPKEntityColumn = entityElement.attributeValue(
+				"localized-pk-entity-column");
+
+			ListIterator<EntityFinder> listIterator =
+				entityFinders.listIterator();
+
+			while (listIterator.hasNext()) {
+				EntityFinder entityFinder = listIterator.next();
+
+				String finderName = entityFinder.getName();
+
+				if (finderName.equals("HeadId") ||
+					((localizedPKEntityColumn != null) &&
+					 entityFinder.hasEntityColumn(localizedPKEntityColumn))) {
+
+					continue;
+				}
+
+				// Finder for both draft and head
+
+				listIterator.set(
+					new EntityFinder(
+						entityFinder.getName(), "Collection", false,
+						entityFinder.getWhere(), entityFinder.getDBWhere(),
+						entityFinder.isDBIndex(),
+						new ArrayList<>(entityFinder.getEntityColumns())));
+
+				List<EntityColumn> finderEntityColumns =
+					entityFinder.getEntityColumns();
+
+				finderEntityColumns.add(headEntityColumn);
+
+				// Finder for either draft or head
+
+				listIterator.add(
+					new EntityFinder(
+						entityFinder.getName() + "_Head",
+						entityFinder.getReturnType(), entityFinder.isUnique(),
+						entityFinder.getWhere(), entityFinder.getDBWhere(),
+						entityFinder.isDBIndex(), finderEntityColumns));
+			}
+		}
+
+		return entity;
+	}
+
+	private void _parseLocalizedEntity(
+			Entity entity, Element localizedEntityElement)
+		throws Exception {
+
+		if (!entity.hasLocalService()) {
+			throw new IllegalArgumentException(
+				entity.getName() +
+					" must have a local service to use localized entity");
+		}
+
+		for (EntityColumn entityColumn : entity.getEntityColumns()) {
+			if (entityColumn.isLocalized()) {
+				throw new IllegalArgumentException(
+					StringBundler.concat(
+						"Unable to use localized entity with localized column ",
+						entityColumn.getName(), " in ", entity.getName()));
+			}
+		}
+
+		// Localized entity
+
+		Element newLocalizedEntityElement = DocumentHelper.createElement(
+			"entity");
+
+		if (Validator.isNotNull(entity.getDataSource())) {
+			newLocalizedEntityElement.addAttribute(
+				"data-source", entity.getDataSource());
+		}
+
+		if (entity.isDeprecated()) {
+			newLocalizedEntityElement.addAttribute("deprecated", "true");
+		}
+
+		newLocalizedEntityElement.addAttribute("local-service", "false");
+		newLocalizedEntityElement.addAttribute("mvcc-enabled", "true");
+
+		String localizedEntityName = GetterUtil.getString(
+			localizedEntityElement.attributeValue("name"),
+			entity.getName() + "Localization");
+
+		newLocalizedEntityElement.addAttribute("name", localizedEntityName);
+
+		newLocalizedEntityElement.addAttribute("remote-service", "false");
+
+		if (Validator.isNotNull(entity.getSessionFactory())) {
+			newLocalizedEntityElement.addAttribute(
+				"session-factory", entity.getSessionFactory());
+		}
+
+		String localizedEntityTableName = localizedEntityElement.attributeValue(
+			"table");
+
+		if (Validator.isNotNull(localizedEntityTableName)) {
+			newLocalizedEntityElement.addAttribute(
+				"table", localizedEntityTableName);
+		}
+
+		if (Validator.isNotNull(entity.getTXManager())) {
+			newLocalizedEntityElement.addAttribute(
+				"tx-manager", entity.getTXManager());
+		}
+
+		if (entity.getVersionEntity() != null) {
+			newLocalizedEntityElement.addAttribute("versioned", "true");
+		}
+
+		newLocalizedEntityElement.addAttribute("uuid", "false");
+
+		// Auto generated columns
+
+		Element newLocalizedColumnElement =
+			newLocalizedEntityElement.addElement("column");
+
+		newLocalizedColumnElement.addAttribute(
+			"name",
+			TextFormatter.format(localizedEntityName + "Id", TextFormatter.I));
+		newLocalizedColumnElement.addAttribute("primary", "true");
+		newLocalizedColumnElement.addAttribute("type", "long");
+
+		if (entity.hasEntityColumn("companyId")) {
+			newLocalizedColumnElement = newLocalizedEntityElement.addElement(
+				"column");
+
+			newLocalizedColumnElement.addAttribute("name", "companyId");
+			newLocalizedColumnElement.addAttribute("type", "long");
+		}
+
+		List<EntityColumn> pkEntityColumns = entity.getPKEntityColumns();
+
+		if (pkEntityColumns.size() > 1) {
+			throw new IllegalArgumentException(
+				"Unable to use localized entity with compound primary key");
+		}
+
+		EntityColumn pkEntityColumn = pkEntityColumns.get(0);
+
+		if (entity.getVersionEntity() != null) {
+			newLocalizedEntityElement.addAttribute(
+				"localized-pk-entity-column", pkEntityColumn.getName());
+		}
+
+		newLocalizedColumnElement = newLocalizedEntityElement.addElement(
+			"column");
+
+		newLocalizedColumnElement.addAttribute(
+			"name", pkEntityColumn.getName());
+		newLocalizedColumnElement.addAttribute(
+			"type", pkEntityColumn.getType());
+
+		newLocalizedColumnElement = newLocalizedEntityElement.addElement(
+			"column");
+
+		newLocalizedColumnElement.addAttribute("name", "languageId");
+		newLocalizedColumnElement.addAttribute("type", "String");
+
+		// Localized columns
+
+		List<Element> localizedColumnElements = localizedEntityElement.elements(
+			"localized-column");
+
+		if (localizedColumnElements.isEmpty()) {
+			throw new IllegalArgumentException(
+				"Unable to use localized entity table without localized " +
+					"columns");
+		}
+
+		List<EntityColumn> localizedEntityColumns = new ArrayList<>(
+			localizedColumnElements.size());
+
+		for (Element localizedColumnElement : localizedColumnElements) {
+			String columnName = localizedColumnElement.attributeValue("name");
+
+			String columnDBName = localizedColumnElement.attributeValue(
+				"db-name");
+
+			if (Validator.isNull(columnDBName)) {
+				columnDBName = columnName;
+
+				if (_badColumnNames.contains(columnName)) {
+					columnDBName += StringPool.UNDERLINE;
+				}
+			}
+
+			localizedEntityColumns.add(
+				new EntityColumn(columnName, columnDBName));
+
+			newLocalizedColumnElement = newLocalizedEntityElement.addElement(
+				"column");
+
+			newLocalizedColumnElement.addAttribute("name", columnName);
+			newLocalizedColumnElement.addAttribute("db-name", columnDBName);
+			newLocalizedColumnElement.addAttribute("type", "String");
+		}
+
+		// Auto generated finders
+
+		Element newLocalizedFinderElement =
+			newLocalizedEntityElement.addElement("finder");
+
+		String finderName = TextFormatter.format(
+			pkEntityColumn.getName(), TextFormatter.G);
+
+		newLocalizedFinderElement.addAttribute("name", finderName);
+
+		newLocalizedFinderElement.addAttribute("return-type", "Collection");
+
+		Element newLocalizedFinderColumnElement =
+			newLocalizedFinderElement.addElement("finder-column");
+
+		newLocalizedFinderColumnElement.addAttribute(
+			"name", pkEntityColumn.getName());
+
+		newLocalizedFinderElement = newLocalizedEntityElement.addElement(
+			"finder");
+
+		newLocalizedFinderElement.addAttribute(
+			"name", finderName + "_LanguageId");
+
+		newLocalizedFinderElement.addAttribute(
+			"return-type", localizedEntityName);
+
+		newLocalizedFinderElement.addAttribute("unique", "true");
+
+		newLocalizedFinderColumnElement = newLocalizedFinderElement.addElement(
+			"finder-column");
+
+		newLocalizedFinderColumnElement.addAttribute(
+			"name", pkEntityColumn.getName());
+
+		newLocalizedFinderColumnElement = newLocalizedFinderElement.addElement(
+			"finder-column");
+
+		newLocalizedFinderColumnElement.addAttribute("name", "languageId");
+
+		// Manual columns
+
+		List<Element> columnElements = localizedEntityElement.elements(
+			"column");
+
+		for (Element columnElement : columnElements) {
+			String localized = columnElement.attributeValue("localized");
+
+			if (localized != null) {
+				throw new IllegalArgumentException(
+					"Unable to have localized columns in localized table for " +
+						"entity " + entity.getName());
+			}
+
+			Element newColumnElement = newLocalizedEntityElement.addElement(
+				"column", columnElement.getStringValue());
+
+			List<Attribute> columnAttributes = columnElement.attributes();
+
+			for (Attribute columnAttribute : columnAttributes) {
+				newColumnElement.addAttribute(
+					columnAttribute.getName(),
+					columnAttribute.getStringValue());
+			}
+		}
+
+		// Manual Order
+
+		Element orderElement = localizedEntityElement.element("order");
+
+		if (orderElement != null) {
+			Element newOrderElement = newLocalizedEntityElement.addElement(
+				"order", orderElement.getStringValue());
+
+			List<Attribute> orderAttributes = orderElement.attributes();
+
+			for (Attribute orderAttribute : orderAttributes) {
+				newOrderElement.addAttribute(
+					orderAttribute.getName(), orderAttribute.getStringValue());
+			}
+		}
+
+		// Manual finders
+
+		List<Element> finderElements = localizedEntityElement.elements(
+			"finder");
+
+		for (Element finderElement : finderElements) {
+			Element newFinderElement = newLocalizedEntityElement.addElement(
+				"finder", finderElement.getStringValue());
+
+			List<Attribute> finderElementAttributes =
+				finderElement.attributes();
+
+			for (Attribute finderElementAttribute : finderElementAttributes) {
+				newFinderElement.addAttribute(
+					finderElementAttribute.getName(),
+					finderElementAttribute.getStringValue());
+			}
+
+			List<Element> finderColumnElements = finderElement.elements(
+				"finder-column");
+
+			for (Element finderColumnElement : finderColumnElements) {
+				List<Attribute> finderColumnAttributes =
+					finderColumnElement.attributes();
+
+				Element newFinderColumnElement = newFinderElement.addElement(
+					"finder-column", finderColumnElement.getStringValue());
+
+				for (Attribute finderColumnAttribute : finderColumnAttributes) {
+					newFinderColumnElement.addAttribute(
+						finderColumnAttribute.getName(),
+						finderColumnAttribute.getStringValue());
+				}
+			}
+		}
+
+		Entity localizedEntity = _parseEntity(newLocalizedEntityElement);
+
+		entity.setLocalizedEntityColumns(localizedEntityColumns);
+		entity.setLocalizedEntity(localizedEntity);
+	}
+
+	private void _parseVersionEntity(
+			Entity entity, List<Element> columnElements)
+		throws Exception {
+
+		// Version entity
+
+		Element versionEntityElement = DocumentHelper.createElement("entity");
+
+		if (Validator.isNotNull(entity.getDataSource())) {
+			versionEntityElement.addAttribute(
+				"data-source", entity.getDataSource());
+		}
+
+		if (entity.isDeprecated()) {
+			versionEntityElement.addAttribute("deprecated", "true");
+		}
+
+		versionEntityElement.addAttribute("local-service", "false");
+		versionEntityElement.addAttribute("mvcc-enabled", "false");
+
+		versionEntityElement.addAttribute("name", entity.getName() + "Version");
+
+		versionEntityElement.addAttribute("remote-service", "false");
+
+		if (Validator.isNotNull(entity.getSessionFactory())) {
+			versionEntityElement.addAttribute(
+				"session-factory", entity.getSessionFactory());
+		}
+
+		if (Validator.isNotNull(entity.getTXManager())) {
+			versionEntityElement.addAttribute(
+				"tx-manager", entity.getTXManager());
+		}
+
+		versionEntityElement.addAttribute("uuid", "false");
+
+		// Version columns
+
+		Element versionEntityColumnElement = versionEntityElement.addElement(
+			"column");
+
+		versionEntityColumnElement.addAttribute(
+			"name", entity.getVarName() + "VersionId");
+		versionEntityColumnElement.addAttribute("primary", "true");
+		versionEntityColumnElement.addAttribute("type", "long");
+
+		List<EntityColumn> pkEntityColumns = entity.getPKEntityColumns();
+
+		if (pkEntityColumns.size() > 1) {
+			throw new IllegalArgumentException(
+				"Unable to use versioned entity with compound primary key");
+		}
+
+		EntityColumn pkEntityColumn = pkEntityColumns.get(0);
+
+		if (!Objects.equals("long", pkEntityColumn.getType())) {
+			throw new IllegalArgumentException(
+				"Must have long primary key to create versioned entity");
+		}
+
+		versionEntityColumnElement = versionEntityElement.addElement("column");
+
+		versionEntityColumnElement.addAttribute("name", "version");
+		versionEntityColumnElement.addAttribute("type", "int");
+
+		// Copied columns
+
+		for (Element columnElement : columnElements) {
+			String name = columnElement.attributeValue("name");
+
+			if (!name.equals("mvccVersion") && !name.equals("headId")) {
+				versionEntityColumnElement = versionEntityElement.addElement(
+					"column");
+
+				List<Attribute> columnAttributes = columnElement.attributes();
+
+				for (Attribute attribute : columnAttributes) {
+					String attributeName = attribute.getName();
+
+					if (!attributeName.equals("primary") &&
+						!attributeName.equals("uad-anonymize-field-name") &&
+						!attributeName.equals("uad-nonanonymizable")) {
+
+						versionEntityColumnElement.addAttribute(
+							attributeName, attribute.getValue());
+					}
+				}
+			}
+		}
+
+		// Order
+
+		Element orderElement = versionEntityElement.addElement("order");
+
+		Element orderColumnElement = orderElement.addElement("order-column");
+
+		orderColumnElement.addAttribute("name", "version");
+		orderColumnElement.addAttribute("order-by", "desc");
+
+		// Finders
+
+		Element versionFinderElement = versionEntityElement.addElement(
+			"finder");
+
+		String finderName = TextFormatter.format(
+			pkEntityColumn.getName(), TextFormatter.G);
+
+		versionFinderElement.addAttribute("name", finderName);
+
+		versionFinderElement.addAttribute("return-type", "Collection");
+
+		Element versionColumnElement = versionFinderElement.addElement(
+			"finder-column");
+
+		versionColumnElement.addAttribute("name", pkEntityColumn.getName());
+
+		versionFinderElement = versionEntityElement.addElement("finder");
+
+		versionFinderElement.addAttribute("name", finderName + "_Version");
+
+		versionFinderElement.addAttribute(
+			"return-type", entity.getName() + "Version");
+
+		versionFinderElement.addAttribute("unique", "true");
+
+		versionColumnElement = versionFinderElement.addElement("finder-column");
+
+		versionColumnElement.addAttribute("name", pkEntityColumn.getName());
+
+		versionColumnElement = versionFinderElement.addElement("finder-column");
+
+		versionColumnElement.addAttribute("name", "version");
+
+		// Copied finders
+
+		for (EntityFinder entityFinder : entity.getEntityFinders()) {
+			finderName = entityFinder.getName();
+
+			if (finderName.equals("HeadId")) {
+				continue;
+			}
+
+			versionFinderElement = versionEntityElement.addElement("finder");
+
+			versionFinderElement.addAttribute("name", finderName);
+
+			versionFinderElement.addAttribute("return-type", "Collection");
+
+			for (EntityColumn entityColumn : entityFinder.getEntityColumns()) {
+				versionColumnElement = versionFinderElement.addElement(
+					"finder-column");
+
+				versionColumnElement.addAttribute(
+					"name", entityColumn.getName());
+			}
+
+			versionFinderElement = versionEntityElement.addElement("finder");
+
+			versionFinderElement.addAttribute("name", finderName + "_Version");
+
+			for (EntityColumn entityColumn : entityFinder.getEntityColumns()) {
+				versionColumnElement = versionFinderElement.addElement(
+					"finder-column");
+
+				versionColumnElement.addAttribute(
+					"name", entityColumn.getName());
+			}
+
+			versionColumnElement = versionFinderElement.addElement(
+				"finder-column");
+
+			versionColumnElement.addAttribute("name", "version");
+
+			if (entityFinder.isUnique()) {
+				versionFinderElement.addAttribute(
+					"return-type", entity.getName() + "Version");
+
+				versionFinderElement.addAttribute("unique", "true");
+			}
+			else {
+				versionFinderElement.addAttribute("return-type", "Collection");
+			}
+		}
+
+		Entity versionEntity = _parseEntity(versionEntityElement);
+
+		entity.setVersionEntity(versionEntity);
+
+		versionEntity.setVersionedEntity(entity);
 	}
 
 	private String _processTemplate(String name, Map<String, Object> context)
@@ -5279,13 +6749,25 @@ public class ServiceBuilder {
 
 		_currentTplName = name;
 
-		return StringUtil.strip(FreeMarkerUtil.process(name, context), '\r');
+		Configuration configuration = _getConfiguration();
+
+		Template template = configuration.getTemplate(name);
+
+		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
+
+		template.process(context, unsyncStringWriter);
+
+		return StringUtil.removeChar(unsyncStringWriter.toString(), '\r');
 	}
 
 	private Map<String, Object> _putDeprecatedKeys(
 		Map<String, Object> context, JavaClass javaClass) {
 
-		context.put("classDeprecated", false);
+		Entity entity = (Entity)context.get("entity");
+
+		context.put("classDeprecated", entity.isDeprecated());
+
+		context.put("classDeprecatedComment", "");
 
 		if (javaClass != null) {
 			DocletTag tag = javaClass.getTagByName("deprecated");
@@ -5312,92 +6794,142 @@ public class ServiceBuilder {
 	}
 
 	private void _removeActionableDynamicQuery(Entity entity) {
-		File ejbFile = new File(
-			_oldServiceOutputPath + "/service/persistence/" + entity.getName() +
-				"ActionableDynamicQuery.java");
+		File file = new File(
+			StringBundler.concat(
+				_oldServiceOutputPath, "/service/persistence/",
+				entity.getName(), "ActionableDynamicQuery.java"));
 
-		ejbFile.delete();
+		file.delete();
 
-		ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"ActionableDynamicQuery.java");
+		file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"ActionableDynamicQuery.java"));
 
-		ejbFile.delete();
+		file.delete();
+	}
+
+	@SuppressWarnings("unused")
+	private void _removeBaseUADAnonymizer(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/anonymizer/Base",
+				entity.getName(), "UADAnonymizer.java"));
+	}
+
+	private void _removeBaseUADDisplay(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/display/Base",
+				entity.getName(), "UADDisplay.java"));
+	}
+
+	@SuppressWarnings("unused")
+	private void _removeBaseUADExporter(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/exporter/Base",
+				entity.getName(), "UADExporter.java"));
 	}
 
 	private void _removeBlobModels(Entity entity, String outputPath) {
-		for (EntityColumn col : _getBlobList(entity)) {
+		for (EntityColumn entityColumn : _getBlobEntityColumns(entity)) {
 			_deleteFile(
-				outputPath + "/model/" + entity.getName() +
-					col.getMethodName() + "BlobModel.java");
+				StringBundler.concat(
+					outputPath, "/model/", entity.getName(),
+					entityColumn.getMethodName(), "BlobModel.java"));
 		}
 	}
 
 	private void _removeEJBPK(Entity entity, String outputPath) {
-		List<EntityColumn> pkList = entity.getPKList();
+		List<EntityColumn> pkEntityColumns = entity.getPKEntityColumns();
 
-		if (pkList.size() <= 1) {
+		if (pkEntityColumns.size() <= 1) {
 			return;
 		}
 
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getPKClassName() +
-				".java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getPKClassName(),
+				".java"));
 	}
 
 	private void _removeExportActionableDynamicQuery(Entity entity) {
-		File ejbFile = new File(
-			_oldServiceOutputPath + "/service/persistence/" + entity.getName() +
-				"ExportActionableDynamicQuery.java");
+		File file = new File(
+			StringBundler.concat(
+				_oldServiceOutputPath, "/service/persistence/",
+				entity.getName(), "ExportActionableDynamicQuery.java"));
 
-		ejbFile.delete();
+		file.delete();
 
-		ejbFile = new File(
-			_serviceOutputPath + "/service/persistence/" + entity.getName() +
-				"ExportActionableDynamicQuery.java");
+		file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/persistence/", entity.getName(),
+				"ExportActionableDynamicQuery.java"));
 
-		ejbFile.delete();
+		file.delete();
 	}
 
 	private void _removeExtendedModel(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + ".java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), ".java"));
 	}
 
 	private void _removeFinder(Entity entity, String outputPath) {
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getName() +
-				"Finder.java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getName(),
+				"Finder.java"));
 	}
 
 	private void _removeFinderBaseImpl(Entity entity) {
 		_deleteFile(
-			_outputPath + "/service/persistence/impl/" + entity.getName() +
-				"FinderBaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/persistence/impl/", entity.getName(),
+				"FinderBaseImpl.java"));
 	}
 
 	private void _removeFinderUtil(Entity entity, String outputPath) {
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getName() +
-				"FinderUtil.java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getName(),
+				"FinderUtil.java"));
 	}
 
 	private void _removeModel(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + "Model.java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), "Model.java"));
 	}
 
 	private void _removeModelClp(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + "Clp.java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), "Clp.java"));
 	}
 
 	private void _removeModelSoap(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + "Soap.java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), "Soap.java"));
 	}
 
 	private void _removeModelWrapper(Entity entity, String outputPath) {
-		_deleteFile(outputPath + "/model/" + entity.getName() + "Wrapper.java");
+		_deleteFile(
+			StringBundler.concat(
+				outputPath, "/model/", entity.getName(), "Wrapper.java"));
 	}
 
 	private void _removeOldServices(Entity entity) {
+		_removeModelClp(entity, _oldServiceOutputPath);
+		_removeServiceClp(entity, _SESSION_TYPE_LOCAL, _oldServiceOutputPath);
+		_removeServiceClp(entity, _SESSION_TYPE_REMOTE, _oldServiceOutputPath);
+		_removeServiceClpInvoker(entity, _SESSION_TYPE_LOCAL);
+		_removeServiceClpInvoker(entity, _SESSION_TYPE_REMOTE);
+		_removeServiceClpMessageListener(_oldServiceOutputPath);
+		_removeServiceClpSerializer(_oldServiceOutputPath);
+
 		if (_oldServiceOutputPath.equals(_serviceOutputPath)) {
 			return;
 		}
@@ -5408,63 +6940,65 @@ public class ServiceBuilder {
 		_removeFinder(entity, _oldServiceOutputPath);
 		_removeFinderUtil(entity, _oldServiceOutputPath);
 		_removeModel(entity, _oldServiceOutputPath);
-		_removeModelClp(entity, _oldServiceOutputPath);
 		_removeModelSoap(entity, _oldServiceOutputPath);
 		_removeModelWrapper(entity, _oldServiceOutputPath);
 		_removePersistence(entity, _oldServiceOutputPath);
 		_removePersistenceUtil(entity, _oldServiceOutputPath);
-		_removeServiceClpMessageListener(_oldServiceOutputPath);
-		_removeServiceClpSerializer(_oldServiceOutputPath);
 		_removeService(entity, _SESSION_TYPE_LOCAL, _oldServiceOutputPath);
 		_removeService(entity, _SESSION_TYPE_REMOTE, _oldServiceOutputPath);
-		_removeServiceClp(entity, _SESSION_TYPE_LOCAL, _oldServiceOutputPath);
-		_removeServiceClp(entity, _SESSION_TYPE_REMOTE, _oldServiceOutputPath);
 		_removeServiceUtil(entity, _SESSION_TYPE_LOCAL, _oldServiceOutputPath);
 		_removeServiceUtil(entity, _SESSION_TYPE_REMOTE, _oldServiceOutputPath);
 		_removeServiceWrapper(
 			entity, _SESSION_TYPE_LOCAL, _oldServiceOutputPath);
 		_removeServiceWrapper(
 			entity, _SESSION_TYPE_REMOTE, _oldServiceOutputPath);
+		_removeServletContextUtil(_serviceOutputPath);
 	}
 
 	private void _removePersistence(Entity entity, String outputPath) {
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getName() +
-				"Persistence.java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getName(),
+				"Persistence.java"));
 	}
 
 	private void _removePersistenceUtil(Entity entity, String outputPath) {
 		_deleteFile(
-			outputPath + "/service/persistence/" + entity.getName() +
-				"Util.java");
+			StringBundler.concat(
+				outputPath, "/service/persistence/", entity.getName(),
+				"Util.java"));
 	}
 
 	private void _removeService(
 		Entity entity, int sessionType, String outputPath) {
 
 		_deleteFile(
-			outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "Service.java");
+			StringBundler.concat(
+				outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "Service.java"));
 	}
 
 	private void _removeServiceBaseImpl(Entity entity, int sessionType) {
 		_deleteFile(
-			_outputPath + "/service/base/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/base/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceBaseImpl.java"));
 	}
 
 	private void _removeServiceClp(
 		Entity entity, int sessionType, String outputPath) {
 
 		_deleteFile(
-			outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceClp.java");
+			StringBundler.concat(
+				outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceClp.java"));
 	}
 
 	private void _removeServiceClpInvoker(Entity entity, int sessionType) {
 		_deleteFile(
-			_outputPath + "/service/base/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceClpInvoker.java");
+			StringBundler.concat(
+				_outputPath, "/service/base/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceClpInvoker.java"));
 	}
 
 	private void _removeServiceClpMessageListener(String outputPath) {
@@ -5477,60 +7011,126 @@ public class ServiceBuilder {
 
 	private void _removeServiceHttp(Entity entity) {
 		_deleteFile(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceHttp.java");
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceHttp.java"));
 	}
 
 	private void _removeServiceImpl(Entity entity, int sessionType) {
 		_deleteFile(
-			_outputPath + "/service/impl/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceImpl.java");
+			StringBundler.concat(
+				_outputPath, "/service/impl/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceImpl.java"));
 	}
 
 	private void _removeServiceJson(Entity entity) {
-		File ejbFile = new File(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceJSON.java");
+		File file = new File(
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceJSON.java"));
 
-		if (ejbFile.exists()) {
-			System.out.println("Removing deprecated " + ejbFile);
+		if (file.exists()) {
+			System.out.println("Removing deprecated " + file);
 
-			ejbFile.delete();
+			file.delete();
 		}
 	}
 
 	private void _removeServiceJsonSerializer(Entity entity) {
-		File ejbFile = new File(
-			_serviceOutputPath + "/service/http/" + entity.getName() +
-				"JSONSerializer.java");
+		File file = new File(
+			StringBundler.concat(
+				_serviceOutputPath, "/service/http/", entity.getName(),
+				"JSONSerializer.java"));
 
-		if (ejbFile.exists()) {
-			System.out.println("Removing deprecated " + ejbFile);
+		if (file.exists()) {
+			System.out.println("Removing deprecated " + file);
 
-			ejbFile.delete();
+			file.delete();
 		}
 	}
 
 	private void _removeServiceSoap(Entity entity) {
 		_deleteFile(
-			_outputPath + "/service/http/" + entity.getName() +
-				"ServiceSoap.java");
+			StringBundler.concat(
+				_outputPath, "/service/http/", entity.getName(),
+				"ServiceSoap.java"));
 	}
 
 	private void _removeServiceUtil(
 		Entity entity, int sessionType, String outputPath) {
 
 		_deleteFile(
-			outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceUtil.java");
+			StringBundler.concat(
+				outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceUtil.java"));
 	}
 
 	private void _removeServiceWrapper(
 		Entity entity, int sessionType, String outputPath) {
 
 		_deleteFile(
-			outputPath + "/service/" + entity.getName() +
-				_getSessionTypeName(sessionType) + "ServiceWrapper.java");
+			StringBundler.concat(
+				outputPath, "/service/", entity.getName(),
+				_getSessionTypeName(sessionType), "ServiceWrapper.java"));
+	}
+
+	private void _removeServletContextUtil(String outputPath) {
+		_deleteFile(outputPath + "/service/ServletContextUtil.java");
+	}
+
+	@SuppressWarnings("unused")
+	private void _removeUADAnonymizer(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/anonymizer/", entity.getName(),
+				"UADAnonymizer.java"));
+	}
+
+	@SuppressWarnings("unused")
+	private void _removeUADAnonymizerTest(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADTestIntegrationOutputPath(),
+				"/uad/anonymizer/test/", entity.getName(),
+				"UADAnonymizerTest.java"));
+	}
+
+	private void _removeUADDisplay(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/display/", entity.getName(),
+				"UADDisplay.java"));
+	}
+
+	private void _removeUADDisplayTest(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADTestIntegrationOutputPath(), "/uad/display/test/",
+				entity.getName(), "UADDisplayTest.java"));
+	}
+
+	@SuppressWarnings("unused")
+	private void _removeUADExporter(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADOutputPath(), "/uad/exporter/", entity.getName(),
+				"UADExporter.java"));
+	}
+
+	@SuppressWarnings("unused")
+	private void _removeUADExporterTest(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADTestIntegrationOutputPath(), "/uad/exporter/test/",
+				entity.getName(), "UADExporterTest.java"));
+	}
+
+	@SuppressWarnings("unused")
+	private void _removeUADTestHelper(Entity entity) {
+		_deleteFile(
+			StringBundler.concat(
+				entity.getUADTestIntegrationOutputPath(), "/uad/test/",
+				entity.getName(), "UADTestHelper.java"));
 	}
 
 	private void _resolveEntity(Entity entity) throws Exception {
@@ -5538,22 +7138,48 @@ public class ServiceBuilder {
 			return;
 		}
 
-		for (String referenceName : entity.getUnresolvedReferenceList()) {
-			Entity referenceEntity = getEntity(referenceName);
+		for (String referenceEntityNames :
+				entity.getUnresolvedResolvedReferenceEntityNames()) {
+
+			Entity referenceEntity = getEntity(referenceEntityNames);
 
 			if (referenceEntity == null) {
 				throw new ServiceBuilderException(
-					"Unable to resolve reference " + referenceName + " in " +
-						ListUtil.toString(_ejbList, Entity.NAME_ACCESSOR));
+					StringBundler.concat(
+						"Unable to resolve reference ", referenceEntityNames,
+						" in ",
+						ListUtil.toString(_entities, Entity.NAME_ACCESSOR)));
 			}
 
-			entity.addReference(referenceEntity);
+			entity.addReferenceEntity(referenceEntity);
 		}
 
 		entity.setResolved();
 	}
 
+	private void _write(
+			File file, String content, Set<String> modifiedFileNames)
+		throws Exception {
+
+		String header = null;
+
+		if (_commercialPlugin) {
+			header = _getFileContent("copyright-commercial.txt");
+		}
+		else {
+			header = _getFileContent("copyright.txt");
+		}
+
+		content = header + "\n\n" + content;
+
+		ToolsUtil.writeFileRaw(
+			file, JavaParser.parse(file, content, _MAX_LINE_LENGTH, false),
+			modifiedFileNames);
+	}
+
 	private static final int _DEFAULT_COLUMN_MAX_LENGTH = 75;
+
+	private static final int _MAX_LINE_LENGTH = 80;
 
 	private static final int _SESSION_TYPE_LOCAL = 1;
 
@@ -5563,14 +7189,22 @@ public class ServiceBuilder {
 
 	private static final String _SQL_CREATE_TABLE = "create table ";
 
-	private static final String _TMP_DIR = System.getProperty("java.io.tmpdir");
+	private static final String _TMP_DIR_NAME = System.getProperty(
+		"java.io.tmpdir");
 
 	private static final String _TPL_ROOT =
 		"com/liferay/portal/tools/service/builder/dependencies/";
 
+	private static Pattern _beansAttributePattern = Pattern.compile(
+		"\\s+([^=]*)=\\s*\"([^\"]*)\"");
+	private static Pattern _beansPattern = Pattern.compile("<beans[^>]*>");
+	private static Configuration _configuration;
+	private static final Pattern _dtdVersionPattern = Pattern.compile(
+		".*service-builder_([^\\.]+)\\.dtd");
 	private static Pattern _getterPattern = Pattern.compile(
-		"public .* get.*" + Pattern.quote("(") + "|public boolean is.*" +
-			Pattern.quote("("));
+		StringBundler.concat(
+			"public .* get.*", Pattern.quote("("), "|public boolean is.*",
+			Pattern.quote("(")));
 	private static Pattern _setterPattern = Pattern.compile(
 		"public void set.*" + Pattern.quote("("));
 
@@ -5583,12 +7217,16 @@ public class ServiceBuilder {
 	private Set<String> _badColumnNames;
 	private Set<String> _badTableNames;
 	private String _beanLocatorUtil;
-	private String _beanLocatorUtilShortName;
 	private boolean _build;
 	private long _buildNumber;
 	private boolean _buildNumberIncrement;
+	private boolean _commercialPlugin;
+	private Properties _compatProperties;
 	private String _currentTplName;
-	private List<Entity> _ejbList;
+	private int _databaseNameMaxLength = 30;
+	private boolean _dependencyInjectorDS;
+	private Version _dtdVersion;
+	private List<Entity> _entities;
 	private Map<String, EntityMapping> _entityMappings;
 	private Map<String, Entity> _entityPool = new HashMap<>();
 	private String _hbmFileName;
@@ -5602,8 +7240,6 @@ public class ServiceBuilder {
 	private String _outputPath;
 	private String _packagePath;
 	private String _pluginName;
-	private String _portletName = StringPool.BLANK;
-	private String _portletPackageName = StringPool.BLANK;
 	private String _portletShortName = StringPool.BLANK;
 	private String _propsUtil;
 	private String[] _readOnlyPrefixes;
@@ -5622,8 +7258,12 @@ public class ServiceBuilder {
 	private String _tplBadAliasNames = _TPL_ROOT + "bad_alias_names.txt";
 	private String _tplBadColumnNames = _TPL_ROOT + "bad_column_names.txt";
 	private String _tplBadTableNames = _TPL_ROOT + "bad_table_names.txt";
+	private String _tplBaseUADAnonymizer =
+		_TPL_ROOT + "base_uad_anonymizer.ftl";
+	private String _tplBaseUADDisplay = _TPL_ROOT + "base_uad_display.ftl";
+	private String _tplBaseUADExporter = _TPL_ROOT + "base_uad_exporter.ftl";
 	private String _tplBlobModel = _TPL_ROOT + "blob_model.ftl";
-	private String _tplEjbPk = _TPL_ROOT + "ejb_pk.ftl";
+	private String _tplEjbPK = _TPL_ROOT + "ejb_pk.ftl";
 	private String _tplException = _TPL_ROOT + "exception.ftl";
 	private String _tplExtendedModel = _TPL_ROOT + "extended_model.ftl";
 	private String _tplExtendedModelBaseImpl =
@@ -5638,31 +7278,34 @@ public class ServiceBuilder {
 	private String _tplJsonJsMethod = _TPL_ROOT + "json_js_method.ftl";
 	private String _tplModel = _TPL_ROOT + "model.ftl";
 	private String _tplModelCache = _TPL_ROOT + "model_cache.ftl";
-	private String _tplModelClp = _TPL_ROOT + "model_clp.ftl";
 	private String _tplModelHintsXml = _TPL_ROOT + "model_hints_xml.ftl";
 	private String _tplModelImpl = _TPL_ROOT + "model_impl.ftl";
 	private String _tplModelSoap = _TPL_ROOT + "model_soap.ftl";
 	private String _tplModelWrapper = _TPL_ROOT + "model_wrapper.ftl";
 	private String _tplPersistence = _TPL_ROOT + "persistence.ftl";
+	private String _tplPersistenceConstants =
+		_TPL_ROOT + "persistence_constants.ftl";
 	private String _tplPersistenceImpl = _TPL_ROOT + "persistence_impl.ftl";
 	private String _tplPersistenceTest = _TPL_ROOT + "persistence_test.ftl";
 	private String _tplPersistenceUtil = _TPL_ROOT + "persistence_util.ftl";
 	private String _tplProps = _TPL_ROOT + "props.ftl";
 	private String _tplService = _TPL_ROOT + "service.ftl";
 	private String _tplServiceBaseImpl = _TPL_ROOT + "service_base_impl.ftl";
-	private String _tplServiceClp = _TPL_ROOT + "service_clp.ftl";
-	private String _tplServiceClpInvoker =
-		_TPL_ROOT + "service_clp_invoker.ftl";
-	private String _tplServiceClpMessageListener =
-		_TPL_ROOT + "service_clp_message_listener.ftl";
-	private String _tplServiceClpSerializer =
-		_TPL_ROOT + "service_clp_serializer.ftl";
 	private String _tplServiceHttp = _TPL_ROOT + "service_http.ftl";
 	private String _tplServiceImpl = _TPL_ROOT + "service_impl.ftl";
 	private String _tplServicePropsUtil = _TPL_ROOT + "service_props_util.ftl";
 	private String _tplServiceSoap = _TPL_ROOT + "service_soap.ftl";
 	private String _tplServiceUtil = _TPL_ROOT + "service_util.ftl";
 	private String _tplServiceWrapper = _TPL_ROOT + "service_wrapper.ftl";
+	private String _tplServletContextUtil =
+		_TPL_ROOT + "servlet_context_util.ftl";
 	private String _tplSpringXml = _TPL_ROOT + "spring_xml.ftl";
+	private String _tplUADAnonymizer = _TPL_ROOT + "uad_anonymizer.ftl";
+	private String _tplUADBnd = _TPL_ROOT + "uad_bnd.ftl";
+	private String _tplUADConstants = _TPL_ROOT + "uad_constants.ftl";
+	private String _tplUADDisplay = _TPL_ROOT + "uad_display.ftl";
+	private String _tplUADExporter = _TPL_ROOT + "uad_exporter.ftl";
+	private Map<String, List<Entity>> _uadApplicationEntities = new HashMap<>();
+	private String _uadDirName;
 
 }

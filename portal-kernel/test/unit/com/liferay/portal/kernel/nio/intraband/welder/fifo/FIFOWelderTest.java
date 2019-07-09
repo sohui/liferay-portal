@@ -55,7 +55,9 @@ public class FIFOWelderTest {
 		File[] files = tempFolder.listFiles();
 
 		for (File file : files) {
-			if (file.isFile() && file.getName().startsWith("FIFO-")) {
+			String fileName = file.getName();
+
+			if (file.isFile() && fileName.startsWith("FIFO-")) {
 				file.delete();
 			}
 		}
@@ -109,6 +111,7 @@ public class FIFOWelderTest {
 	@Test
 	public void testWeld() throws Exception {
 		final FIFOWelder serverFifoWelder = new FIFOWelder();
+
 		final FIFOWelder clientFIFOWelder = WelderTestUtil.transform(
 			serverFifoWelder);
 

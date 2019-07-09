@@ -1,0 +1,9 @@
+{
+	"name": "portal-search-web",
+	"scripts": {
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix",
+		"test": "karma start"
+	},
+	"version": "5.0.0"
+}

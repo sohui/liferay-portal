@@ -14,6 +14,8 @@
 
 package com.liferay.portal.webdav.methods;
 
+import com.liferay.petra.string.StringPool;
+import com.liferay.petra.xml.DocUtil;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -21,7 +23,6 @@ import com.liferay.portal.kernel.model.WebDAVProps;
 import com.liferay.portal.kernel.service.WebDAVPropsLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.webdav.Resource;
 import com.liferay.portal.kernel.webdav.WebDAVRequest;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.Namespace;
 import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
-import com.liferay.util.xml.DocUtil;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -106,10 +106,13 @@ public abstract class BasePropMethodImpl implements Method {
 
 		Element successStatElement = DocUtil.add(
 			responseElement, createQName("propstat"));
+
 		Element successPropElement = DocUtil.add(
 			successStatElement, createQName("prop"));
+
 		Element failureStatElement = DocUtil.add(
 			responseElement, createQName("propstat"));
+
 		Element failurePropElement = DocUtil.add(
 			failureStatElement, createQName("prop"));
 
@@ -287,28 +290,28 @@ public abstract class BasePropMethodImpl implements Method {
 
 		// Check remaining properties against custom properties
 
-		WebDAVProps webDavProps = WebDAVPropsLocalServiceUtil.getWebDAVProps(
+		WebDAVProps webDAVProps = WebDAVPropsLocalServiceUtil.getWebDAVProps(
 			webDAVRequest.getCompanyId(), resource.getClassName(),
 			resource.getPrimaryKey());
 
-		Set<QName> customProps = webDavProps.getPropsSet();
+		Set<QName> customProps = webDAVProps.getPropsSet();
 
-		for (QName qname : props) {
-			String name = qname.getName();
-			Namespace namespace = qname.getNamespace();
+		for (QName qName : props) {
+			if (customProps.contains(qName)) {
+				Namespace namespace = qName.getNamespace();
 
-			String prefix = namespace.getPrefix();
-			String uri = namespace.getURI();
+				String name = qName.getName();
+				String prefix = namespace.getPrefix();
+				String uri = namespace.getURI();
 
-			if (customProps.contains(qname)) {
-				String text = webDavProps.getText(name, prefix, uri);
+				String text = webDAVProps.getText(name, prefix, uri);
 
-				DocUtil.add(successPropElement, qname, text);
+				DocUtil.add(successPropElement, qName, text);
 
 				hasSuccess = true;
 			}
 			else {
-				DocUtil.add(failurePropElement, qname);
+				DocUtil.add(failurePropElement, qName);
 
 				hasFailure = true;
 			}
@@ -359,8 +362,6 @@ public abstract class BasePropMethodImpl implements Method {
 
 		WebDAVStorage storage = webDAVRequest.getWebDAVStorage();
 
-		long depth = WebDAVUtil.getDepth(webDAVRequest.getHttpServletRequest());
-
 		Document document = SAXReaderUtil.createDocument();
 
 		Element multistatusElement = SAXReaderUtil.createElement(
@@ -371,6 +372,9 @@ public abstract class BasePropMethodImpl implements Method {
 		Resource resource = storage.getResource(webDAVRequest);
 
 		if (resource != null) {
+			long depth = WebDAVUtil.getDepth(
+				webDAVRequest.getHttpServletRequest());
+
 			addResponse(
 				storage, webDAVRequest, resource, props, multistatusElement,
 				depth);
@@ -385,20 +389,20 @@ public abstract class BasePropMethodImpl implements Method {
 
 			int status = WebDAVUtil.SC_MULTI_STATUS;
 
-			HttpServletResponse response =
+			HttpServletResponse httpServletResponse =
 				webDAVRequest.getHttpServletResponse();
 
-			response.setContentType(ContentTypes.TEXT_XML_UTF8);
-			response.setStatus(status);
+			httpServletResponse.setContentType(ContentTypes.TEXT_XML_UTF8);
+			httpServletResponse.setStatus(status);
 
 			try {
-				ServletResponseUtil.write(response, xml);
+				ServletResponseUtil.write(httpServletResponse, xml);
 
-				response.flushBuffer();
+				httpServletResponse.flushBuffer();
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
-					_log.warn(e);
+					_log.warn(e, e);
 				}
 			}
 
@@ -418,14 +422,10 @@ public abstract class BasePropMethodImpl implements Method {
 		BasePropMethodImpl.class);
 
 	private static final List<QName> _allCollectionProps = Arrays.asList(
-		new QName[] {
-			CREATIONDATE, DISPLAYNAME, GETLASTMODIFIED, GETCONTENTTYPE,
-			LOCKDISCOVERY, RESOURCETYPE
-		});
+		CREATIONDATE, DISPLAYNAME, GETLASTMODIFIED, GETCONTENTTYPE,
+		LOCKDISCOVERY, RESOURCETYPE);
 	private static final List<QName> _allSimpleProps = Arrays.asList(
-		new QName[] {
-			CREATIONDATE, DISPLAYNAME, GETLASTMODIFIED, GETCONTENTTYPE,
-			GETCONTENTLENGTH, ISREADONLY, LOCKDISCOVERY, RESOURCETYPE
-		});
+		CREATIONDATE, DISPLAYNAME, GETLASTMODIFIED, GETCONTENTTYPE,
+		GETCONTENTLENGTH, ISREADONLY, LOCKDISCOVERY, RESOURCETYPE);
 
 }

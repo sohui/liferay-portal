@@ -29,24 +29,41 @@ import org.junit.Test;
 /**
  * @author Peter Yoo
  */
-public class LoadBalancerUtilTest extends BaseJenkinsResultsParserTestCase {
+public class LoadBalancerUtilTest
+	extends com.liferay.jenkins.results.parser.Test {
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		downloadSample("test-1", null);
 		downloadSample("test-2", null);
+
+		LoadBalancerUtil.setUpdateInterval(0);
 	}
 
 	@After
-	public void tearDown() throws Exception {
-		Properties properties = getTestProperties(null);
+	public void tearDown() {
+		Properties properties = getTestProperties();
 
 		deleteFile(properties.getProperty("jenkins.shared.dir"));
 	}
 
 	@Test
 	public void testGetMostAvailableMasterURL() throws Exception {
-		LoadBalancerUtil.recentJobPeriod = 0;
+		JenkinsMaster.maxRecentBatchAge = 0;
+
+		expectedMessageGenerator = new ExpectedMessageGenerator() {
+
+			@Override
+			public String getMessage(TestSample testSample) throws Exception {
+				Properties properties = getTestProperties(testSample);
+
+				JenkinsResultsParserUtil.setBuildProperties(properties);
+
+				return LoadBalancerUtil.getMostAvailableMasterURL(properties);
+			}
+
+		};
 
 		assertSamples();
 	}
@@ -109,71 +126,85 @@ public class LoadBalancerUtilTest extends BaseJenkinsResultsParserTestCase {
 			"jenkins.local.url[test-3-2]", "http://test-3-2");
 		properties.setProperty(
 			"jenkins.local.url[test-3-3]", "http://test-3-3");
+
+		for (int i = 1; i <= 20; i++) {
+			properties.setProperty("master.slaves(test-1-" + i + ")", "");
+		}
+
+		properties.setProperty("master.slaves(test-2-1)", "");
+
+		for (int i = 1; i <= 3; i++) {
+			properties.setProperty("master.slaves(test-3-" + i + ")", "");
+		}
+
 		properties.setProperty("invoked.batch.size", "2");
 
 		return properties;
 	}
 
 	@Override
-	protected void downloadSample(File sampleDir, URL url) throws Exception {
-		Properties properties = getDownloadProperties(sampleDir.getName());
+	protected void downloadSample(TestSample testSample, URL url)
+		throws Exception {
 
-		List<String> hostNames = LoadBalancerUtil.getHostNames(
-			properties, sampleDir.getName());
+		String sampleKey = testSample.getSampleKey();
 
-		for (int i = 1; i <= hostNames.size(); i++) {
+		Properties properties = getDownloadProperties(sampleKey);
+
+		JenkinsResultsParserUtil.setBuildProperties(properties);
+
+		List<JenkinsMaster> jenkinsMasters =
+			JenkinsResultsParserUtil.getJenkinsMasters(properties, sampleKey);
+
+		File sampleDir = testSample.getSampleDir();
+
+		for (JenkinsMaster jenkinsMaster : jenkinsMasters) {
 			downloadSampleURL(
-				new File(sampleDir, sampleDir.getName() + "-" + i),
-				JenkinsResultsParserUtil.createURL(
-					properties.getProperty(
-						"jenkins.local.url[" + sampleDir.getName() + "-" + i +
-							"]")),
+				new File(sampleDir, jenkinsMaster.getName()),
+				JenkinsResultsParserUtil.createURL(jenkinsMaster.getURL()),
 				"/computer/api/json?pretty&tree=computer" +
 					"[displayName,idle,offline]");
+
 			downloadSampleURL(
-				new File(sampleDir, sampleDir.getName() + "-" + i),
-				JenkinsResultsParserUtil.createURL(
-					properties.getProperty(
-						"jenkins.local.url[" + sampleDir.getName() + "-" + i +
-							"]")),
+				new File(sampleDir, jenkinsMaster.getName()),
+				JenkinsResultsParserUtil.createURL(jenkinsMaster.getURL()),
 				"/queue/api/json");
 		}
 	}
 
-	@Override
-	protected String getMessage(String urlString) throws Exception {
-		File sampleDir = new File(urlString.substring("file:".length()));
-
-		Properties properties = getTestProperties(sampleDir.getName());
-
-		return LoadBalancerUtil.getMostAvailableMasterURL(properties);
+	protected Properties getTestProperties() {
+		return getTestProperties(null, null);
 	}
 
-	protected Properties getTestProperties(String baseInvocationHostName) {
-		Properties properties = getDownloadProperties(baseInvocationHostName);
+	protected Properties getTestProperties(
+		String hostName, String sampleDirName) {
 
-		for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-			Object key = entry.getKey();
+		Properties properties = getDownloadProperties(hostName);
 
-			if (key.equals("base.invocation.url")) {
-				continue;
-			}
+		if (sampleDirName != null) {
+			for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+				Object key = entry.getKey();
 
-			String value = (String)entry.getValue();
+				if (key.equals("base.invocation.url")) {
+					continue;
+				}
 
-			if (value.contains("http://")) {
-				Class<?> clazz = getClass();
+				String value = (String)entry.getValue();
 
-				value = value.replace(
-					"http://",
-					"${dependencies.url}" + clazz.getSimpleName() + "/" +
-						baseInvocationHostName + "/");
+				if (value.contains("http://")) {
+					value = value.replace(
+						"http://", "${dependencies.url}" + sampleDirName + "/");
 
-				entry.setValue(value);
+					entry.setValue(value);
+				}
 			}
 		}
 
 		return properties;
+	}
+
+	protected Properties getTestProperties(TestSample testSample) {
+		return getTestProperties(
+			testSample.getSampleKey(), testSample.getSampleDirName());
 	}
 
 }

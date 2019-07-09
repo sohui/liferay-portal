@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+
+<suppressions>
+	<checkstyle>
+		<suppress checks="AppendCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/StringBundlerTest\.java" />
+		<suppress checks="ConcatCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/StringBundlerTest\.java" />
+		<suppress checks="ConstantNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/nio/intraband/BaseIntraband\.java" />
+		<suppress checks="ConstantNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/nio/intraband/welder/socket/SocketWelder\.java" />
+		<suppress checks="ConstantNameCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/resiliency/spi/agent/annotation/DistributedRegistryTest\.java" />
+		<suppress checks="ConstantNameCheck" files="portal-test/src/com/liferay/portal/kernel/test/rule/CodeCoverageAssertor\.java" />
+		<suppress checks="EnumConstantOrderCheck" files="portal-kernel/src/com/liferay/portal/kernel/process/ProcessLog\.java" />
+		<suppress checks="JavadocCheck" files="portal-kernel/src/com/liferay/portal/kernel/cal/DayAndPosition\.java" />
+		<suppress checks="JavadocCheck" files="portal-kernel/src/com/liferay/portal/kernel/cal/Duration\.java" />
+		<suppress checks="JavadocCheck" files="portal-kernel/src/com/liferay/portal/kernel/cal/Recurrence\.java" />
+		<suppress checks="JSONNamingCheck" files="portal-impl/src/com/liferay/portal/action/JSONServiceAction\.java" />
+		<suppress checks="JSONNamingCheck" files="portal-kernel/src/com/liferay/portal/kernel/backgroundtask/display/BaseBackgroundTaskDisplay\.java" />
+		<suppress checks="JSONNamingCheck" files="util-java/src/com/liferay/util/Autocomplete\.java" />
+		<suppress checks="MemberNameCheck" files="portal-impl/src/com/liferay/portlet/trash/util/TrashImpl\.java" />
+		<suppress checks="MemberNameCheck" files="portal-impl/test/unit/com/liferay/portal/bean/ConstantsBeanFactoryImplTest\.java" />
+		<suppress checks="MemberNameCheck" files="portal-impl/test/unit/com/liferay/portal/nio/intraband/proxy/IntrabandProxyUtilTest\.java" />
+		<suppress checks="MemberNameCheck" files="portal-test-integration/src/com/liferay/portal/search/test/BaseSearchTestCase\.java" />
+		<suppress checks="MethodNameCheck" files="portal-impl/src/com/liferay/portal/events/EventsProcessorUtil\.java" />
+		<suppress checks="MethodNameCheck" files="portal-impl/src/com/liferay/portal/util/HttpImpl\.java" />
+		<suppress checks="MethodNameCheck" files="portal-impl/test/unit/com/liferay/portal/nio/intraband/proxy/IntrabandProxyUtilTest\.java" />
+		<suppress checks="MethodNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/Http\.java" />
+		<suppress checks="MethodNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/HttpUtil\.java" />
+		<suppress checks="MethodNamingCheck" files="portal-impl/src/com/liferay/portal/template/TemplateContextHelper\.java" />
+		<suppress checks="MethodNamingCheck" files="portal-impl/src/com/liferay/portal/util/HttpImpl\.java" />
+		<suppress checks="MethodNamingCheck" files="portal-impl/src/com/liferay/portlet/documentlibrary/util/LiferayConverter\.java" />
+		<suppress checks="MethodNamingCheck" files="portal-impl/test/unit/com/liferay/portal/nio/intraband/proxy/IntrabandProxyUtilTest\.java" />
+		<suppress checks="MethodNamingCheck" files="portal-kernel/src/com/liferay/portal/kernel/cal/Duration\.java" />
+		<suppress checks="MethodNamingCheck" files="portal-kernel/src/com/liferay/portal/kernel/servlet/filters/invoker/InvokerFilter\.java" />
+		<suppress checks="MethodNamingCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/Http\.java" />
+		<suppress checks="MethodNamingCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/HttpUtil\.java" />
+		<suppress checks="MissingModifierCheck" files="portal-impl/test/unit/com/liferay/portal/fabric/status/JMXProxyUtilTest\.java" />
+		<suppress checks="MissingModifierCheck" files="portal-impl/test/unit/com/liferay/portal/kernel/spring/osgi/OSGiBeanPropertiesTest\.java" />
+		<suppress checks="MissingModifierCheck" files="portal-impl/test/unit/com/liferay/portal/nio/intraband/proxy/IntrabandProxyUtilTest\.java" />
+		<suppress checks="MissingModifierCheck" files="portal-kernel/src/com/liferay/portal/kernel/process/local/LocalProcessLog\.java" />
+		<suppress checks="MissingModifierCheck" files="portal-kernel/src/com/liferay/portal/kernel/process/local/ResultProcessCallable\.java" />
+		<suppress checks="MissingModifierCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/resiliency/spi/agent/annotation/DistributedRegistryTest\.java" />
+		<suppress checks="PersistenceCallCheck" files="modules/apps/portal/portal-upgrade-test/src/testIntegration/java/com/liferay/portal/upgrade/test/BaseBuildAutoUpgradeTestCase\.java" />
+		<suppress checks="StaticVariableNameCheck" files="portal-impl/src/com/liferay/portal/language/LanguageResources\.java" />
+		<suppress checks="StaticVariableNameCheck" files="portal-impl/src/com/liferay/portal/util/PropsValues\.java" />
+		<suppress checks="StaticVariableNameCheck" files="portal-impl/test/unit/com/liferay/portal/bean/ConstantsBeanFactoryImplTest\.java" />
+		<suppress checks="StaticVariableNameCheck" files="portal-impl/test/unit/com/liferay/portal/nio/intraband/proxy/IntrabandProxyUtilTest\.java" />
+		<suppress checks="StaticVariableNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/backgroundtask/BackgroundTaskResult\.java" />
+		<suppress checks="StaticVariableNameCheck" files="portal-kernel/src/com/liferay/portal/kernel/license/messaging/LicenseManagerMessageType\.java" />
+		<suppress checks="StaticVariableNameCheck" files="util-java/src/com/liferay/util/resiliency/spi/provider/SPIClassPathContextListener\.java" />
+		<suppress checks="StaticVariableNameCheck" files="util-slf4j/src/org/slf4j/impl/StaticLoggerBinder\.java" />
+		<suppress checks="SubnameCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/ListUtil\.java" />
+		<suppress checks="SubnameCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/PackagingUtil\.java" />
+		<suppress checks="SubnameCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/ListUtilTest\.java" />
+		<suppress checks="VariableDeclarationAsUsedCheck" files="portal-impl/src/com/liferay/portal/action/UpdateLayoutAction\.java" />
+	</checkstyle>
+	<source-check>
+		<suppress checks="CDNCheck" files="test\.properties" />
+		<suppress checks="JavaCleanUpMethodVariablesCheck" files="util-taglib/src/com/liferay/taglib/util/IncludeTag\.java" />
+		<suppress checks="JavaDeserializationSecurityCheck" files="portal-impl/src/com/liferay/portal/bean/BeanPropertiesImpl\.java" />
+		<suppress checks="JavaDeserializationSecurityCheck" files="portal-kernel/src/com/liferay/portal/kernel/io/AnnotatedObjectInputStream\.java" />
+		<suppress checks="JavaDeserializationSecurityCheck" files="portal-kernel/src/com/liferay/portal/kernel/io/ProtectedObjectInputStream\.java" />
+		<suppress checks="JavaDeserializationSecurityCheck" files="portal-kernel/src/com/liferay/portal/kernel/process/local/LocalProcessExecutor\.java" />
+		<suppress checks="JavaDeserializationSecurityCheck" files="portal-kernel/src/com/liferay/portal/kernel/process/local/LocalProcessLauncher\.java" />
+		<suppress checks="JavaDeserializationSecurityCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/ClassLoaderObjectInputStream\.java" />
+		<suppress checks="JavaDiamondOperatorCheck" files="portal-impl/src/com/liferay/portal/jsonwebservice/JSONWebServiceActionsManagerImpl\.java" />
+		<suppress checks="JavaDiamondOperatorCheck" files="portal-kernel/src/com/liferay/portal/kernel/search/generic/BooleanClauseFactoryImpl\.java" />
+		<suppress checks="JavaDiamondOperatorCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/ListUtil\.java" />
+		<suppress checks="JavaFinderImplCustomSQLCheck" files="portal-impl/src/com/liferay/portlet/asset/service/persistence/impl/AssetCategoryPropertyFinderImpl\.java" />
+		<suppress checks="JavaIllegalImportsCheck" files="util-slf4j/src/com/liferay/util/sl4fj/LiferayLoggerFactory\.java" />
+		<suppress checks="JavaStringBundlerConcatCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/StringBundlerTest\.java" />
+		<suppress checks="JavaStringBundlerInitialCapacityCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/StringBundlerTest\.java" />
+		<suppress checks="JavaTaglibMethodCheck" files="util-taglib/src/com/liferay/taglib/ui/SearchFormTag\.java" />
+		<suppress checks="JavaUnsafeCastingCheck" files="portal-impl/src/com/liferay/portal/util/PortalImpl\.java" />
+		<suppress checks="JavaVariableTypeCheck" files="portal-impl/test/unit/com/liferay/portal/json/One\.java" />
+		<suppress checks="JavaVariableTypeCheck" files="portal-impl/test/unit/com/liferay/portal/json/Two\.java" />
+		<suppress checks="JavaVariableTypeCheck" files="portal-kernel/src/com/liferay/portal/kernel/io/PathHolder\.java" />
+		<suppress checks="JavaVerifyUpgradeConnectionCheck" files="portal-impl/src/com/liferay/portal/upgrade/util/BaseUpgradeTableImpl.java" />
+		<suppress checks="JavaVerifyUpgradeConnectionCheck" files="portal-kernel/src/com/liferay/portal/kernel/upgrade/UpgradeProcess.java" />
+		<suppress checks="JavaVerifyUpgradeConnectionCheck" files="portal-kernel/src/com/liferay/portal/kernel/upgrade/util/UpgradeProcessUtil.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="portal-impl/src/com/liferay/portal/security/xml/SecureXMLFactoryProviderImpl\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="portal-impl/src/com/liferay/portal/tools/JavadocBuilder\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="portal-impl/src/com/liferay/portal/tools/PluginsEnvironmentBuilder\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="portal-impl/src/com/liferay/portal/tools/ToolDependencies\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="portal-impl/src/com/liferay/portal/util/InitUtil.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="portal-impl/src/com/liferay/portal/util/MimeTypesImpl\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="portal-impl/src/com/liferay/portal/xml/SAXReaderFactory\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="util-java/src/com/liferay/util/ant/Java2WsddTask\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="util-java/src/com/liferay/util/xml/Dom4jUtil\.java" />
+		<suppress checks="JavaXMLSecurityCheck" files="util-java/src/com/liferay/util/xml/XMLMergerRunner\.java" />
+		<suppress checks="JSPLineBreakCheck" files="portal-web/docroot/html/portal/progress_poller\.jsp" />
+		<suppress checks="JSPStylingCheck" files="portal-web/docroot/html/portal/api/jsonws/action\.jsp" />
+		<suppress checks="LocaleUtilCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/LocaleUtil\.java" />
+		<suppress checks="LocaleUtilCheck" files="portal-kernel/test/unit/com/liferay/portal/kernel/util/LocaleUtilTest\.java" />
+		<suppress checks="MethodCallsOrderCheck" files="portal-impl/src/com/liferay/portal/util/PortalImpl\.java" />
+		<suppress checks="PrimitiveWrapperInstantiationCheck" files="portal-impl/src/com/liferay/portal/json/jabsorb/serializer/LiferaySerializer\.java" />
+		<suppress checks="PropertiesEmptyLinesCheck" files="build\.properties" />
+		<suppress checks="PropertiesLongLinesCheck" files="portal-impl/src/system\.properties" />
+		<suppress checks="PropertiesSourceFormatterFileCheck" files="source-formatter\.properties" />
+		<suppress checks="PropertiesWhitespaceCheck" files="build\.properties" />
+		<suppress checks="PropertiesWhitespaceCheck" files="sql/lportal\.properties" />
+		<suppress checks="ResourceBundleCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/ClassResourceBundleLoader\.java" />
+		<suppress checks="ResourceBundleCheck" files="portal-kernel/src/com/liferay/portal/kernel/util/ResourceBundleUtil\.java" />
+		<suppress checks="XMLIndentationCheck" files="portal-web/test/functional/com/liferay/portalweb/macros/Calendar\.macro" />
+		<suppress checks="XMLIndentationCheck" files="tools/jalopy\.xml" />
+		<suppress checks="XMLServiceEntityNameCheck" files="portal-impl/src/com/liferay/counter/service\.xml" />
+		<suppress checks="XMLServiceEntityNameCheck" files="portal-impl/src/com/liferay/mail/service\.xml" />
+		<suppress checks="XMLServiceEntityNameCheck" files="portal-impl/src/com/liferay/portal/service\.xml" />
+		<suppress checks="XMLServiceEntityNameCheck" files="portal-impl/src/com/liferay/portlet/exportimport/service\.xml" />
+
+		<!-- Temporary suppressions for portal -->
+
+		<suppress checks="GradleDependencyVersionCheck" files="modules/sdk/.*" />
+		<suppress checks="GradleDependencyVersionCheck" files="modules/util/.*" />
+
+		<!-- Temporary suppressions for project-templates (Chema) -->
+
+		<suppress checks="JSONDeprecatedPackagesCheck" files="modules/sdk/project-templates/project-templates-form-field/src/main/resources/archetype-resources/package\.json" />
+
+		<!-- Temporary suppressions for frontend build setup (Chema) -->
+
+		<suppress checks="JSONPackageJSONCheck" files="modules/apps/analytics/analytics-client-js/package\.json" />
+		<suppress checks="JSONPackageJSONCheck" files="modules/apps/segments/segments-web/package\.json" />
+	</source-check>
+</suppressions>

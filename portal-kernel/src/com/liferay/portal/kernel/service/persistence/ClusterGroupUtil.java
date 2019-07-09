@@ -14,19 +14,22 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.model.ClusterGroup;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import java.io.Serializable;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * The persistence utility for the cluster group service. This utility wraps {@link com.liferay.portal.service.persistence.impl.ClusterGroupPersistenceImpl} and provides direct access to the database for CRUD operations. This utility should only be used by the service layer, as it must operate within a transaction. Never access this utility in a JSP, controller, model, or other front-end class.
+ * The persistence utility for the cluster group service. This utility wraps <code>com.liferay.portal.service.persistence.impl.ClusterGroupPersistenceImpl</code> and provides direct access to the database for CRUD operations. This utility should only be used by the service layer, as it must operate within a transaction. Never access this utility in a JSP, controller, model, or other front-end class.
  *
  * <p>
  * Caching information and settings can be found in <code>portal.properties</code>
@@ -34,11 +37,13 @@ import java.util.List;
  *
  * @author Brian Wing Shun Chan
  * @see ClusterGroupPersistence
- * @see com.liferay.portal.service.persistence.impl.ClusterGroupPersistenceImpl
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ClusterGroupUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
@@ -67,10 +72,20 @@ public class ClusterGroupUtil {
 	}
 
 	/**
+	 * @see BasePersistence#fetchByPrimaryKeys(Set)
+	 */
+	public static Map<Serializable, ClusterGroup> fetchByPrimaryKeys(
+		Set<Serializable> primaryKeys) {
+
+		return getPersistence().fetchByPrimaryKeys(primaryKeys);
+	}
+
+	/**
 	 * @see BasePersistence#findWithDynamicQuery(DynamicQuery)
 	 */
 	public static List<ClusterGroup> findWithDynamicQuery(
 		DynamicQuery dynamicQuery) {
+
 		return getPersistence().findWithDynamicQuery(dynamicQuery);
 	}
 
@@ -79,6 +94,7 @@ public class ClusterGroupUtil {
 	 */
 	public static List<ClusterGroup> findWithDynamicQuery(
 		DynamicQuery dynamicQuery, int start, int end) {
+
 		return getPersistence().findWithDynamicQuery(dynamicQuery, start, end);
 	}
 
@@ -88,9 +104,9 @@ public class ClusterGroupUtil {
 	public static List<ClusterGroup> findWithDynamicQuery(
 		DynamicQuery dynamicQuery, int start, int end,
 		OrderByComparator<ClusterGroup> orderByComparator) {
-		return getPersistence()
-				   .findWithDynamicQuery(dynamicQuery, start, end,
-			orderByComparator);
+
+		return getPersistence().findWithDynamicQuery(
+			dynamicQuery, start, end, orderByComparator);
 	}
 
 	/**
@@ -103,48 +119,50 @@ public class ClusterGroupUtil {
 	/**
 	 * @see BasePersistence#update(com.liferay.portal.kernel.model.BaseModel, ServiceContext)
 	 */
-	public static ClusterGroup update(ClusterGroup clusterGroup,
-		ServiceContext serviceContext) {
+	public static ClusterGroup update(
+		ClusterGroup clusterGroup, ServiceContext serviceContext) {
+
 		return getPersistence().update(clusterGroup, serviceContext);
 	}
 
 	/**
-	* Caches the cluster group in the entity cache if it is enabled.
-	*
-	* @param clusterGroup the cluster group
-	*/
+	 * Caches the cluster group in the entity cache if it is enabled.
+	 *
+	 * @param clusterGroup the cluster group
+	 */
 	public static void cacheResult(ClusterGroup clusterGroup) {
 		getPersistence().cacheResult(clusterGroup);
 	}
 
 	/**
-	* Caches the cluster groups in the entity cache if it is enabled.
-	*
-	* @param clusterGroups the cluster groups
-	*/
+	 * Caches the cluster groups in the entity cache if it is enabled.
+	 *
+	 * @param clusterGroups the cluster groups
+	 */
 	public static void cacheResult(List<ClusterGroup> clusterGroups) {
 		getPersistence().cacheResult(clusterGroups);
 	}
 
 	/**
-	* Creates a new cluster group with the primary key. Does not add the cluster group to the database.
-	*
-	* @param clusterGroupId the primary key for the new cluster group
-	* @return the new cluster group
-	*/
+	 * Creates a new cluster group with the primary key. Does not add the cluster group to the database.
+	 *
+	 * @param clusterGroupId the primary key for the new cluster group
+	 * @return the new cluster group
+	 */
 	public static ClusterGroup create(long clusterGroupId) {
 		return getPersistence().create(clusterGroupId);
 	}
 
 	/**
-	* Removes the cluster group with the primary key from the database. Also notifies the appropriate model listeners.
-	*
-	* @param clusterGroupId the primary key of the cluster group
-	* @return the cluster group that was removed
-	* @throws NoSuchClusterGroupException if a cluster group with the primary key could not be found
-	*/
+	 * Removes the cluster group with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * @param clusterGroupId the primary key of the cluster group
+	 * @return the cluster group that was removed
+	 * @throws NoSuchClusterGroupException if a cluster group with the primary key could not be found
+	 */
 	public static ClusterGroup remove(long clusterGroupId)
 		throws com.liferay.portal.kernel.exception.NoSuchClusterGroupException {
+
 		return getPersistence().remove(clusterGroupId);
 	}
 
@@ -153,119 +171,117 @@ public class ClusterGroupUtil {
 	}
 
 	/**
-	* Returns the cluster group with the primary key or throws a {@link NoSuchClusterGroupException} if it could not be found.
-	*
-	* @param clusterGroupId the primary key of the cluster group
-	* @return the cluster group
-	* @throws NoSuchClusterGroupException if a cluster group with the primary key could not be found
-	*/
+	 * Returns the cluster group with the primary key or throws a <code>NoSuchClusterGroupException</code> if it could not be found.
+	 *
+	 * @param clusterGroupId the primary key of the cluster group
+	 * @return the cluster group
+	 * @throws NoSuchClusterGroupException if a cluster group with the primary key could not be found
+	 */
 	public static ClusterGroup findByPrimaryKey(long clusterGroupId)
 		throws com.liferay.portal.kernel.exception.NoSuchClusterGroupException {
+
 		return getPersistence().findByPrimaryKey(clusterGroupId);
 	}
 
 	/**
-	* Returns the cluster group with the primary key or returns <code>null</code> if it could not be found.
-	*
-	* @param clusterGroupId the primary key of the cluster group
-	* @return the cluster group, or <code>null</code> if a cluster group with the primary key could not be found
-	*/
+	 * Returns the cluster group with the primary key or returns <code>null</code> if it could not be found.
+	 *
+	 * @param clusterGroupId the primary key of the cluster group
+	 * @return the cluster group, or <code>null</code> if a cluster group with the primary key could not be found
+	 */
 	public static ClusterGroup fetchByPrimaryKey(long clusterGroupId) {
 		return getPersistence().fetchByPrimaryKey(clusterGroupId);
 	}
 
-	public static java.util.Map<java.io.Serializable, ClusterGroup> fetchByPrimaryKeys(
-		java.util.Set<java.io.Serializable> primaryKeys) {
-		return getPersistence().fetchByPrimaryKeys(primaryKeys);
-	}
-
 	/**
-	* Returns all the cluster groups.
-	*
-	* @return the cluster groups
-	*/
+	 * Returns all the cluster groups.
+	 *
+	 * @return the cluster groups
+	 */
 	public static List<ClusterGroup> findAll() {
 		return getPersistence().findAll();
 	}
 
 	/**
-	* Returns a range of all the cluster groups.
-	*
-	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ClusterGroupModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
-	* </p>
-	*
-	* @param start the lower bound of the range of cluster groups
-	* @param end the upper bound of the range of cluster groups (not inclusive)
-	* @return the range of cluster groups
-	*/
+	 * Returns a range of all the cluster groups.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>ClusterGroupModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param start the lower bound of the range of cluster groups
+	 * @param end the upper bound of the range of cluster groups (not inclusive)
+	 * @return the range of cluster groups
+	 */
 	public static List<ClusterGroup> findAll(int start, int end) {
 		return getPersistence().findAll(start, end);
 	}
 
 	/**
-	* Returns an ordered range of all the cluster groups.
-	*
-	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ClusterGroupModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
-	* </p>
-	*
-	* @param start the lower bound of the range of cluster groups
-	* @param end the upper bound of the range of cluster groups (not inclusive)
-	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	* @return the ordered range of cluster groups
-	*/
-	public static List<ClusterGroup> findAll(int start, int end,
-		OrderByComparator<ClusterGroup> orderByComparator) {
+	 * Returns an ordered range of all the cluster groups.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>ClusterGroupModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param start the lower bound of the range of cluster groups
+	 * @param end the upper bound of the range of cluster groups (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of cluster groups
+	 */
+	public static List<ClusterGroup> findAll(
+		int start, int end, OrderByComparator<ClusterGroup> orderByComparator) {
+
 		return getPersistence().findAll(start, end, orderByComparator);
 	}
 
 	/**
-	* Returns an ordered range of all the cluster groups.
-	*
-	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ClusterGroupModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
-	* </p>
-	*
-	* @param start the lower bound of the range of cluster groups
-	* @param end the upper bound of the range of cluster groups (not inclusive)
-	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	* @param retrieveFromCache whether to retrieve from the finder cache
-	* @return the ordered range of cluster groups
-	*/
-	public static List<ClusterGroup> findAll(int start, int end,
-		OrderByComparator<ClusterGroup> orderByComparator,
+	 * Returns an ordered range of all the cluster groups.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>ClusterGroupModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param start the lower bound of the range of cluster groups
+	 * @param end the upper bound of the range of cluster groups (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @return the ordered range of cluster groups
+	 */
+	public static List<ClusterGroup> findAll(
+		int start, int end, OrderByComparator<ClusterGroup> orderByComparator,
 		boolean retrieveFromCache) {
-		return getPersistence()
-				   .findAll(start, end, orderByComparator, retrieveFromCache);
+
+		return getPersistence().findAll(
+			start, end, orderByComparator, retrieveFromCache);
 	}
 
 	/**
-	* Removes all the cluster groups from the database.
-	*/
+	 * Removes all the cluster groups from the database.
+	 */
 	public static void removeAll() {
 		getPersistence().removeAll();
 	}
 
 	/**
-	* Returns the number of cluster groups.
-	*
-	* @return the number of cluster groups
-	*/
+	 * Returns the number of cluster groups.
+	 *
+	 * @return the number of cluster groups
+	 */
 	public static int countAll() {
 		return getPersistence().countAll();
 	}
 
 	public static ClusterGroupPersistence getPersistence() {
 		if (_persistence == null) {
-			_persistence = (ClusterGroupPersistence)PortalBeanLocatorUtil.locate(ClusterGroupPersistence.class.getName());
-
-			ReferenceRegistry.registerReference(ClusterGroupUtil.class,
-				"_persistence");
+			_persistence =
+				(ClusterGroupPersistence)PortalBeanLocatorUtil.locate(
+					ClusterGroupPersistence.class.getName());
 		}
 
 		return _persistence;
 	}
 
 	private static ClusterGroupPersistence _persistence;
+
 }

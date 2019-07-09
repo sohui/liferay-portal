@@ -17,36 +17,36 @@ package com.liferay.portal.action;
 import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManagerUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.struts.Action;
 import com.liferay.portal.struts.ActionConstants;
+import com.liferay.portal.struts.model.ActionForward;
+import com.liferay.portal.struts.model.ActionMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-
 /**
  * @author Brian Wing Shun Chan
  */
-public class LogoutAction extends Action {
+public class LogoutAction implements Action {
 
 	@Override
 	public ActionForward execute(
-			ActionMapping actionMapping, ActionForm actionForm,
-			HttpServletRequest request, HttpServletResponse response)
+			ActionMapping actionMapping, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		try {
-			AuthenticatedSessionManagerUtil.logout(request, response);
+			AuthenticatedSessionManagerUtil.logout(
+				httpServletRequest, httpServletResponse);
 
-			request.setAttribute(WebKeys.LOGOUT, true);
+			httpServletRequest.setAttribute(WebKeys.LOGOUT, Boolean.TRUE);
 
-			return actionMapping.findForward(ActionConstants.COMMON_REFERER);
+			return actionMapping.getActionForward(
+				ActionConstants.COMMON_REFERER);
 		}
 		catch (Exception e) {
-			PortalUtil.sendError(e, request, response);
+			PortalUtil.sendError(e, httpServletRequest, httpServletResponse);
 
 			return null;
 		}

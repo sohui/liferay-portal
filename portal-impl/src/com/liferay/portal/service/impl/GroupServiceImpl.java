@@ -18,9 +18,12 @@ import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
@@ -50,6 +53,7 @@ import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.kernel.util.comparator.GroupIdComparator;
 import com.liferay.portal.service.base.GroupServiceBaseImpl;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.ratings.kernel.transformer.RatingsDataTransformerUtil;
@@ -126,50 +130,6 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	}
 
 	/**
-	 * Adds a group.
-	 *
-	 * @param      parentGroupId the primary key of the parent group
-	 * @param      liveGroupId the primary key of the live group
-	 * @param      name the entity's name
-	 * @param      description the group's description (optionally
-	 *             <code>null</code>)
-	 * @param      type the group's type. For more information see {@link
-	 *             GroupConstants}.
-	 * @param      manualMembership whether manual membership is allowed for the
-	 *             group
-	 * @param      membershipRestriction the group's membership restriction. For
-	 *             more information see {@link GroupConstants}.
-	 * @param      friendlyURL the group's friendlyURL (optionally
-	 *             <code>null</code>)
-	 * @param      site whether the group is to be associated with a main site
-	 * @param      active whether the group is active
-	 * @param      serviceContext the service context to be applied (optionally
-	 *             <code>null</code>). Can set the asset category IDs and asset
-	 *             tag names for the group, and can set whether the group is for
-	 *             staging
-	 * @return     the group
-	 * @throws     PortalException if a portal exception occurred
-	 * @deprecated As of 7.0.0, replaced by {@link #addGroup(long, long, Map,
-	 *             Map, int, boolean, int, String, boolean, boolean,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public Group addGroup(
-			long parentGroupId, long liveGroupId, String name,
-			String description, int type, boolean manualMembership,
-			int membershipRestriction, String friendlyURL, boolean site,
-			boolean active, ServiceContext serviceContext)
-		throws PortalException {
-
-		return addGroup(
-			parentGroupId, liveGroupId, getLocalizationMap(name),
-			getLocalizationMap(description), type, manualMembership,
-			membershipRestriction, friendlyURL, site, false, active,
-			serviceContext);
-	}
-
-	/**
 	 * Adds the groups to the role.
 	 *
 	 * @param  roleId the primary key of the role
@@ -201,8 +161,9 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 		if (group.getCompanyId() != permissionChecker.getCompanyId()) {
 			throw new NoSuchGroupException(
-				"Group " + groupId + " does not belong in company " +
-					permissionChecker.getCompanyId());
+				StringBundler.concat(
+					"Group ", groupId, " does not belong in company ",
+					permissionChecker.getCompanyId()));
 		}
 	}
 
@@ -212,8 +173,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	 * <p>
 	 * The group is unstaged and its assets and resources including layouts,
 	 * membership requests, subscriptions, teams, blogs, bookmarks, calendar
-	 * events, image gallery, journals, message boards, polls, shopping related
-	 * entities, and wikis are also deleted.
+	 * events, image gallery, journals, message boards, polls, and wikis are
+	 * also deleted.
 	 * </p>
 	 *
 	 * @param  groupId the primary key of the group
@@ -357,6 +318,122 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 		return filterGroups(
 			groupLocalService.getGroups(companyId, parentGroupId, site));
+	}
+
+	/**
+	 * Returns all the groups that are direct children of the parent group.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  site whether the group is to be associated with a main site
+	 * @param  start the lower bound of the range of results
+	 * @param  end the upper bound of the range of results (not inclusive)
+	 * @return the matching groups, or <code>null</code> if no matches were
+	 *         found
+	 * @throws PortalException if a portal exception occurred
+	 */
+	@Override
+	public List<Group> getGroups(
+			long companyId, long parentGroupId, boolean site, int start,
+			int end)
+		throws PortalException {
+
+		return filterGroups(
+			groupLocalService.getGroups(
+				companyId, parentGroupId, site, start, end));
+	}
+
+	@Override
+	public List<Group> getGroups(
+			long companyId, long parentGroupId, String name, boolean site,
+			int start, int end)
+		throws PortalException {
+
+		return filterGroups(
+			groupLocalService.getGroups(
+				companyId, parentGroupId, name, site, start, end));
+	}
+
+	/**
+	 * Returns the number of groups that are direct children of the parent
+	 * group.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  site whether the group is to be associated with a main site
+	 * @return the number of matching groups
+	 */
+	@Override
+	public int getGroupsCount(long companyId, long parentGroupId, boolean site)
+		throws PortalException {
+
+		if (parentGroupId > 0) {
+			GroupPermissionUtil.check(
+				getPermissionChecker(), parentGroupId, ActionKeys.VIEW);
+		}
+		else {
+			GroupPermissionUtil.check(getPermissionChecker(), ActionKeys.VIEW);
+		}
+
+		return groupLocalService.getGroupsCount(companyId, parentGroupId, site);
+	}
+
+	@Override
+	public int getGroupsCount(
+			long companyId, long parentGroupId, String name, boolean site)
+		throws PortalException {
+
+		if (parentGroupId > 0) {
+			GroupPermissionUtil.check(
+				getPermissionChecker(), parentGroupId, ActionKeys.VIEW);
+		}
+		else {
+			GroupPermissionUtil.check(getPermissionChecker(), ActionKeys.VIEW);
+		}
+
+		return groupLocalService.getGroupsCount(
+			companyId, parentGroupId, name, site);
+	}
+
+	/**
+	 * Returns the number of groups that are direct children of the parent group
+	 * with the matching className.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  className the class name of the group
+	 * @param  parentGroupId the primary key of the parent group
+	 * @return the number of matching groups
+	 */
+	@Override
+	public int getGroupsCount(
+			long companyId, String className, long parentGroupId)
+		throws PortalException {
+
+		if (parentGroupId > 0) {
+			GroupPermissionUtil.check(
+				getPermissionChecker(), parentGroupId, ActionKeys.VIEW);
+		}
+		else {
+			GroupPermissionUtil.check(getPermissionChecker(), ActionKeys.VIEW);
+		}
+
+		return groupLocalService.getGroupsCount(
+			companyId, className, parentGroupId);
+	}
+
+	@Override
+	public List<Group> getGtGroups(
+			long gtGroupId, long companyId, long parentGroupId, boolean site,
+			int size)
+		throws PortalException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		GroupPermissionUtil.check(permissionChecker, ActionKeys.VIEW);
+
+		return groupPersistence.findByG_C_P_S(
+			gtGroupId, companyId, parentGroupId, site, 0, size,
+			new GroupIdComparator(true));
 	}
 
 	/**
@@ -563,19 +640,18 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			};
 		}
 
-		if (ArrayUtil.contains(classNames, User.class.getName())) {
-			if (PropsValues.LAYOUT_USER_PRIVATE_LAYOUTS_ENABLED ||
-				PropsValues.LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED) {
+		if (ArrayUtil.contains(classNames, User.class.getName()) &&
+			(PropsValues.LAYOUT_USER_PRIVATE_LAYOUTS_ENABLED ||
+			 PropsValues.LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED)) {
 
-				userSiteGroups.add(user.getGroup());
+			userSiteGroups.add(user.getGroup());
 
-				if (userSiteGroups.size() == max) {
-					if (checkPermissions) {
-						return filterGroups(new ArrayList<>(userSiteGroups));
-					}
-
-					return new ArrayList<>(userSiteGroups);
+			if (userSiteGroups.size() == max) {
+				if (checkPermissions) {
+					return filterGroups(new ArrayList<>(userSiteGroups));
 				}
+
+				return new ArrayList<>(userSiteGroups);
 			}
 		}
 
@@ -602,34 +678,32 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 			if (ArrayUtil.contains(classNames, Group.class.getName())) {
 				for (Group group : userBag.getUserGroups()) {
-					if (group.isActive() && group.isSite()) {
-						if (userSiteGroups.add(group) &&
-							(userSiteGroups.size() == max)) {
+					if (groupLocalService.isLiveGroupActive(group) &&
+						group.isSite() && userSiteGroups.add(group) &&
+						(userSiteGroups.size() == max)) {
 
-							if (checkPermissions) {
-								return filterGroups(
-									new ArrayList<>(userSiteGroups));
-							}
-
-							return new ArrayList<>(userSiteGroups);
+						if (checkPermissions) {
+							return filterGroups(
+								new ArrayList<>(userSiteGroups));
 						}
+
+						return new ArrayList<>(userSiteGroups);
 					}
 				}
 			}
 
 			if (ArrayUtil.contains(classNames, Organization.class.getName())) {
 				for (Group group : userBag.getUserOrgGroups()) {
-					if (group.isActive() && group.isSite()) {
-						if (userSiteGroups.add(group) &&
-							(userSiteGroups.size() == max)) {
+					if (groupLocalService.isLiveGroupActive(group) &&
+						group.isSite() && userSiteGroups.add(group) &&
+						(userSiteGroups.size() == max)) {
 
-							if (checkPermissions) {
-								return filterGroups(
-									new ArrayList<>(userSiteGroups));
-							}
-
-							return new ArrayList<>(userSiteGroups);
+						if (checkPermissions) {
+							return filterGroups(
+								new ArrayList<>(userSiteGroups));
 						}
+
+						return new ArrayList<>(userSiteGroups);
 					}
 				}
 			}
@@ -718,6 +792,13 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 				getPermissionChecker(), userId, ActionKeys.VIEW);
 		}
 		catch (PrincipalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
 			GroupPermissionUtil.check(
 				getPermissionChecker(), groupId, ActionKeys.VIEW_MEMBERS);
 		}
@@ -941,56 +1022,11 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 			return group;
 		}
-		else {
-			return groupLocalService.updateGroup(
-				groupId, parentGroupId, nameMap, descriptionMap, type,
-				manualMembership, membershipRestriction, friendlyURL,
-				inheritContent, active, serviceContext);
-		}
-	}
 
-	/**
-	 * Updates the group.
-	 *
-	 * @param      groupId the primary key of the group
-	 * @param      parentGroupId the primary key of the parent group
-	 * @param      name the group's name
-	 * @param      description the group's new description (optionally
-	 *             <code>null</code>)
-	 * @param      type the group's new type. For more information see {@link
-	 *             GroupConstants}.
-	 * @param      manualMembership whether manual membership is allowed for the
-	 *             group
-	 * @param      membershipRestriction the group's membership restriction. For
-	 *             more information see {@link GroupConstants}.
-	 * @param      friendlyURL the group's new friendlyURL (optionally
-	 *             <code>null</code>)
-	 * @param      inheritContent whether to inherit content from the parent
-	 *             group
-	 * @param      active whether the group is active
-	 * @param      serviceContext the service context to be applied (optionally
-	 *             <code>null</code>). Can set the asset category IDs and asset
-	 *             tag names for the group.
-	 * @return     the group
-	 * @throws     PortalException if a portal exception occurred
-	 * @deprecated As of 7.0.0, replaced by {@link #updateGroup(long, long, Map,
-	 *             Map, int, boolean, int, String, boolean, boolean,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public Group updateGroup(
-			long groupId, long parentGroupId, String name, String description,
-			int type, boolean manualMembership, int membershipRestriction,
-			String friendlyURL, boolean inheritContent, boolean active,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return updateGroup(
-			groupId, parentGroupId, getLocalizationMap(name),
-			getLocalizationMap(description), type, manualMembership,
-			membershipRestriction, friendlyURL, inheritContent, active,
-			serviceContext);
+		return groupLocalService.updateGroup(
+			groupId, parentGroupId, nameMap, descriptionMap, type,
+			manualMembership, membershipRestriction, friendlyURL,
+			inheritContent, active, serviceContext);
 	}
 
 	/**
@@ -1028,9 +1064,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 			return group;
 		}
-		else {
-			return groupLocalService.updateGroup(groupId, typeSettings);
-		}
+
+		return groupLocalService.updateGroup(groupId, typeSettings);
 	}
 
 	@Override
@@ -1060,9 +1095,11 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 		List<Group> filteredGroups = new ArrayList<>();
 
+		PermissionChecker permissionChecker = getPermissionChecker();
+
 		for (Group group : groups) {
 			if (GroupPermissionUtil.contains(
-					getPermissionChecker(), group, ActionKeys.VIEW)) {
+					permissionChecker, group, ActionKeys.VIEW)) {
 
 				filteredGroups.add(group);
 			}
@@ -1078,5 +1115,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 		return map;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		GroupServiceImpl.class);
 
 }

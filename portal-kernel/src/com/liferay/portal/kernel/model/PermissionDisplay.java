@@ -74,9 +74,8 @@ public class PermissionDisplay
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public String getActionId() {
@@ -113,7 +112,11 @@ public class PermissionDisplay
 
 	@Override
 	public int hashCode() {
-		return _portletName.concat(_modelName).concat(_actionId).hashCode();
+		return _portletName.concat(
+			_modelName
+		).concat(
+			_actionId
+		).hashCode();
 	}
 
 	private final String _actionId;

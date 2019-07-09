@@ -21,40 +21,65 @@ import com.liferay.portal.kernel.util.StringBundler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Raymond Augé
  * @author Shuyang Zhou
  */
+@ProviderType
 public interface RuntimePage {
 
 	public StringBundler getProcessedTemplate(
-			HttpServletRequest request, HttpServletResponse response,
-			String portletId, TemplateResource templateResource)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String portletId,
+			TemplateResource templateResource)
 		throws Exception;
 
 	public void processCustomizationSettings(
-			HttpServletRequest request, HttpServletResponse response,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
+			TemplateResource templateResource)
+		throws Exception;
+
+	public void processCustomizationSettings(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
+			TemplateResource templateResource, String langType)
+		throws Exception;
+
+	public void processTemplate(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String portletId,
 			TemplateResource templateResource)
 		throws Exception;
 
 	public void processTemplate(
-			HttpServletRequest request, HttpServletResponse response,
-			String portletId, TemplateResource templateResource)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String portletId,
+			TemplateResource templateResource, String langType)
 		throws Exception;
 
 	public void processTemplate(
-			HttpServletRequest request, HttpServletResponse response,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
 			TemplateResource templateResource)
 		throws Exception;
 
-	public String processXML(
-			HttpServletRequest request, HttpServletResponse response,
-			String content)
+	public void processTemplate(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
+			TemplateResource templateResource, String langType)
 		throws Exception;
 
 	public String processXML(
-			HttpServletRequest request, String content,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String content)
+		throws Exception;
+
+	public String processXML(
+			HttpServletRequest httpServletRequest, String content,
 			RuntimeLogic runtimeLogic)
 		throws Exception;
 

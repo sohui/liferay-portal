@@ -21,8 +21,10 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
- * @author Eduardo Lundgren
+ * @author     Eduardo Lundgren
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class AssetTagPermission {
 
 	public static void check(

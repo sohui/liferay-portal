@@ -14,45 +14,53 @@
 
 package com.liferay.push.notifications.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the PushNotificationsDevice service. Represents a row in the &quot;PushNotificationsDevice&quot; database table, with each column mapped to a property of this class.
  *
  * @author Bruno Farache
  * @see PushNotificationsDeviceModel
- * @see com.liferay.push.notifications.model.impl.PushNotificationsDeviceImpl
- * @see com.liferay.push.notifications.model.impl.PushNotificationsDeviceModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.push.notifications.model.impl.PushNotificationsDeviceImpl")
+@ImplementationClassName(
+	"com.liferay.push.notifications.model.impl.PushNotificationsDeviceImpl"
+)
 @ProviderType
-public interface PushNotificationsDevice extends PushNotificationsDeviceModel,
-	PersistedModel {
+public interface PushNotificationsDevice
+	extends PersistedModel, PushNotificationsDeviceModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.push.notifications.model.impl.PushNotificationsDeviceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.push.notifications.model.impl.PushNotificationsDeviceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<PushNotificationsDevice, Long> PUSH_NOTIFICATIONS_DEVICE_ID_ACCESSOR =
-		new Accessor<PushNotificationsDevice, Long>() {
-			@Override
-			public Long get(PushNotificationsDevice pushNotificationsDevice) {
-				return pushNotificationsDevice.getPushNotificationsDeviceId();
-			}
+	public static final Accessor<PushNotificationsDevice, Long>
+		PUSH_NOTIFICATIONS_DEVICE_ID_ACCESSOR =
+			new Accessor<PushNotificationsDevice, Long>() {
 
-			@Override
-			public Class<Long> getAttributeClass() {
-				return Long.class;
-			}
+				@Override
+				public Long get(
+					PushNotificationsDevice pushNotificationsDevice) {
 
-			@Override
-			public Class<PushNotificationsDevice> getTypeClass() {
-				return PushNotificationsDevice.class;
-			}
-		};
+					return pushNotificationsDevice.
+						getPushNotificationsDeviceId();
+				}
+
+				@Override
+				public Class<Long> getAttributeClass() {
+					return Long.class;
+				}
+
+				@Override
+				public Class<PushNotificationsDevice> getTypeClass() {
+					return PushNotificationsDevice.class;
+				}
+
+			};
+
 }

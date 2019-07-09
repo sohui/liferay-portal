@@ -82,6 +82,7 @@ String signature = ParamUtil.getString(request, "signature");
 					</p>
 				</c:if>
 			</div>
+
 			<div class="lfr-api-param">
 				<span class="lfr-api-param-name">
 					<span class="method-name"><%= actionMethod.getName() %></span>
@@ -116,7 +117,6 @@ String signature = ParamUtil.getString(request, "signature");
 					<span class="lfr-api-param-name">
 						p_auth
 					</span>
-
 					<span class="lfr-action-label lfr-api-param-type">
 						String
 					</span>
@@ -134,7 +134,7 @@ String signature = ParamUtil.getString(request, "signature");
 			for (int i = 0; i < methodParameters.length; i++) {
 				MethodParameter methodParameter = methodParameters[i];
 
-				Class methodParameterTypeClass = methodParameter.getType();
+				Class<?> methodParameterTypeClass = methodParameter.getType();
 
 				String methodParameterTypeClassName = null;
 
@@ -150,7 +150,6 @@ String signature = ParamUtil.getString(request, "signature");
 					<span class="lfr-api-param-name">
 						<%= methodParameter.getName() %>
 					</span>
-
 					<span class="lfr-action-label lfr-api-param-type">
 						<%= methodParameterTypeClassName %>
 					</span>
@@ -246,7 +245,7 @@ String signature = ParamUtil.getString(request, "signature");
 				</div>
 
 			<%
-				}
+			}
 			%>
 
 		</div>
@@ -294,6 +293,7 @@ String signature = ParamUtil.getString(request, "signature");
 			<aui:script>
 				Liferay.TPL_DATA_TYPES = {
 					array: {},
+					file: {},
 					other: {},
 					string: {}
 				};
@@ -337,7 +337,7 @@ String signature = ParamUtil.getString(request, "signature");
 
 					<%
 					}
-					else if (methodParameterTypeClass.equals(boolean.class)) {
+					else if (methodParameterTypeClass.equals(boolean.class) || methodParameterTypeClass.equals(Boolean.class)) {
 					%>
 
 						<aui:field-wrapper label="<%= methodParameterName %>">
@@ -350,7 +350,7 @@ String signature = ParamUtil.getString(request, "signature");
 
 					<%
 					}
-					else {
+					else if (methodParameterTypeClass.isArray() || methodParameterTypeClass.isEnum() || methodParameterTypeClass.isPrimitive() || methodParameterTypeClass.equals(Byte.class) || methodParameterTypeClass.equals(Character.class) || methodParameterTypeClass.equals(Date.class) || methodParameterTypeClass.equals(Double.class) || methodParameterTypeClass.equals(Float.class) || methodParameterTypeClass.equals(Integer.class) || methodParameterTypeClass.equals(List.class) || methodParameterTypeClass.equals(Locale.class) || methodParameterTypeClass.equals(Long.class) || methodParameterTypeClass.equals(Map.class) || methodParameterTypeClass.equals(Short.class) || methodParameterTypeClass.equals(String.class) || methodParameterTypeClass.equals(Void.class)) {
 						int size = 10;
 
 						if (methodParameterTypeClass.equals(String.class)) {
@@ -358,11 +358,20 @@ String signature = ParamUtil.getString(request, "signature");
 						}
 					%>
 
-						<aui:input id='<%= "field" + i %>' label="<%= methodParameterName %>" name="<%= methodParameterName %>" size="<%= size %>" suffix="<%= methodParameterTypeClassName %>" />
+						<aui:input id='<%= "field" + i %>' label="<%= methodParameterName %>" name="<%= methodParameterName %>" rows="1" size="<%= size %>" suffix="<%= methodParameterTypeClassName %>" type="textarea" />
 
-				<%
+					<%
 					}
-				%>
+					else {
+						String objectMethodParameterName = "+" + methodParameterName;
+						int size = 10;
+					%>
+
+						<aui:input id='<%= "field" + i %>' label="<%= methodParameterName %>" name="<%= objectMethodParameterName %>" size="<%= size %>" suffix="<%= methodParameterTypeClassName %>" />
+
+					<%
+					}
+					%>
 
 					<aui:script>
 
@@ -371,6 +380,9 @@ String signature = ParamUtil.getString(request, "signature");
 
 						if (methodParameterTypeClass.isArray()) {
 							jsObjectType = "array";
+						}
+						else if (methodParameterTypeClass.equals(File.class)) {
+							jsObjectType = "file";
 						}
 						else if (methodParameterTypeClass.equals(String.class)) {
 							jsObjectType = "string";
@@ -393,19 +405,27 @@ String signature = ParamUtil.getString(request, "signature");
 
 			var form = A.one('#execute');
 
+			var tplDataTypes = Liferay.TPL_DATA_TYPES;
+
+			var multipart = !A.Object.isEmpty(tplDataTypes.file);
+
 			var curlTpl = A.Template.from('#curlTpl');
+
 			var scriptTpl = A.Template.from('#scriptTpl');
 			var urlTpl = A.Template.from('#urlTpl');
 
-			var tplDataTypes = Liferay.TPL_DATA_TYPES;
-
 			var arrayType = tplDataTypes.array;
+			var fileType = tplDataTypes.file;
 			var stringType = tplDataTypes.string;
 
 			var formatDataType = function(key, value, includeNull) {
 				value = decodeURIComponent(value.replace(/\+/g, ' '));
+				value = escape(value);
 
-				if (stringType[key]) {
+				if (fileType[key]) {
+					value = 'null';
+				}
+				else if (stringType[key]) {
 					value = '\'' + value + '\'';
 				}
 				else if (arrayType[key]) {
@@ -420,7 +440,20 @@ String signature = ParamUtil.getString(request, "signature");
 				return value;
 			};
 
-			curlTpl.formatDataType = formatDataType;
+			var formatCurlDataType = function(key, value, includeNull) {
+				var filePath = fileType[key];
+
+				if (!multipart || !filePath) {
+					value = formatDataType(key, value, includeNull);
+				}
+				else {
+					value = '@path_to_file';
+				}
+
+				return value;
+			};
+
+			curlTpl.formatDataType = formatCurlDataType;
 			scriptTpl.formatDataType = A.rbind(formatDataType, scriptTpl, true);
 
 			urlTpl.toURIParam = function(value) {
@@ -447,11 +480,54 @@ String signature = ParamUtil.getString(request, "signature");
 
 					var formEl = form.getDOM();
 
+					var formQueryString = A.IO.prototype._serialize(formEl);
+
+					var query_elements = formQueryString.split("&");
+
+					var PLUS_ENCODING = "%2B";
+					var MINUS_ENCODING = "%2D";
+
+					for (var i = 0 ; i < query_elements.length ; i++) {
+						var query_map = query_elements[i].split("=");
+
+						var key = query_map[0];
+
+						var plus_bool = ((key.indexOf(PLUS_ENCODING) == 0) || (key.indexOf("+") == 0));
+						var minus_bool = ((key.indexOf(MINUS_ENCODING) == 0) || (key.indexOf("-") == 0));
+
+						if (plus_bool || minus_bool) {
+							var value = "";
+
+							for (var j = 1; j < query_map.length ; j++) {
+								value += query_map[j];
+							}
+
+							if (value.length > 0) {
+								if (minus_bool) {
+									key = key.replace(MINUS_ENCODING,"-");
+									var node = A.one('[name=' + key + ']');
+
+									key = key.replace("-", "+");
+									node.attr("name", key);
+								}
+							}
+							else if (plus_bool) {
+								key = key.replace(PLUS_ENCODING,"+");
+								var node = A.one('[name=' + key + ']');
+
+								key = key.replace("+", "-");
+								node.attr("name", key);
+							}
+						}
+					}
+
+					formEl = form.getDOM();
+
 					Liferay.Service(
 						'<%= jsonWebServiceActionMapping.getPath() %>',
 						formEl,
 						function(obj) {
-							serviceOutput.html(JSON.stringify(obj, null, 2));
+							serviceOutput.html(A.Lang.String.escapeHTML(JSON.stringify(obj, null, 2)));
 
 							output.removeClass('loading-results');
 
@@ -459,7 +535,18 @@ String signature = ParamUtil.getString(request, "signature");
 						}
 					);
 
-					var formQueryString = A.IO.prototype._serialize(formEl);
+					formQueryString = A.IO.prototype._serialize(formEl);
+
+					formQueryString = formQueryString.replace(PLUS_ENCODING, "+");
+					formQueryString = formQueryString.replace(MINUS_ENCODING, "-");
+
+					if (multipart) {
+						formQueryString += Object.keys(tplDataTypes.file).map(
+							function(item, index) {
+								return '&' + item + '=';
+							}
+						).join('');
+					}
 
 					var curlData = [];
 					var scriptData = [];
@@ -491,7 +578,8 @@ String signature = ParamUtil.getString(request, "signature");
 					);
 
 					var tplCurlData = {
-						data: curlData
+						data: curlData,
+						flag: multipart ? 'F' : 'd'
 					};
 
 					var tplScriptData = {
@@ -514,10 +602,6 @@ String signature = ParamUtil.getString(request, "signature");
 						REGEX_QUERY_STRING,
 						function(match, key, value) {
 							if (!ignoreFields[key]) {
-								if (!value) {
-									key = '-' + key;
-								}
-
 								if (extraFields[key]) {
 									urlTplData.extraData.push(
 										{
@@ -546,7 +630,7 @@ String signature = ParamUtil.getString(request, "signature");
 			);
 		</aui:script>
 
-<textarea class="hide" id="scriptTpl">
+		<textarea class="hide" id="scriptTpl">
 Liferay.Service(
   '<%= jsonWebServiceActionMapping.getPath() %>',
   <tpl if="data.length">{
@@ -557,18 +641,18 @@ Liferay.Service(
 <%= StringPool.FOUR_SPACES %>console.log(obj);
   }
 );
-</textarea>
+		</textarea>
 
-<textarea class="hide" id="curlTpl">
+		<textarea class="hide" id="curlTpl">
 curl <%= themeDisplay.getPortalURL() + jsonWSPath + jsonWebServiceActionMapping.getPath() %> \\
   -u test@liferay.com:test <tpl if="data.length">\\
-  <tpl for="data">-d {key}={[this.formatDataType(values.key, values.value)]} <tpl if="!$last">\\
+  <tpl for="data">-{parent.flag} {key}={[this.formatDataType(values.key, values.value)]} <tpl if="!$last">\\
   </tpl></tpl></tpl>
-</textarea>
+		</textarea>
 
-<textarea class="hide" id="urlTpl">
+		<textarea class="hide" id="urlTpl">
 <%= themeDisplay.getPortalURL() + jsonWSPath + jsonWebServiceActionMapping.getPath() %><tpl if="data.length">/<tpl for="data">{key:this.toURIParam}<tpl if="value.length">/{value}</tpl><tpl if="!$last">/</tpl></tpl></tpl><tpl if="extraData.length">?<tpl for="extraData">{key:this.toURIParam}={value}<tpl if="!$last">&amp;</tpl></tpl></tpl>
-</textarea>
+		</textarea>
 	</c:when>
 	<c:otherwise>
 		<div class="alert alert-info">

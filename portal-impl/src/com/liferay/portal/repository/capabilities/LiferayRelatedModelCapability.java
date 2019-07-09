@@ -21,8 +21,11 @@ import com.liferay.portal.repository.capabilities.util.RepositoryEntryChecker;
 import com.liferay.portal.repository.capabilities.util.RepositoryEntryConverter;
 
 /**
- * @author Iván Zaera
+ * @author     Iván Zaera
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.capabilities.LiferayRelatedModelCapability}
  */
+@Deprecated
 public class LiferayRelatedModelCapability implements RelatedModelCapability {
 
 	public LiferayRelatedModelCapability(

@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.servlet;
 
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,14 +46,14 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 
 	@SuppressWarnings("deprecation")
 	public static void finishResponse(
-			MetaData metaInfoDataBag, HttpServletResponse response)
+			MetaData metaInfoDataBag, HttpServletResponse httpServletResponse)
 		throws IOException {
 
-		if (response.isCommitted()) {
+		if (httpServletResponse.isCommitted()) {
 			return;
 		}
 
-		resetThrough(response);
+		resetThrough(httpServletResponse);
 
 		for (Map.Entry<String, Set<Header>> entry :
 				metaInfoDataBag._headers.entrySet()) {
@@ -63,49 +64,54 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 
 			for (Header header : entry.getValue()) {
 				if (first) {
-					header.setToResponse(key, response);
+					header.setToResponse(key, httpServletResponse);
 
 					first = false;
 				}
 				else {
-					header.addToResponse(key, response);
+					header.addToResponse(key, httpServletResponse);
 				}
 			}
 		}
 
 		if (metaInfoDataBag._location != null) {
-			response.sendRedirect(metaInfoDataBag._location);
+			httpServletResponse.sendRedirect(metaInfoDataBag._location);
 		}
 		else if (metaInfoDataBag._error) {
-			response.sendError(
+			httpServletResponse.sendError(
 				metaInfoDataBag._status, metaInfoDataBag._errorMessage);
 		}
 		else {
 			if (metaInfoDataBag._charsetName != null) {
-				response.setCharacterEncoding(metaInfoDataBag._charsetName);
+				httpServletResponse.setCharacterEncoding(
+					metaInfoDataBag._charsetName);
 			}
 
 			if (metaInfoDataBag._contentLength != -1) {
-				response.setContentLength(metaInfoDataBag._contentLength);
+				httpServletResponse.setContentLengthLong(
+					metaInfoDataBag._contentLength);
 			}
 
 			if (metaInfoDataBag._contentType != null) {
-				response.setContentType(metaInfoDataBag._contentType);
+				httpServletResponse.setContentType(
+					metaInfoDataBag._contentType);
 			}
 
 			if (metaInfoDataBag._locale != null) {
-				response.setLocale(metaInfoDataBag._locale);
+				httpServletResponse.setLocale(metaInfoDataBag._locale);
 			}
 
 			if (metaInfoDataBag._status != SC_OK) {
-				response.setStatus(
+				httpServletResponse.setStatus(
 					metaInfoDataBag._status, metaInfoDataBag._statusMessage);
 			}
 		}
 	}
 
-	public MetaInfoCacheServletResponse(HttpServletResponse response) {
-		super(response);
+	public MetaInfoCacheServletResponse(
+		HttpServletResponse httpServletResponse) {
+
+		super(httpServletResponse);
 	}
 
 	@Override
@@ -192,26 +198,13 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 		return _metaData._headers.containsKey(name);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #finishResponse(boolean)}}
-	 */
-	@Deprecated
 	public void finishResponse() throws IOException {
-		finishResponse(false);
-	}
-
-	public void finishResponse(boolean reapplyMetaData) throws IOException {
-		HttpServletResponse response = (HttpServletResponse)getResponse();
-
-		if (reapplyMetaData) {
-			finishResponse(_metaData, response);
-		}
+		finishResponse(_metaData, (HttpServletResponse)getResponse());
 
 		_committed = true;
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public void flushBuffer() throws IOException {
 		_committed = true;
 	}
@@ -241,8 +234,11 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 		String contentType = _metaData._contentType;
 
 		if ((contentType != null) && (_metaData._charsetName != null)) {
-			contentType = contentType.concat("; charset=").concat(
-				_metaData._charsetName);
+			contentType = contentType.concat(
+				"; charset="
+			).concat(
+				_metaData._charsetName
+			);
 		}
 
 		return contentType;
@@ -262,7 +258,9 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 			return null;
 		}
 
-		Header header = values.iterator().next();
+		Iterator<Header> iterator = values.iterator();
+
+		Header header = iterator.next();
 
 		return header.toString();
 	}
@@ -331,7 +329,11 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 	public boolean isCommitted() {
 		ServletResponse servletResponse = getResponse();
 
-		return _committed || servletResponse.isCommitted();
+		if (_committed || servletResponse.isCommitted()) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -435,17 +437,7 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 			return;
 		}
 
-		if (calledGetWriter) {
-			return;
-		}
-
-		if (charsetName == null) {
-			return;
-		}
-
-		_metaData._charsetName = charsetName;
-
-		super.setCharacterEncoding(charsetName);
+		_setCharacterEncoding(charsetName);
 	}
 
 	@Override
@@ -457,6 +449,17 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 		_metaData._contentLength = contentLength;
 
 		super.setContentLength(contentLength);
+	}
+
+	@Override
+	public void setContentLengthLong(long contentLength) {
+		if (isCommitted()) {
+			return;
+		}
+
+		_metaData._contentLength = contentLength;
+
+		super.setContentLengthLong(contentLength);
 	}
 
 	@Override
@@ -483,7 +486,7 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 
 				charsetName = charsetName.trim();
 
-				setCharacterEncoding(charsetName);
+				_setCharacterEncoding(charsetName);
 			}
 			else {
 				_metaData._charsetName = null;
@@ -613,7 +616,7 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 
 		private int _bufferSize;
 		private String _charsetName;
-		private int _contentLength = -1;
+		private long _contentLength = -1;
 		private String _contentType;
 		private boolean _error;
 		private String _errorMessage;
@@ -625,17 +628,19 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 
 	}
 
-	protected static void resetThrough(HttpServletResponse response) {
-		if (response instanceof MetaInfoCacheServletResponse) {
+	protected static void resetThrough(
+		HttpServletResponse httpServletResponse) {
+
+		if (httpServletResponse instanceof MetaInfoCacheServletResponse) {
 			MetaInfoCacheServletResponse metaInfoCacheServletResponse =
-				(MetaInfoCacheServletResponse)response;
+				(MetaInfoCacheServletResponse)httpServletResponse;
 
 			resetThrough(
 				(HttpServletResponse)
 					metaInfoCacheServletResponse.getResponse());
 		}
 		else {
-			response.reset();
+			httpServletResponse.reset();
 		}
 	}
 
@@ -652,6 +657,20 @@ public class MetaInfoCacheServletResponse extends HttpServletResponseWrapper {
 
 	protected boolean calledGetOutputStream;
 	protected boolean calledGetWriter;
+
+	private void _setCharacterEncoding(String charsetName) {
+		if (calledGetWriter) {
+			return;
+		}
+
+		if (charsetName == null) {
+			return;
+		}
+
+		_metaData._charsetName = charsetName;
+
+		super.setCharacterEncoding(charsetName);
+	}
 
 	private boolean _committed;
 	private final MetaData _metaData = new MetaData();

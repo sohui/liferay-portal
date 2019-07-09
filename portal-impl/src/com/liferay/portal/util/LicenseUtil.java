@@ -14,6 +14,9 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.json.JSONObjectImpl;
 import com.liferay.portal.kernel.cluster.ClusterExecutorUtil;
 import com.liferay.portal.kernel.cluster.ClusterNode;
@@ -26,9 +29,6 @@ import com.liferay.portal.kernel.license.util.LicenseManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Base64;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -38,29 +38,22 @@ import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.util.Encryptor;
 
 import java.io.File;
-import java.io.InputStream;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
-import java.net.URL;
-
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.spec.X509EncodedKeySpec;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,11 +63,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import javax.crypto.KeyGenerator;
-
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -83,7 +73,11 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -161,6 +155,12 @@ public class LicenseUtil {
 		return _macAddresses;
 	}
 
+	public static int getProcessorCores() {
+		Runtime runtime = Runtime.getRuntime();
+
+		return runtime.availableProcessors();
+	}
+
 	public static byte[] getServerIdBytes() throws Exception {
 		if (_serverIdBytes != null) {
 			return _serverIdBytes;
@@ -184,15 +184,23 @@ public class LicenseUtil {
 		serverInfo.put("hostName", PortalUtil.getComputerName());
 		serverInfo.put("ipAddresses", StringUtil.merge(getIpAddresses()));
 		serverInfo.put("macAddresses", StringUtil.merge(getMacAddresses()));
+		serverInfo.put("processorCores", String.valueOf(getProcessorCores()));
 
 		return serverInfo;
 	}
 
-	public static void registerOrder(HttpServletRequest request) {
-		String orderUuid = ParamUtil.getString(request, "orderUuid");
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
+	public static void init() {
+	}
+
+	public static void registerOrder(HttpServletRequest httpServletRequest) {
+		String orderUuid = ParamUtil.getString(httpServletRequest, "orderUuid");
 		String productEntryName = ParamUtil.getString(
-			request, "productEntryName");
-		int maxServers = ParamUtil.getInteger(request, "maxServers");
+			httpServletRequest, "productEntryName");
+		int maxServers = ParamUtil.getInteger(httpServletRequest, "maxServers");
 
 		List<ClusterNode> clusterNodes = ClusterExecutorUtil.getClusterNodes();
 
@@ -203,13 +211,15 @@ public class LicenseUtil {
 				orderUuid, productEntryName, maxServers);
 
 			for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-				request.setAttribute(entry.getKey(), entry.getValue());
+				httpServletRequest.setAttribute(
+					entry.getKey(), entry.getValue());
 			}
 		}
 		else {
 			for (ClusterNode clusterNode : clusterNodes) {
 				boolean register = ParamUtil.getBoolean(
-					request, clusterNode.getClusterNodeId() + "_register");
+					httpServletRequest,
+					clusterNode.getClusterNodeId() + "_register");
 
 				if (!register) {
 					continue;
@@ -217,8 +227,8 @@ public class LicenseUtil {
 
 				try {
 					_registerClusterOrder(
-						request, clusterNode, orderUuid, productEntryName,
-						maxServers);
+						httpServletRequest, clusterNode, orderUuid,
+						productEntryName, maxServers);
 				}
 				catch (Exception e) {
 					_log.error(e, e);
@@ -233,7 +243,7 @@ public class LicenseUtil {
 							StringPool.COLON + clusterNode.getPortalPort();
 					}
 
-					request.setAttribute(
+					httpServletRequest.setAttribute(
 						clusterNode.getClusterNodeId() + "_ERROR_MESSAGE",
 						message);
 				}
@@ -297,7 +307,14 @@ public class LicenseUtil {
 		HttpClient httpClient = null;
 
 		HttpClientConnectionManager httpClientConnectionManager =
-			new BasicHttpClientConnectionManager();
+			new BasicHttpClientConnectionManager(
+				RegistryBuilder.<ConnectionSocketFactory>create(
+				).register(
+					Http.HTTP, PlainConnectionSocketFactory.getSocketFactory()
+				).register(
+					Http.HTTPS,
+					SSLConnectionSocketFactory.getSystemSocketFactory()
+				).build());
 
 		try {
 			HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
@@ -324,8 +341,9 @@ public class LicenseUtil {
 			if (Validator.isNotNull(_PROXY_URL)) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"Using proxy " + _PROXY_URL + StringPool.COLON +
-							_PROXY_PORT);
+						StringBundler.concat(
+							"Using proxy ", _PROXY_URL, StringPool.COLON,
+							_PROXY_PORT));
 				}
 
 				proxyHttpHost = new HttpHost(_PROXY_URL, _PROXY_PORT);
@@ -345,7 +363,7 @@ public class LicenseUtil {
 			httpClient = httpClientBuilder.build();
 
 			ByteArrayEntity byteArrayEntity = new ByteArrayEntity(
-				_encryptRequest(serverURL, request));
+				request.getBytes(StringPool.UTF8));
 
 			byteArrayEntity.setContentType(ContentTypes.APPLICATION_JSON);
 
@@ -355,8 +373,7 @@ public class LicenseUtil {
 
 			HttpEntity httpEntity = httpResponse.getEntity();
 
-			String response = _decryptResponse(
-				serverURL, httpEntity.getContent());
+			String response = StringUtil.read(httpEntity.getContent());
 
 			if (_log.isDebugEnabled()) {
 				_log.debug("Server response: " + response);
@@ -390,9 +407,13 @@ public class LicenseUtil {
 
 		JSONObject jsonObject = new JSONObjectImpl();
 
-		jsonObject.put("liferayVersion", ReleaseInfo.getBuildNumber());
-		jsonObject.put("orderUuid", orderUuid);
-		jsonObject.put("version", 2);
+		jsonObject.put(
+			"liferayVersion", ReleaseInfo.getBuildNumber()
+		).put(
+			"orderUuid", orderUuid
+		).put(
+			"version", 2
+		);
 
 		if (Validator.isNull(productEntryName)) {
 			jsonObject.put(Constants.CMD, "QUERY");
@@ -404,16 +425,22 @@ public class LicenseUtil {
 				jsonObject.put("productEntryName", "basic");
 
 				if (productEntryName.equals("basic-cluster")) {
-					jsonObject.put("cluster", true);
-					jsonObject.put("maxServers", maxServers);
+					jsonObject.put(
+						"cluster", true
+					).put(
+						"maxServers", maxServers
+					);
 				}
 				else if (productEntryName.startsWith("basic-")) {
 					String[] productNameArray = StringUtil.split(
 						productEntryName, StringPool.DASH);
 
 					if (productNameArray.length >= 3) {
-						jsonObject.put("clusterId", productNameArray[2]);
-						jsonObject.put("offeringEntryId", productNameArray[1]);
+						jsonObject.put(
+							"clusterId", productNameArray[2]
+						).put(
+							"offeringEntryId", productNameArray[1]
+						);
 					}
 				}
 			}
@@ -421,119 +448,20 @@ public class LicenseUtil {
 				jsonObject.put("productEntryName", productEntryName);
 			}
 
-			jsonObject.put("hostName", PortalUtil.getComputerName());
-			jsonObject.put("ipAddresses", StringUtil.merge(getIpAddresses()));
-			jsonObject.put("macAddresses", StringUtil.merge(getMacAddresses()));
-			jsonObject.put("serverId", Arrays.toString(getServerIdBytes()));
+			jsonObject.put(
+				"hostName", PortalUtil.getComputerName()
+			).put(
+				"ipAddresses", StringUtil.merge(getIpAddresses())
+			).put(
+				"macAddresses", StringUtil.merge(getMacAddresses())
+			).put(
+				"processorCores", getProcessorCores()
+			).put(
+				"serverId", Arrays.toString(getServerIdBytes())
+			);
 		}
 
 		return jsonObject;
-	}
-
-	private static String _decryptResponse(
-			String serverURL, InputStream inputStream)
-		throws Exception {
-
-		if (serverURL.startsWith(Http.HTTPS)) {
-			return StringUtil.read(inputStream);
-		}
-
-		byte[] bytes = IOUtils.toByteArray(inputStream);
-
-		if ((bytes == null) || (bytes.length <= 0)) {
-			return null;
-		}
-
-		bytes = Encryptor.decryptUnencodedAsBytes(_symmetricKey, bytes);
-
-		return new String(bytes, StringPool.UTF8);
-	}
-
-	private static byte[] _encryptRequest(String serverURL, String request)
-		throws Exception {
-
-		byte[] bytes = request.getBytes(StringPool.UTF8);
-
-		if (serverURL.startsWith(Http.HTTPS)) {
-			return bytes;
-		}
-
-		JSONObject jsonObject = new JSONObjectImpl();
-
-		bytes = Encryptor.encryptUnencoded(_symmetricKey, bytes);
-
-		jsonObject.put("content", Base64.objectToString(bytes));
-		jsonObject.put("key", _encryptedSymmetricKey);
-
-		return jsonObject.toString().getBytes(StringPool.UTF8);
-	}
-
-	private static Set<String> _getIPAddresses() {
-		Set<String> ipAddresses = new HashSet<>();
-
-		try {
-			List<NetworkInterface> networkInterfaces = Collections.list(
-				NetworkInterface.getNetworkInterfaces());
-
-			for (NetworkInterface networkInterface : networkInterfaces) {
-				List<InetAddress> inetAddresses = Collections.list(
-					networkInterface.getInetAddresses());
-
-				for (InetAddress inetAddress : inetAddresses) {
-					if (inetAddress.isLinkLocalAddress() ||
-						inetAddress.isLoopbackAddress() ||
-						!(inetAddress instanceof Inet4Address)) {
-
-						continue;
-					}
-
-					ipAddresses.add(inetAddress.getHostAddress());
-				}
-			}
-		}
-		catch (Exception e) {
-			_log.error("Unable to read local server's IP addresses", e);
-		}
-
-		return Collections.unmodifiableSet(ipAddresses);
-	}
-
-	private static Set<String> _getMACAddresses() {
-		Set<String> macAddresses = new HashSet<>();
-
-		try {
-			List<NetworkInterface> networkInterfaces = Collections.list(
-				NetworkInterface.getNetworkInterfaces());
-
-			for (NetworkInterface networkInterface : networkInterfaces) {
-				byte[] hardwareAddress = networkInterface.getHardwareAddress();
-
-				if (ArrayUtil.isEmpty(hardwareAddress)) {
-					continue;
-				}
-
-				StringBuilder sb = new StringBuilder(
-					(hardwareAddress.length * 3) - 1);
-
-				String hexString = StringUtil.bytesToHexString(hardwareAddress);
-
-				for (int i = 0; i < hexString.length(); i += 2) {
-					if (i != 0) {
-						sb.append(CharPool.COLON);
-					}
-
-					sb.append(Character.toLowerCase(hexString.charAt(i)));
-					sb.append(Character.toLowerCase(hexString.charAt(i + 1)));
-				}
-
-				macAddresses.add(sb.toString());
-			}
-		}
-		catch (Exception e) {
-			_log.error("Unable to read local server's MAC addresses", e);
-		}
-
-		return Collections.unmodifiableSet(macAddresses);
 	}
 
 	private static Map<String, String> _getOrderProducts(
@@ -560,45 +488,8 @@ public class LicenseUtil {
 		return sortedMap;
 	}
 
-	private static void _initKeys() {
-		ClassLoader classLoader = ClassLoaderUtil.getPortalClassLoader();
-
-		if ((classLoader == null) || (_encryptedSymmetricKey != null)) {
-			return;
-		}
-
-		try {
-			URL url = classLoader.getResource(
-				"com/liferay/portal/license/public.key");
-
-			byte[] bytes = IOUtils.toByteArray(url.openStream());
-
-			X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(
-				bytes);
-
-			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-			PublicKey publicKey = keyFactory.generatePublic(x509EncodedKeySpec);
-
-			KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-
-			keyGenerator.init(128, new SecureRandom());
-
-			_symmetricKey = keyGenerator.generateKey();
-
-			byte[] encryptedSymmetricKey = Encryptor.encryptUnencoded(
-				publicKey, _symmetricKey.getEncoded());
-
-			_encryptedSymmetricKey = Base64.objectToString(
-				encryptedSymmetricKey);
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-	}
-
 	private static void _registerClusterOrder(
-			HttpServletRequest request, ClusterNode clusterNode,
+			HttpServletRequest httpServletRequest, ClusterNode clusterNode,
 			String orderUuid, String productEntryName, int maxServers)
 		throws Exception {
 
@@ -622,7 +513,7 @@ public class LicenseUtil {
 			(Map<String, Object>)clusterNodeResponse.getResult();
 
 		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-			request.setAttribute(
+			httpServletRequest.setAttribute(
 				clusterNode.getClusterNodeId() + StringPool.UNDERLINE +
 					entry.getKey(),
 				entry.getValue());
@@ -642,7 +533,6 @@ public class LicenseUtil {
 
 	private static final Log _log = LogFactoryUtil.getLog(LicenseUtil.class);
 
-	private static String _encryptedSymmetricKey;
 	private static final MethodHandler _getServerInfoMethodHandler =
 		new MethodHandler(new MethodKey(LicenseUtil.class, "getServerInfo"));
 	private static final Set<String> _ipAddresses;
@@ -651,13 +541,67 @@ public class LicenseUtil {
 		LicenseUtil.class, "registerOrder", String.class, String.class,
 		int.class);
 	private static byte[] _serverIdBytes;
-	private static Key _symmetricKey;
 
 	static {
-		_initKeys();
+		Set<String> ipAddresses = new HashSet<>();
 
-		_ipAddresses = _getIPAddresses();
-		_macAddresses = _getMACAddresses();
+		Set<String> macAddresses = new HashSet<>();
+
+		try {
+			Enumeration<NetworkInterface> networkInterfaceEnumeration =
+				NetworkInterface.getNetworkInterfaces();
+
+			while (networkInterfaceEnumeration.hasMoreElements()) {
+				NetworkInterface networkInterface =
+					networkInterfaceEnumeration.nextElement();
+
+				Enumeration<InetAddress> inetAddressEnumeration =
+					networkInterface.getInetAddresses();
+
+				while (inetAddressEnumeration.hasMoreElements()) {
+					InetAddress inetAddress =
+						inetAddressEnumeration.nextElement();
+
+					if (inetAddress.isLinkLocalAddress() ||
+						inetAddress.isLoopbackAddress() ||
+						!(inetAddress instanceof Inet4Address)) {
+
+						continue;
+					}
+
+					ipAddresses.add(inetAddress.getHostAddress());
+				}
+
+				byte[] hardwareAddress = networkInterface.getHardwareAddress();
+
+				if (ArrayUtil.isEmpty(hardwareAddress)) {
+					continue;
+				}
+
+				StringBuilder sb = new StringBuilder(
+					(hardwareAddress.length * 3) - 1);
+
+				String hexString = StringUtil.bytesToHexString(hardwareAddress);
+
+				for (int i = 0; i < hexString.length(); i += 2) {
+					if (i != 0) {
+						sb.append(CharPool.COLON);
+					}
+
+					sb.append(Character.toLowerCase(hexString.charAt(i)));
+					sb.append(Character.toLowerCase(hexString.charAt(i + 1)));
+				}
+
+				macAddresses.add(sb.toString());
+			}
+		}
+		catch (SocketException se) {
+			_log.error("Unable to read local server network interfaces", se);
+		}
+
+		_ipAddresses = Collections.unmodifiableSet(ipAddresses);
+
+		_macAddresses = Collections.unmodifiableSet(macAddresses);
 	}
 
 }

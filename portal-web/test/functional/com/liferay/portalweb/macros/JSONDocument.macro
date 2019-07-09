@@ -1,0 +1,63 @@
+definition {
+
+	@summary = "This calls the JSON WS API to add a Document entry"
+	macro addFile {
+		var portalURL = JSONCompany.getPortalURL();
+
+		var repositoryId = JSONGroup._getGroupIdByName(groupName = "${groupName}");
+
+		if (!(isSet(folderId))) {
+			var folderId = "0";
+		}
+
+		var curl = '''
+			${portalURL}/api/jsonws/dlapp/add-file-entry \
+			-u test@liferay.com:test \
+			-d repositoryId=${repositoryId} \
+			-d folderId=${folderId} \
+			-d sourceFileName='' \
+			-d mimeType='' \
+			-d title=${dmDocumentTitle} \
+		 	-d description=${dmDocumentDescription} \
+			-d changeLog='' \
+			-d file=@path_to_file
+		''';
+
+		echo("## Adding a 'File' with the following info using JSONWS:");
+
+		echo("## * Title: ${dmDocumentTitle}");
+
+		echo("## * Description: ${dmDocumentDescription}");
+
+		var messageId = JSONCurlUtil.post("${curl}");
+	}
+
+	@summary = "This calls the JSON WS API to add a DL Folder"
+	macro addFolder {
+		var portalURL = JSONCompany.getPortalURL();
+
+		var repositoryId = JSONGroup._getGroupIdByName(groupName = "${groupName}");
+
+		if (!(isSet(parentFolderId))) {
+			var parentFolderId = "0";
+		}
+
+		var curl = '''
+			${portalURL}/api/jsonws/dlapp/add-folder \
+			-u test@liferay.com:test \
+			-d repositoryId=${repositoryId} \
+			-d parentFolderId=${parentFolderId} \
+			-d name=${dmFolderName} \
+		 	-d description=${dmFolderDescription} \
+		''';
+
+		echo("## Adding a 'Folder' with the following info using JSONWS:");
+
+		echo("## * Name: ${dmFolderName}");
+
+		echo("## * Description: ${dmFolderDescription}");
+
+		var messageId = JSONCurlUtil.post("${curl}");
+	}
+
+}

@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
+import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -74,8 +75,11 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 			PropsUtil.get(PropsKeys.LAYOUT_URL, filter));
 		_urlFriendliable = GetterUtil.getBoolean(
 			PropsUtil.get(PropsKeys.LAYOUT_URL_FRIENDLIABLE, filter), true);
-		_viewPage = GetterUtil.getString(
+
+		String viewPage = GetterUtil.getString(
 			PropsUtil.get(PropsKeys.LAYOUT_VIEW_PAGE, filter));
+
+		_viewPage = StrutsUtil.TEXT_HTML_DIR + viewPage;
 	}
 
 	@Override
@@ -99,79 +103,78 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 	}
 
 	public String getViewPath(String portletId) {
-		String path = StrutsUtil.TEXT_HTML_DIR;
 
 		// Manually check the p_p_id. See LEP-1724.
 
-		if (Validator.isNotNull(portletId)) {
-			if (_type.equals(LayoutConstants.TYPE_PANEL)) {
-				path += "/portal/layout/view/panel.jsp";
-			}
-			else {
-				path += "/portal/layout/view/portlet.jsp";
-			}
-		}
-		else {
-			path = StrutsUtil.TEXT_HTML_DIR + _viewPage;
+		if (Validator.isNull(portletId)) {
+			return _viewPage;
 		}
 
-		return path;
+		if (_type.equals(LayoutConstants.TYPE_PANEL)) {
+			return StrutsUtil.TEXT_HTML_DIR + "/portal/layout/view/panel.jsp";
+		}
+
+		return StrutsUtil.TEXT_HTML_DIR + "/portal/layout/view/portlet.jsp";
 	}
 
 	@Override
 	public String includeEditContent(
-			HttpServletRequest request, HttpServletResponse response,
-			Layout layout)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Layout layout)
 		throws Exception {
 
-		ServletContext servletContext = (ServletContext)request.getAttribute(
-			WebKeys.CTX);
+		httpServletRequest.setAttribute(WebKeys.SEL_LAYOUT, layout);
+
+		ServletContext servletContext =
+			(ServletContext)httpServletRequest.getAttribute(WebKeys.CTX);
 
 		RequestDispatcher requestDispatcher =
-			DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
-				servletContext, getEditPage());
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
+				DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
+					servletContext, getEditPage()));
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
 		PipingServletResponse pipingServletResponse = new PipingServletResponse(
-			response, unsyncStringWriter);
+			httpServletResponse, unsyncStringWriter);
 
-		requestDispatcher.include(request, pipingServletResponse);
+		requestDispatcher.include(httpServletRequest, pipingServletResponse);
 
 		return unsyncStringWriter.toString();
 	}
 
 	@Override
 	public boolean includeLayoutContent(
-			HttpServletRequest request, HttpServletResponse response,
-			Layout layout)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Layout layout)
 		throws Exception {
 
-		ServletContext servletContext = (ServletContext)request.getAttribute(
-			WebKeys.CTX);
+		ServletContext servletContext =
+			(ServletContext)httpServletRequest.getAttribute(WebKeys.CTX);
 
-		String portletId = ParamUtil.getString(request, "p_p_id");
+		String portletId = ParamUtil.getString(httpServletRequest, "p_p_id");
 
 		String path = getViewPath(portletId);
 
 		RequestDispatcher requestDispatcher =
-			DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
-				servletContext, path);
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
+				DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
+					servletContext, path));
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
 		PipingServletResponse pipingServletResponse = new PipingServletResponse(
-			response, unsyncStringWriter);
+			httpServletResponse, unsyncStringWriter);
 
 		String contentType = pipingServletResponse.getContentType();
 
-		requestDispatcher.include(request, pipingServletResponse);
+		requestDispatcher.include(httpServletRequest, pipingServletResponse);
 
 		if (contentType != null) {
-			response.setContentType(contentType);
+			httpServletResponse.setContentType(contentType);
 		}
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			WebKeys.LAYOUT_CONTENT, unsyncStringWriter.getStringBundler());
 
 		return false;
@@ -208,6 +211,15 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 	}
 
 	@Override
+	public boolean isPrimaryType() {
+		if (_type.equals(LayoutConstants.TYPE_PORTLET)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isSitemapable() {
 		return _sitemapable;
 	}
@@ -218,8 +230,18 @@ public class LayoutTypeControllerImpl implements LayoutTypeController {
 	}
 
 	@Override
+	public boolean isWorkflowEnabled() {
+		if (_type.equals(LayoutConstants.TYPE_URL)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
 	public boolean matches(
-		HttpServletRequest request, String friendlyURL, Layout layout) {
+		HttpServletRequest httpServletRequest, String friendlyURL,
+		Layout layout) {
 
 		try {
 			Map<Locale, String> friendlyURLMap = layout.getFriendlyURLMap();

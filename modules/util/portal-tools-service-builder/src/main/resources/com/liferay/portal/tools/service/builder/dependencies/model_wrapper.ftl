@@ -1,14 +1,17 @@
 package ${apiPackagePath}.model;
 
-import aQute.bnd.annotation.ProviderType;
+import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
 
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.model.ModelWrapper;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import com.liferay.portal.kernel.service.ServiceContext;
 
 import java.io.Serializable;
+
+import java.math.BigDecimal;
 
 import java.sql.Blob;
 
@@ -35,28 +38,47 @@ import java.util.Objects;
 </#if>
 
 @ProviderType
-public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${entity.name}> {
+public class ${entity.name}Wrapper
+	<#assign entityFieldName = "model" />
+
+	<#if serviceBuilder.isVersionLTE_7_1_0()>
+		<#assign entityFieldName = "_${entity.varName}" />
+	<#else>
+		extends BaseModelWrapper<${entity.name}>
+	</#if>
+
+	implements ${entity.name}, ModelWrapper<${entity.name}> {
 
 	public ${entity.name}Wrapper(${entity.name} ${entity.varName}) {
-		_${entity.varName} = ${entity.varName};
+		<#if serviceBuilder.isVersionLTE_7_1_0()>
+			${entityFieldName} = ${entity.varName};
+		<#else>
+			super(${entity.varName});
+		</#if>
 	}
 
-	@Override
-	public Class<?> getModelClass() {
-		return ${entity.name}.class;
-	}
+	<#if serviceBuilder.isVersionLTE_7_1_0()>
+		@Override
+		public Class<?> getModelClass() {
+			return ${entity.name}.class;
+		}
 
-	@Override
-	public String getModelClassName() {
-		return ${entity.name}.class.getName();
-	}
+		@Override
+		public String getModelClassName() {
+			return ${entity.name}.class.getName();
+		}
+	</#if>
 
 	@Override
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
-		<#list entity.regularColList as column>
-			attributes.put("${column.name}", get${column.methodName}());
+		<#list entity.regularEntityColumns as entityColumn>
+			<#if stringUtil.equals(entityColumn.type, "boolean")>
+				attributes.put("${entityColumn.name}", is${entityColumn.methodName}());
+			<#else>
+				attributes.put("${entityColumn.name}", get${entityColumn.methodName}());
+			</#if>
 		</#list>
 
 		return attributes;
@@ -64,35 +86,35 @@ public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${ent
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
-		<#list entity.regularColList as column>
-			<#if column.isPrimitiveType()>
-				${serviceBuilder.getPrimitiveObj(column.type)}
+		<#list entity.regularEntityColumns as entityColumn>
+			<#if entityColumn.isPrimitiveType()>
+				${serviceBuilder.getPrimitiveObj(entityColumn.type)}
 			<#else>
-				${column.genericizedType}
+				${entityColumn.genericizedType}
 			</#if>
 
-			${column.name} =
+			${entityColumn.name} =
 
-			<#if column.isPrimitiveType()>
-				(${serviceBuilder.getPrimitiveObj(column.type)})
+			<#if entityColumn.isPrimitiveType()>
+				(${serviceBuilder.getPrimitiveObj(entityColumn.type)})
 			<#else>
-				(${column.genericizedType})
+				(${entityColumn.genericizedType})
 			</#if>
 
-			attributes.get("${column.name}");
+			attributes.get("${entityColumn.name}");
 
-			if (${column.name} != null) {
-				set${column.methodName}(${column.name});
+			if (${entityColumn.name} != null) {
+				set${entityColumn.methodName}(${entityColumn.name});
 			}
 		</#list>
 	}
 
 	<#list methods as method>
-		<#assign parameters = method.parameters>
+		<#assign parameters = method.parameters />
 
-		<#if !method.isConstructor() && !method.isStatic() && method.isPublic() && !(method.name == "equals" && (parameters?size == 1))>
-			<#if method.name == "getStagedModelType">
-				<#assign hasGetStagedModelTypeMethod = true>
+		<#if !method.isStatic() && method.isPublic() && (!serviceBuilder.isVersionLTE_7_1_0() || !(stringUtil.equals(method.name, "equals") && (parameters?size == 1)))>
+			<#if stringUtil.equals(method.name, "getStagedModelType")>
+				<#assign hasGetStagedModelTypeMethod = true />
 			</#if>
 
 			${serviceBuilder.getJavadocComment(method)}
@@ -119,7 +141,7 @@ public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${ent
 					throws
 				</#if>
 
-				${exception.value}
+				${exception.fullyQualifiedName}
 
 				<#if exception_has_next>
 					,
@@ -127,16 +149,16 @@ public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${ent
 			</#list>
 
 			{
-				<#if method.name == "clone" && (parameters?size == 0)>
-					return new ${entity.name}Wrapper((${entity.name})_${entity.varName}.clone());
-				<#elseif (method.name == "toEscapedModel" || method.name == "toUnescapedModel") && (parameters?size == 0)>
-					return new ${entity.name}Wrapper(_${entity.varName}.${method.name}());
+				<#if stringUtil.equals(method.name, "clone") && (parameters?size == 0)>
+					return new ${entity.name}Wrapper((${entity.name})${entityFieldName}.clone());
+				<#elseif (stringUtil.equals(method.name, "toEscapedModel") || stringUtil.equals(method.name, "toUnescapedModel")) && (parameters?size == 0)>
+					return new ${entity.name}Wrapper(${entityFieldName}.${method.name}());
 				<#else>
-					<#if method.returns.value != "void">
+					<#if !stringUtil.equals(method.returns.value, "void")>
 						return
 					</#if>
 
-					_${entity.varName}.${method.name}(
+					${entityFieldName}.${method.name}(
 
 					<#list method.parameters as parameter>
 						${parameter.name}
@@ -152,79 +174,124 @@ public class ${entity.name}Wrapper implements ${entity.name}, ModelWrapper<${ent
 		</#if>
 	</#list>
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
+	<#if serviceBuilder.isVersionLTE_7_1_0()>
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
 
-		if (!(obj instanceof ${entity.name}Wrapper)) {
+			if (!(obj instanceof ${entity.name}Wrapper)) {
+				return false;
+			}
+
+			${entity.name}Wrapper ${entity.varName}Wrapper = (${entity.name}Wrapper)obj;
+
+			if (Objects.equals(${entityFieldName}, ${entity.varName}Wrapper.${entityFieldName})) {
+				return true;
+			}
+
 			return false;
 		}
-
-		${entity.name}Wrapper ${entity.varName}Wrapper = (${entity.name}Wrapper)obj;
-
-		if (Objects.equals(_${entity.varName}, ${entity.varName}Wrapper._${entity.varName})) {
-			return true;
-		}
-
-		return false;
-	}
+	</#if>
 
 	<#if entity.isHierarchicalTree()>
 		@Override
 		public long getNestedSetsTreeNodeLeft() {
-			return _${entity.varName}.getNestedSetsTreeNodeLeft();
+			return ${entityFieldName}.getNestedSetsTreeNodeLeft();
 		}
 
 		@Override
 		public long getNestedSetsTreeNodeRight() {
-			return _${entity.varName}.getNestedSetsTreeNodeRight();
+			return ${entityFieldName}.getNestedSetsTreeNodeRight();
 		}
 
 		@Override
 		public long getNestedSetsTreeNodeScopeId() {
-			return _${entity.varName}.getNestedSetsTreeNodeScopeId();
+			return ${entityFieldName}.getNestedSetsTreeNodeScopeId();
 		}
 
 		@Override
 		public void setNestedSetsTreeNodeLeft(long nestedSetsTreeNodeLeft) {
-			_${entity.varName}.setNestedSetsTreeNodeLeft(nestedSetsTreeNodeLeft);
+			${entityFieldName}.setNestedSetsTreeNodeLeft(nestedSetsTreeNodeLeft);
 		}
 
 		@Override
 		public void setNestedSetsTreeNodeRight(long nestedSetsTreeNodeRight) {
-			_${entity.varName}.setNestedSetsTreeNodeRight(nestedSetsTreeNodeRight);
+			${entityFieldName}.setNestedSetsTreeNodeRight(nestedSetsTreeNodeRight);
 		}
 	</#if>
 
 	<#if entity.isStagedModel() && !hasGetStagedModelTypeMethod!false>
 		@Override
 		public StagedModelType getStagedModelType() {
-			return _${entity.varName}.getStagedModelType();
+			return ${entityFieldName}.getStagedModelType();
 		}
 	</#if>
 
-	@Override
-	public ${entity.name} getWrappedModel() {
-		return _${entity.varName};
-	}
+	<#if entity.versionEntity??>
+		<#assign versionEntity = entity.versionEntity />
 
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _${entity.varName}.isEntityCacheEnabled();
-	}
+		@Override
+		public boolean isHead() {
+			return ${entityFieldName}.isHead();
+		}
 
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _${entity.varName}.isFinderCacheEnabled();
-	}
+		@Override
+		public void populateVersionModel(${versionEntity.name} ${versionEntity.varName}) {
+			${entityFieldName}.populateVersionModel(${versionEntity.varName});
+		}
+	<#elseif entity.versionedEntity??>
+		<#assign versionedEntity = entity.versionedEntity />
 
-	@Override
-	public void resetOriginalValues() {
-		_${entity.varName}.resetOriginalValues();
-	}
+		@Override
+		public long getVersionedModelId() {
+			return ${entityFieldName}.getVersionedModelId();
+		}
 
-	private final ${entity.name} _${entity.varName};
+		@Override
+		public void setVersionedModelId(long id) {
+			${entityFieldName}.setVersionedModelId(id);
+		}
+
+		@Override
+		public void populateVersionedModel(${versionedEntity.name} ${versionedEntity.varName}) {
+			${entityFieldName}.populateVersionedModel(${versionedEntity.varName});
+		}
+
+		@Override
+		public ${versionedEntity.name} toVersionedModel() {
+			return ${entityFieldName}.toVersionedModel();
+		}
+	</#if>
+
+	<#if serviceBuilder.isVersionLTE_7_1_0()>
+		@Override
+		public ${entity.name} getWrappedModel() {
+			return ${entityFieldName};
+		}
+
+		@Override
+		public boolean isEntityCacheEnabled() {
+			return ${entityFieldName}.isEntityCacheEnabled();
+		}
+
+		@Override
+		public boolean isFinderCacheEnabled() {
+			return ${entityFieldName}.isFinderCacheEnabled();
+		}
+
+		@Override
+		public void resetOriginalValues() {
+			${entityFieldName}.resetOriginalValues();
+		}
+
+		private final ${entity.name} ${entityFieldName};
+	<#else>
+		@Override
+		protected ${entity.name}Wrapper wrap(${entity.name} ${entity.varName}) {
+			return new ${entity.name}Wrapper(${entity.varName});
+		}
+	</#if>
 
 }

@@ -16,11 +16,14 @@ package com.liferay.portal.json;
 
 import com.liferay.portal.kernel.json.JSONSerializer;
 import com.liferay.portal.kernel.json.JSONTransformer;
+import com.liferay.portal.kernel.util.JavaDetector;
 
 import jodd.json.JoddJson;
 import jodd.json.JsonContext;
 import jodd.json.JsonSerializer;
 import jodd.json.TypeJsonSerializer;
+
+import jodd.util.SystemUtil;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,6 +34,10 @@ import org.json.JSONObject;
 public class JSONSerializerImpl implements JSONSerializer {
 
 	public JSONSerializerImpl() {
+		if (JavaDetector.isIBM()) {
+			SystemUtil.disableUnsafeUsage();
+		}
+
 		_jsonSerializer = new JsonSerializer();
 	}
 
@@ -55,7 +62,9 @@ public class JSONSerializerImpl implements JSONSerializer {
 
 	@Override
 	public String serializeDeep(Object target) {
-		return _jsonSerializer.deep(true).serialize(target);
+		JsonSerializer jsonSerializer = _jsonSerializer.deep(true);
+
+		return jsonSerializer.serialize(target);
 	}
 
 	@Override
@@ -94,17 +103,6 @@ public class JSONSerializerImpl implements JSONSerializer {
 		return this;
 	}
 
-	static {
-		JoddJson.defaultSerializers.register(
-			JSONArray.class, new JSONArrayTypeJSONSerializer());
-		JoddJson.defaultSerializers.register(
-			JSONObject.class, new JSONObjectTypeJSONSerializer());
-		JoddJson.defaultSerializers.register(
-			Long.TYPE, new LongToStringTypeJSONSerializer());
-		JoddJson.defaultSerializers.register(
-			Long.class, new LongToStringTypeJSONSerializer());
-	}
-
 	private final JsonSerializer _jsonSerializer;
 
 	private static class JSONArrayTypeJSONSerializer
@@ -132,9 +130,20 @@ public class JSONSerializerImpl implements JSONSerializer {
 
 		@Override
 		public void serialize(JsonContext jsonContext, Long value) {
-			jsonContext.writeString(Long.toString(value));
+			jsonContext.writeString(String.valueOf(value));
 		}
 
+	}
+
+	static {
+		JoddJson.defaultSerializers.register(
+			JSONArray.class, new JSONArrayTypeJSONSerializer());
+		JoddJson.defaultSerializers.register(
+			JSONObject.class, new JSONObjectTypeJSONSerializer());
+		JoddJson.defaultSerializers.register(
+			Long.TYPE, new LongToStringTypeJSONSerializer());
+		JoddJson.defaultSerializers.register(
+			Long.class, new LongToStringTypeJSONSerializer());
 	}
 
 }

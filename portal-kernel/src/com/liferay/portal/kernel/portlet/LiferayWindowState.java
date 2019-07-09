@@ -30,37 +30,34 @@ public class LiferayWindowState extends WindowState {
 
 	public static final WindowState POP_UP = new WindowState("pop_up");
 
-	public static boolean isExclusive(HttpServletRequest request) {
-		String state = _getWindowState(request);
+	public static boolean isExclusive(HttpServletRequest httpServletRequest) {
+		String state = _getWindowState(httpServletRequest);
 
 		if ((state != null) && state.equals(EXCLUSIVE.toString())) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
-	public static boolean isMaximized(HttpServletRequest request) {
-		String state = _getWindowState(request);
+	public static boolean isMaximized(HttpServletRequest httpServletRequest) {
+		String state = _getWindowState(httpServletRequest);
 
 		if ((state != null) && state.equals(WindowState.MAXIMIZED.toString())) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
-	public static boolean isPopUp(HttpServletRequest request) {
-		String state = _getWindowState(request);
+	public static boolean isPopUp(HttpServletRequest httpServletRequest) {
+		String state = _getWindowState(httpServletRequest);
 
 		if ((state != null) && state.equals(POP_UP.toString())) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public static boolean isWindowStatePreserved(
@@ -81,24 +78,25 @@ public class LiferayWindowState extends WindowState {
 
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	public LiferayWindowState(String name) {
 		super(name);
 	}
 
-	private static String _getWindowState(HttpServletRequest request) {
-		WindowState windowState = (WindowState)request.getAttribute(
+	private static String _getWindowState(
+		HttpServletRequest httpServletRequest) {
+
+		WindowState windowState = (WindowState)httpServletRequest.getAttribute(
 			WebKeys.WINDOW_STATE);
 
 		if (windowState != null) {
 			return windowState.toString();
 		}
 
-		return request.getParameter("p_p_state");
+		return httpServletRequest.getParameter("p_p_state");
 	}
 
 }

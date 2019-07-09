@@ -51,7 +51,7 @@ public class LayoutSetPrototypeLayoutSetModelListener
 	protected void updateLayoutSetPrototype(
 		LayoutSet layoutSet, Date modifiedDate) {
 
-		if (layoutSet == null) {
+		if ((layoutSet == null) || !layoutSet.isHead()) {
 			return;
 		}
 
@@ -65,6 +65,13 @@ public class LayoutSetPrototypeLayoutSetModelListener
 			}
 		}
 		catch (PortalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
 			return;
 		}
 

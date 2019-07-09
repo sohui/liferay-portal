@@ -17,11 +17,13 @@ package com.liferay.portal.kernel.upload;
 import com.liferay.document.library.kernel.antivirus.AntivirusScannerException;
 import com.liferay.document.library.kernel.exception.FileNameException;
 import com.liferay.document.library.kernel.exception.FileSizeException;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.editor.EditorConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -32,8 +34,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StreamUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -96,9 +96,11 @@ public abstract class BaseUploadHandler implements UploadHandler {
 
 			imageJSONObject.put("randomId", randomId);
 
-			jsonObject.put("file", imageJSONObject);
-
-			jsonObject.put("success", Boolean.TRUE);
+			jsonObject.put(
+				"file", imageJSONObject
+			).put(
+				"success", Boolean.TRUE
+			);
 
 			JSONPortletResponseUtil.writeJSON(
 				portletRequest, portletResponse, jsonObject);
@@ -149,8 +151,6 @@ public abstract class BaseUploadHandler implements UploadHandler {
 
 		JSONObject imageJSONObject = JSONFactoryUtil.createJSONObject();
 
-		InputStream inputStream = null;
-
 		try {
 			imageJSONObject.put(
 				"attributeDataImageId",
@@ -170,27 +170,33 @@ public abstract class BaseUploadHandler implements UploadHandler {
 			String uniqueFileName = getUniqueFileName(
 				themeDisplay, fileName, folderId);
 
-			inputStream = uploadPortletRequest.getFileAsStream(parameterName);
+			try (InputStream inputStream = uploadPortletRequest.getFileAsStream(
+					parameterName)) {
 
-			FileEntry fileEntry = addFileEntry(
-				themeDisplay.getUserId(), themeDisplay.getScopeGroupId(),
-				folderId, uniqueFileName, contentType, inputStream, size,
-				getServiceContext(uploadPortletRequest));
+				FileEntry fileEntry = addFileEntry(
+					themeDisplay.getUserId(), themeDisplay.getScopeGroupId(),
+					folderId, uniqueFileName, contentType, inputStream, size,
+					getServiceContext(uploadPortletRequest));
 
-			imageJSONObject.put("fileEntryId", fileEntry.getFileEntryId());
-			imageJSONObject.put("groupId", fileEntry.getGroupId());
-			imageJSONObject.put("title", fileEntry.getTitle());
-			imageJSONObject.put("type", "document");
-			imageJSONObject.put("url", getURL(fileEntry, themeDisplay));
-			imageJSONObject.put("uuid", fileEntry.getUuid());
+				imageJSONObject.put(
+					"fileEntryId", fileEntry.getFileEntryId()
+				).put(
+					"groupId", fileEntry.getGroupId()
+				).put(
+					"title", fileEntry.getTitle()
+				).put(
+					"type", "document"
+				).put(
+					"url", getURL(fileEntry, themeDisplay)
+				).put(
+					"uuid", fileEntry.getUuid()
+				);
 
-			return imageJSONObject;
+				return imageJSONObject;
+			}
 		}
 		catch (IOException ioe) {
 			throw new SystemException(ioe);
-		}
-		finally {
-			StreamUtil.cleanUp(inputStream);
 		}
 	}
 
@@ -259,14 +265,14 @@ public abstract class BaseUploadHandler implements UploadHandler {
 			String errorMessage = StringPool.BLANK;
 			int errorType = 0;
 
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)portletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
-
 			if (pe instanceof AntivirusScannerException) {
 				errorType =
 					ServletResponseConstants.SC_FILE_ANTIVIRUS_EXCEPTION;
 				AntivirusScannerException ase = (AntivirusScannerException)pe;
+
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)portletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
 				errorMessage = themeDisplay.translate(ase.getMessageKey());
 			}
@@ -281,10 +287,11 @@ public abstract class BaseUploadHandler implements UploadHandler {
 					ServletResponseConstants.SC_UPLOAD_REQUEST_SIZE_EXCEPTION;
 			}
 
-			JSONObject errorJSONObject = JSONFactoryUtil.createJSONObject();
-
-			errorJSONObject.put("errorType", errorType);
-			errorJSONObject.put("message", errorMessage);
+			JSONObject errorJSONObject = JSONUtil.put(
+				"errorType", errorType
+			).put(
+				"message", errorMessage
+			);
 
 			jsonObject.put("error", errorJSONObject);
 		}

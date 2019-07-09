@@ -14,20 +14,14 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -39,19 +33,11 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class TeamWrapper implements Team, ModelWrapper<Team> {
+public class TeamWrapper
+	extends BaseModelWrapper<Team> implements Team, ModelWrapper<Team> {
+
 	public TeamWrapper(Team team) {
-		_team = team;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return Team.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return Team.class.getName();
+		super(team);
 	}
 
 	@Override
@@ -149,435 +135,306 @@ public class TeamWrapper implements Team, ModelWrapper<Team> {
 		}
 	}
 
+	/**
+	 * Returns the company ID of this team.
+	 *
+	 * @return the company ID of this team
+	 */
 	@Override
-	public CacheModel<Team> toCacheModel() {
-		return _team.toCacheModel();
+	public long getCompanyId() {
+		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the create date of this team.
+	 *
+	 * @return the create date of this team
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the description of this team.
+	 *
+	 * @return the description of this team
+	 */
+	@Override
+	public String getDescription() {
+		return model.getDescription();
+	}
+
+	/**
+	 * Returns the group ID of this team.
+	 *
+	 * @return the group ID of this team
+	 */
+	@Override
+	public long getGroupId() {
+		return model.getGroupId();
+	}
+
+	/**
+	 * Returns the last publish date of this team.
+	 *
+	 * @return the last publish date of this team
+	 */
+	@Override
+	public Date getLastPublishDate() {
+		return model.getLastPublishDate();
+	}
+
+	/**
+	 * Returns the modified date of this team.
+	 *
+	 * @return the modified date of this team
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this team.
+	 *
+	 * @return the mvcc version of this team
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
+	 * Returns the name of this team.
+	 *
+	 * @return the name of this team
+	 */
+	@Override
+	public String getName() {
+		return model.getName();
+	}
+
+	/**
+	 * Returns the primary key of this team.
+	 *
+	 * @return the primary key of this team
+	 */
+	@Override
+	public long getPrimaryKey() {
+		return model.getPrimaryKey();
 	}
 
 	@Override
 	public Role getRole()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _team.getRole();
-	}
 
-	@Override
-	public Team toEscapedModel() {
-		return new TeamWrapper(_team.toEscapedModel());
-	}
-
-	@Override
-	public Team toUnescapedModel() {
-		return new TeamWrapper(_team.toUnescapedModel());
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _team.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _team.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _team.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _team.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(Team team) {
-		return _team.compareTo(team);
-	}
-
-	@Override
-	public int hashCode() {
-		return _team.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _team.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new TeamWrapper((Team)_team.clone());
+		return model.getRole();
 	}
 
 	/**
-	* Returns the description of this team.
-	*
-	* @return the description of this team
-	*/
-	@Override
-	public java.lang.String getDescription() {
-		return _team.getDescription();
-	}
-
-	/**
-	* Returns the name of this team.
-	*
-	* @return the name of this team
-	*/
-	@Override
-	public java.lang.String getName() {
-		return _team.getName();
-	}
-
-	/**
-	* Returns the user name of this team.
-	*
-	* @return the user name of this team
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _team.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this team.
-	*
-	* @return the user uuid of this team
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _team.getUserUuid();
-	}
-
-	/**
-	* Returns the uuid of this team.
-	*
-	* @return the uuid of this team
-	*/
-	@Override
-	public java.lang.String getUuid() {
-		return _team.getUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _team.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _team.toXmlString();
-	}
-
-	/**
-	* Returns the create date of this team.
-	*
-	* @return the create date of this team
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _team.getCreateDate();
-	}
-
-	/**
-	* Returns the last publish date of this team.
-	*
-	* @return the last publish date of this team
-	*/
-	@Override
-	public Date getLastPublishDate() {
-		return _team.getLastPublishDate();
-	}
-
-	/**
-	* Returns the modified date of this team.
-	*
-	* @return the modified date of this team
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _team.getModifiedDate();
-	}
-
-	/**
-	* Returns the company ID of this team.
-	*
-	* @return the company ID of this team
-	*/
-	@Override
-	public long getCompanyId() {
-		return _team.getCompanyId();
-	}
-
-	/**
-	* Returns the group ID of this team.
-	*
-	* @return the group ID of this team
-	*/
-	@Override
-	public long getGroupId() {
-		return _team.getGroupId();
-	}
-
-	/**
-	* Returns the mvcc version of this team.
-	*
-	* @return the mvcc version of this team
-	*/
-	@Override
-	public long getMvccVersion() {
-		return _team.getMvccVersion();
-	}
-
-	/**
-	* Returns the primary key of this team.
-	*
-	* @return the primary key of this team
-	*/
-	@Override
-	public long getPrimaryKey() {
-		return _team.getPrimaryKey();
-	}
-
-	/**
-	* Returns the team ID of this team.
-	*
-	* @return the team ID of this team
-	*/
+	 * Returns the team ID of this team.
+	 *
+	 * @return the team ID of this team
+	 */
 	@Override
 	public long getTeamId() {
-		return _team.getTeamId();
+		return model.getTeamId();
 	}
 
 	/**
-	* Returns the user ID of this team.
-	*
-	* @return the user ID of this team
-	*/
+	 * Returns the user ID of this team.
+	 *
+	 * @return the user ID of this team
+	 */
 	@Override
 	public long getUserId() {
-		return _team.getUserId();
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user name of this team.
+	 *
+	 * @return the user name of this team
+	 */
+	@Override
+	public String getUserName() {
+		return model.getUserName();
+	}
+
+	/**
+	 * Returns the user uuid of this team.
+	 *
+	 * @return the user uuid of this team
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the uuid of this team.
+	 *
+	 * @return the uuid of this team
+	 */
+	@Override
+	public String getUuid() {
+		return model.getUuid();
 	}
 
 	@Override
 	public void persist() {
-		_team.persist();
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_team.setCachedModel(cachedModel);
+		model.persist();
 	}
 
 	/**
-	* Sets the company ID of this team.
-	*
-	* @param companyId the company ID of this team
-	*/
+	 * Sets the company ID of this team.
+	 *
+	 * @param companyId the company ID of this team
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_team.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this team.
-	*
-	* @param createDate the create date of this team
-	*/
+	 * Sets the create date of this team.
+	 *
+	 * @param createDate the create date of this team
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_team.setCreateDate(createDate);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the description of this team.
-	*
-	* @param description the description of this team
-	*/
+	 * Sets the description of this team.
+	 *
+	 * @param description the description of this team
+	 */
 	@Override
-	public void setDescription(java.lang.String description) {
-		_team.setDescription(description);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_team.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_team.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_team.setExpandoBridgeAttributes(serviceContext);
+	public void setDescription(String description) {
+		model.setDescription(description);
 	}
 
 	/**
-	* Sets the group ID of this team.
-	*
-	* @param groupId the group ID of this team
-	*/
+	 * Sets the group ID of this team.
+	 *
+	 * @param groupId the group ID of this team
+	 */
 	@Override
 	public void setGroupId(long groupId) {
-		_team.setGroupId(groupId);
+		model.setGroupId(groupId);
 	}
 
 	/**
-	* Sets the last publish date of this team.
-	*
-	* @param lastPublishDate the last publish date of this team
-	*/
+	 * Sets the last publish date of this team.
+	 *
+	 * @param lastPublishDate the last publish date of this team
+	 */
 	@Override
 	public void setLastPublishDate(Date lastPublishDate) {
-		_team.setLastPublishDate(lastPublishDate);
+		model.setLastPublishDate(lastPublishDate);
 	}
 
 	/**
-	* Sets the modified date of this team.
-	*
-	* @param modifiedDate the modified date of this team
-	*/
+	 * Sets the modified date of this team.
+	 *
+	 * @param modifiedDate the modified date of this team
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_team.setModifiedDate(modifiedDate);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the mvcc version of this team.
-	*
-	* @param mvccVersion the mvcc version of this team
-	*/
+	 * Sets the mvcc version of this team.
+	 *
+	 * @param mvccVersion the mvcc version of this team
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_team.setMvccVersion(mvccVersion);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the name of this team.
-	*
-	* @param name the name of this team
-	*/
+	 * Sets the name of this team.
+	 *
+	 * @param name the name of this team
+	 */
 	@Override
-	public void setName(java.lang.String name) {
-		_team.setName(name);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_team.setNew(n);
+	public void setName(String name) {
+		model.setName(name);
 	}
 
 	/**
-	* Sets the primary key of this team.
-	*
-	* @param primaryKey the primary key of this team
-	*/
+	 * Sets the primary key of this team.
+	 *
+	 * @param primaryKey the primary key of this team
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_team.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_team.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the team ID of this team.
-	*
-	* @param teamId the team ID of this team
-	*/
+	 * Sets the team ID of this team.
+	 *
+	 * @param teamId the team ID of this team
+	 */
 	@Override
 	public void setTeamId(long teamId) {
-		_team.setTeamId(teamId);
+		model.setTeamId(teamId);
 	}
 
 	/**
-	* Sets the user ID of this team.
-	*
-	* @param userId the user ID of this team
-	*/
+	 * Sets the user ID of this team.
+	 *
+	 * @param userId the user ID of this team
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_team.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user name of this team.
-	*
-	* @param userName the user name of this team
-	*/
+	 * Sets the user name of this team.
+	 *
+	 * @param userName the user name of this team
+	 */
 	@Override
-	public void setUserName(java.lang.String userName) {
-		_team.setUserName(userName);
+	public void setUserName(String userName) {
+		model.setUserName(userName);
 	}
 
 	/**
-	* Sets the user uuid of this team.
-	*
-	* @param userUuid the user uuid of this team
-	*/
+	 * Sets the user uuid of this team.
+	 *
+	 * @param userUuid the user uuid of this team
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_team.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets the uuid of this team.
-	*
-	* @param uuid the uuid of this team
-	*/
+	 * Sets the uuid of this team.
+	 *
+	 * @param uuid the uuid of this team
+	 */
 	@Override
-	public void setUuid(java.lang.String uuid) {
-		_team.setUuid(uuid);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof TeamWrapper)) {
-			return false;
-		}
-
-		TeamWrapper teamWrapper = (TeamWrapper)obj;
-
-		if (Objects.equals(_team, teamWrapper._team)) {
-			return true;
-		}
-
-		return false;
+	public void setUuid(String uuid) {
+		model.setUuid(uuid);
 	}
 
 	@Override
 	public StagedModelType getStagedModelType() {
-		return _team.getStagedModelType();
+		return model.getStagedModelType();
 	}
 
 	@Override
-	public Team getWrappedModel() {
-		return _team;
+	protected TeamWrapper wrap(Team team) {
+		return new TeamWrapper(team);
 	}
 
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _team.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _team.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_team.resetOriginalValues();
-	}
-
-	private final Team _team;
 }

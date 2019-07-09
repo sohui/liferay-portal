@@ -14,10 +14,7 @@
 
 package com.liferay.asset.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.model.AssetCategoryProperty;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -29,6 +26,8 @@ import com.liferay.portal.kernel.transaction.Transactional;
 
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for AssetCategoryProperty. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -36,46 +35,52 @@ import java.util.List;
  *
  * @author Brian Wing Shun Chan
  * @see AssetCategoryPropertyServiceUtil
- * @see com.liferay.portlet.asset.service.base.AssetCategoryPropertyServiceBaseImpl
- * @see com.liferay.portlet.asset.service.impl.AssetCategoryPropertyServiceImpl
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ com.liferay.asset.category.property.service.impl.AssetCategoryPropertyServiceImpl}
  * @generated
  */
+@Deprecated
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface AssetCategoryPropertyService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link AssetCategoryPropertyServiceUtil} to access the asset category property remote service. Add custom service methods to {@link com.liferay.portlet.asset.service.impl.AssetCategoryPropertyServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link AssetCategoryPropertyServiceUtil} to access the asset category property remote service. Add custom service methods to <code>com.liferay.portlet.asset.service.impl.AssetCategoryPropertyServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public AssetCategoryProperty addCategoryProperty(long entryId,
-		java.lang.String key, java.lang.String value) throws PortalException;
-
-	public AssetCategoryProperty updateCategoryProperty(
-		long categoryPropertyId, java.lang.String key, java.lang.String value)
+	public AssetCategoryProperty addCategoryProperty(
+			long entryId, String key, String value)
 		throws PortalException;
 
-	public AssetCategoryProperty updateCategoryProperty(long userId,
-		long categoryPropertyId, java.lang.String key, java.lang.String value)
+	public void deleteCategoryProperty(long categoryPropertyId)
 		throws PortalException;
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<AssetCategoryProperty> getCategoryProperties(long entryId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<AssetCategoryProperty> getCategoryPropertyValues(
-		long companyId, java.lang.String key);
+		long companyId, String key);
 
-	public void deleteCategoryProperty(long categoryPropertyId)
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
+
+	public AssetCategoryProperty updateCategoryProperty(
+			long userId, long categoryPropertyId, String key, String value)
 		throws PortalException;
+
+	public AssetCategoryProperty updateCategoryProperty(
+			long categoryPropertyId, String key, String value)
+		throws PortalException;
+
 }

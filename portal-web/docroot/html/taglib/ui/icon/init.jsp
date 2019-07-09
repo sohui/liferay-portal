@@ -14,9 +14,29 @@
  */
 --%>
 
-<%@ include file="/html/taglib/init.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
+
+<%@ page contentType="text/html; charset=UTF-8" %>
+
+<%@ page import="com.liferay.petra.string.StringPool" %><%@
+page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
+page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
+page import="com.liferay.portal.kernel.util.IntegerWrapper" %><%@
+page import="com.liferay.portal.kernel.util.Validator" %><%@
+page import="com.liferay.taglib.util.TagResourceBundleUtil" %>
+
+<%@ page import="java.util.HashMap" %><%@
+page import="java.util.Map" %><%@
+page import="java.util.ResourceBundle" %>
 
 <%
+ResourceBundle resourceBundle = TagResourceBundleUtil.getResourceBundle(pageContext);
+
 IntegerWrapper iconListIconCount = (IntegerWrapper)request.getAttribute("liferay-ui:icon-list:icon-count");
 
 if (iconListIconCount != null) {
@@ -71,7 +91,7 @@ if (toolTip) {
 	cssClass += " lfr-portal-tooltip";
 }
 
-linkCssClass += " lfr-icon-item";
+linkCssClass += " lfr-icon-item taglib-icon";
 %>
 
 <%!

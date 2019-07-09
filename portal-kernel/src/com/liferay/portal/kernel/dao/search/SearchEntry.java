@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.dao.search;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 import java.io.Writer;
 
@@ -47,8 +47,8 @@ public interface SearchEntry {
 	public boolean isTruncate();
 
 	public void print(
-			Writer writer, HttpServletRequest request,
-			HttpServletResponse response)
+			Writer writer, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception;
 
 	public void setAlign(String align);

@@ -14,12 +14,10 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.taglib.util.IncludeTag;
 import com.liferay.taglib.util.PortalIncludeUtil;
-
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
@@ -35,47 +33,36 @@ public class InputPermissionsTag extends IncludeTag {
 			String formName, String modelName, PageContext pageContext)
 		throws Exception {
 
-		return doTag(_PAGE, formName, modelName, pageContext);
+		return doTag(_PAGE, formName, modelName, false, pageContext);
 	}
 
 	public static String doTag(
-			String page, String formName, String modelName,
+			String page, String formName, String modelName, boolean reverse,
 			PageContext pageContext)
 		throws Exception {
 
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
 
-		request.setAttribute("liferay-ui:input-permissions:formName", formName);
-
-		if (modelName != null) {
-			List<String> supportedActions =
-				ResourceActionsUtil.getModelResourceActions(modelName);
-			List<String> groupDefaultActions =
-				ResourceActionsUtil.getModelResourceGroupDefaultActions(
-					modelName);
-			List<String> guestDefaultActions =
-				ResourceActionsUtil.getModelResourceGuestDefaultActions(
-					modelName);
-			List<String> guestUnsupportedActions =
-				ResourceActionsUtil.getModelResourceGuestUnsupportedActions(
-					modelName);
-
-			request.setAttribute(
-				"liferay-ui:input-permissions:modelName", modelName);
-			request.setAttribute(
-				"liferay-ui:input-permissions:supportedActions",
-				supportedActions);
-			request.setAttribute(
-				"liferay-ui:input-permissions:groupDefaultActions",
-				groupDefaultActions);
-			request.setAttribute(
-				"liferay-ui:input-permissions:guestDefaultActions",
-				guestDefaultActions);
-			request.setAttribute(
-				"liferay-ui:input-permissions:guestUnsupportedActions",
-				guestUnsupportedActions);
-		}
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-permissions:formName", formName);
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-permissions:groupDefaultActions",
+			ResourceActionsUtil.getModelResourceGroupDefaultActions(modelName));
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-permissions:guestDefaultActions",
+			ResourceActionsUtil.getModelResourceGuestDefaultActions(modelName));
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-permissions:guestUnsupportedActions",
+			ResourceActionsUtil.getModelResourceGuestUnsupportedActions(
+				modelName));
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-permissions:modelName", modelName);
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-permissions:reverse", reverse);
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-permissions:supportedActions",
+			ResourceActionsUtil.getModelResourceActions(modelName));
 
 		PortalIncludeUtil.include(pageContext, page);
 
@@ -85,7 +72,7 @@ public class InputPermissionsTag extends IncludeTag {
 	@Override
 	public int doEndTag() throws JspException {
 		try {
-			doTag(getPage(), _formName, _modelName, pageContext);
+			doTag(getPage(), _formName, _modelName, _reverse, pageContext);
 
 			return EVAL_PAGE;
 		}
@@ -94,12 +81,28 @@ public class InputPermissionsTag extends IncludeTag {
 		}
 	}
 
+	public String getFormName() {
+		return _formName;
+	}
+
+	public String getModelName() {
+		return _modelName;
+	}
+
+	public boolean isReverse() {
+		return _reverse;
+	}
+
 	public void setFormName(String formName) {
 		_formName = formName;
 	}
 
 	public void setModelName(String modelName) {
 		_modelName = modelName;
+	}
+
+	public void setReverse(boolean reverse) {
+		_reverse = reverse;
 	}
 
 	@Override
@@ -112,5 +115,6 @@ public class InputPermissionsTag extends IncludeTag {
 
 	private String _formName = "fm";
 	private String _modelName;
+	private boolean _reverse;
 
 }

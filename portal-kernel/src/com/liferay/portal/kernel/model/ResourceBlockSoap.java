@@ -14,22 +14,24 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.ResourceBlockServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portal.service.http.ResourceBlockServiceSoap
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceBlockSoap implements Serializable {
+
 	public static ResourceBlockSoap toSoapModel(ResourceBlock model) {
 		ResourceBlockSoap soapModel = new ResourceBlockSoap();
 
@@ -72,7 +74,8 @@ public class ResourceBlockSoap implements Serializable {
 	}
 
 	public static ResourceBlockSoap[] toSoapModels(List<ResourceBlock> models) {
-		List<ResourceBlockSoap> soapModels = new ArrayList<ResourceBlockSoap>(models.size());
+		List<ResourceBlockSoap> soapModels = new ArrayList<ResourceBlockSoap>(
+			models.size());
 
 		for (ResourceBlock model : models) {
 			soapModels.add(toSoapModel(model));
@@ -155,4 +158,5 @@ public class ResourceBlockSoap implements Serializable {
 	private String _name;
 	private String _permissionsHash;
 	private long _referenceCount;
+
 }

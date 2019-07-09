@@ -20,6 +20,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.access.control.AccessControlThreadLocal;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.kernel.util.ObjectValuePair;
@@ -44,8 +46,23 @@ import javax.servlet.http.HttpServletResponse;
 public class TunnelServlet extends HttpServlet {
 
 	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
+	public void doPost(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException {
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		if ((permissionChecker == null) || !permissionChecker.isSignedIn()) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unauthenticated access is forbidden");
+			}
+
+			httpServletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+
+			return;
+		}
 
 		ObjectInputStream ois = null;
 
@@ -53,7 +70,8 @@ public class TunnelServlet extends HttpServlet {
 
 		try {
 			ois = new ProtectedClassLoaderObjectInputStream(
-				request.getInputStream(), thread.getContextClassLoader());
+				httpServletRequest.getInputStream(),
+				thread.getContextClassLoader());
 		}
 		catch (IOException ioe) {
 			if (_log.isWarnEnabled()) {
@@ -110,7 +128,7 @@ public class TunnelServlet extends HttpServlet {
 
 		if (returnObj != null) {
 			try (ObjectOutputStream oos = new ObjectOutputStream(
-					response.getOutputStream())) {
+					httpServletResponse.getOutputStream())) {
 
 				oos.writeObject(returnObj);
 			}
@@ -124,13 +142,14 @@ public class TunnelServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
 		PortalUtil.sendError(
 			HttpServletResponse.SC_NOT_FOUND,
 			new IllegalArgumentException("The GET method is not supported"),
-			request, response);
+			httpServletRequest, httpServletResponse);
 	}
 
 	protected boolean isValidRequest(Class<?> clazz) {
@@ -142,9 +161,8 @@ public class TunnelServlet extends HttpServlet {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(TunnelServlet.class);

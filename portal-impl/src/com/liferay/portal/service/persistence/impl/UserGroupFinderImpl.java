@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
@@ -25,12 +27,12 @@ import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.persistence.UserGroupFinder;
 import com.liferay.portal.kernel.service.persistence.UserGroupUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.impl.UserGroupImpl;
+import com.liferay.portal.service.persistence.constants.UserGroupFinderConstants;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.util.Iterator;
@@ -165,7 +167,7 @@ public class UserGroupFinderImpl
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -237,15 +239,17 @@ public class UserGroupFinderImpl
 			String sql = CustomSQLUtil.get(COUNT_BY_C_N_D);
 
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(UserGroup.name)", StringPool.LIKE, false, names);
+				sql, "LOWER(UserGroup.name)", StringPool.LIKE, false, names);
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(UserGroup.description)", StringPool.LIKE, true,
+				sql, "LOWER(UserGroup.description)", StringPool.LIKE, true,
 				descriptions);
 			sql = StringUtil.replace(sql, "[$JOIN$]", getJoin(params));
 			sql = StringUtil.replace(sql, "[$WHERE$]", getWhere(params));
 			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
 
-			if (inlineSQLHelper) {
+			if (inlineSQLHelper &&
+				InlineSQLHelperUtil.isEnabled(companyId, 0)) {
+
 				sql = InlineSQLHelperUtil.replacePermissionCheck(
 					sql, UserGroup.class.getName(), "UserGroup.userGroupId",
 					null, null, new long[] {0}, null);
@@ -321,9 +325,9 @@ public class UserGroupFinderImpl
 			String sql = CustomSQLUtil.get(FIND_BY_C_N_D);
 
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(UserGroup.name)", StringPool.LIKE, false, names);
+				sql, "LOWER(UserGroup.name)", StringPool.LIKE, false, names);
 			sql = CustomSQLUtil.replaceKeywords(
-				sql, "lower(UserGroup.description)", StringPool.LIKE, true,
+				sql, "LOWER(UserGroup.description)", StringPool.LIKE, true,
 				descriptions);
 
 			sql = StringUtil.replace(sql, "[$JOIN$]", getJoin(params));
@@ -331,7 +335,9 @@ public class UserGroupFinderImpl
 			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
 			sql = CustomSQLUtil.replaceOrderBy(sql, obc);
 
-			if (inlineSQLHelper) {
+			if (inlineSQLHelper &&
+				InlineSQLHelperUtil.isEnabled(companyId, 0)) {
+
 				sql = InlineSQLHelperUtil.replacePermissionCheck(
 					sql, UserGroup.class.getName(), "UserGroup.userGroupId",
 					null, null, new long[] {0}, null);
@@ -368,6 +374,11 @@ public class UserGroupFinderImpl
 
 		for (Map.Entry<String, Object> entry : params.entrySet()) {
 			String key = entry.getKey();
+
+			if (!_isFinderParam(key)) {
+				continue;
+			}
+
 			Object value = entry.getValue();
 
 			if (Validator.isNotNull(value)) {
@@ -381,19 +392,29 @@ public class UserGroupFinderImpl
 	protected String getJoin(String key) {
 		String join = StringPool.BLANK;
 
-		if (key.equals("userGroupGroupRole")) {
+		if (key.equals(
+				UserGroupFinderConstants.PARAM_KEY_USER_GROUP_GROUP_ROLE)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUP_GROUP_ROLE);
 		}
-		else if (key.equals("userGroupsGroups")) {
+		else if (key.equals(
+					UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_GROUPS)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUPS_GROUPS);
 		}
-		else if (key.equals("userGroupsRoles")) {
+		else if (key.equals(
+					UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_ROLES)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUPS_ROLES);
 		}
-		else if (key.equals("userGroupsTeams")) {
+		else if (key.equals(
+					UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_TEAMS)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUPS_TEAMS);
 		}
-		else if (key.equals("userGroupsUsers")) {
+		else if (key.equals(
+					UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_USERS)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUPS_USERS);
 		}
 
@@ -417,6 +438,11 @@ public class UserGroupFinderImpl
 
 		for (Map.Entry<String, Object> entry : params.entrySet()) {
 			String key = entry.getKey();
+
+			if (!_isFinderParam(key)) {
+				continue;
+			}
+
 			Object value = entry.getValue();
 
 			if (Validator.isNotNull(value)) {
@@ -430,10 +456,14 @@ public class UserGroupFinderImpl
 	protected String getWhere(String key, Object value) {
 		String join = StringPool.BLANK;
 
-		if (key.equals("userGroupGroupRole")) {
+		if (key.equals(
+				UserGroupFinderConstants.PARAM_KEY_USER_GROUP_GROUP_ROLE)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUP_GROUP_ROLE);
 		}
-		else if (key.equals("userGroupsGroups")) {
+		else if (key.equals(
+					UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_GROUPS)) {
+
 			if (value instanceof Long) {
 				join = CustomSQLUtil.get(JOIN_BY_USER_GROUPS_GROUPS);
 			}
@@ -463,13 +493,19 @@ public class UserGroupFinderImpl
 				}
 			}
 		}
-		else if (key.equals("userGroupsRoles")) {
+		else if (key.equals(
+					UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_ROLES)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUPS_ROLES);
 		}
-		else if (key.equals("userGroupsTeams")) {
+		else if (key.equals(
+					UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_TEAMS)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUPS_TEAMS);
 		}
-		else if (key.equals("userGroupsUsers")) {
+		else if (key.equals(
+					UserGroupFinderConstants.PARAM_KEY_USER_GROUPS_USERS)) {
+
 			join = CustomSQLUtil.get(JOIN_BY_USER_GROUPS_USERS);
 		}
 
@@ -477,7 +513,9 @@ public class UserGroupFinderImpl
 			int pos = join.indexOf("WHERE");
 
 			if (pos != -1) {
-				join = join.substring(pos + 5, join.length()).concat(" AND ");
+				join = join.substring(pos + 5);
+
+				join = join.concat(" AND ");
 			}
 			else {
 				join = StringPool.BLANK;
@@ -495,6 +533,12 @@ public class UserGroupFinderImpl
 		}
 
 		for (Map.Entry<String, Object> entry : params.entrySet()) {
+			String key = entry.getKey();
+
+			if (!_isFinderParam(key)) {
+				continue;
+			}
+
 			Object value = entry.getValue();
 
 			if (value instanceof Long) {
@@ -507,9 +551,9 @@ public class UserGroupFinderImpl
 			else if (value instanceof Long[]) {
 				Long[] valueArray = (Long[])value;
 
-				for (int i = 0; i < valueArray.length; i++) {
-					if (Validator.isNotNull(valueArray[i])) {
-						qPos.add(valueArray[i]);
+				for (Long curValue : valueArray) {
+					if (Validator.isNotNull(curValue)) {
+						qPos.add(curValue);
 					}
 				}
 			}
@@ -521,6 +565,10 @@ public class UserGroupFinderImpl
 				}
 			}
 		}
+	}
+
+	private boolean _isFinderParam(String key) {
+		return ArrayUtil.contains(UserGroupFinderConstants.PARAM_KEYS, key);
 	}
 
 }

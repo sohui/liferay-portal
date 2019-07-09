@@ -1,33 +1,111 @@
-<definition>
-	<command name="clickCancel">
-		<execute function="AssertClick" locator1="Button#CANCEL" value1="Cancel" />
-	</command>
+definition {
 
-	<command name="clickConfirm">
-		<execute function="AssertClick" locator1="Button#CONFIRM" value1="Confirm" />
-	</command>
+	macro click {
+		Click.mouseDownMouseUp(
+			key_text = "${button}",
+			locator1 = "Button#ANY");
+	}
 
-	<command name="clickDelete">
-		<execute function="AssertClick" locator1="Button#DELETE" value1="Delete" />
-	</command>
+	macro clickAdd {
+		Button.click(button = "Add");
+	}
 
-	<command name="clickDone">
-		<execute function="AssertClick" locator1="Button#DONE" value1="Done" />
-	</command>
+	macro clickAddRow {
+		Click(locator1 = "Button#ADD_ROW");
+	}
 
-	<command name="clickPublish">
-		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
-	</command>
+	macro clickApply {
+		Button.click(button = "Apply");
+	}
 
-	<command name="clickSave">
-		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-	</command>
+	macro clickCancel {
+		Button.click(button = "Cancel");
+	}
 
-	<command name="clickSaveAsDraft">
-		<execute function="AssertClick" locator1="Button#SAVE_AS_DRAFT" value1="Save as Draft" />
-	</command>
+	macro clickDelete {
+		Button.click(button = "Delete");
+	}
 
-	<command name="clickSubmitForPublication">
-		<execute function="AssertClick" locator1="Button#SUBMIT_FOR_PUBLICATION" value1="Submit for Publication" />
-	</command>
-</definition>
+	macro clickDone {
+		Button.click(button = "Done");
+	}
+
+	macro clickEdit {
+		Button.click(button = "Edit");
+	}
+
+	macro clickInstall {
+		Button.click(button = "Install");
+	}
+
+	macro clickMap {
+		Button.click(button = "Map");
+	}
+
+	macro clickMore {
+		Button.click(button = "More");
+	}
+
+	macro clickNext {
+		Button.click(button = "Next");
+	}
+
+	macro clickNoError {
+		ClickNoError.mouseDownMouseUp(
+			key_text = "${button}",
+			locator1 = "Button#ANY");
+	}
+
+	macro clickPublish {
+		ScrollWebElementIntoView(
+			key_text = "Publish",
+			locator1 = "Button#ANY");
+
+		Button.click(button = "Publish");
+	}
+
+	macro clickPublishToChangeList {
+		Button.click(button = "Publish to Change List");
+	}
+
+	macro clickRemove {
+		Button.click(button = "Remove");
+	}
+
+	macro clickSave {
+		Button.click(button = "Save");
+	}
+
+	macro clickSaveAsDraft {
+		Button.click(button = "Save as Draft");
+	}
+
+	macro clickSelect {
+		Button.click(button = "Select");
+	}
+
+	macro clickShare {
+		Button.click(button = "Share");
+	}
+
+	macro clickSubmitForPublication {
+		Button.click(button = "Submit for Publication");
+	}
+
+	macro clickUpdate {
+		Button.click(button = "Update");
+	}
+
+	macro viewNotPresent {
+		AssertElementNotPresent(
+			key_text = "${button}",
+			locator1 = "Button#ANY");
+	}
+
+	macro viewPresent {
+		AssertElementPresent(
+			key_text = "${button}",
+			locator1 = "Button#ANY");
+	}
+
+}

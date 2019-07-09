@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides a wrapper for {@link ThemeService}.
@@ -24,31 +24,33 @@ import aQute.bnd.annotation.ProviderType;
  * @generated
  */
 @ProviderType
-public class ThemeServiceWrapper implements ThemeService,
-	ServiceWrapper<ThemeService> {
+public class ThemeServiceWrapper
+	implements ThemeService, ServiceWrapper<ThemeService> {
+
 	public ThemeServiceWrapper(ThemeService themeService) {
 		_themeService = themeService;
 	}
 
-	@Override
-	public com.liferay.portal.kernel.json.JSONArray getWARThemes() {
-		return _themeService.getWARThemes();
-	}
-
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
+	public String getOSGiServiceIdentifier() {
 		return _themeService.getOSGiServiceIdentifier();
 	}
 
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Theme> getThemes(
 		long companyId) {
+
 		return _themeService.getThemes(companyId);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.json.JSONArray getWARThemes() {
+		return _themeService.getWARThemes();
 	}
 
 	@Override
@@ -62,4 +64,5 @@ public class ThemeServiceWrapper implements ThemeService,
 	}
 
 	private ThemeService _themeService;
+
 }

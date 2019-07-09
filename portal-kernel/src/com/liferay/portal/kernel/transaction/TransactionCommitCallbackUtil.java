@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.transaction;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,14 +30,6 @@ public class TransactionCommitCallbackUtil {
 
 	public static final TransactionLifecycleListener
 		TRANSACTION_LIFECYCLE_LISTENER = new NewTransactionLifecycleListener() {
-
-			@Override
-			protected void doCreated(
-				TransactionAttribute transactionAttribute,
-				TransactionStatus transactionStatus) {
-
-				pushCallbackList();
-			}
 
 			@Override
 			protected void doCommitted(
@@ -55,6 +47,14 @@ public class TransactionCommitCallbackUtil {
 							"Unable to execute transaction commit callback", e);
 					}
 				}
+			}
+
+			@Override
+			protected void doCreated(
+				TransactionAttribute transactionAttribute,
+				TransactionStatus transactionStatus) {
+
+				pushCallbackList();
 			}
 
 			@Override
@@ -116,16 +116,9 @@ public class TransactionCommitCallbackUtil {
 		TransactionCommitCallbackUtil.class);
 
 	private static final ThreadLocal<List<List<Callable<?>>>>
-		_callbackListListThreadLocal =
-			new AutoResetThreadLocal<List<List<Callable<?>>>>(
-				TransactionCommitCallbackUtil.class +
-					"._callbackListListThreadLocal") {
-
-				@Override
-				protected List<List<Callable<?>>> initialValue() {
-					return new ArrayList<>();
-				}
-
-			};
+		_callbackListListThreadLocal = new CentralizedThreadLocal<>(
+			TransactionCommitCallbackUtil.class +
+				"._callbackListListThreadLocal",
+			ArrayList::new);
 
 }

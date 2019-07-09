@@ -14,9 +14,9 @@
 
 package com.liferay.portal.format;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.format.PhoneNumberFormat;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
@@ -60,8 +60,13 @@ public class USAPhoneNumberFormatImpl implements PhoneNumberFormat {
 			return sb.toString();
 		}
 		else if (phoneNumber.length() == 7) {
-			return phoneNumber.substring(0, 3).concat(StringPool.DASH).concat(
-				phoneNumber.substring(3));
+			return phoneNumber.substring(
+				0, 3
+			).concat(
+				StringPool.DASH
+			).concat(
+				phoneNumber.substring(3)
+			);
 		}
 
 		return phoneNumber;

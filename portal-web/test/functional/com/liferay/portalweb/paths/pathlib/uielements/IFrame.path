@@ -19,23 +19,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>CONTENT</td>
-	<td>//div[contains(@id,'cke__')]//iframe</td>
-	<td></td>
-</tr>
-<tr>
-	<td>COPY_STRUCTURE</td>
-	<td>//iframe[contains(@id,'copyStructure_iframe_')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DDL</td>
-	<td>//iframe[contains(@src,'dynamic_data_mapping')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>DIALOG</td>
 	<td>//iframe[contains(@class,'dialog-iframe-node')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DIALOG_BOX</td>
+	<td>//div[contains(@class,'modal-header')]/h3</td>
 	<td></td>
 </tr>
 <tr>
@@ -45,12 +35,27 @@
 </tr>
 <tr>
 	<td>EDIT_ASSET</td>
-	<td>//iframe[contains(@id,'editAsset_iframe_')] | //iframe[contains(@class,'dialog-iframe-node')]</td>
+	<td>//iframe[contains(@id,'editAsset_iframe_')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EMBEDDED_IFRAME</td>
+	<td>//iframe[@id='embeddedIframe']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GOOGLE_DOC</td>
+	<td>//iframe[contains(@class,'google-docs')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>IFRAME_TITLE</td>
 	<td>//div[contains(@class,'modal-header')]/h3[@class='modal-title' and contains(.,'${key_iframeTitle}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>IFRAME_PORTLET</td>
+	<td>//iframe[contains(@id,'IFramePortlet') and contains(@id,'iframe')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -79,13 +84,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SELECT_CONTENT</td>
-	<td>//iframe[contains(@id,'selectContent')]</td>
+	<td>SELECT_CATEGORY</td>
+	<td>//iframe[contains(@id,'selectCategory_iframe_')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SELECT_FILE</td>
-	<td>//iframe[contains(@name,'selectFileEntry')]</td>
+	<td>SELECT_CONTENT</td>
+	<td>//iframe[contains(@id,'selectContent')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -94,28 +99,43 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SELECT_MEDIA_TYPE</td>
-	<td>//iframe[contains(@id,'selectFileEntryType_iframe')]</td>
+	<td>SELECT_TAG</td>
+	<td>//iframe[contains(@id,'selectTag_iframe')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>MANAGE_SITE_PAGES</td>
-	<td>//iframe[contains(@id,'iframe') and contains(@class,'dialog-iframe-node')]</td>
+	<td>MODAL_IFRAME</td>
+	<td>//div[contains(@class,'modal')]//iframe</td>
 	<td></td>
 </tr>
 <tr>
-    <td>MODAL_IFRAME</td>
-    <td>//div[contains(@class,'modal')]//iframe</td>
-    <td></td>
+	<td>RECAPTCHA</td>
+	<td>//iframe[contains(@src,'recaptcha')]</td>
+	<td></td>
 </tr>
 <tr>
-	<td>SELECT_ORGANIZATION</td>
-	<td>//iframe[contains(@id,'selectOrganization_iframe')]</td>
+	<td>SELECT_ORGANIZATION_ROLE</td>
+	<td>//iframe[contains(@id,'selectOrganizationRole_iframe_')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_REGULAR_ROLE</td>
+	<td>//iframe[contains(@id,'selectRegularRole_iframe_')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_SITE_ROLE</td>
+	<td>//iframe[contains(@id,'selectSiteRole_iframe_')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SELECT_SITES</td>
 	<td>//iframe[contains(@src,'selectSite')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_USER_SITES</td>
+	<td>//iframe[contains(@id,'selectSite_iframe_')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -129,18 +149,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>STRUCTURES</td>
-	<td>//iframe[contains(@src,'scopeTitle=Structures')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TEMPLATES</td>
-	<td>//iframe[contains(@src,'scopeTitle=Templates')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>UPLOAD_IMAGE</td>
-	<td>//iframe[contains(@id,'changeLogo_iframe')]</td>
+	<td>XPACK_MONITORING</td>
+	<td>//iframe[contains(@id,'XPackMonitoringPortlet')]</td>
 	<td></td>
 </tr>
 </tbody>

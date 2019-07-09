@@ -14,6 +14,7 @@
 
 package com.liferay.portal.security.pwd;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.UserPasswordException;
 import com.liferay.portal.kernel.model.PasswordPolicy;
@@ -25,7 +26,6 @@ import com.liferay.portal.kernel.service.PasswordTrackerLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PwdGenerator;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.words.WordsUtil;
 import com.liferay.portal.util.PropsValues;
@@ -104,9 +104,8 @@ public class PasswordPolicyToolkit extends BasicToolkit {
 
 			return generateStatic(passwordPolicy);
 		}
-		else {
-			return generateDynamic(passwordPolicy);
-		}
+
+		return generateDynamic(passwordPolicy);
 	}
 
 	@Override
@@ -128,18 +127,39 @@ public class PasswordPolicyToolkit extends BasicToolkit {
 					userId, passwordPolicy.getMinLength());
 			}
 
-			if ((getUsageCount(password1, _validatorAlphanumericCharsetArray) <
-					passwordPolicy.getMinAlphanumeric()) ||
-				(getUsageCount(password1, _validatorLowerCaseCharsetArray) <
-					passwordPolicy.getMinLowerCase()) ||
-				(getUsageCount(password1, _validatorNumbersCharsetArray) <
-					passwordPolicy.getMinNumbers()) ||
-				(getUsageCount(password1, _validatorSymbolsCharsetArray) <
-					passwordPolicy.getMinSymbols()) ||
-				(getUsageCount(password1, _validatorUpperCaseCharsetArray) <
-					passwordPolicy.getMinUpperCase())) {
+			if (getUsageCount(password1, _validatorAlphanumericCharsetArray) <
+					passwordPolicy.getMinAlphanumeric()) {
 
-				throw new UserPasswordException.MustNotBeTrivial(userId);
+				throw new UserPasswordException.MustHaveMoreAlphanumeric(
+					passwordPolicy.getMinAlphanumeric());
+			}
+
+			if (getUsageCount(password1, _validatorLowerCaseCharsetArray) <
+					passwordPolicy.getMinLowerCase()) {
+
+				throw new UserPasswordException.MustHaveMoreLowercase(
+					passwordPolicy.getMinLowerCase());
+			}
+
+			if (getUsageCount(password1, _validatorNumbersCharsetArray) <
+					passwordPolicy.getMinNumbers()) {
+
+				throw new UserPasswordException.MustHaveMoreNumbers(
+					passwordPolicy.getMinNumbers());
+			}
+
+			if (getUsageCount(password1, _validatorSymbolsCharsetArray) <
+					passwordPolicy.getMinSymbols()) {
+
+				throw new UserPasswordException.MustHaveMoreSymbols(
+					passwordPolicy.getMinSymbols());
+			}
+
+			if (getUsageCount(password1, _validatorUpperCaseCharsetArray) <
+					passwordPolicy.getMinUpperCase()) {
+
+				throw new UserPasswordException.MustHaveMoreUppercase(
+					passwordPolicy.getMinUpperCase());
 			}
 
 			String regex = passwordPolicy.getRegex();
@@ -171,7 +191,7 @@ public class PasswordPolicyToolkit extends BasicToolkit {
 			long minAge = passwordPolicy.getMinAge() * 1000;
 
 			if ((passwordModificationElapsedTime < minAge) &&
-				!user.getPasswordReset()) {
+				!user.isPasswordReset()) {
 
 				throw new UserPasswordException.MustNotBeChangedYet(
 					userId, new Date(passwordModfiedDate.getTime() + minAge));
@@ -183,8 +203,9 @@ public class PasswordPolicyToolkit extends BasicToolkit {
 
 			throw new UserPasswordException.MustNotBeEqualToCurrent(userId);
 		}
-		else if (!PasswordTrackerLocalServiceUtil.isValidPassword(
-					userId, password1)) {
+
+		if (!PasswordTrackerLocalServiceUtil.isValidPassword(
+				userId, password1)) {
 
 			throw new UserPasswordException.MustNotBeRecentlyUsed(userId);
 		}
@@ -197,6 +218,7 @@ public class PasswordPolicyToolkit extends BasicToolkit {
 
 		int alphanumericMinLength = Math.max(
 			passwordPolicy.getMinAlphanumeric(), alphanumericActualMinLength);
+
 		int passwordMinLength = Math.max(
 			passwordPolicy.getMinLength(),
 			alphanumericMinLength + passwordPolicy.getMinSymbols());

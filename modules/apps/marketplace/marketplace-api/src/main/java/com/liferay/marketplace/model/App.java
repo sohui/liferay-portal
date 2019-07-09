@@ -14,30 +14,31 @@
 
 package com.liferay.marketplace.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the App service. Represents a row in the &quot;Marketplace_App&quot; database table, with each column mapped to a property of this class.
  *
  * @author Ryan Park
  * @see AppModel
- * @see com.liferay.marketplace.model.impl.AppImpl
- * @see com.liferay.marketplace.model.impl.AppModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.marketplace.model.impl.AppImpl")
 @ProviderType
 public interface App extends AppModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.marketplace.model.impl.AppImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.marketplace.model.impl.AppImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<App, Long> APP_ID_ACCESSOR = new Accessor<App, Long>() {
+	public static final Accessor<App, Long> APP_ID_ACCESSOR =
+		new Accessor<App, Long>() {
+
 			@Override
 			public Long get(App app) {
 				return app.getAppId();
@@ -52,20 +53,22 @@ public interface App extends AppModel, PersistedModel {
 			public Class<App> getTypeClass() {
 				return App.class;
 			}
+
 		};
 
-	public java.lang.String[] addContextName(java.lang.String contextName);
+	public String[] addContextName(String contextName);
 
-	public java.lang.String[] getContextNames();
+	public String[] getContextNames();
 
-	public java.lang.String getFileDir();
+	public String getFileDir();
 
-	public java.lang.String getFileName();
+	public String getFileName();
 
-	public java.lang.String getFilePath();
+	public String getFilePath();
 
 	public boolean isDownloaded()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public boolean isInstalled();
+
 }

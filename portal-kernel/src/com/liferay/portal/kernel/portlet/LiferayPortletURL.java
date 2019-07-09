@@ -16,18 +16,20 @@ package com.liferay.portal.kernel.portlet;
 
 import java.io.Serializable;
 
-import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import javax.portlet.PortletURL;
 import javax.portlet.ResourceURL;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Represents a URL pointing to a portlet.
  *
  * @author Brian Wing Shun Chan
- * @see    com.liferay.portlet.PortletURLImpl
  */
+@ProviderType
 public interface LiferayPortletURL
 	extends PortletURL, ResourceURL, Serializable {
 
@@ -48,11 +50,12 @@ public interface LiferayPortletURL
 	public String getLifecycle();
 
 	/**
-	 * Returns the first value of the URL parameter.
-	 *
-	 * @param  name the name of the URL parameter
-	 * @return the first value of the URL parameter
+	 * @param      name the name of the URL parameter
+	 * @return     the first value of the URL parameter
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             javax.portlet.PortletParameters#getValue(String)}
 	 */
+	@Deprecated
 	public String getParameter(String name);
 
 	/**
@@ -74,19 +77,6 @@ public interface LiferayPortletURL
 	public String getPortletId();
 
 	public Set<String> getRemovedParameterNames();
-
-	/**
-	 * Returns the map of reserved parameters for this URL.
-	 *
-	 * <p>
-	 * This method is only used internally. Reserved parameters contain special,
-	 * Liferay specific information, such as <code>p_p_id</code> and
-	 * <code>p_p_lifecycle</code>.
-	 * </p>
-	 *
-	 * @return the reserved parameter names and values in a read-only map
-	 */
-	public Map<String, String> getReservedParameterMap();
 
 	/**
 	 * Returns the ID of this URL's target resource.
@@ -262,27 +252,31 @@ public interface LiferayPortletURL
 	public void setLifecycle(String lifecycle);
 
 	/**
-	 * Sets the URL parameter to the value.
-	 *
-	 * @param name the name of the URL parameter
-	 * @param value the value of the URL parameter
-	 * @param append whether the new value should be appended to any existing
-	 *        values for the parameter. If <code>append</code> is
-	 *        <code>false</code> any existing values will be overwritten with
-	 *        the new value.
+	 * @param      name the name of the URL parameter
+	 * @param      value the value of the URL parameter
+	 * @param      append whether the new value should be appended to any
+	 *             existing values for the parameter. If <code>append</code> is
+	 *             <code>false</code> any existing values will be overwritten
+	 *             with the new value.
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             javax.portlet.MutablePortletParameters#setValue(String,
+	 *             String)}  Sets the URL parameter to the value
 	 */
+	@Deprecated
 	public void setParameter(String name, String value, boolean append);
 
 	/**
-	 * Sets the URL parameter the values.
-	 *
-	 * @param name the name of the URL parameter
-	 * @param values the values of the URL parameter
-	 * @param append whether the new values should be appended to any existing
-	 *        values for the parameter. If <code>append</code> is
-	 *        <code>false</code> any existing values will be overwritten with
-	 *        the new values.
+	 * @param      name the name of the URL parameter
+	 * @param      values the values of the URL parameter
+	 * @param      append whether the new values should be appended to any
+	 *             existing values for the parameter. If <code>append</code> is
+	 *             <code>false</code> any existing values will be overwritten
+	 *             with the new values.
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             javax.portlet.MutablePortletParameters#setValues(String,
+	 *             String...)}  Sets the URL parameter the values
 	 */
+	@Deprecated
 	public void setParameter(String name, String[] values, boolean append);
 
 	/**
@@ -307,5 +301,17 @@ public interface LiferayPortletURL
 	public void setRefererPlid(long refererPlid);
 
 	public void setRemovedParameterNames(Set<String> removedParamNames);
+
+	/**
+	 * Sets whether this portlet restores to the current view when toggling
+	 * between maximized and normal states.
+	 *
+	 * @param windowStateRestoreCurrentView whether this portlet restores to the
+	 *        current view when toggling between maximized and normal states
+	 */
+	public void setWindowStateRestoreCurrentView(
+		boolean windowStateRestoreCurrentView);
+
+	public void visitReservedParameters(BiConsumer<String, String> biConsumer);
 
 }

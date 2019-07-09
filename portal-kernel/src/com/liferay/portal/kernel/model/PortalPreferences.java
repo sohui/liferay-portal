@@ -14,43 +14,47 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the PortalPreferences service. Represents a row in the &quot;PortalPreferences&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see PortalPreferencesModel
- * @see com.liferay.portal.model.impl.PortalPreferencesImpl
- * @see com.liferay.portal.model.impl.PortalPreferencesModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.PortalPreferencesImpl")
 @ProviderType
-public interface PortalPreferences extends PortalPreferencesModel, PersistedModel {
+public interface PortalPreferences
+	extends PersistedModel, PortalPreferencesModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.PortalPreferencesImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.PortalPreferencesImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<PortalPreferences, Long> PORTAL_PREFERENCES_ID_ACCESSOR =
-		new Accessor<PortalPreferences, Long>() {
-			@Override
-			public Long get(PortalPreferences portalPreferences) {
-				return portalPreferences.getPortalPreferencesId();
-			}
+	public static final Accessor<PortalPreferences, Long>
+		PORTAL_PREFERENCES_ID_ACCESSOR =
+			new Accessor<PortalPreferences, Long>() {
 
-			@Override
-			public Class<Long> getAttributeClass() {
-				return Long.class;
-			}
+				@Override
+				public Long get(PortalPreferences portalPreferences) {
+					return portalPreferences.getPortalPreferencesId();
+				}
 
-			@Override
-			public Class<PortalPreferences> getTypeClass() {
-				return PortalPreferences.class;
-			}
-		};
+				@Override
+				public Class<Long> getAttributeClass() {
+					return Long.class;
+				}
+
+				@Override
+				public Class<PortalPreferences> getTypeClass() {
+					return PortalPreferences.class;
+				}
+
+			};
+
 }

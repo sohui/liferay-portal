@@ -17,9 +17,12 @@ package com.liferay.portal.kernel.repository.capabilities;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Iván Zaera
  */
+@ProviderType
 public interface ThumbnailCapability extends Capability {
 
 	public FileEntry fetchImageFileEntry(long imageId);

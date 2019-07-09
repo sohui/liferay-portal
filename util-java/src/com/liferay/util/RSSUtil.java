@@ -14,8 +14,8 @@
 
 package com.liferay.util;
 
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 
 import com.sun.syndication.feed.synd.SyndContent;
 import com.sun.syndication.feed.synd.SyndEntry;
@@ -28,15 +28,15 @@ import java.util.List;
 import org.jdom.IllegalDataException;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Eduardo Garcia
- * @see com.liferay.rss.util.RSSUtil
+ * @author     Brian Wing Shun Chan
+ * @author     Eduardo García
+ * @see        com.liferay.rss.util.RSSUtil
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class RSSUtil extends com.liferay.portal.kernel.util.RSSUtil {
 
 	public static String export(SyndFeed feed) throws FeedException {
-		RSSThreadLocal.setExportRSS(true);
-
 		feed.setEncoding(StringPool.UTF8);
 
 		SyndFeedOutput output = new SyndFeedOutput();

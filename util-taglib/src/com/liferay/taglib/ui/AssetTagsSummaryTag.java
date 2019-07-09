@@ -33,6 +33,22 @@ public class AssetTagsSummaryTag<R> extends IncludeTag {
 		return _assetTagNames;
 	}
 
+	public String getClassName() {
+		return _className;
+	}
+
+	public long getClassPK() {
+		return _classPK;
+	}
+
+	public String getMessage() {
+		return _message;
+	}
+
+	public String getParamName() {
+		return _paramName;
+	}
+
 	public PortletURL getPortletURL() {
 		return _portletURL;
 	}
@@ -63,6 +79,8 @@ public class AssetTagsSummaryTag<R> extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_assetTagNames = null;
 		_className = null;
 		_classPK = 0;
@@ -77,30 +95,23 @@ public class AssetTagsSummaryTag<R> extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
 		List<AssetTag> assetTags = new ArrayList<>();
 
-		AssetTagsAvailableTag<R> assetTagsAvailableTag =
-			(AssetTagsAvailableTag<R>)findAncestorWithClass(
-				this, AssetTagsAvailableTag.class);
-
-		if (assetTagsAvailableTag != null) {
-			assetTags = assetTagsAvailableTag.getAssetTags();
-		}
-
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-categories-summary:assetTags", assetTags);
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-summary:assetTagNames", _assetTagNames);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-summary:className", _className);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-summary:classPK", String.valueOf(_classPK));
-		request.setAttribute("liferay-ui:asset-tags-summary:message", _message);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:asset-tags-summary:message", _message);
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-summary:paramName", _paramName);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-summary:portletURL", _portletURL);
 	}
 

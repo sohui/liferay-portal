@@ -14,29 +14,29 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.RecentLayoutRevision;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing RecentLayoutRevision in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see RecentLayoutRevision
  * @generated
  */
 @ProviderType
-public class RecentLayoutRevisionCacheModel implements CacheModel<RecentLayoutRevision>,
-	Externalizable, MVCCModel {
+public class RecentLayoutRevisionCacheModel
+	implements CacheModel<RecentLayoutRevision>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -47,10 +47,13 @@ public class RecentLayoutRevisionCacheModel implements CacheModel<RecentLayoutRe
 			return false;
 		}
 
-		RecentLayoutRevisionCacheModel recentLayoutRevisionCacheModel = (RecentLayoutRevisionCacheModel)obj;
+		RecentLayoutRevisionCacheModel recentLayoutRevisionCacheModel =
+			(RecentLayoutRevisionCacheModel)obj;
 
-		if ((recentLayoutRevisionId == recentLayoutRevisionCacheModel.recentLayoutRevisionId) &&
-				(mvccVersion == recentLayoutRevisionCacheModel.mvccVersion)) {
+		if ((recentLayoutRevisionId ==
+				recentLayoutRevisionCacheModel.recentLayoutRevisionId) &&
+			(mvccVersion == recentLayoutRevisionCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -101,10 +104,12 @@ public class RecentLayoutRevisionCacheModel implements CacheModel<RecentLayoutRe
 
 	@Override
 	public RecentLayoutRevision toEntityModel() {
-		RecentLayoutRevisionImpl recentLayoutRevisionImpl = new RecentLayoutRevisionImpl();
+		RecentLayoutRevisionImpl recentLayoutRevisionImpl =
+			new RecentLayoutRevisionImpl();
 
 		recentLayoutRevisionImpl.setMvccVersion(mvccVersion);
-		recentLayoutRevisionImpl.setRecentLayoutRevisionId(recentLayoutRevisionId);
+		recentLayoutRevisionImpl.setRecentLayoutRevisionId(
+			recentLayoutRevisionId);
 		recentLayoutRevisionImpl.setGroupId(groupId);
 		recentLayoutRevisionImpl.setCompanyId(companyId);
 		recentLayoutRevisionImpl.setUserId(userId);
@@ -137,8 +142,7 @@ public class RecentLayoutRevisionCacheModel implements CacheModel<RecentLayoutRe
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(recentLayoutRevisionId);
@@ -164,4 +168,5 @@ public class RecentLayoutRevisionCacheModel implements CacheModel<RecentLayoutRe
 	public long layoutRevisionId;
 	public long layoutSetBranchId;
 	public long plid;
+
 }

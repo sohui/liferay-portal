@@ -14,18 +14,13 @@
 
 package com.liferay.social.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.portal.kernel.model.ModelWrapper;
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -37,20 +32,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class SocialActivitySetWrapper implements SocialActivitySet,
-	ModelWrapper<SocialActivitySet> {
+public class SocialActivitySetWrapper
+	extends BaseModelWrapper<SocialActivitySet>
+	implements SocialActivitySet, ModelWrapper<SocialActivitySet> {
+
 	public SocialActivitySetWrapper(SocialActivitySet socialActivitySet) {
-		_socialActivitySet = socialActivitySet;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return SocialActivitySet.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return SocialActivitySet.class.getName();
+		super(socialActivitySet);
 	}
 
 	@Override
@@ -141,421 +128,291 @@ public class SocialActivitySetWrapper implements SocialActivitySet,
 		}
 	}
 
-	@Override
-	public SocialActivitySet toEscapedModel() {
-		return new SocialActivitySetWrapper(_socialActivitySet.toEscapedModel());
-	}
-
-	@Override
-	public SocialActivitySet toUnescapedModel() {
-		return new SocialActivitySetWrapper(_socialActivitySet.toUnescapedModel());
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _socialActivitySet.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _socialActivitySet.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _socialActivitySet.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _socialActivitySet.getExpandoBridge();
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.CacheModel<SocialActivitySet> toCacheModel() {
-		return _socialActivitySet.toCacheModel();
-	}
-
-	@Override
-	public int compareTo(SocialActivitySet socialActivitySet) {
-		return _socialActivitySet.compareTo(socialActivitySet);
-	}
-
 	/**
-	* Returns the activity count of this social activity set.
-	*
-	* @return the activity count of this social activity set
-	*/
+	 * Returns the activity count of this social activity set.
+	 *
+	 * @return the activity count of this social activity set
+	 */
 	@Override
 	public int getActivityCount() {
-		return _socialActivitySet.getActivityCount();
+		return model.getActivityCount();
 	}
 
 	/**
-	* Returns the type of this social activity set.
-	*
-	* @return the type of this social activity set
-	*/
-	@Override
-	public int getType() {
-		return _socialActivitySet.getType();
-	}
-
-	@Override
-	public int hashCode() {
-		return _socialActivitySet.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _socialActivitySet.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new SocialActivitySetWrapper((SocialActivitySet)_socialActivitySet.clone());
-	}
-
-	/**
-	* Returns the fully qualified class name of this social activity set.
-	*
-	* @return the fully qualified class name of this social activity set
-	*/
-	@Override
-	public java.lang.String getClassName() {
-		return _socialActivitySet.getClassName();
-	}
-
-	/**
-	* Returns the extra data of this social activity set.
-	*
-	* @return the extra data of this social activity set
-	*/
-	@Override
-	public java.lang.String getExtraData() {
-		return _socialActivitySet.getExtraData();
-	}
-
-	/**
-	* Returns the user uuid of this social activity set.
-	*
-	* @return the user uuid of this social activity set
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _socialActivitySet.getUserUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _socialActivitySet.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _socialActivitySet.toXmlString();
-	}
-
-	/**
-	* Returns the activity set ID of this social activity set.
-	*
-	* @return the activity set ID of this social activity set
-	*/
+	 * Returns the activity set ID of this social activity set.
+	 *
+	 * @return the activity set ID of this social activity set
+	 */
 	@Override
 	public long getActivitySetId() {
-		return _socialActivitySet.getActivitySetId();
+		return model.getActivitySetId();
 	}
 
 	/**
-	* Returns the class name ID of this social activity set.
-	*
-	* @return the class name ID of this social activity set
-	*/
+	 * Returns the fully qualified class name of this social activity set.
+	 *
+	 * @return the fully qualified class name of this social activity set
+	 */
+	@Override
+	public String getClassName() {
+		return model.getClassName();
+	}
+
+	/**
+	 * Returns the class name ID of this social activity set.
+	 *
+	 * @return the class name ID of this social activity set
+	 */
 	@Override
 	public long getClassNameId() {
-		return _socialActivitySet.getClassNameId();
+		return model.getClassNameId();
 	}
 
 	/**
-	* Returns the class p k of this social activity set.
-	*
-	* @return the class p k of this social activity set
-	*/
+	 * Returns the class pk of this social activity set.
+	 *
+	 * @return the class pk of this social activity set
+	 */
 	@Override
 	public long getClassPK() {
-		return _socialActivitySet.getClassPK();
+		return model.getClassPK();
 	}
 
 	/**
-	* Returns the company ID of this social activity set.
-	*
-	* @return the company ID of this social activity set
-	*/
+	 * Returns the company ID of this social activity set.
+	 *
+	 * @return the company ID of this social activity set
+	 */
 	@Override
 	public long getCompanyId() {
-		return _socialActivitySet.getCompanyId();
+		return model.getCompanyId();
 	}
 
 	/**
-	* Returns the create date of this social activity set.
-	*
-	* @return the create date of this social activity set
-	*/
+	 * Returns the create date of this social activity set.
+	 *
+	 * @return the create date of this social activity set
+	 */
 	@Override
 	public long getCreateDate() {
-		return _socialActivitySet.getCreateDate();
+		return model.getCreateDate();
 	}
 
 	/**
-	* Returns the group ID of this social activity set.
-	*
-	* @return the group ID of this social activity set
-	*/
+	 * Returns the extra data of this social activity set.
+	 *
+	 * @return the extra data of this social activity set
+	 */
+	@Override
+	public String getExtraData() {
+		return model.getExtraData();
+	}
+
+	/**
+	 * Returns the group ID of this social activity set.
+	 *
+	 * @return the group ID of this social activity set
+	 */
 	@Override
 	public long getGroupId() {
-		return _socialActivitySet.getGroupId();
+		return model.getGroupId();
 	}
 
 	/**
-	* Returns the modified date of this social activity set.
-	*
-	* @return the modified date of this social activity set
-	*/
+	 * Returns the modified date of this social activity set.
+	 *
+	 * @return the modified date of this social activity set
+	 */
 	@Override
 	public long getModifiedDate() {
-		return _socialActivitySet.getModifiedDate();
+		return model.getModifiedDate();
 	}
 
 	/**
-	* Returns the primary key of this social activity set.
-	*
-	* @return the primary key of this social activity set
-	*/
+	 * Returns the primary key of this social activity set.
+	 *
+	 * @return the primary key of this social activity set
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _socialActivitySet.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Returns the user ID of this social activity set.
-	*
-	* @return the user ID of this social activity set
-	*/
+	 * Returns the type of this social activity set.
+	 *
+	 * @return the type of this social activity set
+	 */
+	@Override
+	public int getType() {
+		return model.getType();
+	}
+
+	/**
+	 * Returns the user ID of this social activity set.
+	 *
+	 * @return the user ID of this social activity set
+	 */
 	@Override
 	public long getUserId() {
-		return _socialActivitySet.getUserId();
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user uuid of this social activity set.
+	 *
+	 * @return the user uuid of this social activity set
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
 	}
 
 	@Override
 	public void persist() {
-		_socialActivitySet.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets the activity count of this social activity set.
-	*
-	* @param activityCount the activity count of this social activity set
-	*/
+	 * Sets the activity count of this social activity set.
+	 *
+	 * @param activityCount the activity count of this social activity set
+	 */
 	@Override
 	public void setActivityCount(int activityCount) {
-		_socialActivitySet.setActivityCount(activityCount);
+		model.setActivityCount(activityCount);
 	}
 
 	/**
-	* Sets the activity set ID of this social activity set.
-	*
-	* @param activitySetId the activity set ID of this social activity set
-	*/
+	 * Sets the activity set ID of this social activity set.
+	 *
+	 * @param activitySetId the activity set ID of this social activity set
+	 */
 	@Override
 	public void setActivitySetId(long activitySetId) {
-		_socialActivitySet.setActivitySetId(activitySetId);
+		model.setActivitySetId(activitySetId);
 	}
 
 	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_socialActivitySet.setCachedModel(cachedModel);
-	}
-
-	@Override
-	public void setClassName(java.lang.String className) {
-		_socialActivitySet.setClassName(className);
+	public void setClassName(String className) {
+		model.setClassName(className);
 	}
 
 	/**
-	* Sets the class name ID of this social activity set.
-	*
-	* @param classNameId the class name ID of this social activity set
-	*/
+	 * Sets the class name ID of this social activity set.
+	 *
+	 * @param classNameId the class name ID of this social activity set
+	 */
 	@Override
 	public void setClassNameId(long classNameId) {
-		_socialActivitySet.setClassNameId(classNameId);
+		model.setClassNameId(classNameId);
 	}
 
 	/**
-	* Sets the class p k of this social activity set.
-	*
-	* @param classPK the class p k of this social activity set
-	*/
+	 * Sets the class pk of this social activity set.
+	 *
+	 * @param classPK the class pk of this social activity set
+	 */
 	@Override
 	public void setClassPK(long classPK) {
-		_socialActivitySet.setClassPK(classPK);
+		model.setClassPK(classPK);
 	}
 
 	/**
-	* Sets the company ID of this social activity set.
-	*
-	* @param companyId the company ID of this social activity set
-	*/
+	 * Sets the company ID of this social activity set.
+	 *
+	 * @param companyId the company ID of this social activity set
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_socialActivitySet.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this social activity set.
-	*
-	* @param createDate the create date of this social activity set
-	*/
+	 * Sets the create date of this social activity set.
+	 *
+	 * @param createDate the create date of this social activity set
+	 */
 	@Override
 	public void setCreateDate(long createDate) {
-		_socialActivitySet.setCreateDate(createDate);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_socialActivitySet.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(
-		com.liferay.portal.kernel.model.BaseModel<?> baseModel) {
-		_socialActivitySet.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_socialActivitySet.setExpandoBridgeAttributes(serviceContext);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the extra data of this social activity set.
-	*
-	* @param extraData the extra data of this social activity set
-	*/
+	 * Sets the extra data of this social activity set.
+	 *
+	 * @param extraData the extra data of this social activity set
+	 */
 	@Override
-	public void setExtraData(java.lang.String extraData) {
-		_socialActivitySet.setExtraData(extraData);
+	public void setExtraData(String extraData) {
+		model.setExtraData(extraData);
 	}
 
 	/**
-	* Sets the group ID of this social activity set.
-	*
-	* @param groupId the group ID of this social activity set
-	*/
+	 * Sets the group ID of this social activity set.
+	 *
+	 * @param groupId the group ID of this social activity set
+	 */
 	@Override
 	public void setGroupId(long groupId) {
-		_socialActivitySet.setGroupId(groupId);
+		model.setGroupId(groupId);
 	}
 
 	/**
-	* Sets the modified date of this social activity set.
-	*
-	* @param modifiedDate the modified date of this social activity set
-	*/
+	 * Sets the modified date of this social activity set.
+	 *
+	 * @param modifiedDate the modified date of this social activity set
+	 */
 	@Override
 	public void setModifiedDate(long modifiedDate) {
-		_socialActivitySet.setModifiedDate(modifiedDate);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_socialActivitySet.setNew(n);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the primary key of this social activity set.
-	*
-	* @param primaryKey the primary key of this social activity set
-	*/
+	 * Sets the primary key of this social activity set.
+	 *
+	 * @param primaryKey the primary key of this social activity set
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_socialActivitySet.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_socialActivitySet.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the type of this social activity set.
-	*
-	* @param type the type of this social activity set
-	*/
+	 * Sets the type of this social activity set.
+	 *
+	 * @param type the type of this social activity set
+	 */
 	@Override
 	public void setType(int type) {
-		_socialActivitySet.setType(type);
+		model.setType(type);
 	}
 
 	/**
-	* Sets the user ID of this social activity set.
-	*
-	* @param userId the user ID of this social activity set
-	*/
+	 * Sets the user ID of this social activity set.
+	 *
+	 * @param userId the user ID of this social activity set
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_socialActivitySet.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user uuid of this social activity set.
-	*
-	* @param userUuid the user uuid of this social activity set
-	*/
+	 * Sets the user uuid of this social activity set.
+	 *
+	 * @param userUuid the user uuid of this social activity set
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_socialActivitySet.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
+	protected SocialActivitySetWrapper wrap(
+		SocialActivitySet socialActivitySet) {
 
-		if (!(obj instanceof SocialActivitySetWrapper)) {
-			return false;
-		}
-
-		SocialActivitySetWrapper socialActivitySetWrapper = (SocialActivitySetWrapper)obj;
-
-		if (Objects.equals(_socialActivitySet,
-					socialActivitySetWrapper._socialActivitySet)) {
-			return true;
-		}
-
-		return false;
+		return new SocialActivitySetWrapper(socialActivitySet);
 	}
 
-	@Override
-	public SocialActivitySet getWrappedModel() {
-		return _socialActivitySet;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _socialActivitySet.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _socialActivitySet.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_socialActivitySet.resetOriginalValues();
-	}
-
-	private final SocialActivitySet _socialActivitySet;
 }

@@ -20,9 +20,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Alexander Chow
+ * @author     Brian Wing Shun Chan
+ * @author     Alexander Chow
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class FileFilter implements java.io.FileFilter {
 
 	public FileFilter() {
@@ -43,9 +45,8 @@ public class FileFilter implements java.io.FileFilter {
 
 			return matcher.matches();
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private Pattern _pattern;

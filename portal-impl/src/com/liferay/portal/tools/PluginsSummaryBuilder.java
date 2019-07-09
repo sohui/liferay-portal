@@ -14,14 +14,14 @@
 
 package com.liferay.portal.tools;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.OSDetector;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.FileImpl;
@@ -53,9 +53,7 @@ public class PluginsSummaryBuilder {
 	public PluginsSummaryBuilder(File pluginsDir) throws Exception {
 		_pluginsDir = pluginsDir;
 
-		String latestHASH = null;
-
-		latestHASH = _getLatestHASH(pluginsDir);
+		String latestHASH = _getLatestHASH(pluginsDir);
 
 		_latestHASH = latestHASH;
 
@@ -218,6 +216,7 @@ public class PluginsSummaryBuilder {
 		}
 
 		File buildXmlFile = new File(pluginDir, "build.xml");
+
 		System.out.println("## read a " + buildXmlFile);
 
 		String buildXmlContent = _fileUtil.read(buildXmlFile);
@@ -346,14 +345,15 @@ public class PluginsSummaryBuilder {
 
 		String fullScreenshotsDirName =
 			fullWebInfDirName + "releng/screenshots/";
-		String relativeScreenshotsDirName =
-			relativeWebInfDirName + "releng/screenshots/";
 
 		if (FileUtil.exists(fullScreenshotsDirName)) {
 			String[] screenshotsFileNames = FileUtil.listFiles(
 				fullScreenshotsDirName);
 
 			Arrays.sort(screenshotsFileNames);
+
+			String relativeScreenshotsDirName =
+				relativeWebInfDirName + "releng/screenshots/";
 
 			for (String screenshotsFileName : screenshotsFileNames) {
 				if (screenshotsFileName.equals("Thumbs.db") ||
@@ -433,6 +433,7 @@ public class PluginsSummaryBuilder {
 				!relengChangeLogEntries.isEmpty()) {
 
 				int x = relengChangeLogEntry.indexOf("..");
+
 				int y = relengChangeLogEntry.indexOf("=", x);
 
 				String range =
@@ -440,8 +441,6 @@ public class PluginsSummaryBuilder {
 						_latestHASH;
 
 				relengChangeLogEntries.add(range);
-
-				continue;
 			}
 		}
 
@@ -451,9 +450,7 @@ public class PluginsSummaryBuilder {
 
 		File pluginDir = docrootDir.getParentFile();
 
-		for (int i = 0; i < relengChangeLogEntries.size(); i++) {
-			String relengChangeLogEntry = relengChangeLogEntries.get(i);
-
+		for (String relengChangeLogEntry : relengChangeLogEntries) {
 			String[] relengChangeLogEntryParts = StringUtil.split(
 				relengChangeLogEntry, "=");
 
@@ -522,7 +519,7 @@ public class PluginsSummaryBuilder {
 			}
 
 			String ticketIdsString = StringUtil.merge(
-				ticketIds.toArray(new String[ticketIds.size()]), " ");
+				ticketIds.toArray(new String[0]), " ");
 
 			changeLogVersion++;
 
@@ -626,8 +623,9 @@ public class PluginsSummaryBuilder {
 		sb.append(value);
 	}
 
-	private static final String[] _TICKET_ID_PREFIXES =
-		{"CLDSVCS", "LPS", "SOS", "SYNC"};
+	private static final String[] _TICKET_ID_PREFIXES = {
+		"CLDSVCS", "LPS", "SOS", "SYNC"
+	};
 
 	private static final FileImpl _fileUtil = FileImpl.getInstance();
 

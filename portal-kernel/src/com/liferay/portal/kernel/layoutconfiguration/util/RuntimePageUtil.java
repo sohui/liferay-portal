@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.layoutconfiguration.util;
 
 import com.liferay.portal.kernel.layoutconfiguration.util.xml.RuntimeLogic;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.util.StringBundler;
 
@@ -30,65 +29,103 @@ import javax.servlet.http.HttpServletResponse;
 public class RuntimePageUtil {
 
 	public static StringBundler getProcessedTemplate(
-			HttpServletRequest request, HttpServletResponse response,
-			String portletId, TemplateResource templateResource)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String portletId,
+			TemplateResource templateResource)
 		throws Exception {
 
 		return getRuntimePage().getProcessedTemplate(
-			request, response, portletId, templateResource);
+			httpServletRequest, httpServletResponse, portletId,
+			templateResource);
 	}
 
 	public static RuntimePage getRuntimePage() {
-		PortalRuntimePermission.checkGetBeanProperty(RuntimePageUtil.class);
-
 		return _runtimePage;
 	}
 
 	public static void processCustomizationSettings(
-			HttpServletRequest request, HttpServletResponse response,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
 			TemplateResource templateResource)
 		throws Exception {
 
 		getRuntimePage().processCustomizationSettings(
-			request, response, templateResource);
+			httpServletRequest, httpServletResponse, templateResource);
 	}
 
-	public static void processTemplate(
-			HttpServletRequest request, HttpServletResponse response,
-			String portletId, TemplateResource templateResource)
+	public static void processCustomizationSettings(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
+			TemplateResource templateResource, String langType)
 		throws Exception {
 
-		getRuntimePage().processTemplate(
-			request, response, portletId, templateResource);
+		getRuntimePage().processCustomizationSettings(
+			httpServletRequest, httpServletResponse, templateResource,
+			langType);
 	}
 
 	public static void processTemplate(
-			HttpServletRequest request, HttpServletResponse response,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String portletId,
 			TemplateResource templateResource)
 		throws Exception {
 
-		getRuntimePage().processTemplate(request, response, templateResource);
+		getRuntimePage().processTemplate(
+			httpServletRequest, httpServletResponse, portletId,
+			templateResource);
 	}
 
-	public static String processXML(
-			HttpServletRequest request, HttpServletResponse response,
-			String content)
+	public static void processTemplate(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String portletId,
+			TemplateResource templateResource, String langType)
 		throws Exception {
 
-		return getRuntimePage().processXML(request, response, content);
+		getRuntimePage().processTemplate(
+			httpServletRequest, httpServletResponse, portletId,
+			templateResource, langType);
+	}
+
+	public static void processTemplate(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
+			TemplateResource templateResource)
+		throws Exception {
+
+		getRuntimePage().processTemplate(
+			httpServletRequest, httpServletResponse, templateResource);
+	}
+
+	public static void processTemplate(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse,
+			TemplateResource templateResource, String langType)
+		throws Exception {
+
+		getRuntimePage().processTemplate(
+			httpServletRequest, httpServletResponse, templateResource,
+			langType);
 	}
 
 	public static String processXML(
-			HttpServletRequest request, String content,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String content)
+		throws Exception {
+
+		return getRuntimePage().processXML(
+			httpServletRequest, httpServletResponse, content);
+	}
+
+	public static String processXML(
+			HttpServletRequest httpServletRequest, String content,
 			RuntimeLogic runtimeLogic)
 		throws Exception {
 
-		return getRuntimePage().processXML(request, content, runtimeLogic);
+		return getRuntimePage().processXML(
+			httpServletRequest, content, runtimeLogic);
 	}
 
 	public void setRuntimePage(RuntimePage runtimePage) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_runtimePage = runtimePage;
 	}
 

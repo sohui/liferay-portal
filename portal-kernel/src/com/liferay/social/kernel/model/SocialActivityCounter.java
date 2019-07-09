@@ -14,47 +14,52 @@
 
 package com.liferay.social.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the SocialActivityCounter service. Represents a row in the &quot;SocialActivityCounter&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see SocialActivityCounterModel
- * @see com.liferay.portlet.social.model.impl.SocialActivityCounterImpl
- * @see com.liferay.portlet.social.model.impl.SocialActivityCounterModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.social.model.impl.SocialActivityCounterImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.social.model.impl.SocialActivityCounterImpl"
+)
 @ProviderType
-public interface SocialActivityCounter extends SocialActivityCounterModel,
-	PersistedModel {
+public interface SocialActivityCounter
+	extends PersistedModel, SocialActivityCounterModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.social.model.impl.SocialActivityCounterImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.social.model.impl.SocialActivityCounterImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<SocialActivityCounter, Long> ACTIVITY_COUNTER_ID_ACCESSOR =
-		new Accessor<SocialActivityCounter, Long>() {
-			@Override
-			public Long get(SocialActivityCounter socialActivityCounter) {
-				return socialActivityCounter.getActivityCounterId();
-			}
+	public static final Accessor<SocialActivityCounter, Long>
+		ACTIVITY_COUNTER_ID_ACCESSOR =
+			new Accessor<SocialActivityCounter, Long>() {
 
-			@Override
-			public Class<Long> getAttributeClass() {
-				return Long.class;
-			}
+				@Override
+				public Long get(SocialActivityCounter socialActivityCounter) {
+					return socialActivityCounter.getActivityCounterId();
+				}
 
-			@Override
-			public Class<SocialActivityCounter> getTypeClass() {
-				return SocialActivityCounter.class;
-			}
-		};
+				@Override
+				public Class<Long> getAttributeClass() {
+					return Long.class;
+				}
+
+				@Override
+				public Class<SocialActivityCounter> getTypeClass() {
+					return SocialActivityCounter.class;
+				}
+
+			};
 
 	public boolean isActivePeriod(int periodLength);
+
 }

@@ -15,11 +15,9 @@
 package com.liferay.portlet.ratings.service.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.blogs.kernel.model.BlogsEntry;
-import com.liferay.blogs.kernel.model.BlogsStatsUser;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -31,7 +29,9 @@ import com.liferay.ratings.kernel.model.RatingsEntry;
 import com.liferay.ratings.kernel.model.RatingsStats;
 import com.liferay.social.kernel.model.SocialActivityConstants;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Brian Wing Shun Chan
@@ -66,8 +66,6 @@ public class RatingsEntryLocalServiceImpl
 
 		long classNameId = classNameLocalService.getClassNameId(className);
 
-		double oldScore = entry.getScore();
-
 		ratingsEntryPersistence.removeByU_C_C(userId, classNameId, classPK);
 
 		// Stats
@@ -76,18 +74,41 @@ public class RatingsEntryLocalServiceImpl
 			className, classPK);
 
 		int totalEntries = stats.getTotalEntries() - 1;
-		double totalScore = stats.getTotalScore() - oldScore;
-		double averageScore = 0;
 
-		if (totalEntries > 0) {
-			averageScore = totalScore / totalEntries;
+		if (totalEntries == 0) {
+			ratingsStatsPersistence.remove(stats);
+		}
+		else {
+			double oldScore = entry.getScore();
+
+			double totalScore = stats.getTotalScore() - oldScore;
+
+			double averageScore = 0;
+
+			if (totalEntries > 0) {
+				averageScore = totalScore / totalEntries;
+			}
+
+			stats.setTotalEntries(totalEntries);
+			stats.setTotalScore(totalScore);
+			stats.setAverageScore(averageScore);
+
+			ratingsStatsPersistence.update(stats);
 		}
 
-		stats.setTotalEntries(totalEntries);
-		stats.setTotalScore(totalScore);
-		stats.setAverageScore(averageScore);
+		// Social
 
-		ratingsStatsPersistence.update(stats);
+		AssetEntry assetEntry = assetEntryLocalService.fetchEntry(
+			className, classPK);
+
+		if (assetEntry != null) {
+			JSONObject extraDataJSONObject = JSONUtil.put(
+				"title", assetEntry.getTitle());
+
+			SocialActivityManagerUtil.addActivity(
+				userId, assetEntry, SocialActivityConstants.TYPE_REVOKE_VOTE,
+				extraDataJSONObject.toString(), 0);
+		}
 	}
 
 	@Override
@@ -100,6 +121,10 @@ public class RatingsEntryLocalServiceImpl
 			userId, classNameId, classPK);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<RatingsEntry> getEntries(
 		long userId, String className, List<Long> classPKs) {
@@ -107,6 +132,24 @@ public class RatingsEntryLocalServiceImpl
 		long classNameId = classNameLocalService.getClassNameId(className);
 
 		return ratingsEntryFinder.findByU_C_C(userId, classNameId, classPKs);
+	}
+
+	@Override
+	public Map<Long, RatingsEntry> getEntries(
+		long userId, String className, long[] classPKs) {
+
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		Map<Long, RatingsEntry> ratingsEntries = new HashMap<>();
+
+		for (RatingsEntry entry :
+				ratingsEntryPersistence.findByU_C_C(
+					userId, classNameId, classPKs)) {
+
+			ratingsEntries.put(entry.getClassPK(), entry);
+		}
+
+		return ratingsEntries;
 	}
 
 	@Override
@@ -151,10 +194,7 @@ public class RatingsEntryLocalServiceImpl
 
 		// Entry
 
-		boolean newEntry = false;
-
 		long classNameId = classNameLocalService.getClassNameId(className);
-		double oldScore = 0;
 
 		validate(score);
 
@@ -162,7 +202,7 @@ public class RatingsEntryLocalServiceImpl
 			userId, classNameId, classPK);
 
 		if (entry != null) {
-			oldScore = entry.getScore();
+			double oldScore = entry.getScore();
 
 			entry.setScore(score);
 
@@ -170,8 +210,12 @@ public class RatingsEntryLocalServiceImpl
 
 			// Stats
 
-			RatingsStats stats = ratingsStatsLocalService.getStats(
-				className, classPK);
+			RatingsStats stats = ratingsStatsPersistence.fetchByC_C(
+				classNameId, classPK);
+
+			if (stats == null) {
+				stats = ratingsStatsLocalService.addStats(classNameId, classPK);
+			}
 
 			stats.setTotalScore(stats.getTotalScore() - oldScore + score);
 			stats.setAverageScore(
@@ -180,8 +224,6 @@ public class RatingsEntryLocalServiceImpl
 			ratingsStatsPersistence.update(stats);
 		}
 		else {
-			newEntry = true;
-
 			User user = userPersistence.findByPrimaryKey(userId);
 
 			long entryId = counterLocalService.increment();
@@ -199,8 +241,12 @@ public class RatingsEntryLocalServiceImpl
 
 			// Stats
 
-			RatingsStats stats = ratingsStatsLocalService.getStats(
-				className, classPK);
+			RatingsStats stats = ratingsStatsPersistence.fetchByC_C(
+				classNameId, classPK);
+
+			if (stats == null) {
+				stats = ratingsStatsLocalService.addStats(classNameId, classPK);
+			}
 
 			stats.setTotalEntries(stats.getTotalEntries() + 1);
 			stats.setTotalScore(stats.getTotalScore() + score);
@@ -210,47 +256,14 @@ public class RatingsEntryLocalServiceImpl
 			ratingsStatsPersistence.update(stats);
 		}
 
-		// Blogs entry
-
-		if (className.equals(BlogsEntry.class.getName())) {
-			BlogsEntry blogsEntry = blogsEntryPersistence.findByPrimaryKey(
-				classPK);
-
-			BlogsStatsUser blogsStatsUser =
-				blogsStatsUserLocalService.getStatsUser(
-					blogsEntry.getGroupId(), blogsEntry.getUserId());
-
-			int ratingsTotalEntries = blogsStatsUser.getRatingsTotalEntries();
-			double ratingsTotalScore = blogsStatsUser.getRatingsTotalScore();
-			double ratingsAverageScore =
-				blogsStatsUser.getRatingsAverageScore();
-
-			if (newEntry) {
-				ratingsTotalEntries++;
-				ratingsTotalScore += score;
-			}
-			else {
-				ratingsTotalScore = ratingsTotalScore - oldScore + score;
-			}
-
-			ratingsAverageScore = ratingsTotalScore / ratingsTotalEntries;
-
-			blogsStatsUser.setRatingsTotalEntries(ratingsTotalEntries);
-			blogsStatsUser.setRatingsTotalScore(ratingsTotalScore);
-			blogsStatsUser.setRatingsAverageScore(ratingsAverageScore);
-
-			blogsStatsUserPersistence.update(blogsStatsUser);
-		}
-
 		// Social
 
 		AssetEntry assetEntry = assetEntryLocalService.fetchEntry(
 			className, classPK);
 
 		if (assetEntry != null) {
-			JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
-
-			extraDataJSONObject.put("title", assetEntry.getTitle());
+			JSONObject extraDataJSONObject = JSONUtil.put(
+				"title", assetEntry.getTitle());
 
 			SocialActivityManagerUtil.addActivity(
 				userId, assetEntry, SocialActivityConstants.TYPE_ADD_VOTE,

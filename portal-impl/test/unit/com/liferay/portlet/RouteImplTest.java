@@ -17,6 +17,7 @@ package com.liferay.portlet;
 import com.liferay.portal.kernel.portlet.Route;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.util.HttpImpl;
+import com.liferay.portlet.internal.RouteImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ import org.junit.Test;
 public class RouteImplTest {
 
 	@Test
-	public void testNonMatchingRoute() {
+	public void testNonmatchingRoute() {
 		HttpUtil httpUtil = new HttpUtil();
 
 		httpUtil.setHttp(new HttpImpl());
@@ -47,6 +48,7 @@ public class RouteImplTest {
 		String url = route.parametersToUrl(parameters);
 
 		Assert.assertNull(url);
+
 		Assert.assertEquals(originalParameters, parameters);
 	}
 

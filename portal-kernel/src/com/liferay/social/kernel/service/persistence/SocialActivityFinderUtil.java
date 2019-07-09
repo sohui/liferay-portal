@@ -14,10 +14,9 @@
 
 package com.liferay.social.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -25,6 +24,7 @@ import com.liferay.portal.kernel.util.ReferenceRegistry;
  */
 @ProviderType
 public class SocialActivityFinderUtil {
+
 	public static int countByGroupId(long groupId) {
 		return getFinder().countByGroupId(groupId);
 	}
@@ -61,57 +61,64 @@ public class SocialActivityFinderUtil {
 		return getFinder().countByUserOrganizations(userId);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByGroupId(
-		long groupId, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByGroupId(long groupId, int start, int end) {
+
 		return getFinder().findByGroupId(groupId, start, end);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByGroupUsers(
-		long groupId, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByGroupUsers(long groupId, int start, int end) {
+
 		return getFinder().findByGroupUsers(groupId, start, end);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByOrganizationId(
-		long organizationId, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByOrganizationId(long organizationId, int start, int end) {
+
 		return getFinder().findByOrganizationId(organizationId, start, end);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByOrganizationUsers(
-		long organizationId, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByOrganizationUsers(long organizationId, int start, int end) {
+
 		return getFinder().findByOrganizationUsers(organizationId, start, end);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByRelation(
-		long userId, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByRelation(long userId, int start, int end) {
+
 		return getFinder().findByRelation(userId, start, end);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByRelationType(
-		long userId, int type, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByRelationType(long userId, int type, int start, int end) {
+
 		return getFinder().findByRelationType(userId, type, start, end);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByUserGroups(
-		long userId, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByUserGroups(long userId, int start, int end) {
+
 		return getFinder().findByUserGroups(userId, start, end);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByUserGroupsAndOrganizations(
-		long userId, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByUserGroupsAndOrganizations(long userId, int start, int end) {
+
 		return getFinder().findByUserGroupsAndOrganizations(userId, start, end);
 	}
 
-	public static java.util.List<com.liferay.social.kernel.model.SocialActivity> findByUserOrganizations(
-		long userId, int start, int end) {
+	public static java.util.List<com.liferay.social.kernel.model.SocialActivity>
+		findByUserOrganizations(long userId, int start, int end) {
+
 		return getFinder().findByUserOrganizations(userId, start, end);
 	}
 
 	public static SocialActivityFinder getFinder() {
 		if (_finder == null) {
-			_finder = (SocialActivityFinder)PortalBeanLocatorUtil.locate(SocialActivityFinder.class.getName());
-
-			ReferenceRegistry.registerReference(SocialActivityFinderUtil.class,
-				"_finder");
+			_finder = (SocialActivityFinder)PortalBeanLocatorUtil.locate(
+				SocialActivityFinder.class.getName());
 		}
 
 		return _finder;
@@ -119,10 +126,8 @@ public class SocialActivityFinderUtil {
 
 	public void setFinder(SocialActivityFinder finder) {
 		_finder = finder;
-
-		ReferenceRegistry.registerReference(SocialActivityFinderUtil.class,
-			"_finder");
 	}
 
 	private static SocialActivityFinder _finder;
+
 }

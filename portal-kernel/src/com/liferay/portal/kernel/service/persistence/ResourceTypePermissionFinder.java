@@ -14,17 +14,23 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public interface ResourceTypePermissionFinder {
-	public java.util.List<com.liferay.portal.kernel.model.ResourceTypePermission> findByEitherScopeC_G_N(
-		long companyId, long groupId, java.lang.String name);
 
-	public java.util.List<com.liferay.portal.kernel.model.ResourceTypePermission> findByGroupScopeC_N_R(
-		long companyId, java.lang.String name, long roleId);
+	public java.util.List
+		<com.liferay.portal.kernel.model.ResourceTypePermission>
+			findByEitherScopeC_G_N(long companyId, long groupId, String name);
+
+	public java.util.List
+		<com.liferay.portal.kernel.model.ResourceTypePermission>
+			findByGroupScopeC_N_R(long companyId, String name, long roleId);
+
 }

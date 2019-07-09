@@ -62,7 +62,10 @@ public class FreeMarkerPortlet extends MVCPortlet {
 		String servletContextName = portletContext.getPortletContextName();
 
 		String resourcePath = servletContextName.concat(
-			TemplateConstants.SERVLET_SEPARATOR).concat(path);
+			TemplateConstants.SERVLET_SEPARATOR
+		).concat(
+			path
+		);
 
 		boolean resourceExists = false;
 
@@ -99,6 +102,9 @@ public class FreeMarkerPortlet extends MVCPortlet {
 					"userInfo",
 					portletRequest.getAttribute(PortletRequest.USER_INFO));
 
+				template.prepare(
+					PortalUtil.getHttpServletRequest(portletRequest));
+
 				Writer writer = null;
 
 				if (portletResponse instanceof MimeResponse) {
@@ -118,10 +124,10 @@ public class FreeMarkerPortlet extends MVCPortlet {
 			}
 		}
 
-		if (clearRequestParameters) {
-			if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
-				portletResponse.setProperty("clear-request-parameters", "true");
-			}
+		if (clearRequestParameters &&
+			lifecycle.equals(PortletRequest.RENDER_PHASE)) {
+
+			portletResponse.setProperty("clear-request-parameters", "true");
 		}
 	}
 

@@ -16,18 +16,22 @@ package com.liferay.portal.template;
 
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateException;
+import com.liferay.portal.kernel.template.TemplateResource;
 
 import java.io.Writer;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Tina Tian
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public class RestrictedTemplate implements Template {
 
 	public RestrictedTemplate(
@@ -53,11 +57,6 @@ public class RestrictedTemplate implements Template {
 	}
 
 	@Override
-	public void doProcessTemplate(Writer writer) throws Exception {
-		_template.doProcessTemplate(writer);
-	}
-
-	@Override
 	public Set<Entry<String, Object>> entrySet() {
 		return _template.entrySet();
 	}
@@ -65,16 +64,6 @@ public class RestrictedTemplate implements Template {
 	@Override
 	public Object get(Object key) {
 		return _template.get(key);
-	}
-
-	@Override
-	public Object get(String key) {
-		return _template.get(key);
-	}
-
-	@Override
-	public String[] getKeys() {
-		return _template.getKeys();
 	}
 
 	@Override
@@ -88,13 +77,22 @@ public class RestrictedTemplate implements Template {
 	}
 
 	@Override
-	public void prepare(HttpServletRequest request) {
-		_template.prepare(request);
+	public void prepare(HttpServletRequest httpServletRequest) {
+		_template.prepare(httpServletRequest);
 	}
 
 	@Override
 	public void processTemplate(Writer writer) throws TemplateException {
 		_template.processTemplate(writer);
+	}
+
+	@Override
+	public void processTemplate(
+			Writer writer,
+			Supplier<TemplateResource> errorTemplateResourceSupplier)
+		throws TemplateException {
+
+		_template.processTemplate(writer, errorTemplateResourceSupplier);
 	}
 
 	@Override

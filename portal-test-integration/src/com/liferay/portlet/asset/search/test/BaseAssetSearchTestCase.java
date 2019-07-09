@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.security.RandomUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.test.IdempotentRetryAssert;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -60,8 +59,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ArrayUtils;
 
@@ -128,8 +125,10 @@ public abstract class BaseAssetSearchTestCase {
 
 		_travelCategoryId = travelCategory.getCategoryId();
 
-		_assetCategoryIds1 =
-			new long[] {_healthCategoryId, _sportCategoryId, _travelCategoryId};
+		_assetCategoryIds1 = new long[] {
+			_healthCategoryId, _sportCategoryId, _travelCategoryId
+		};
+
 		_assetCategoryIds2 = new long[] {
 			_fashionCategoryId, _foodCategoryId, _healthCategoryId,
 			_sportCategoryId
@@ -137,8 +136,7 @@ public abstract class BaseAssetSearchTestCase {
 
 		_group2 = GroupTestUtil.addGroup();
 
-		long[] groupIds =
-			new long[] {_group1.getGroupId(), _group2.getGroupId()};
+		long[] groupIds = {_group1.getGroupId(), _group2.getGroupId()};
 
 		for (long groupId : groupIds) {
 			serviceContext = ServiceContextTestUtil.getServiceContext(groupId);
@@ -163,8 +161,9 @@ public abstract class BaseAssetSearchTestCase {
 				serviceContext);
 		}
 
-		_assetTagsNames1 =
-			new String[] {"liferay", "architecture", "modularity", "osgi"};
+		_assetTagsNames1 = new String[] {
+			"liferay", "architecture", "modularity", "osgi"
+		};
 		_assetTagsNames2 = new String[] {"liferay", "architecture", "services"};
 	}
 
@@ -194,8 +193,9 @@ public abstract class BaseAssetSearchTestCase {
 
 	@Test
 	public void testAllAssetCategories3() throws Exception {
-		long[] allCategoryIds =
-			{_healthCategoryId, _sportCategoryId, _foodCategoryId};
+		long[] allCategoryIds = {
+			_healthCategoryId, _sportCategoryId, _foodCategoryId
+		};
 
 		AssetEntryQuery assetEntryQuery =
 			AssetEntryQueryTestUtil.createAssetEntryQuery(
@@ -346,8 +346,9 @@ public abstract class BaseAssetSearchTestCase {
 
 	@Test
 	public void testAnyAssetCategories3() throws Exception {
-		long[] anyCategoryIds =
-			{_healthCategoryId, _sportCategoryId, _foodCategoryId};
+		long[] anyCategoryIds = {
+			_healthCategoryId, _sportCategoryId, _foodCategoryId
+		};
 
 		AssetEntryQuery assetEntryQuery =
 			AssetEntryQueryTestUtil.createAssetEntryQuery(
@@ -419,8 +420,9 @@ public abstract class BaseAssetSearchTestCase {
 
 	@Test
 	public void testAssetCategoryAllAndAny() throws Exception {
-		long[] allCategoryIds =
-			{_healthCategoryId, _sportCategoryId, _travelCategoryId};
+		long[] allCategoryIds = {
+			_healthCategoryId, _sportCategoryId, _travelCategoryId
+		};
 		long[] anyCategoryIds = {_healthCategoryId};
 
 		AssetEntryQuery assetEntryQuery =
@@ -434,8 +436,9 @@ public abstract class BaseAssetSearchTestCase {
 	@Test
 	public void testAssetCategoryNotAllAndAll() throws Exception {
 		long[] notAllCategoryIds = {_fashionCategoryId, _foodCategoryId};
-		long[] allCategoryIds =
-			{_healthCategoryId, _sportCategoryId, _travelCategoryId};
+		long[] allCategoryIds = {
+			_healthCategoryId, _sportCategoryId, _travelCategoryId
+		};
 
 		AssetEntryQuery assetEntryQuery =
 			AssetEntryQueryTestUtil.createAssetEntryQuery(
@@ -487,8 +490,9 @@ public abstract class BaseAssetSearchTestCase {
 	@Test
 	public void testAssetCategoryNotAnyAndAny() throws Exception {
 		long[] notAnyCategoryIds = {_fashionCategoryId, _foodCategoryId};
-		long[] anyCategoryIds =
-			{_healthCategoryId, _sportCategoryId, _travelCategoryId};
+		long[] anyCategoryIds = {
+			_healthCategoryId, _sportCategoryId, _travelCategoryId
+		};
 
 		AssetEntryQuery assetEntryQuery =
 			AssetEntryQueryTestUtil.createAssetEntryQuery(
@@ -695,8 +699,9 @@ public abstract class BaseAssetSearchTestCase {
 
 	@Test
 	public void testNotAllAssetCategories4() throws Exception {
-		long[] notAllCategoryIds =
-			{_fashionCategoryId, _foodCategoryId, _travelCategoryId};
+		long[] notAllCategoryIds = {
+			_fashionCategoryId, _foodCategoryId, _travelCategoryId
+		};
 
 		AssetEntryQuery assetEntryQuery =
 			AssetEntryQueryTestUtil.createAssetEntryQuery(
@@ -744,8 +749,9 @@ public abstract class BaseAssetSearchTestCase {
 
 	@Test
 	public void testNotAllAssetTags4() throws Exception {
-		String[] notAllTagNames =
-			{"liferay", "architecture", "services", "osgi"};
+		String[] notAllTagNames = {
+			"liferay", "architecture", "services", "osgi"
+		};
 
 		AssetEntryQuery assetEntryQuery =
 			AssetEntryQueryTestUtil.createAssetEntryQuery(
@@ -796,8 +802,9 @@ public abstract class BaseAssetSearchTestCase {
 
 	@Test
 	public void testNotAllAssetTagsMultipleGroups4() throws Exception {
-		String[] notAllTagNames =
-			{"liferay", "architecture", "services", "osgi"};
+		String[] notAllTagNames = {
+			"liferay", "architecture", "services", "osgi"
+		};
 
 		AssetEntryQuery assetEntryQuery =
 			AssetEntryQueryTestUtil.createAssetEntryQuery(
@@ -834,8 +841,9 @@ public abstract class BaseAssetSearchTestCase {
 
 	@Test
 	public void testNotAnyAssetCategories3() throws Exception {
-		long[] notAnyCategoryIds =
-			{_fashionCategoryId, _foodCategoryId, _travelCategoryId};
+		long[] notAnyCategoryIds = {
+			_fashionCategoryId, _foodCategoryId, _travelCategoryId
+		};
 
 		AssetEntryQuery assetEntryQuery =
 			AssetEntryQueryTestUtil.createAssetEntryQuery(
@@ -1174,21 +1182,10 @@ public abstract class BaseAssetSearchTestCase {
 			final SearchContext searchContext, final int start, final int end)
 		throws Exception {
 
-		IdempotentRetryAssert.retryAssert(
-			10, TimeUnit.SECONDS, 1, TimeUnit.SECONDS,
-			new Callable<Void>() {
+		int actualCount = searchCount(
+			assetEntryQuery, searchContext, start, end);
 
-				@Override
-				public Void call() throws Exception {
-					int actualCount = searchCount(
-						assetEntryQuery, searchContext, start, end);
-
-					Assert.assertEquals(expectedCount, actualCount);
-
-					return null;
-				}
-
-			});
+		Assert.assertEquals(expectedCount, actualCount);
 	}
 
 	protected String[] format(Date[] dates, DateFormat dateFormat) {
@@ -1449,24 +1446,12 @@ public abstract class BaseAssetSearchTestCase {
 		assetEntryQuery.setOrderByCol1("createDate");
 		assetEntryQuery.setOrderByType1(orderByType);
 
-		IdempotentRetryAssert.retryAssert(
-			10, TimeUnit.SECONDS,
-			new Callable<Void>() {
+		List<AssetEntry> assetEntries = search(assetEntryQuery, searchContext);
 
-				@Override
-				public Void call() throws Exception {
-					List<AssetEntry> assetEntries = search(
-						assetEntryQuery, searchContext);
-
-					Assert.assertEquals(
-						ArrayUtils.toString(orderedTitles),
-						ArrayUtils.toString(
-							getTitles(assetEntries, LocaleUtil.getDefault())));
-
-					return null;
-				}
-
-			});
+		Assert.assertEquals(
+			ArrayUtils.toString(orderedTitles),
+			ArrayUtils.toString(
+				getTitles(assetEntries, LocaleUtil.getDefault())));
 	}
 
 	protected void testOrderByExpirationDate(
@@ -1499,27 +1484,14 @@ public abstract class BaseAssetSearchTestCase {
 		final DateFormat dateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
 			PropsValues.INDEX_DATE_FORMAT_PATTERN);
 
-		IdempotentRetryAssert.retryAssert(
-			10, TimeUnit.SECONDS,
-			new Callable<Void>() {
+		List<AssetEntry> assetEntries = search(assetEntryQuery, searchContext);
 
-				@Override
-				public Void call() throws Exception {
-					List<AssetEntry> assetEntries = search(
-						assetEntryQuery, searchContext);
-
-					Assert.assertEquals(
-						ArrayUtils.toString(
-							format(expirationDates, dateFormat)),
-						ArrayUtils.toString(
-							format(
-								getExpirationDates(assetEntries, orderByType),
-								dateFormat)));
-
-					return null;
-				}
-
-			});
+		Assert.assertEquals(
+			ArrayUtils.toString(format(expirationDates, dateFormat)),
+			ArrayUtils.toString(
+				format(
+					getExpirationDates(assetEntries, orderByType),
+					dateFormat)));
 	}
 
 	protected void testOrderByTitle(
@@ -1549,25 +1521,12 @@ public abstract class BaseAssetSearchTestCase {
 		for (final Locale locale : locales) {
 			searchContext.setLocale(locale);
 
-			IdempotentRetryAssert.retryAssert(
-				10, TimeUnit.SECONDS,
-				new Callable<Void>() {
+			List<AssetEntry> assetEntries = search(
+				assetEntryQuery, searchContext);
 
-					@Override
-					public Void call() throws Exception {
-						List<AssetEntry> assetEntries = search(
-							assetEntryQuery, searchContext);
-
-						Assert.assertEquals(
-							ArrayUtils.toString(
-								getOrderedTitles(orderedTitleMaps, locale)),
-							ArrayUtils.toString(
-								getTitles(assetEntries, locale)));
-
-						return null;
-					}
-
-				});
+			Assert.assertEquals(
+				ArrayUtils.toString(getOrderedTitles(orderedTitleMaps, locale)),
+				ArrayUtils.toString(getTitles(assetEntries, locale)));
 		}
 	}
 

@@ -9,23 +9,13 @@
 </thead>
 <tbody>
 <tr>
-	<td>SELECT_WEB_CONTENT</td>
-	<td>//span[contains(@class,'lfr-icon-action')]/a[contains(.,'Select Web Content')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ADD_WEB_CONTENT</td>
-	<td>//*[@data-qa-id='addButton']//a[contains(@id,'JournalContent')]</td>
+	<td>ARTICLE_ELLIPSIS_ICON</td>
+	<td>//div[contains(.,'${key_webContentTitle}')][contains(@class,'portlet-content')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ADD_STRUCTURED_WEB_CONTENT</td>
 	<td>//span[contains(@class,'taglib-text-icon') and contains(.,'${key_structureName}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>RELATED_ASSETS</td>
-	<td>//div[contains(@class,'asset-links')]//a[contains(.,'${key_assetTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -36,12 +26,7 @@
 <!--DOCUMENT_CONVERSION-->
 <tr>
 	<td>DOCUMENT_CONVERSION_TYPE</td>
-	<td>//span[contains(@class,'taglib-text') and contains (.,'${key_fileType}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DOCUMENT_CONVERSION_TYPE_ICON</td>
-	<td>//span[contains(@class,'taglib-text') and contains (.,'${key_fileType}')]/../i</td>
+	<td>//a[contains (.,'${key_fileType}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -51,13 +36,23 @@
 </tr>
 <!--WEB_CONTENT-->
 <tr>
-	<td>WEB_CONTENT_CONTENT</td>
-	<td>//div[@class='journal-content-article']</td>
+	<td>WEB_CONTENT_TITLE</td>
+	<td>//section[contains(@id,'journal_content_web')]//h2[contains(@class,'title')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>WEB_CONTENT_CONTENT_IMAGE</td>
-	<td>//div[@class='journal-content-article']/img</td>
+	<td>WEB_CONTENT_CONTENT</td>
+	<td>//div[contains(@class,'journal-content-article')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WEB_CONTENT_CONTENT_2</td>
+	<td>xPath=(//div[contains(@class,'journal-content-article')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WEB_CONTENT_CONTENT_3</td>
+	<td>xPath=(//div[contains(@class,'journal-content-article')])[3]</td>
 	<td></td>
 </tr>
 <tr>
@@ -67,12 +62,17 @@
 </tr>
 <tr>
 	<td>WEB_CONTENT_CONTENT_IMAGE_ON_LIVE</td>
-	<td>//div[@class='journal-content-article']/p/img</td>
+	<td>//div[contains(@class,'journal-content-article')]//p//img</td>
 	<td></td>
 </tr>
 <tr>
-	<td>WEB_CONTENT_LINK_TO_PAGE</td>
-	<td>//div[@class='journal-content-article']/a</td>
+	<td>WEB_CONTENT_LINK</td>
+	<td>//div[contains(@class,'journal-content-article')]//p/a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WEB_CONTENT_TEXT_LINK_URL</td>
+	<td>//div[contains(@class,'journal-content-article')]//a[contains(.,'${key_contentText}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -82,12 +82,27 @@
 </tr>
 <tr>
 	<td>WEB_CONTENT_IMAGE_PNG</td>
-	<td>portal/screenshots/ddm/liferay_logo_image.png</td>
+	<td>//img[contains(@src,'Document_2.jpeg')]</td>
 	<td></td>
 </tr>
 <tr>
+	<td>WEB_CONTENT_INLINE_IMAGE</td>
+	<td>//img[contains(@src,'Document')]</td>
 	<td></td>
+</tr>
+<tr>
+	<td>WEB_CONTENT_VIDEO</td>
+	<td>//div[contains(@class,'video-content')]/video[@class='video-node']</td>
 	<td></td>
+</tr>
+<tr>
+	<td>WEB_CONTENT_TRANSLATION_DROPDOWN</td>
+	<td>//button[contains(@class,'dropdown-toggle')][@title='Actions']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WEB_CONTENT_TRANSLATION_DROPDOWN_MENU_ITEM</td>
+	<td>//a[contains(.,'${key_locale}')]</td>
 	<td></td>
 </tr>
 </tbody>

@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.search.generic;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.BaseQueryImpl;
 import com.liferay.portal.kernel.search.query.QueryVisitor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,7 +48,7 @@ public class MoreLikeThisQuery extends BaseQueryImpl {
 	}
 
 	public void addDocumentUIDs(String... documentUIDs) {
-		_documentUIDs.addAll(Arrays.asList(documentUIDs));
+		Collections.addAll(_documentUIDs, documentUIDs);
 	}
 
 	public void addField(String field) {
@@ -60,7 +60,7 @@ public class MoreLikeThisQuery extends BaseQueryImpl {
 	}
 
 	public void addFields(String... fields) {
-		_fields.addAll(Arrays.asList(fields));
+		Collections.addAll(_fields, fields);
 	}
 
 	public void addStopWord(String stopWord) {
@@ -72,7 +72,7 @@ public class MoreLikeThisQuery extends BaseQueryImpl {
 	}
 
 	public void addStopWords(String... stopWords) {
-		_stopWords.addAll(Arrays.asList(stopWords));
+		Collections.addAll(_stopWords, stopWords);
 	}
 
 	public String getAnalyzer() {
@@ -192,7 +192,54 @@ public class MoreLikeThisQuery extends BaseQueryImpl {
 	}
 
 	public void setType(String type) {
-		this._type = type;
+		_type = type;
+	}
+
+	@Override
+	public String toString() {
+		StringBundler sb = new StringBundler(35);
+
+		sb.append("{analyzer=");
+		sb.append(_analyzer);
+		sb.append(", className=");
+
+		Class<?> clazz = getClass();
+
+		sb.append(clazz.getSimpleName());
+
+		sb.append(", companyId=");
+		sb.append(_companyId);
+		sb.append(", documentUIDs=");
+		sb.append(_documentUIDs);
+		sb.append(", fields=");
+		sb.append(_fields);
+		sb.append(", includeInput=");
+		sb.append(_includeInput);
+		sb.append(", likeText=");
+		sb.append(_likeText);
+		sb.append(", maxDocFrequency=");
+		sb.append(_maxDocFrequency);
+		sb.append(", maxQueryTerms=");
+		sb.append(_maxQueryTerms);
+		sb.append(", maxWordLength=");
+		sb.append(_maxWordLength);
+		sb.append(", minDocFrequency=");
+		sb.append(_minDocFrequency);
+		sb.append(", minShouldMatch=");
+		sb.append(_minShouldMatch);
+		sb.append(", minTermFrequency=");
+		sb.append(_minTermFrequency);
+		sb.append(", minWordLength=");
+		sb.append(_minWordLength);
+		sb.append(", stopWords=");
+		sb.append(_stopWords);
+		sb.append(", termBoost=");
+		sb.append(_termBoost);
+		sb.append(", type=");
+		sb.append(_type);
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	private String _analyzer;

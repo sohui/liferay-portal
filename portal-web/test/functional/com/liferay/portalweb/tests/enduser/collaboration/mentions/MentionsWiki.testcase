@@ -1,148 +1,142 @@
-<definition component-name="portal-collaboration">
-	<property name="portal.release" value="true" />
-	<property name="custom.properties" value="default.layout.template.id=1_column" />
-	<property name="testray.main.component.name" value="Mentions" />
+@component-name = "portal-collaboration"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property custom.properties = "default.layout.template.id=1_column";
+	property testray.component.names = "Comment,Mentions,Wiki";
+	property testray.main.component.name = "Mentions";
 
-		<execute macro="User#firstLoginPG" />
+	setUp {
+		TestCase.setUpPortalInstance();
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
+		User.firstLoginPG();
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Wiki" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
+		SitePages.addPublicPage(
+			pageName = "Wiki Page",
+			sitePageType = "Widget Page");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "Wiki Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" property-value="email.address.4" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		Navigator.gotoPage(pageName = "Wiki Page");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		Portlet.addPG(portletName = "Wiki");
 
-		<execute macro="User#editPasswordCP">
-			<var name="password" value="password" />
-			<var name="userEmailAddress" property-value="email.address.4" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		Navigator.gotoPage(pageName = "Wiki Page");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		JSONUser.addUser(
+			userEmailAddress = PropsUtil.get("email.address.4"),
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-		<execute macro="User#assignRegularRoleCP">
-			<var name="roleName" value="Administrator" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Server Administration" />
-		</execute>
+		User.editPasswordCP(
+			password = "password",
+			userEmailAddress = PropsUtil.get("email.address.4"),
+			userScreenName = "usersn");
 
-		<execute macro="ServerAdministration#configureMailServerSettings">
-			<var name="userName" property-value="email.address.1" />
-			<var name="userPassword" property-value="email.password.1" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
+		User.assignRegularRoleCP(
+			roleTitle = "Administrator",
+			userScreenName = "usersn");
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Virtual Instances" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Server Administration");
 
-		<execute macro="PortalInstances#editCP">
-			<var name="mailDomain" value="gmail.com" />
-			<var name="virtualHost" value="localhost" />
-		</execute>
+		ServerAdministration.configureMailServerSettings(
+			userName = PropsUtil.get("email.address.1"),
+			userPassword = PropsUtil.get("email.password.1"));
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
-	</set-up>
+		Navigator.gotoPage(pageName = "Wiki Page");
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Virtual Instances");
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="WikiPage#tearDownCP" />
+		PortalInstances.editCP(
+			mailDomain = "gmail.com",
+			virtualHost = "localhost");
 
-				<execute macro="User#tearDownCP" />
+		Navigator.gotoPage(pageName = "Wiki Page");
+	}
 
-				<execute macro="Page#tearDownPG" />
-			</else>
-		</if>
-	</tear-down>
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-	<command name="ViewWikiCommentMentionedUser" priority="5">
-		<execute macro="Navigator#openURL" />
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			WikiPage.tearDownCP();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Wiki" />
-		</execute>
+			User.tearDownCP();
 
-		<execute macro="WikiNavigator#gotoNode">
-			<var name="wikiNodeName" value="Main" />
-		</execute>
+			Page.tearDownCP();
+		}
+	}
 
-		<execute macro="WikiNavigator#gotoAllPagesCP" />
+	@priority = "5"
+	test ViewWikiCommentMentionedUser {
+		property test.name.skip.portal.instance = "MentionsWiki#ViewWikiCommentMentionedUser";
 
-		<execute function="Click" locator1="Button#PLUS" />
+		Navigator.openURL();
 
-		<execute macro="WikiEntry#addPageTitle">
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Wiki");
 
-		<execute macro="WikiEntry#addPageContent">
-			<var name="wikiPageContent" value="Wiki Page Content" />
-		</execute>
+		WikiNavigator.gotoNode(wikiNodeName = "Main");
 
-		<execute macro="PortletEntry#publish" />
+		WikiNavigator.gotoAllPagesCP();
 
-		<execute macro="Navigator#openURL" />
+		LexiconEntry.gotoAdd();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
+		WikiEntry.addPageTitle(wikiPageTitle = "Wiki Page Title");
 
-		<execute macro="WikiNavigator#gotoAllPagesPG" />
+		WikiEntry.addPageContent(wikiPageContent = "Wiki Page Content");
 
-		<execute macro="WikiNavigator#gotoEntryViaPGTable">
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute function="Pause" locator1="30000" />
+		Navigator.openURL();
 
-		<execute macro="Mentions#addMentionViaComments">
-			<var name="entryComment" value="Comment mentioning" />
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
+		Navigator.gotoPage(pageName = "Wiki Page");
 
-		<execute macro="Mentions#viewCommentMentionTagLink">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-	</command>
-</definition>
+		WikiNavigator.gotoAllPagesPG();
+
+		WikiNavigator.gotoEntryViaPGTable(wikiPageTitle = "Wiki Page Title");
+
+		Pause(locator1 = "30000");
+
+		Mentions.addMentionViaComments(
+			entryComment = "Comment mentioning",
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+
+		Mentions.viewCommentMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+	}
+
+}

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.convert;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.util.MaintenanceUtil;
@@ -48,8 +49,9 @@ public abstract class BaseConvertProcess implements ConvertProcess {
 				Class<?> clazz = getClass();
 
 				_log.info(
-					"Finished conversion for " + clazz.getName() + " in " +
-						stopWatch.getTime() + " ms");
+					StringBundler.concat(
+						"Finished conversion for ", clazz.getName(), " in ",
+						stopWatch.getTime(), " ms"));
 			}
 		}
 		catch (Exception e) {
@@ -58,7 +60,9 @@ public abstract class BaseConvertProcess implements ConvertProcess {
 		finally {
 			setParameterValues(null);
 
-			MaintenanceUtil.cancel();
+			if (MaintenanceUtil.isMaintaining()) {
+				MaintenanceUtil.cancel();
+			}
 		}
 	}
 

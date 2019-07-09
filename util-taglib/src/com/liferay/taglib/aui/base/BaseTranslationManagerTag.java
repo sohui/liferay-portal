@@ -49,6 +49,10 @@ public abstract class BaseTranslationManagerTag extends com.liferay.taglib.util.
 		return _editingLanguageId;
 	}
 
+	public long getGroupId() {
+		return _groupId;
+	}
+
 	public java.lang.String getId() {
 		return _id;
 	}
@@ -63,44 +67,34 @@ public abstract class BaseTranslationManagerTag extends com.liferay.taglib.util.
 
 	public void setAvailableLocales(java.util.Locale[] availableLocales) {
 		_availableLocales = availableLocales;
-
-		setScopedAttribute("availableLocales", availableLocales);
 	}
 
 	public void setChangeableDefaultLanguage(boolean changeableDefaultLanguage) {
 		_changeableDefaultLanguage = changeableDefaultLanguage;
-
-		setScopedAttribute("changeableDefaultLanguage", changeableDefaultLanguage);
 	}
 
 	public void setDefaultLanguageId(java.lang.String defaultLanguageId) {
 		_defaultLanguageId = defaultLanguageId;
-
-		setScopedAttribute("defaultLanguageId", defaultLanguageId);
 	}
 
 	public void setEditingLanguageId(java.lang.String editingLanguageId) {
 		_editingLanguageId = editingLanguageId;
+	}
 
-		setScopedAttribute("editingLanguageId", editingLanguageId);
+	public void setGroupId(long groupId) {
+		_groupId = groupId;
 	}
 
 	public void setId(java.lang.String id) {
 		_id = id;
-
-		setScopedAttribute("id", id);
 	}
 
 	public void setInitialize(boolean initialize) {
 		_initialize = initialize;
-
-		setScopedAttribute("initialize", initialize);
 	}
 
 	public void setReadOnly(boolean readOnly) {
 		_readOnly = readOnly;
-
-		setScopedAttribute("readOnly", readOnly);
 	}
 
 	@Override
@@ -111,6 +105,7 @@ public abstract class BaseTranslationManagerTag extends com.liferay.taglib.util.
 		_changeableDefaultLanguage = true;
 		_defaultLanguageId = null;
 		_editingLanguageId = null;
+		_groupId = 0;
 		_id = null;
 		_initialize = true;
 		_readOnly = false;
@@ -127,6 +122,7 @@ public abstract class BaseTranslationManagerTag extends com.liferay.taglib.util.
 		setNamespacedAttribute(request, "changeableDefaultLanguage", _changeableDefaultLanguage);
 		setNamespacedAttribute(request, "defaultLanguageId", _defaultLanguageId);
 		setNamespacedAttribute(request, "editingLanguageId", _editingLanguageId);
+		setNamespacedAttribute(request, "groupId", _groupId);
 		setNamespacedAttribute(request, "id", _id);
 		setNamespacedAttribute(request, "initialize", _initialize);
 		setNamespacedAttribute(request, "readOnly", _readOnly);
@@ -141,6 +137,7 @@ public abstract class BaseTranslationManagerTag extends com.liferay.taglib.util.
 	private boolean _changeableDefaultLanguage = true;
 	private java.lang.String _defaultLanguageId = null;
 	private java.lang.String _editingLanguageId = null;
+	private long _groupId = 0;
 	private java.lang.String _id = null;
 	private boolean _initialize = true;
 	private boolean _readOnly = false;

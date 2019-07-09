@@ -20,32 +20,34 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of 6.2.0, moved to {@link
+ * @deprecated As of Newton (6.2.x), moved to {@link
  *             com.liferay.portal.kernel.servlet.DynamicServletRequest}
  */
 @Deprecated
 public class DynamicServletRequest
 	extends com.liferay.portal.kernel.servlet.DynamicServletRequest {
 
-	public DynamicServletRequest(HttpServletRequest request) {
-		super(request);
-	}
-
-	public DynamicServletRequest(HttpServletRequest request, boolean inherit) {
-		super(request, inherit);
+	public DynamicServletRequest(HttpServletRequest httpServletRequest) {
+		super(httpServletRequest);
 	}
 
 	public DynamicServletRequest(
-		HttpServletRequest request, Map<String, String[]> params) {
+		HttpServletRequest httpServletRequest, boolean inherit) {
 
-		super(request, params);
+		super(httpServletRequest, inherit);
 	}
 
 	public DynamicServletRequest(
-		HttpServletRequest request, Map<String, String[]> params,
+		HttpServletRequest httpServletRequest, Map<String, String[]> params) {
+
+		super(httpServletRequest, params);
+	}
+
+	public DynamicServletRequest(
+		HttpServletRequest httpServletRequest, Map<String, String[]> params,
 		boolean inherit) {
 
-		super(request, params, inherit);
+		super(httpServletRequest, params, inherit);
 	}
 
 }

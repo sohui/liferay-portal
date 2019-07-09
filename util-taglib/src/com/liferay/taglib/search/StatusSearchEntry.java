@@ -44,11 +44,11 @@ public class StatusSearchEntry extends TextSearchEntry {
 	}
 
 	public HttpServletRequest getRequest() {
-		return _request;
+		return _httpServletRequest;
 	}
 
 	public HttpServletResponse getResponse() {
-		return _response;
+		return _httpServletResponse;
 	}
 
 	public ServletContext getServletContext() {
@@ -73,16 +73,16 @@ public class StatusSearchEntry extends TextSearchEntry {
 
 	@Override
 	public void print(
-			Writer writer, HttpServletRequest request,
-			HttpServletResponse response)
+			Writer writer, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:search-container-column-status:status", _status);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:search-container-column-status:statusByUserId",
 			_statusByUserId);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:search-container-column-status:statusDate",
 			_statusDate);
 
@@ -91,15 +91,16 @@ public class StatusSearchEntry extends TextSearchEntry {
 				getServletContext(), _PAGE);
 
 		requestDispatcher.include(
-			request, new PipingServletResponse(response, writer));
+			httpServletRequest,
+			new PipingServletResponse(httpServletResponse, writer));
 	}
 
-	public void setRequest(HttpServletRequest request) {
-		_request = request;
+	public void setRequest(HttpServletRequest httpServletRequest) {
+		_httpServletRequest = httpServletRequest;
 	}
 
-	public void setResponse(HttpServletResponse response) {
-		_response = response;
+	public void setResponse(HttpServletResponse httpServletResponse) {
+		_httpServletResponse = httpServletResponse;
 	}
 
 	public void setServletContext(ServletContext servletContext) {
@@ -121,8 +122,8 @@ public class StatusSearchEntry extends TextSearchEntry {
 	private static final String _PAGE =
 		"/html/taglib/ui/search_container/status.jsp";
 
-	private HttpServletRequest _request;
-	private HttpServletResponse _response;
+	private HttpServletRequest _httpServletRequest;
+	private HttpServletResponse _httpServletResponse;
 	private ServletContext _servletContext;
 	private int _status;
 	private long _statusByUserId;

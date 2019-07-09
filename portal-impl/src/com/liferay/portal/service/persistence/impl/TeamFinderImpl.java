@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.SQLQuery;
@@ -24,8 +26,6 @@ import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.service.persistence.TeamFinder;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.impl.TeamImpl;
@@ -50,11 +50,11 @@ public class TeamFinderImpl extends TeamFinderBaseImpl implements TeamFinder {
 	public static final String FIND_BY_G_N_D =
 		TeamFinder.class.getName() + ".findByG_N_D";
 
-	public static final String JOIN_BY_USERS_TEAMS =
-		TeamFinder.class.getName() + ".joinByUsersTeams";
-
 	public static final String JOIN_BY_USERS_USER_GROUPS =
 		TeamFinder.class.getName() + ".joinByUsersUserGroups";
+
+	public static final String JOIN_BY_USERS_TEAMS =
+		TeamFinder.class.getName() + ".joinByUsersTeams";
 
 	@Override
 	public int countByG_N_D(
@@ -245,11 +245,10 @@ public class TeamFinderImpl extends TeamFinderBaseImpl implements TeamFinder {
 		StringBundler sb = new StringBundler(params.size());
 
 		for (Map.Entry<String, Object> entry : params.entrySet()) {
-			String key = entry.getKey();
 			Object value = entry.getValue();
 
 			if (Validator.isNotNull(value)) {
-				sb.append(getJoin(key));
+				sb.append(getJoin(entry.getKey()));
 			}
 		}
 
@@ -285,11 +284,10 @@ public class TeamFinderImpl extends TeamFinderBaseImpl implements TeamFinder {
 		StringBundler sb = new StringBundler(params.size());
 
 		for (Map.Entry<String, Object> entry : params.entrySet()) {
-			String key = entry.getKey();
 			Object value = entry.getValue();
 
 			if (Validator.isNotNull(value)) {
-				sb.append(getWhere(key));
+				sb.append(getWhere(entry.getKey()));
 			}
 		}
 
@@ -310,7 +308,9 @@ public class TeamFinderImpl extends TeamFinderBaseImpl implements TeamFinder {
 			int pos = join.indexOf("WHERE");
 
 			if (pos != -1) {
-				join = join.substring(pos + 5, join.length()).concat(" AND ");
+				join = join.substring(pos + 5);
+
+				join = join.concat(" AND ");
 			}
 			else {
 				join = StringPool.BLANK;

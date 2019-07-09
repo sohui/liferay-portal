@@ -14,6 +14,8 @@
 
 package com.liferay.portal.deploy.hot;
 
+import com.liferay.petra.io.StreamUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.deploy.hot.BaseHotDeployListener;
 import com.liferay.portal.kernel.deploy.hot.HotDeployEvent;
 import com.liferay.portal.kernel.deploy.hot.HotDeployException;
@@ -24,15 +26,12 @@ import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.FileTimestampUtil;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
-import com.liferay.portal.kernel.util.ClassLoaderUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.ThemeHelper;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.servlet.ServletContext;
 
@@ -80,9 +79,9 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 			_log.debug("Invoking deploy for " + servletContextName);
 		}
 
-		String[] xmls = new String[] {
-			HttpUtil.URLtoString(
-				servletContext.getResource(
+		String[] xmls = {
+			StreamUtil.toString(
+				servletContext.getResourceAsStream(
 					"/WEB-INF/liferay-look-and-feel.xml"))
 		};
 
@@ -90,11 +89,11 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 			return;
 		}
 
-		if (_log.isInfoEnabled()) {
-			_log.info("Registering themes for " + servletContextName);
+		if (_log.isDebugEnabled()) {
+			_log.debug("Registering themes for " + servletContextName);
 		}
 
-		FileTimestampUtil.reset();
+		FileTimestampUtil.reset(servletContext);
 
 		List<Theme> themes = ThemeLocalServiceUtil.init(
 			servletContextName, servletContext, null, true, xmls,
@@ -112,24 +111,9 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 			}
 			else {
 				_log.info(
-					themes.size() + " themes for " + servletContextName +
-						" are available for use");
-			}
-		}
-
-		if (_log.isWarnEnabled()) {
-			for (Theme theme : themes) {
-				if (!Objects.equals(
-						theme.getTemplateExtension(),
-						ThemeHelper.TEMPLATE_EXTENSION_VM)) {
-
-					continue;
-				}
-
-				_log.warn(
-					"Support of Velocity is deprecated. Update theme " +
-						theme.getName() +
-							" to use FreeMarker for forward compatibility.");
+					StringBundler.concat(
+						themes.size(), " themes for ", servletContextName,
+						" are available for use"));
 			}
 		}
 	}
@@ -148,8 +132,8 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 		List<Theme> themes = _themes.remove(servletContextName);
 
 		if (themes != null) {
-			if (_log.isInfoEnabled()) {
-				_log.info("Unregistering themes for " + servletContextName);
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unregistering themes for " + servletContextName);
 			}
 
 			try {
@@ -165,18 +149,21 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 
 		// LEP-2057
 
-		ClassLoader contextClassLoader =
-			ClassLoaderUtil.getContextClassLoader();
+		Thread currentThread = Thread.currentThread();
+
+		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
 		try {
-			ClassLoaderUtil.setContextClassLoader(
-				ClassLoaderUtil.getPortalClassLoader());
+			currentThread.setContextClassLoader(
+				PortalClassLoaderUtil.getClassLoader());
 
+			TemplateResourceLoaderUtil.clearCache(
+				TemplateConstants.LANG_TYPE_FTL);
 			TemplateResourceLoaderUtil.clearCache(
 				TemplateConstants.LANG_TYPE_VM);
 		}
 		finally {
-			ClassLoaderUtil.setContextClassLoader(contextClassLoader);
+			currentThread.setContextClassLoader(contextClassLoader);
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -186,8 +173,9 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 			}
 			else {
 				_log.info(
-					themes.size() + " themes for " + servletContextName +
-						" were unregistered");
+					StringBundler.concat(
+						themes.size(), " themes for ", servletContextName,
+						" were unregistered"));
 			}
 		}
 	}

@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.template;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -45,15 +44,18 @@ public interface TemplateManager {
 
 	public void addTaglibRequest(
 		Map<String, Object> contextObjects, String applicationName,
-		HttpServletRequest request, HttpServletResponse response);
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse);
 
 	public void addTaglibSupport(
-		Map<String, Object> contextObjects, HttpServletRequest request,
-		HttpServletResponse response);
+		Map<String, Object> contextObjects,
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse);
 
 	public void addTaglibTheme(
 		Map<String, Object> contextObjects, String string,
-		HttpServletRequest request, HttpServletResponse response);
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse);
 
 	public void destroy();
 
@@ -64,18 +66,7 @@ public interface TemplateManager {
 	public String[] getRestrictedVariables();
 
 	public Template getTemplate(
-		List<TemplateResource> templateResources, boolean restricted);
-
-	public Template getTemplate(
-		List<TemplateResource> templateResources,
-		TemplateResource errorTemplateResource, boolean restricted);
-
-	public Template getTemplate(
 		TemplateResource templateResource, boolean restricted);
-
-	public Template getTemplate(
-		TemplateResource templateResource,
-		TemplateResource errorTemplateResource, boolean restricted);
 
 	public void init() throws TemplateException;
 

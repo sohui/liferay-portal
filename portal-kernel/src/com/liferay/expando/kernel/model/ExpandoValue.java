@@ -14,30 +14,33 @@
 
 package com.liferay.expando.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the ExpandoValue service. Represents a row in the &quot;ExpandoValue&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see ExpandoValueModel
- * @see com.liferay.portlet.expando.model.impl.ExpandoValueImpl
- * @see com.liferay.portlet.expando.model.impl.ExpandoValueModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.expando.model.impl.ExpandoValueImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.expando.model.impl.ExpandoValueImpl"
+)
 @ProviderType
 public interface ExpandoValue extends ExpandoValueModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.expando.model.impl.ExpandoValueImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.expando.model.impl.ExpandoValueImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<ExpandoValue, Long> VALUE_ID_ACCESSOR = new Accessor<ExpandoValue, Long>() {
+	public static final Accessor<ExpandoValue, Long> VALUE_ID_ACCESSOR =
+		new Accessor<ExpandoValue, Long>() {
+
 			@Override
 			public Long get(ExpandoValue expandoValue) {
 				return expandoValue.getValueId();
@@ -52,6 +55,7 @@ public interface ExpandoValue extends ExpandoValueModel, PersistedModel {
 			public Class<ExpandoValue> getTypeClass() {
 				return ExpandoValue.class;
 			}
+
 		};
 
 	public java.util.List<java.util.Locale> getAvailableLocales()
@@ -87,6 +91,9 @@ public interface ExpandoValue extends ExpandoValueModel, PersistedModel {
 	public float[] getFloatArray()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
+	public com.liferay.portal.kernel.json.JSONObject getGeolocationJSONObject()
+		throws com.liferay.portal.kernel.exception.PortalException;
+
 	public int getInteger()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
@@ -99,10 +106,10 @@ public interface ExpandoValue extends ExpandoValueModel, PersistedModel {
 	public long[] getLongArray()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.Number getNumber()
+	public Number getNumber()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.Number[] getNumberArray()
+	public Number[] getNumberArray()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public java.io.Serializable getSerializable()
@@ -114,22 +121,22 @@ public interface ExpandoValue extends ExpandoValueModel, PersistedModel {
 	public short[] getShortArray()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getString()
+	public String getString()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getString(java.util.Locale locale)
+	public String getString(java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String[] getStringArray()
+	public String[] getStringArray()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String[] getStringArray(java.util.Locale locale)
+	public String[] getStringArray(java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.util.Map<java.util.Locale, java.lang.String[]> getStringArrayMap()
+	public java.util.Map<java.util.Locale, String[]> getStringArrayMap()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.util.Map<java.util.Locale, java.lang.String> getStringMap()
+	public java.util.Map<java.util.Locale, String> getStringMap()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public void setBoolean(boolean data)
@@ -158,6 +165,10 @@ public interface ExpandoValue extends ExpandoValueModel, PersistedModel {
 	public void setFloatArray(float[] data)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
+	public void setGeolocationJSONObject(
+			com.liferay.portal.kernel.json.JSONObject data)
+		throws com.liferay.portal.kernel.exception.PortalException;
+
 	public void setInteger(int data)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
@@ -170,10 +181,10 @@ public interface ExpandoValue extends ExpandoValueModel, PersistedModel {
 	public void setLongArray(long[] data)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public void setNumber(java.lang.Number data)
+	public void setNumber(Number data)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public void setNumberArray(java.lang.Number[] data)
+	public void setNumberArray(Number[] data)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public void setShort(short data)
@@ -182,27 +193,30 @@ public interface ExpandoValue extends ExpandoValueModel, PersistedModel {
 	public void setShortArray(short[] data)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public void setString(java.lang.String data)
+	public void setString(String data)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public void setString(java.lang.String data, java.util.Locale locale,
-		java.util.Locale defaultLocale)
+	public void setString(
+			String data, java.util.Locale locale,
+			java.util.Locale defaultLocale)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public void setStringArray(java.lang.String[] data)
+	public void setStringArray(String[] data)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public void setStringArray(java.lang.String[] data,
-		java.util.Locale locale, java.util.Locale defaultLocale)
+	public void setStringArray(
+			String[] data, java.util.Locale locale,
+			java.util.Locale defaultLocale)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public void setStringArrayMap(
-		java.util.Map<java.util.Locale, java.lang.String[]> dataMap,
-		java.util.Locale defaultLocale)
+			java.util.Map<java.util.Locale, String[]> dataMap,
+			java.util.Locale defaultLocale)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public void setStringMap(
-		java.util.Map<java.util.Locale, java.lang.String> dataMap,
-		java.util.Locale defaultLocale)
+			java.util.Map<java.util.Locale, String> dataMap,
+			java.util.Locale defaultLocale)
 		throws com.liferay.portal.kernel.exception.PortalException;
+
 }

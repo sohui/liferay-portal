@@ -17,6 +17,7 @@ package com.liferay.portal.workflow;
 import com.liferay.portal.kernel.messaging.proxy.BaseProxyBean;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManager;
 
@@ -120,6 +121,15 @@ public class WorkflowTaskManagerProxyBean
 	}
 
 	@Override
+	public int getWorkflowTaskCountByUserRoles(
+			long companyId, long userId, long workflowInstanceId,
+			Boolean completed)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public int getWorkflowTaskCountByWorkflowInstance(
 		long companyId, Long userId, long workflowInstanceId,
 		Boolean completed) {
@@ -172,6 +182,11 @@ public class WorkflowTaskManagerProxyBean
 		long companyId, Long userId, long workflowInstanceId, Boolean completed,
 		int start, int end, OrderByComparator<WorkflowTask> orderByComparator) {
 
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean hasOtherAssignees(long workflowTaskInstanceId, long userId) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -14,30 +14,31 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the Organization service. Represents a row in the &quot;Organization_&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see OrganizationModel
- * @see com.liferay.portal.model.impl.OrganizationImpl
- * @see com.liferay.portal.model.impl.OrganizationModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.OrganizationImpl")
 @ProviderType
-public interface Organization extends OrganizationModel, PersistedModel,
-	TreeModel {
+public interface Organization
+	extends OrganizationModel, PersistedModel, TreeModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.OrganizationImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.OrganizationImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<Organization, Long> ORGANIZATION_ID_ACCESSOR = new Accessor<Organization, Long>() {
+	public static final Accessor<Organization, Long> ORGANIZATION_ID_ACCESSOR =
+		new Accessor<Organization, Long>() {
+
 			@Override
 			public Long get(Organization organization) {
 				return organization.getOrganizationId();
@@ -52,9 +53,11 @@ public interface Organization extends OrganizationModel, PersistedModel,
 			public Class<Organization> getTypeClass() {
 				return Organization.class;
 			}
-		};
 
-	public static final Accessor<Organization, String> NAME_ACCESSOR = new Accessor<Organization, String>() {
+		};
+	public static final Accessor<Organization, String> NAME_ACCESSOR =
+		new Accessor<Organization, String>() {
+
 			@Override
 			public String get(Organization organization) {
 				return organization.getName();
@@ -69,6 +72,7 @@ public interface Organization extends OrganizationModel, PersistedModel,
 			public Class<Organization> getTypeClass() {
 				return Organization.class;
 			}
+
 		};
 
 	public Address getAddress();
@@ -81,7 +85,7 @@ public interface Organization extends OrganizationModel, PersistedModel,
 	public java.util.List<Organization> getAncestors()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String[] getChildrenTypes();
+	public String[] getChildrenTypes();
 
 	public java.util.List<Organization> getDescendants();
 
@@ -92,7 +96,7 @@ public interface Organization extends OrganizationModel, PersistedModel,
 	public Organization getParentOrganization()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getParentOrganizationName();
+	public String getParentOrganizationName();
 
 	public javax.portlet.PortletPreferences getPreferences();
 
@@ -100,11 +104,10 @@ public interface Organization extends OrganizationModel, PersistedModel,
 
 	public int getPublicLayoutsPageCount();
 
-	public java.util.Set<java.lang.String> getReminderQueryQuestions(
+	public java.util.Set<String> getReminderQueryQuestions(
 		java.util.Locale locale);
 
-	public java.util.Set<java.lang.String> getReminderQueryQuestions(
-		java.lang.String languageId);
+	public java.util.Set<String> getReminderQueryQuestions(String languageId);
 
 	public java.util.List<Organization> getSuborganizations();
 
@@ -121,4 +124,5 @@ public interface Organization extends OrganizationModel, PersistedModel,
 	public boolean isParentable();
 
 	public boolean isRoot();
+
 }

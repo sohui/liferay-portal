@@ -19,9 +19,12 @@ import com.liferay.portal.kernel.model.User;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Adolfo Pérez
  */
+@ProviderType
 public interface Comment {
 
 	public String getBody();
@@ -33,6 +36,8 @@ public interface Comment {
 	public long getCommentId();
 
 	public Date getCreateDate();
+
+	public long getGroupId();
 
 	public Class<?> getModelClass();
 

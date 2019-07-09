@@ -14,8 +14,6 @@
 
 package com.liferay.portal.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
@@ -24,12 +22,15 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the HTTP utility for the
- * {@link MembershipRequestServiceUtil} service utility. The
+ * <code>MembershipRequestServiceUtil</code> service
+ * utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it requires an additional
- * {@link HttpPrincipal} parameter.
+ * <code>HttpPrincipal</code> parameter.
  *
  * <p>
  * The benefits of using the HTTP utility is that it is fast and allows for
@@ -48,22 +49,24 @@ import com.liferay.portal.kernel.util.MethodKey;
  *
  * @author Brian Wing Shun Chan
  * @see MembershipRequestServiceSoap
- * @see HttpPrincipal
- * @see MembershipRequestServiceUtil
  * @generated
  */
 @ProviderType
 public class MembershipRequestServiceHttp {
-	public static com.liferay.portal.kernel.model.MembershipRequest addMembershipRequest(
-		HttpPrincipal httpPrincipal, long groupId, java.lang.String comments,
-		com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(MembershipRequestServiceUtil.class,
-					"addMembershipRequest", _addMembershipRequestParameterTypes0);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
-					comments, serviceContext);
+	public static com.liferay.portal.kernel.model.MembershipRequest
+			addMembershipRequest(
+				HttpPrincipal httpPrincipal, long groupId, String comments,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				MembershipRequestServiceUtil.class, "addMembershipRequest",
+				_addMembershipRequestParameterTypes0);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, comments, serviceContext);
 
 			Object returnObj = null;
 
@@ -71,11 +74,15 @@ public class MembershipRequestServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
 			return (com.liferay.portal.kernel.model.MembershipRequest)returnObj;
@@ -87,26 +94,31 @@ public class MembershipRequestServiceHttp {
 		}
 	}
 
-	public static void deleteMembershipRequests(HttpPrincipal httpPrincipal,
-		long groupId, long statusId)
+	public static void deleteMembershipRequests(
+			HttpPrincipal httpPrincipal, long groupId, long statusId)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(MembershipRequestServiceUtil.class,
-					"deleteMembershipRequests",
-					_deleteMembershipRequestsParameterTypes1);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
-					statusId);
+		try {
+			MethodKey methodKey = new MethodKey(
+				MembershipRequestServiceUtil.class, "deleteMembershipRequests",
+				_deleteMembershipRequestsParameterTypes1);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, statusId);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
@@ -116,15 +128,18 @@ public class MembershipRequestServiceHttp {
 		}
 	}
 
-	public static com.liferay.portal.kernel.model.MembershipRequest getMembershipRequest(
-		HttpPrincipal httpPrincipal, long membershipRequestId)
+	public static com.liferay.portal.kernel.model.MembershipRequest
+			getMembershipRequest(
+				HttpPrincipal httpPrincipal, long membershipRequestId)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(MembershipRequestServiceUtil.class,
-					"getMembershipRequest", _getMembershipRequestParameterTypes2);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					membershipRequestId);
+		try {
+			MethodKey methodKey = new MethodKey(
+				MembershipRequestServiceUtil.class, "getMembershipRequest",
+				_getMembershipRequestParameterTypes2);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, membershipRequestId);
 
 			Object returnObj = null;
 
@@ -132,11 +147,15 @@ public class MembershipRequestServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
 			return (com.liferay.portal.kernel.model.MembershipRequest)returnObj;
@@ -148,28 +167,34 @@ public class MembershipRequestServiceHttp {
 		}
 	}
 
-	public static void updateStatus(HttpPrincipal httpPrincipal,
-		long membershipRequestId, java.lang.String reviewComments,
-		long statusId,
-		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public static void updateStatus(
+			HttpPrincipal httpPrincipal, long membershipRequestId,
+			String reviewComments, long statusId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(MembershipRequestServiceUtil.class,
-					"updateStatus", _updateStatusParameterTypes3);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					membershipRequestId, reviewComments, statusId,
-					serviceContext);
+		try {
+			MethodKey methodKey = new MethodKey(
+				MembershipRequestServiceUtil.class, "updateStatus",
+				_updateStatusParameterTypes3);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, membershipRequestId, reviewComments, statusId,
+				serviceContext);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
@@ -179,19 +204,21 @@ public class MembershipRequestServiceHttp {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(MembershipRequestServiceHttp.class);
-	private static final Class<?>[] _addMembershipRequestParameterTypes0 = new Class[] {
-			long.class, java.lang.String.class,
+	private static Log _log = LogFactoryUtil.getLog(
+		MembershipRequestServiceHttp.class);
+
+	private static final Class<?>[] _addMembershipRequestParameterTypes0 =
+		new Class[] {
+			long.class, String.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _deleteMembershipRequestsParameterTypes1 = new Class[] {
-			long.class, long.class
-		};
-	private static final Class<?>[] _getMembershipRequestParameterTypes2 = new Class[] {
-			long.class
-		};
+	private static final Class<?>[] _deleteMembershipRequestsParameterTypes1 =
+		new Class[] {long.class, long.class};
+	private static final Class<?>[] _getMembershipRequestParameterTypes2 =
+		new Class[] {long.class};
 	private static final Class<?>[] _updateStatusParameterTypes3 = new Class[] {
-			long.class, java.lang.String.class, long.class,
-			com.liferay.portal.kernel.service.ServiceContext.class
-		};
+		long.class, String.class, long.class,
+		com.liferay.portal.kernel.service.ServiceContext.class
+	};
+
 }

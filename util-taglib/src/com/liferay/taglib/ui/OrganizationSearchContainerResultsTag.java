@@ -27,6 +27,18 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class OrganizationSearchContainerResultsTag<R> extends IncludeTag {
 
+	public LinkedHashMap<String, Object> getOrganizationParams() {
+		return _organizationParams;
+	}
+
+	public long getParentOrganizationId() {
+		return _parentOrganizationId;
+	}
+
+	public boolean isForceDatabase() {
+		return _forceDatabase;
+	}
+
 	public void setForceDatabase(boolean forceDatabase) {
 		_forceDatabase = forceDatabase;
 	}
@@ -43,6 +55,8 @@ public class OrganizationSearchContainerResultsTag<R> extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_forceDatabase = false;
 		_organizationParams = null;
 		_parentOrganizationId = 0;
@@ -55,7 +69,7 @@ public class OrganizationSearchContainerResultsTag<R> extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
 		SearchContainerTag<R> searchContainerTag =
 			(SearchContainerTag<R>)findAncestorWithClass(
 				this, SearchContainerTag.class);
@@ -65,21 +79,21 @@ public class OrganizationSearchContainerResultsTag<R> extends IncludeTag {
 
 		_searchTerms = searchContainer.getSearchTerms();
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:organization-search-container-results:forceDatabase",
 			_forceDatabase);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:organization-search-container-results:" +
 				"organizationParams",
 			_organizationParams);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:organization-search-container-results:" +
 				"parentOrganizationId",
 			_parentOrganizationId);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:organization-search-container-results:searchContainer",
 			searchContainer);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:organization-search-container-results:searchTerms",
 			_searchTerms);
 	}

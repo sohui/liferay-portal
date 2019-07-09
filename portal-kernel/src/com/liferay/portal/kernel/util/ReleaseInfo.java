@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
+
 import java.text.DateFormat;
 
 import java.util.Date;
@@ -23,81 +25,37 @@ import java.util.Date;
  */
 public class ReleaseInfo {
 
-	public static final int RELEASE_5_0_0_BUILD_NUMBER = 5000;
-
-	public static final int RELEASE_5_0_1_BUILD_NUMBER = 5001;
-
-	public static final int RELEASE_5_1_0_BUILD_NUMBER = 5100;
-
-	public static final int RELEASE_5_1_1_BUILD_NUMBER = 5101;
-
-	public static final int RELEASE_5_1_2_BUILD_NUMBER = 5102;
-
-	public static final int RELEASE_5_1_5_BUILD_NUMBER = 5105;
-
-	public static final int RELEASE_5_1_6_BUILD_NUMBER = 5106;
-
-	public static final int RELEASE_5_1_7_BUILD_NUMBER = 5107;
-
-	public static final int RELEASE_5_2_0_BUILD_NUMBER = 5200;
-
-	public static final int RELEASE_5_2_1_BUILD_NUMBER = 5201;
-
-	public static final int RELEASE_5_2_2_BUILD_NUMBER = 5202;
-
-	public static final int RELEASE_5_2_3_BUILD_NUMBER = 5203;
-
-	public static final int RELEASE_5_2_5_BUILD_NUMBER = 5205;
-
-	public static final int RELEASE_5_2_7_BUILD_NUMBER = 5207;
-
-	public static final int RELEASE_5_2_8_BUILD_NUMBER = 5208;
-
-	public static final int RELEASE_5_2_9_BUILD_NUMBER = 5209;
-
-	public static final int RELEASE_6_0_0_BUILD_NUMBER = 6000;
-
-	public static final int RELEASE_6_0_1_BUILD_NUMBER = 6001;
-
-	public static final int RELEASE_6_0_2_BUILD_NUMBER = 6002;
-
-	public static final int RELEASE_6_0_3_BUILD_NUMBER = 6003;
-
-	public static final int RELEASE_6_0_4_BUILD_NUMBER = 6004;
-
-	public static final int RELEASE_6_0_5_BUILD_NUMBER = 6005;
-
-	public static final int RELEASE_6_0_6_BUILD_NUMBER = 6006;
-
-	public static final int RELEASE_6_0_10_BUILD_NUMBER = 6010;
-
-	public static final int RELEASE_6_0_11_BUILD_NUMBER = 6011;
-
-	public static final int RELEASE_6_0_12_BUILD_NUMBER = 6012;
-
-	public static final int RELEASE_6_1_0_BUILD_NUMBER = 6100;
-
-	public static final int RELEASE_6_1_1_BUILD_NUMBER = 6101;
-
-	public static final int RELEASE_6_1_10_BUILD_NUMBER = 6110;
-
-	public static final int RELEASE_6_1_20_BUILD_NUMBER = 6120;
-
 	public static final int RELEASE_6_2_0_BUILD_NUMBER = 6200;
-
-	public static final int RELEASE_6_2_1_BUILD_NUMBER = 6201;
-
-	public static final int RELEASE_6_2_2_BUILD_NUMBER = 6202;
-
-	public static final int RELEASE_6_2_3_BUILD_NUMBER = 6203;
-
-	public static final int RELEASE_6_2_10_BUILD_NUMBER = 6210;
 
 	public static final int RELEASE_7_0_0_BUILD_NUMBER = 7000;
 
 	public static final int RELEASE_7_0_1_BUILD_NUMBER = 7001;
 
+	public static final int RELEASE_7_0_2_BUILD_NUMBER = 7002;
+
+	public static final int RELEASE_7_0_3_BUILD_NUMBER = 7003;
+
+	public static final int RELEASE_7_0_4_BUILD_NUMBER = 7004;
+
+	public static final int RELEASE_7_0_5_BUILD_NUMBER = 7005;
+
+	public static final int RELEASE_7_0_6_BUILD_NUMBER = 7006;
+
 	public static final int RELEASE_7_0_10_BUILD_NUMBER = 7010;
+
+	public static final int RELEASE_7_1_0_BUILD_NUMBER = 7100;
+
+	public static final int RELEASE_7_1_1_BUILD_NUMBER = 7101;
+
+	public static final int RELEASE_7_1_2_BUILD_NUMBER = 7102;
+
+	public static final int RELEASE_7_1_10_BUILD_NUMBER = 7110;
+
+	public static final int RELEASE_7_2_0_BUILD_NUMBER = 7200;
+
+	public static final int RELEASE_7_2_1_BUILD_NUMBER = 7201;
+
+	public static final int RELEASE_7_2_10_BUILD_NUMBER = 7210;
 
 	public static final Date getBuildDate() {
 		DateFormat df = DateFormat.getDateInstance(DateFormat.LONG);
@@ -123,10 +81,10 @@ public class ReleaseInfo {
 
 	public static final String getReleaseInfo() {
 		if (_releaseInfo == null) {
-			_releaseInfo =
-				_RELEASE_INFO_PREFIX + _NAME + " " + _VERSION_DISPLAY_NAME +
-					" (" + _CODE_NAME + " / Build " + _BUILD + " / " + _DATE +
-						")" + _RELEASE_INFO_SUFFIX;
+			_releaseInfo = StringBundler.concat(
+				_RELEASE_INFO_PREFIX, _NAME, " ", _VERSION_DISPLAY_NAME, " (",
+				_CODE_NAME, " / Build ", _BUILD, " / ", _DATE, ")",
+				_RELEASE_INFO_SUFFIX);
 		}
 
 		return _releaseInfo;
@@ -148,13 +106,13 @@ public class ReleaseInfo {
 		return _VERSION;
 	}
 
-	private static final String _BUILD = "7001";
+	private static final String _BUILD = "7201";
 
 	private static final int _BUILD_NUMBER = GetterUtil.getInteger(_BUILD);
 
-	private static final String _CODE_NAME = "Wilberforce";
+	private static final String _CODE_NAME = "Mueller";
 
-	private static final String _DATE = "April 29, 2016";
+	private static final String _DATE = "September 10, 2019";
 
 	private static final String _NAME = "Liferay Community Edition Portal";
 
@@ -168,9 +126,9 @@ public class ReleaseInfo {
 
 	private static final String _VENDOR = "Liferay, Inc.";
 
-	private static final String _VERSION = "7.0.1";
+	private static final String _VERSION = "7.2.1";
 
-	private static final String _VERSION_DISPLAY_NAME = "7.0.1 GA2";
+	private static final String _VERSION_DISPLAY_NAME = "7.2.1 CE GA2";
 
 	private static String _releaseInfo;
 	private static String _serverInfo;

@@ -1,16 +1,17 @@
 task jar(type: Jar, overwrite: true)
 
-sourceCompatibility = "1.6"
-targetCompatibility = "1.6"
-
 String gradleVersion = version.substring(0, version.lastIndexOf('.'))
 
 if (gradleVersion != gradle.gradleVersion) {
 	throw new GradleException("Unable to use Gradle " + gradle.gradleVersion + ", " + gradleVersion + " is required")
 }
 
+tasks.eclipse {
+	ext.gradleVersion = gradleVersion
+}
+
 dependencies {
-	compile gradleApi()
+	compile fileTree(dir: gradle.gradleHomeDir, include: "lib/**/*.jar")
 }
 
 jar {

@@ -14,30 +14,29 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing ListType in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see ListType
  * @generated
  */
 @ProviderType
-public class ListTypeCacheModel implements CacheModel<ListType>, Externalizable,
-	MVCCModel {
+public class ListTypeCacheModel
+	implements CacheModel<ListType>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -51,7 +50,8 @@ public class ListTypeCacheModel implements CacheModel<ListType>, Externalizable,
 		ListTypeCacheModel listTypeCacheModel = (ListTypeCacheModel)obj;
 
 		if ((listTypeId == listTypeCacheModel.listTypeId) &&
-				(mvccVersion == listTypeCacheModel.mvccVersion)) {
+			(mvccVersion == listTypeCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -100,14 +100,14 @@ public class ListTypeCacheModel implements CacheModel<ListType>, Externalizable,
 		listTypeImpl.setListTypeId(listTypeId);
 
 		if (name == null) {
-			listTypeImpl.setName(StringPool.BLANK);
+			listTypeImpl.setName("");
 		}
 		else {
 			listTypeImpl.setName(name);
 		}
 
 		if (type == null) {
-			listTypeImpl.setType(StringPool.BLANK);
+			listTypeImpl.setType("");
 		}
 		else {
 			listTypeImpl.setType(type);
@@ -128,21 +128,20 @@ public class ListTypeCacheModel implements CacheModel<ListType>, Externalizable,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(listTypeId);
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
 
 		if (type == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(type);
@@ -153,4 +152,5 @@ public class ListTypeCacheModel implements CacheModel<ListType>, Externalizable,
 	public long listTypeId;
 	public String name;
 	public String type;
+
 }

@@ -1,106 +1,84 @@
-<definition>
-	<command name="_applyChanges">
-		<execute function="AssertClick" locator1="Button#APPLY_EFFECTS" value1="Apply" />
-	</command>
+definition {
 
-	<command name="_saveFile">
-		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-	</command>
+	macro _applyChanges {
+		AssertClick(
+			locator1 = "Button#APPLY_EFFECTS",
+			value1 = "Apply");
+	}
 
-	<command name="applyChangesAndSaveFile">
-		<execute macro="ImageEditor#_applyChanges" />
+	macro _saveFile {
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+	}
 
-		<execute function="Pause" locator1="3000" />
+	macro applyChangesAndSaveFile {
+		ImageEditor._applyChanges();
 
-		<execute macro="ImageEditor#_saveFile" />
-	</command>
+		Pause(locator1 = "3000");
 
-	<command name="cancel Changes">
-		<execute function="AssertClick" locator1="Button#CANCEL_EFFECTS" value1="Cancel" />
-	</command>
+		ImageEditor._saveFile();
+	}
 
-	<command name="gotoCropImage">
-		<execute function="Click" locator1="Button#TRANSFORM" />
+	macro gotoImageEditorViaDM {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
 
-		<execute function="AssertClick" locator1="MenuItem#TRANSFORM_CROP" value1="Crop" />
-	</command>
+		Click(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_VERTICAL_ELLIPSIS");
 
-	<command name="gotoEditBrightness">
-		<execute function="Click" locator1="Button#COLOR_EFFECT" />
+		MenuItem.click(menuItem = "Edit With Image Editor");
 
-		<execute function="AssertClick" locator1="MenuItem#COLOR_EFFECT_BRIGHTNESS" value1="Brightness" />
-	</command>
+		Pause(locator1 = "5000");
 
-	<command name="gotoEditContrast">
-		<execute function="Click" locator1="Button#COLOR_EFFECT" />
+		SelectFrame(locator1 = "ImageEditor#IMAGE_EDITOR_IFRAME");
+	}
 
-		<execute function="AssertClick" locator1="MenuItem#COLOR_EFFECT_CONTRAST" value1="Contrast" />
-	</command>
+	macro gotoImageEditorViaItemSelector {
+		ItemSelector.gotoItemSelectorViaAlloyEditor();
 
-	<command name="gotoEditSaturation">
-		<execute function="Click" locator1="Button#COLOR_EFFECT" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		<execute function="AssertClick" locator1="MenuItem#COLOR_EFFECT_SATURATION" value1="Saturation" />
-	</command>
+		var key_navTab = "${navTab}";
 
-	<command name="gotoImageEditorViaDM">
-		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "${navTab}");
 
-		<execute function="Click" locator1="DocumentsAndMedia#ICON_DOCUMENT_ACTIONS" />
+		var key_imageFileName = StringUtil.replace("${imageFileName}", " ", "+");
 
-		<execute function="AssertClick" locator1="MenuItem#EDIT_WITH_IMAGE_EDITOR" value1="Edit With Image Editor" />
+		Pause(locator1 = "1000");
 
-		<execute function="SelectFrame" locator1="ImageEditor#IMAGE_EDITOR_IFRAME" />
-	</command>
+		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
 
-	<command name="gotoImageEditorViaItemSelector">
-		<execute macro="ItemSelector#gotoItemSelectorViaAlloyEditor" />
+		Click(locator1 = "Icon#EDIT_PENCIL");
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
+		SelectFrameTop(value1 = "relative=top");
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_DOCUMENTS_AND_MEDIA" value1="Documents and Media" />
+		SelectFrame(locator1 = "ImageEditor#IMAGE_EDITOR_IFRAME");
+	}
 
-		<var method="StringUtil#replace('${imageFileName}', ' ', '+')" name="key_imageFileName" />
+	macro gotoRotateImage {
+		Click(locator1 = "Button#TRANSFORM");
 
-		<execute function="Click" locator1="ItemSelector#SELECT_FILE_IMAGE_PREVIEW" />
+		MenuItem.click(menuItem = "Rotate");
+	}
 
-		<execute function="Click" locator1="Icon#EDIT_PENCIL" />
+	macro rotateImage {
+		ImageEditor.gotoRotateImage();
 
-		<execute function="SelectFrameTop" value1="relative=top" />
+		if ("${rotateDirection}" == "left") {
+			Click(locator1 = "Button#ROTATE_LEFT");
+		}
+		else if ("${rotateDirection}" == "right") {
+			Click(locator1 = "Button#ROTATE_RIGHT");
+		}
+	}
 
-		<execute function="SelectFrame" locator1="ImageEditor#IMAGE_EDITOR_IFRAME" />
-	</command>
+	macro viewBaseControls {
+		AssertVisible(locator1 = "Button#TRANSFORM");
 
-	<command name="gotoResizeImage">
-		<execute function="Click" locator1="Button#TRANSFORM" />
+		AssertVisible(locator1 = "Button#FILTER_EFFECT");
 
-		<execute function="AssertClick" locator1="MenuItem#TRANSFORM_RESIZE" value1="Resize" />
-	</command>
+		AssertVisible(locator1 = "Button#COLOR_EFFECT");
+	}
 
-	<command name="gotoRotateImage">
-		<execute function="Click" locator1="Button#TRANSFORM" />
-
-		<execute function="AssertClick" locator1="MenuItem#TRANSFORM_ROTATE" value1="Rotate" />
-	</command>
-
-	<command name="rotateImage">
-		<execute macro="ImageEditor#gotoRotateImage" />
-
-		<if>
-			<equals arg1="${rotateDirection}" arg2="left" />
-			<then>
-				<execute function="Click" locator1="Button#ROTATE_LEFT" />
-			</then>
-			<elseif>
-				<equals arg1="${rotateDirection}" arg2="right" />
-				<then>
-					<execute function="Click" locator1="Button#ROTATE_RIGHT" />
-				</then>
-			</elseif>
-		</if>
-	</command>
-
-	<command name="viewImageEditorPortletHeader">
-		<execute function="AssertTextEquals#assertPartialText" locator1="Portlet#H3_MODAL_TITLE" value1="${imageFileName} (Copy)" />
-	</command>
-</definition>
+}

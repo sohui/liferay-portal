@@ -16,6 +16,7 @@ package com.liferay.portal.action;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Layout;
@@ -25,14 +26,11 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.AddPortletProvider;
 import com.liferay.portal.kernel.portlet.PortletJSONUtil;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.LayoutRevisionLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutServiceUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
@@ -44,14 +42,13 @@ import com.liferay.portal.kernel.util.InstancePool;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropertiesParamUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.servlet.NamespaceServletRequest;
+import com.liferay.portal.struts.Action;
 import com.liferay.portal.struts.JSONAction;
 import com.liferay.portal.util.LayoutClone;
 import com.liferay.portal.util.LayoutCloneFactory;
@@ -63,10 +60,6 @@ import javax.portlet.PortletPreferences;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-
 /**
  * @author Brian Wing Shun Chan
  */
@@ -74,12 +67,13 @@ public class UpdateLayoutAction extends JSONAction {
 
 	@Override
 	public String getJSON(
-			ActionMapping actionMapping, ActionForm actionForm,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		long userId = themeDisplay.getUserId();
 
@@ -87,24 +81,23 @@ public class UpdateLayoutAction extends JSONAction {
 		LayoutTypePortlet layoutTypePortlet =
 			themeDisplay.getLayoutTypePortlet();
 
-		PermissionChecker permissionChecker =
-			themeDisplay.getPermissionChecker();
+		String cmd = ParamUtil.getString(httpServletRequest, Constants.CMD);
 
-		String cmd = ParamUtil.getString(request, Constants.CMD);
-
-		String portletId = ParamUtil.getString(request, "p_p_id");
+		String portletId = ParamUtil.getString(httpServletRequest, "p_p_id");
 
 		boolean updateLayout = true;
 
 		if (cmd.equals(Constants.ADD)) {
-			String columnId = ParamUtil.getString(request, "p_p_col_id", null);
-			int columnPos = ParamUtil.getInteger(request, "p_p_col_pos", -1);
+			String columnId = ParamUtil.getString(
+				httpServletRequest, "p_p_col_id", null);
+			int columnPos = ParamUtil.getInteger(
+				httpServletRequest, "p_p_col_pos", -1);
 
 			portletId = layoutTypePortlet.addPortletId(
 				userId, portletId, columnId, columnPos);
 
 			storeAddContentPortletPreferences(
-				request, layout, portletId, themeDisplay);
+				httpServletRequest, layout, portletId, themeDisplay);
 
 			if (layoutTypePortlet.isCustomizable() &&
 				layoutTypePortlet.isCustomizedView() &&
@@ -124,42 +117,9 @@ public class UpdateLayoutAction extends JSONAction {
 				}
 			}
 		}
-		else if (cmd.equals("drag")) {
-			if (LayoutPermissionUtil.contains(
-					permissionChecker, layout, ActionKeys.UPDATE)) {
-
-				String height = ParamUtil.getString(request, "height");
-				String width = ParamUtil.getString(request, "width");
-				String top = ParamUtil.getString(request, "top");
-				String left = ParamUtil.getString(request, "left");
-
-				PortletPreferences portletPreferences =
-					PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-						layout, portletId);
-
-				StringBundler sb = new StringBundler(12);
-
-				sb.append("height=");
-				sb.append(height);
-				sb.append("\n");
-				sb.append("width=");
-				sb.append(width);
-				sb.append("\n");
-				sb.append("top=");
-				sb.append(top);
-				sb.append("\n");
-				sb.append("left=");
-				sb.append(left);
-				sb.append("\n");
-
-				portletPreferences.setValue(
-					"portlet-freeform-styles", sb.toString());
-
-				portletPreferences.store();
-			}
-		}
 		else if (cmd.equals("minimize")) {
-			boolean restore = ParamUtil.getBoolean(request, "p_p_restore");
+			boolean restore = ParamUtil.getBoolean(
+				httpServletRequest, "p_p_restore");
 
 			if (restore) {
 				layoutTypePortlet.removeStateMinPortletId(portletId);
@@ -171,8 +131,10 @@ public class UpdateLayoutAction extends JSONAction {
 			updateLayout = false;
 		}
 		else if (cmd.equals("move")) {
-			String columnId = ParamUtil.getString(request, "p_p_col_id");
-			int columnPos = ParamUtil.getInteger(request, "p_p_col_pos");
+			String columnId = ParamUtil.getString(
+				httpServletRequest, "p_p_col_id");
+			int columnPos = ParamUtil.getInteger(
+				httpServletRequest, "p_p_col_pos");
 
 			layoutTypePortlet.movePortletId(
 				userId, portletId, columnId, columnPos);
@@ -186,30 +148,32 @@ public class UpdateLayoutAction extends JSONAction {
 		}
 		else if (cmd.equals("redo_layout_revision")) {
 			long layoutRevisionId = ParamUtil.getLong(
-				request, "layoutRevisionId");
+				httpServletRequest, "layoutRevisionId");
 			long layoutSetBranchId = ParamUtil.getLong(
-				request, "layoutSetBranchId");
+				httpServletRequest, "layoutSetBranchId");
 
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
-				request);
+				httpServletRequest);
 
 			LayoutRevisionLocalServiceUtil.updateStatus(
 				userId, layoutRevisionId, WorkflowConstants.STATUS_DRAFT,
 				serviceContext);
 
 			StagingUtil.setRecentLayoutRevisionId(
-				request, layoutSetBranchId, layout.getPlid(), layoutRevisionId);
+				httpServletRequest, layoutSetBranchId, layout.getPlid(),
+				layoutRevisionId);
 
 			updateLayout = false;
 		}
 		else if (cmd.equals("select_layout_revision")) {
 			long layoutRevisionId = ParamUtil.getLong(
-				request, "layoutRevisionId");
+				httpServletRequest, "layoutRevisionId");
 			long layoutSetBranchId = ParamUtil.getLong(
-				request, "layoutSetBranchId");
+				httpServletRequest, "layoutSetBranchId");
 
 			StagingUtil.setRecentLayoutRevisionId(
-				request, layoutSetBranchId, layout.getPlid(), layoutRevisionId);
+				httpServletRequest, layoutSetBranchId, layout.getPlid(),
+				layoutRevisionId);
 
 			updateLayout = false;
 		}
@@ -219,18 +183,18 @@ public class UpdateLayoutAction extends JSONAction {
 
 			UnicodeProperties formTypeSettingsProperties =
 				PropertiesParamUtil.getProperties(
-					request, "TypeSettingsProperties--");
+					httpServletRequest, "TypeSettingsProperties--");
 
 			layoutTypeSettingsProperties.putAll(formTypeSettingsProperties);
 		}
 		else if (cmd.equals("undo_layout_revision")) {
 			long layoutRevisionId = ParamUtil.getLong(
-				request, "layoutRevisionId");
+				httpServletRequest, "layoutRevisionId");
 			long layoutSetBranchId = ParamUtil.getLong(
-				request, "layoutSetBranchId");
+				httpServletRequest, "layoutSetBranchId");
 
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
-				request);
+				httpServletRequest);
 
 			LayoutRevision layoutRevision =
 				LayoutRevisionLocalServiceUtil.updateStatus(
@@ -238,7 +202,7 @@ public class UpdateLayoutAction extends JSONAction {
 					serviceContext);
 
 			StagingUtil.setRecentLayoutRevisionId(
-				request, layoutSetBranchId, layout.getPlid(),
+				httpServletRequest, layoutSetBranchId, layout.getPlid(),
 				layoutRevision.getParentLayoutRevisionId());
 
 			updateLayout = false;
@@ -260,21 +224,21 @@ public class UpdateLayoutAction extends JSONAction {
 
 			if (layoutClone != null) {
 				layoutClone.update(
-					request, layout.getPlid(), layout.getTypeSettings());
+					httpServletRequest, layout.getPlid(),
+					layout.getTypeSettings());
 			}
 		}
 
 		if (cmd.equals(Constants.ADD) && (portletId != null)) {
-			addPortlet(actionMapping, actionForm, request, response, portletId);
+			addPortlet(httpServletRequest, httpServletResponse, portletId);
 		}
 
 		return StringPool.BLANK;
 	}
 
 	protected void addPortlet(
-			ActionMapping actionMapping, ActionForm actionForm,
-			HttpServletRequest request, HttpServletResponse response,
-			String portletId)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String portletId)
 		throws Exception {
 
 		// Run the render portlet action to add a portlet without refreshing.
@@ -285,7 +249,7 @@ public class UpdateLayoutAction extends JSONAction {
 		// Pass in the portlet id because the portlet id may be the instance id.
 		// Namespace the request if necessary. See LEP-4644.
 
-		long companyId = PortalUtil.getCompanyId(request);
+		long companyId = PortalUtil.getCompanyId(httpServletRequest);
 
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(
 			companyId, portletId);
@@ -297,47 +261,47 @@ public class UpdateLayoutAction extends JSONAction {
 				portlet.getPortletId());
 
 			dynamicRequest = new NamespaceServletRequest(
-				request, portletNamespace, portletNamespace);
+				httpServletRequest, portletNamespace, portletNamespace);
 		}
 		else {
-			dynamicRequest = new DynamicServletRequest(request);
+			dynamicRequest = new DynamicServletRequest(httpServletRequest);
 		}
 
 		dynamicRequest.setParameter("p_p_id", portletId);
 
 		String dataType = StringUtil.toLowerCase(
-			ParamUtil.getString(request, "dataType"));
+			ParamUtil.getString(httpServletRequest, "dataType"));
 
 		if (dataType.equals("json")) {
 			JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
 			BufferCacheServletResponse bufferCacheServletResponse =
-				new BufferCacheServletResponse(response);
+				new BufferCacheServletResponse(httpServletResponse);
 
 			renderPortletAction.execute(
-				actionMapping, actionForm, dynamicRequest,
-				bufferCacheServletResponse);
+				null, dynamicRequest, bufferCacheServletResponse);
 
 			String portletHTML = bufferCacheServletResponse.getString();
 
 			portletHTML = portletHTML.trim();
 
 			PortletJSONUtil.populatePortletJSONObject(
-				request, portletHTML, portlet, jsonObject);
+				httpServletRequest, portletHTML, portlet, jsonObject);
 
-			response.setContentType(ContentTypes.APPLICATION_JSON);
+			httpServletResponse.setContentType(ContentTypes.APPLICATION_JSON);
 
-			ServletResponseUtil.write(response, jsonObject.toString());
+			ServletResponseUtil.write(
+				httpServletResponse, jsonObject.toString());
 		}
 		else {
 			renderPortletAction.execute(
-				actionMapping, actionForm, dynamicRequest, response);
+				null, dynamicRequest, httpServletResponse);
 		}
 	}
 
 	protected void storeAddContentPortletPreferences(
-			HttpServletRequest request, Layout layout, String portletId,
-			ThemeDisplay themeDisplay)
+			HttpServletRequest httpServletRequest, Layout layout,
+			String portletId, ThemeDisplay themeDisplay)
 		throws Exception {
 
 		// We need to get the portlet setup before doing anything else to ensure
@@ -348,7 +312,7 @@ public class UpdateLayoutAction extends JSONAction {
 				layout, portletId);
 
 		String[] portletData = StringUtil.split(
-			ParamUtil.getString(request, "portletData"));
+			ParamUtil.getString(httpServletRequest, "portletData"));
 
 		if (portletData.length == 0) {
 			return;

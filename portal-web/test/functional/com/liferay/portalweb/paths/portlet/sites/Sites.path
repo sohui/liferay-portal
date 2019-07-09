@@ -8,35 +8,41 @@
 <tr><td rowspan="1" colspan="3">Sites</td></tr>
 </thead>
 <tbody>
+<!--SELECT_SITE_MODAL-->
 <tr>
-	<td>SITE_NAME_BREADCRUMB</td>
-	<td>//ul[contains(@class,'breadcrumb')]/li/a[contains(.,'${key_siteName}')]</td>
+	<td>SELECT_SITE_MODAL</td>
+	<td>//div[@id='selectSite' and contains(@class,'iframe-modal')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_SITE_MODAL_CARD_BODY_SITE_NAME</td>
+	<td>//div[contains(@class,'file-card')]//div[@class='card-body']//a[contains(.,'${key_siteName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_SITE_MODAL_HEADER</td>
+	<td>//h3[@class='modal-title']</td>
 	<td></td>
 </tr>
 <!--SITE_TABLE-->
 <tr>
 	<td>SITE_TABLE_CHECKBOX</td>
-	<td>//table[contains(@class,'table-list')]//tr[contains(.,'${key_siteName}')]/td[1]//input</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SITE_TABLE_CHECKBOX_DISABLED</td>
-	<td>//table[contains(@class,'table-list')]//tr[contains(.,'${key_siteName}')]/td[1]//input[@disabled='']</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_siteName}')]/td[1]//input</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SITE_TABLE_NAME</td>
-	<td>//*[@data-qa-id='row']//div/span[contains(.,'${key_siteName}')]</td>
+	<td>//*[@data-qa-id='row']//*[contains(.,'${key_siteName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SITE_TABLE_NAME_UNVIEWABLE</td>
-	<td>//table[contains(@class,'table-list')]//tr[contains(.,'${key_siteName}')]/td[2]</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_siteName}')]/td[2]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SITE_TABLE_TYPE</td>
-	<td>//table[contains(@class,'table-list')]//tr[contains(.,'${key_siteName}')]/td[4]</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_siteName}')]/td[4]</td>
 	<td></td>
 </tr>
 <tr>
@@ -46,12 +52,12 @@
 </tr>
 <tr>
 	<td>SITE_TABLE_ACTIVE</td>
-	<td>//table[contains(@class,'table-list')]//tr[contains(.,'${key_siteName}')]/td[6]</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_siteName}')]/td[6]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SITE_TABLE_ACTIONS</td>
-	<td>//table[contains(@class,'table-list')]//tr[contains(.,'${key_siteName}')]/td//div/a[contains(@class,'dropdown-toggle')]</td>
+	<td>//table[contains(@class,'table-autofit')]//tr[contains(.,'${key_siteName}')]/td//div/*[contains(@class,'dropdown-toggle')]</td>
 	<td></td>
 </tr>
 </tbody>

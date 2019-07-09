@@ -17,8 +17,11 @@ package com.liferay.portal.kernel.util;
 import java.nio.charset.Charset;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.petra.string.StringPool}
  */
+@Deprecated
 public class StringPool {
 
 	public static final String AMPERSAND = "&";
@@ -59,8 +62,7 @@ public class StringPool {
 
 	public static final String DASH = "-";
 
-	public static final String DEFAULT_CHARSET_NAME =
-		Charset.defaultCharset().name();
+	public static final String DEFAULT_CHARSET_NAME;
 
 	public static final String DOLLAR = "$";
 
@@ -206,6 +208,10 @@ public class StringPool {
 		for (int i = 0; i < 128; i++) {
 			ASCII_TABLE[i] = String.valueOf((char)i);
 		}
+
+		Charset charset = Charset.defaultCharset();
+
+		DEFAULT_CHARSET_NAME = charset.name();
 	}
 
 }

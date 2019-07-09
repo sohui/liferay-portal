@@ -14,30 +14,32 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the ResourceBlock service. Represents a row in the &quot;ResourceBlock&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see ResourceBlockModel
- * @see com.liferay.portal.model.impl.ResourceBlockImpl
- * @see com.liferay.portal.model.impl.ResourceBlockModelImpl
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  * @generated
  */
+@Deprecated
 @ImplementationClassName("com.liferay.portal.model.impl.ResourceBlockImpl")
 @ProviderType
-public interface ResourceBlock extends ResourceBlockModel, PermissionedModel {
+public interface ResourceBlock extends PermissionedModel, ResourceBlockModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.ResourceBlockImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.ResourceBlockImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<ResourceBlock, Long> RESOURCE_BLOCK_ID_ACCESSOR =
-		new Accessor<ResourceBlock, Long>() {
+	public static final Accessor<ResourceBlock, Long>
+		RESOURCE_BLOCK_ID_ACCESSOR = new Accessor<ResourceBlock, Long>() {
+
 			@Override
 			public Long get(ResourceBlock resourceBlock) {
 				return resourceBlock.getResourceBlockId();
@@ -52,5 +54,7 @@ public interface ResourceBlock extends ResourceBlockModel, PermissionedModel {
 			public Class<ResourceBlock> getTypeClass() {
 				return ResourceBlock.class;
 			}
+
 		};
+
 }

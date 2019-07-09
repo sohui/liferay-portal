@@ -14,18 +14,13 @@
 
 package com.liferay.announcements.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.portal.kernel.model.ModelWrapper;
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -37,21 +32,14 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class AnnouncementsDeliveryWrapper implements AnnouncementsDelivery,
-	ModelWrapper<AnnouncementsDelivery> {
+public class AnnouncementsDeliveryWrapper
+	extends BaseModelWrapper<AnnouncementsDelivery>
+	implements AnnouncementsDelivery, ModelWrapper<AnnouncementsDelivery> {
+
 	public AnnouncementsDeliveryWrapper(
 		AnnouncementsDelivery announcementsDelivery) {
-		_announcementsDelivery = announcementsDelivery;
-	}
 
-	@Override
-	public Class<?> getModelClass() {
-		return AnnouncementsDelivery.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return AnnouncementsDelivery.class.getName();
+		super(announcementsDelivery);
 	}
 
 	@Override
@@ -62,9 +50,9 @@ public class AnnouncementsDeliveryWrapper implements AnnouncementsDelivery,
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
 		attributes.put("type", getType());
-		attributes.put("email", getEmail());
-		attributes.put("sms", getSms());
-		attributes.put("website", getWebsite());
+		attributes.put("email", isEmail());
+		attributes.put("sms", isSms());
+		attributes.put("website", isWebsite());
 
 		return attributes;
 	}
@@ -114,356 +102,226 @@ public class AnnouncementsDeliveryWrapper implements AnnouncementsDelivery,
 		}
 	}
 
-	@Override
-	public AnnouncementsDelivery toEscapedModel() {
-		return new AnnouncementsDeliveryWrapper(_announcementsDelivery.toEscapedModel());
-	}
-
-	@Override
-	public AnnouncementsDelivery toUnescapedModel() {
-		return new AnnouncementsDeliveryWrapper(_announcementsDelivery.toUnescapedModel());
-	}
-
 	/**
-	* Returns the email of this announcements delivery.
-	*
-	* @return the email of this announcements delivery
-	*/
-	@Override
-	public boolean getEmail() {
-		return _announcementsDelivery.getEmail();
-	}
-
-	/**
-	* Returns the sms of this announcements delivery.
-	*
-	* @return the sms of this announcements delivery
-	*/
-	@Override
-	public boolean getSms() {
-		return _announcementsDelivery.getSms();
-	}
-
-	/**
-	* Returns the website of this announcements delivery.
-	*
-	* @return the website of this announcements delivery
-	*/
-	@Override
-	public boolean getWebsite() {
-		return _announcementsDelivery.getWebsite();
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _announcementsDelivery.isCachedModel();
-	}
-
-	/**
-	* Returns <code>true</code> if this announcements delivery is email.
-	*
-	* @return <code>true</code> if this announcements delivery is email; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isEmail() {
-		return _announcementsDelivery.isEmail();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _announcementsDelivery.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _announcementsDelivery.isNew();
-	}
-
-	/**
-	* Returns <code>true</code> if this announcements delivery is sms.
-	*
-	* @return <code>true</code> if this announcements delivery is sms; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isSms() {
-		return _announcementsDelivery.isSms();
-	}
-
-	/**
-	* Returns <code>true</code> if this announcements delivery is website.
-	*
-	* @return <code>true</code> if this announcements delivery is website; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isWebsite() {
-		return _announcementsDelivery.isWebsite();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _announcementsDelivery.getExpandoBridge();
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.CacheModel<AnnouncementsDelivery> toCacheModel() {
-		return _announcementsDelivery.toCacheModel();
-	}
-
-	@Override
-	public int compareTo(AnnouncementsDelivery announcementsDelivery) {
-		return _announcementsDelivery.compareTo(announcementsDelivery);
-	}
-
-	@Override
-	public int hashCode() {
-		return _announcementsDelivery.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _announcementsDelivery.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new AnnouncementsDeliveryWrapper((AnnouncementsDelivery)_announcementsDelivery.clone());
-	}
-
-	/**
-	* Returns the type of this announcements delivery.
-	*
-	* @return the type of this announcements delivery
-	*/
-	@Override
-	public java.lang.String getType() {
-		return _announcementsDelivery.getType();
-	}
-
-	/**
-	* Returns the user uuid of this announcements delivery.
-	*
-	* @return the user uuid of this announcements delivery
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _announcementsDelivery.getUserUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _announcementsDelivery.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _announcementsDelivery.toXmlString();
-	}
-
-	/**
-	* Returns the company ID of this announcements delivery.
-	*
-	* @return the company ID of this announcements delivery
-	*/
+	 * Returns the company ID of this announcements delivery.
+	 *
+	 * @return the company ID of this announcements delivery
+	 */
 	@Override
 	public long getCompanyId() {
-		return _announcementsDelivery.getCompanyId();
+		return model.getCompanyId();
 	}
 
 	/**
-	* Returns the delivery ID of this announcements delivery.
-	*
-	* @return the delivery ID of this announcements delivery
-	*/
+	 * Returns the delivery ID of this announcements delivery.
+	 *
+	 * @return the delivery ID of this announcements delivery
+	 */
 	@Override
 	public long getDeliveryId() {
-		return _announcementsDelivery.getDeliveryId();
+		return model.getDeliveryId();
 	}
 
 	/**
-	* Returns the primary key of this announcements delivery.
-	*
-	* @return the primary key of this announcements delivery
-	*/
+	 * Returns the email of this announcements delivery.
+	 *
+	 * @return the email of this announcements delivery
+	 */
+	@Override
+	public boolean getEmail() {
+		return model.getEmail();
+	}
+
+	/**
+	 * Returns the primary key of this announcements delivery.
+	 *
+	 * @return the primary key of this announcements delivery
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _announcementsDelivery.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Returns the user ID of this announcements delivery.
-	*
-	* @return the user ID of this announcements delivery
-	*/
+	 * Returns the sms of this announcements delivery.
+	 *
+	 * @return the sms of this announcements delivery
+	 */
+	@Override
+	public boolean getSms() {
+		return model.getSms();
+	}
+
+	/**
+	 * Returns the type of this announcements delivery.
+	 *
+	 * @return the type of this announcements delivery
+	 */
+	@Override
+	public String getType() {
+		return model.getType();
+	}
+
+	/**
+	 * Returns the user ID of this announcements delivery.
+	 *
+	 * @return the user ID of this announcements delivery
+	 */
 	@Override
 	public long getUserId() {
-		return _announcementsDelivery.getUserId();
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user uuid of this announcements delivery.
+	 *
+	 * @return the user uuid of this announcements delivery
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the website of this announcements delivery.
+	 *
+	 * @return the website of this announcements delivery
+	 */
+	@Override
+	public boolean getWebsite() {
+		return model.getWebsite();
+	}
+
+	/**
+	 * Returns <code>true</code> if this announcements delivery is email.
+	 *
+	 * @return <code>true</code> if this announcements delivery is email; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isEmail() {
+		return model.isEmail();
+	}
+
+	/**
+	 * Returns <code>true</code> if this announcements delivery is sms.
+	 *
+	 * @return <code>true</code> if this announcements delivery is sms; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isSms() {
+		return model.isSms();
+	}
+
+	/**
+	 * Returns <code>true</code> if this announcements delivery is website.
+	 *
+	 * @return <code>true</code> if this announcements delivery is website; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isWebsite() {
+		return model.isWebsite();
 	}
 
 	@Override
 	public void persist() {
-		_announcementsDelivery.persist();
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_announcementsDelivery.setCachedModel(cachedModel);
+		model.persist();
 	}
 
 	/**
-	* Sets the company ID of this announcements delivery.
-	*
-	* @param companyId the company ID of this announcements delivery
-	*/
+	 * Sets the company ID of this announcements delivery.
+	 *
+	 * @param companyId the company ID of this announcements delivery
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_announcementsDelivery.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the delivery ID of this announcements delivery.
-	*
-	* @param deliveryId the delivery ID of this announcements delivery
-	*/
+	 * Sets the delivery ID of this announcements delivery.
+	 *
+	 * @param deliveryId the delivery ID of this announcements delivery
+	 */
 	@Override
 	public void setDeliveryId(long deliveryId) {
-		_announcementsDelivery.setDeliveryId(deliveryId);
+		model.setDeliveryId(deliveryId);
 	}
 
 	/**
-	* Sets whether this announcements delivery is email.
-	*
-	* @param email the email of this announcements delivery
-	*/
+	 * Sets whether this announcements delivery is email.
+	 *
+	 * @param email the email of this announcements delivery
+	 */
 	@Override
 	public void setEmail(boolean email) {
-		_announcementsDelivery.setEmail(email);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_announcementsDelivery.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(
-		com.liferay.portal.kernel.model.BaseModel<?> baseModel) {
-		_announcementsDelivery.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_announcementsDelivery.setExpandoBridgeAttributes(serviceContext);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_announcementsDelivery.setNew(n);
+		model.setEmail(email);
 	}
 
 	/**
-	* Sets the primary key of this announcements delivery.
-	*
-	* @param primaryKey the primary key of this announcements delivery
-	*/
+	 * Sets the primary key of this announcements delivery.
+	 *
+	 * @param primaryKey the primary key of this announcements delivery
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_announcementsDelivery.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_announcementsDelivery.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets whether this announcements delivery is sms.
-	*
-	* @param sms the sms of this announcements delivery
-	*/
+	 * Sets whether this announcements delivery is sms.
+	 *
+	 * @param sms the sms of this announcements delivery
+	 */
 	@Override
 	public void setSms(boolean sms) {
-		_announcementsDelivery.setSms(sms);
+		model.setSms(sms);
 	}
 
 	/**
-	* Sets the type of this announcements delivery.
-	*
-	* @param type the type of this announcements delivery
-	*/
+	 * Sets the type of this announcements delivery.
+	 *
+	 * @param type the type of this announcements delivery
+	 */
 	@Override
-	public void setType(java.lang.String type) {
-		_announcementsDelivery.setType(type);
+	public void setType(String type) {
+		model.setType(type);
 	}
 
 	/**
-	* Sets the user ID of this announcements delivery.
-	*
-	* @param userId the user ID of this announcements delivery
-	*/
+	 * Sets the user ID of this announcements delivery.
+	 *
+	 * @param userId the user ID of this announcements delivery
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_announcementsDelivery.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user uuid of this announcements delivery.
-	*
-	* @param userUuid the user uuid of this announcements delivery
-	*/
+	 * Sets the user uuid of this announcements delivery.
+	 *
+	 * @param userUuid the user uuid of this announcements delivery
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_announcementsDelivery.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets whether this announcements delivery is website.
-	*
-	* @param website the website of this announcements delivery
-	*/
+	 * Sets whether this announcements delivery is website.
+	 *
+	 * @param website the website of this announcements delivery
+	 */
 	@Override
 	public void setWebsite(boolean website) {
-		_announcementsDelivery.setWebsite(website);
+		model.setWebsite(website);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
+	protected AnnouncementsDeliveryWrapper wrap(
+		AnnouncementsDelivery announcementsDelivery) {
 
-		if (!(obj instanceof AnnouncementsDeliveryWrapper)) {
-			return false;
-		}
-
-		AnnouncementsDeliveryWrapper announcementsDeliveryWrapper = (AnnouncementsDeliveryWrapper)obj;
-
-		if (Objects.equals(_announcementsDelivery,
-					announcementsDeliveryWrapper._announcementsDelivery)) {
-			return true;
-		}
-
-		return false;
+		return new AnnouncementsDeliveryWrapper(announcementsDelivery);
 	}
 
-	@Override
-	public AnnouncementsDelivery getWrappedModel() {
-		return _announcementsDelivery;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _announcementsDelivery.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _announcementsDelivery.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_announcementsDelivery.resetOriginalValues();
-	}
-
-	private final AnnouncementsDelivery _announcementsDelivery;
 }

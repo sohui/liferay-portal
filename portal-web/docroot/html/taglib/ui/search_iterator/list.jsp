@@ -17,6 +17,10 @@
 <%@ include file="/html/taglib/ui/search_iterator/init.jsp" %>
 
 <%
+if (searchResultCssClass == null) {
+	searchResultCssClass = "table table-bordered table-hover table-striped";
+}
+
 int end = searchContainer.getEnd();
 int total = searchContainer.getTotal();
 
@@ -52,12 +56,20 @@ if (iteratorURL != null) {
 <div class="lfr-search-container lfr-search-container-wrapper <%= resultRows.isEmpty() ? "hide" : StringPool.BLANK %> <%= searchContainer.getCssClass() %>">
 	<c:if test="<%= PropsValues.SEARCH_CONTAINER_SHOW_PAGINATION_TOP && (resultRows.size() > PropsValues.SEARCH_CONTAINER_SHOW_PAGINATION_TOP_DELTA) && paginate %>">
 		<div class="taglib-search-iterator-page-iterator-top">
-			<liferay-ui:search-paginator id='<%= id + "PageIteratorTop" %>' searchContainer="<%= searchContainer %>" type="<%= type %>" />
+			<liferay-ui:search-paginator
+				id='<%= id + "PageIteratorTop" %>'
+				searchContainer="<%= searchContainer %>"
+				type="<%= type %>"
+			/>
 		</div>
 	</c:if>
 
 	<div id="<%= namespace + id %>SearchContainer">
-		<table class="table table-bordered table-hover table-striped">
+		<table class="<%= searchResultCssClass %>">
+
+		<c:if test="<%= Validator.isNotNull(summary) %>">
+			<caption class="sr-only"><%= summary %></caption>
+		</c:if>
 
 		<c:if test="<%= ListUtil.isNotNull(headerNames) %>">
 			<thead class="table-columns">
@@ -121,7 +133,9 @@ if (iteratorURL != null) {
 					}
 				%>
 
-					<th class="<%= cssClass %>" id="<%= namespace + id %>_col-<%= normalizedHeaderName %>"
+					<th
+						class="<%= cssClass %>"
+						id="<%= namespace + id %>_col-<%= normalizedHeaderName %>"
 
 						<%--
 
@@ -211,8 +225,6 @@ if (iteratorURL != null) {
 			if (rowChecker != null) {
 				rowIsChecked = rowChecker.isChecked(row.getObject());
 
-				boolean rowIsDisabled = rowChecker.isDisabled(row.getObject());
-
 				if (!rowIsChecked) {
 					allRowsIsChecked = false;
 				}
@@ -222,7 +234,7 @@ if (iteratorURL != null) {
 				textSearchEntry.setAlign(rowChecker.getAlign());
 				textSearchEntry.setColspan(rowChecker.getColspan());
 				textSearchEntry.setCssClass(rowChecker.getCssClass());
-				textSearchEntry.setName(rowChecker.getRowCheckBox(request, rowIsChecked, rowIsDisabled, row.getPrimaryKey()));
+				textSearchEntry.setName(rowChecker.getRowCheckBox(request, row));
 				textSearchEntry.setValign(rowChecker.getValign());
 
 				row.addSearchEntry(0, textSearchEntry);
@@ -318,17 +330,27 @@ if (iteratorURL != null) {
 
 	<c:if test="<%= PropsValues.SEARCH_CONTAINER_SHOW_PAGINATION_BOTTOM && paginate %>">
 		<div class="taglib-search-iterator-page-iterator-bottom">
-			<liferay-ui:search-paginator id='<%= id + "PageIteratorBottom" %>' searchContainer="<%= searchContainer %>" type="<%= type %>" />
+			<liferay-ui:search-paginator
+				id='<%= id + "PageIteratorBottom" %>'
+				searchContainer="<%= searchContainer %>"
+				type="<%= type %>"
+			/>
 		</div>
 	</c:if>
 </div>
 
 <c:if test="<%= (rowChecker != null) && !resultRows.isEmpty() && Validator.isNotNull(rowChecker.getAllRowsId()) && allRowsIsChecked %>">
-	<aui:script>
-		var container = $(document.<%= rowChecker.getFormName() %>).find('#<%= namespace + id %>SearchContainer');
+	<script>
+		(function() {
+			var form = document.<%= rowChecker.getFormName() %>;
 
-		container.find('input[name="<%= rowChecker.getAllRowsId() %>"]').prop('checked', true);
-	</aui:script>
+			var allRowsIdCheckbox = form.querySelector('#<%= namespace + id %>SearchContainer input[name="<%= rowChecker.getAllRowsId() %>"]');
+
+			if (allRowsIdCheckbox) {
+				allRowsIdCheckbox.checked = true;
+			}
+		})();
+	</script>
 </c:if>
 
 <c:if test="<%= Validator.isNotNull(id) %>">

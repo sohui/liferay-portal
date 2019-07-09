@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.RecentLayoutRevision;
 import com.liferay.portal.kernel.service.RecentLayoutRevisionLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the RecentLayoutRevision service. Represents a row in the &quot;RecentLayoutRevision&quot; database table, with each column mapped to a property of this class.
@@ -34,10 +34,11 @@ import com.liferay.portal.kernel.service.RecentLayoutRevisionLocalServiceUtil;
 @ProviderType
 public abstract class RecentLayoutRevisionBaseImpl
 	extends RecentLayoutRevisionModelImpl implements RecentLayoutRevision {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a recent layout revision model instance should use the {@link RecentLayoutRevision} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a recent layout revision model instance should use the <code>RecentLayoutRevision</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -45,7 +46,9 @@ public abstract class RecentLayoutRevisionBaseImpl
 			RecentLayoutRevisionLocalServiceUtil.addRecentLayoutRevision(this);
 		}
 		else {
-			RecentLayoutRevisionLocalServiceUtil.updateRecentLayoutRevision(this);
+			RecentLayoutRevisionLocalServiceUtil.updateRecentLayoutRevision(
+				this);
 		}
 	}
+
 }

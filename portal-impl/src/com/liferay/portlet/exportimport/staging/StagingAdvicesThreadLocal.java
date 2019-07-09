@@ -14,11 +14,14 @@
 
 package com.liferay.portlet.exportimport.staging;
 
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
+import com.liferay.petra.lang.CentralizedThreadLocal;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public class StagingAdvicesThreadLocal {
 
 	public static boolean isEnabled() {
@@ -30,7 +33,7 @@ public class StagingAdvicesThreadLocal {
 	}
 
 	private static final ThreadLocal<Boolean> _enabled =
-		new AutoResetThreadLocal<>(
-			StagingAdvicesThreadLocal.class + "._enabled", true);
+		new CentralizedThreadLocal<>(
+			StagingAdvicesThreadLocal.class + "._enabled", () -> Boolean.TRUE);
 
 }

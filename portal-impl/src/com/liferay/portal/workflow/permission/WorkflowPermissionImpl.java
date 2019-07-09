@@ -17,10 +17,8 @@ package com.liferay.portal.workflow.permission;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.WorkflowInstanceLink;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
 import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalServiceUtil;
 import com.liferay.portal.kernel.workflow.WorkflowException;
 import com.liferay.portal.kernel.workflow.WorkflowInstance;
@@ -31,7 +29,6 @@ import com.liferay.portal.kernel.workflow.permission.WorkflowPermission;
 /**
  * @author Jorge Ferrer
  */
-@DoPrivileged
 public class WorkflowPermissionImpl implements WorkflowPermission {
 
 	@Override
@@ -63,12 +60,6 @@ public class WorkflowPermissionImpl implements WorkflowPermission {
 			return Boolean.TRUE;
 		}
 
-		if (!WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(
-				companyId, groupId, className)) {
-
-			return null;
-		}
-
 		if (WorkflowInstanceLinkLocalServiceUtil.hasWorkflowInstanceLink(
 				companyId, groupId, className, classPK)) {
 
@@ -90,9 +81,8 @@ public class WorkflowPermissionImpl implements WorkflowPermission {
 			if (!hasPermission && actionId.equals(ActionKeys.VIEW)) {
 				return null;
 			}
-			else {
-				return hasPermission;
-			}
+
+			return hasPermission;
 		}
 
 		return null;
@@ -103,17 +93,20 @@ public class WorkflowPermissionImpl implements WorkflowPermission {
 			WorkflowInstance workflowInstance)
 		throws WorkflowException {
 
-		if (WorkflowTaskManagerUtil.getWorkflowTaskCountByWorkflowInstance(
+		int count =
+			WorkflowTaskManagerUtil.getWorkflowTaskCountByWorkflowInstance(
 				permissionChecker.getCompanyId(), permissionChecker.getUserId(),
-				workflowInstance.getWorkflowInstanceId(), Boolean.FALSE) > 0) {
+				workflowInstance.getWorkflowInstanceId(), Boolean.FALSE);
 
+		if (count > 0) {
 			return true;
 		}
 
-		if (WorkflowTaskManagerUtil.getWorkflowTaskCountByUserRoles(
-				permissionChecker.getCompanyId(), permissionChecker.getUserId(),
-				Boolean.FALSE) > 0) {
+		count = WorkflowTaskManagerUtil.getWorkflowTaskCountByUserRoles(
+			permissionChecker.getCompanyId(), permissionChecker.getUserId(),
+			workflowInstance.getWorkflowInstanceId(), Boolean.FALSE);
 
+		if (count > 0) {
 			return true;
 		}
 

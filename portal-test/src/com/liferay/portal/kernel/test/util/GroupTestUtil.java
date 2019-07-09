@@ -14,9 +14,10 @@
 
 package com.liferay.portal.kernel.test.util;
 
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactory;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactoryUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
 import com.liferay.portal.kernel.model.Group;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.test.randomizerbumpers.UniqueStringRandomizerBu
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
@@ -127,6 +127,13 @@ public class GroupTestUtil {
 			NumericStringRandomizerBumper.INSTANCE,
 			UniqueStringRandomizerBumper.INSTANCE);
 
+		return addGroup(parentGroupId, name, serviceContext);
+	}
+
+	public static Group addGroup(
+			long parentGroupId, String name, ServiceContext serviceContext)
+		throws Exception {
+
 		Group group = GroupLocalServiceUtil.fetchGroup(
 			TestPropsValues.getCompanyId(), name);
 
@@ -162,6 +169,10 @@ public class GroupTestUtil {
 			friendlyURL, site, active, serviceContext);
 	}
 
+	public static Group deleteGroup(Group group) throws Exception {
+		return GroupLocalServiceUtil.deleteGroup(group);
+	}
+
 	public static void enableLocalStaging(Group group) throws Exception {
 		enableLocalStaging(group, TestPropsValues.getUserId());
 	}
@@ -179,7 +190,8 @@ public class GroupTestUtil {
 		Map<String, Serializable> attributes = serviceContext.getAttributes();
 
 		attributes.putAll(
-			ExportImportConfigurationParameterMapFactory.buildParameterMap());
+			ExportImportConfigurationParameterMapFactoryUtil.
+				buildParameterMap());
 
 		attributes.put(
 			PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL,

@@ -41,7 +41,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 public class PortalImplGetSitesTest {
 
@@ -73,6 +73,7 @@ public class PortalImplGetSitesTest {
 		_group = GroupTestUtil.addGroup(parentGroup.getGroupId());
 
 		_groups.add(_group);
+
 		_groups.add(parentGroup);
 		_groups.add(grandparentGroup);
 

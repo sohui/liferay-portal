@@ -15,12 +15,16 @@
 package com.liferay.portal.service.impl;
 
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.LayoutSetBranchNameException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutSetBranchException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RequiredLayoutSetBranchException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutBranch;
@@ -35,8 +39,6 @@ import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.comparator.LayoutSetBranchCreateDateComparator;
@@ -149,9 +151,9 @@ public class LayoutSetBranchLocalServiceImpl
 		if (layoutSetBranch.isMaster() ||
 			(copyLayoutSetBranchId == LayoutSetBranchConstants.ALL_BRANCHES)) {
 
-			List<Layout> layouts = layoutPersistence.findByG_P(
-				layoutSetBranch.getGroupId(),
-				layoutSetBranch.getPrivateLayout());
+			List<Layout> layouts = layoutPersistence.findByG_P_Head(
+				layoutSetBranch.getGroupId(), layoutSetBranch.isPrivateLayout(),
+				false);
 
 			for (Layout layout : layouts) {
 				LayoutBranch layoutBranch =
@@ -166,6 +168,11 @@ public class LayoutSetBranchLocalServiceImpl
 						layout.getPlid(), true);
 
 				if (lastLayoutRevision != null) {
+					int workflowAction = serviceContext.getWorkflowAction();
+
+					serviceContext.setWorkflowAction(
+						WorkflowConstants.ACTION_PUBLISH);
+
 					layoutRevisionLocalService.addLayoutRevision(
 						userId, layoutSetBranchId,
 						layoutBranch.getLayoutBranchId(),
@@ -173,7 +180,7 @@ public class LayoutSetBranchLocalServiceImpl
 							DEFAULT_PARENT_LAYOUT_REVISION_ID,
 						true, lastLayoutRevision.getPlid(),
 						lastLayoutRevision.getLayoutRevisionId(),
-						lastLayoutRevision.getPrivateLayout(),
+						lastLayoutRevision.isPrivateLayout(),
 						lastLayoutRevision.getName(),
 						lastLayoutRevision.getTitle(),
 						lastLayoutRevision.getDescription(),
@@ -185,6 +192,8 @@ public class LayoutSetBranchLocalServiceImpl
 						lastLayoutRevision.getThemeId(),
 						lastLayoutRevision.getColorSchemeId(),
 						lastLayoutRevision.getCss(), serviceContext);
+
+					serviceContext.setWorkflowAction(workflowAction);
 				}
 				else {
 					layoutRevisionLocalService.addLayoutRevision(
@@ -193,7 +202,7 @@ public class LayoutSetBranchLocalServiceImpl
 						LayoutRevisionConstants.
 							DEFAULT_PARENT_LAYOUT_REVISION_ID,
 						false, layout.getPlid(), LayoutConstants.DEFAULT_PLID,
-						layout.getPrivateLayout(), layout.getName(),
+						layout.isPrivateLayout(), layout.getName(),
 						layout.getTitle(), layout.getDescription(),
 						layout.getKeywords(), layout.getRobots(),
 						layout.getTypeSettings(), layout.isIconImage(),
@@ -221,7 +230,7 @@ public class LayoutSetBranchLocalServiceImpl
 					LayoutRevisionConstants.DEFAULT_PARENT_LAYOUT_REVISION_ID,
 					true, layoutRevision.getPlid(),
 					layoutRevision.getLayoutRevisionId(),
-					layoutRevision.getPrivateLayout(), layoutRevision.getName(),
+					layoutRevision.isPrivateLayout(), layoutRevision.getName(),
 					layoutRevision.getTitle(), layoutRevision.getDescription(),
 					layoutRevision.getKeywords(), layoutRevision.getRobots(),
 					layoutRevision.getTypeSettings(),
@@ -410,10 +419,12 @@ public class LayoutSetBranchLocalServiceImpl
 				mergeLayoutSetBranchId, true);
 
 		for (LayoutRevision layoutRevision : layoutRevisions) {
+			LayoutBranch layoutBranch = layoutRevision.getLayoutBranch();
+
 			String layoutBranchName = getLayoutBranchName(
 				layoutSetBranch.getLayoutSetBranchId(), locale,
-				layoutRevision.getLayoutBranch().getName(),
-				mergeLayoutSetBranch.getName(), layoutRevision.getPlid());
+				layoutBranch.getName(), mergeLayoutSetBranch.getName(),
+				layoutRevision.getPlid());
 
 			StringBundler sb = new StringBundler(3);
 
@@ -425,11 +436,10 @@ public class LayoutSetBranchLocalServiceImpl
 					new String[] {mergeLayoutSetBranch.getName(), nowString},
 					false));
 
-			LayoutBranch layoutBranch =
-				layoutBranchLocalService.addLayoutBranch(
-					layoutSetBranch.getLayoutSetBranchId(),
-					layoutRevision.getPlid(), layoutBranchName, sb.toString(),
-					false, serviceContext);
+			layoutBranch = layoutBranchLocalService.addLayoutBranch(
+				layoutSetBranch.getLayoutSetBranchId(),
+				layoutRevision.getPlid(), layoutBranchName, sb.toString(),
+				false, serviceContext);
 
 			layoutRevisionLocalService.addLayoutRevision(
 				layoutRevision.getUserId(),
@@ -461,7 +471,7 @@ public class LayoutSetBranchLocalServiceImpl
 
 		validate(
 			layoutSetBranch.getLayoutSetBranchId(),
-			layoutSetBranch.getGroupId(), layoutSetBranch.getPrivateLayout(),
+			layoutSetBranch.getGroupId(), layoutSetBranch.isPrivateLayout(),
 			name, layoutSetBranch.isMaster());
 
 		layoutSetBranch.setName(name);
@@ -529,6 +539,12 @@ public class LayoutSetBranchLocalServiceImpl
 			}
 		}
 		catch (NoSuchLayoutSetBranchException nslsbe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(nslsbe, nslsbe);
+			}
 		}
 
 		if (master) {
@@ -545,8 +561,17 @@ public class LayoutSetBranchLocalServiceImpl
 				}
 			}
 			catch (NoSuchLayoutSetBranchException nslsbe) {
+
+				// LPS-52675
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(nslsbe, nslsbe);
+				}
 			}
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutSetBranchLocalServiceImpl.class);
 
 }

@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter.util;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.File;
@@ -27,6 +27,12 @@ import org.apache.commons.io.FileUtils;
  * @author Andrea Di Giorgi
  */
 public class FileUtil {
+
+	public static boolean exists(String fileName) {
+		File file = new File(fileName);
+
+		return file.exists();
+	}
 
 	public static byte[] getBytes(File file) throws IOException {
 		return FileUtils.readFileToByteArray(file);

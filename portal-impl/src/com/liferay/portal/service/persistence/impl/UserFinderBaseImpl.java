@@ -15,10 +15,14 @@
 package com.liferay.portal.service.persistence.impl;
 
 import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -26,6 +30,19 @@ import java.util.Set;
  * @generated
  */
 public class UserFinderBaseImpl extends BasePersistenceImpl<User> {
+
+	public UserFinderBaseImpl() {
+		setModelClass(User.class);
+
+		Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+		dbColumnNames.put("uuid", "uuid_");
+		dbColumnNames.put("password", "password_");
+		dbColumnNames.put("groups", "groups_");
+
+		setDBColumnNames(dbColumnNames);
+	}
+
 	@Override
 	public Set<String> getBadColumnNames() {
 		return getUserPersistence().getBadColumnNames();
@@ -51,4 +68,8 @@ public class UserFinderBaseImpl extends BasePersistenceImpl<User> {
 
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UserFinderBaseImpl.class);
+
 }

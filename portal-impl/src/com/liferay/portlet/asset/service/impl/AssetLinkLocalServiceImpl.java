@@ -20,29 +20,18 @@ import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.model.AssetLinkConstants;
 import com.liferay.asset.kernel.model.adapter.StagedAssetLink;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
-import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
-import com.liferay.portal.kernel.dao.orm.Criterion;
-import com.liferay.portal.kernel.dao.orm.Disjunction;
-import com.liferay.portal.kernel.dao.orm.DynamicQuery;
-import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
-import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
-import com.liferay.portal.kernel.dao.orm.Property;
-import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
-import com.liferay.portal.kernel.dao.orm.QueryPos;
-import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
-import com.liferay.portal.kernel.dao.orm.SQLQuery;
-import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portlet.asset.service.base.AssetLinkLocalServiceBaseImpl;
-import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,7 +70,7 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 			long userId, long entryId1, long entryId2, int type, int weight)
 		throws PortalException {
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 		Date now = new Date();
 
 		long linkId = counterLocalService.increment();
@@ -120,25 +109,30 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 	}
 
 	@Override
+	public AssetLink deleteAssetLink(AssetLink assetLink) {
+		AssetLink deletedAssetLink = super.deleteAssetLink(assetLink);
+
+		addDeletionSystemEvent(assetLink);
+
+		return deletedAssetLink;
+	}
+
+	@Override
+	public AssetLink deleteAssetLink(long linkId) throws PortalException {
+		AssetLink assetLink = super.deleteAssetLink(linkId);
+
+		addDeletionSystemEvent(assetLink);
+
+		return assetLink;
+	}
+
+	@Override
 	public void deleteGroupLinks(long groupId) {
-		Session session = assetLinkPersistence.openSession();
+		List<AssetLink> assetLinks = assetLinkFinder.findByAssetEntryGroupId(
+			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
-		try {
-			String sql = CustomSQLUtil.get(_DELETE_BY_ASSET_ENTRY_GROUP_ID);
-
-			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
-
-			QueryPos qPos = QueryPos.getInstance(sqlQuery);
-
-			qPos.add(groupId);
-			qPos.add(groupId);
-
-			sqlQuery.executeUpdate();
-		}
-		finally {
-			assetLinkPersistence.closeSession(session);
-
-			assetLinkPersistence.clearCache();
+		for (AssetLink assetLink : assetLinks) {
+			deleteAssetLink(assetLink);
 		}
 	}
 
@@ -151,8 +145,10 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 	public void deleteLink(AssetLink link) {
 		if (AssetLinkConstants.isTypeBi(link.getType())) {
 			try {
-				assetLinkPersistence.removeByE_E_T(
+				AssetLink assetLink = assetLinkPersistence.findByE_E_T(
 					link.getEntryId2(), link.getEntryId1(), link.getType());
+
+				deleteAssetLink(assetLink);
 			}
 			catch (NoSuchLinkException nsle) {
 				if (_log.isWarnEnabled()) {
@@ -162,6 +158,8 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 		}
 
 		assetLinkPersistence.remove(link);
+
+		addDeletionSystemEvent(link);
 	}
 
 	/**
@@ -256,85 +254,15 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 		return filterAssetLinks(assetLinks, excludeInvisibleLinks);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public ExportActionableDynamicQuery getExportActionbleDynamicQuery(
 		final PortletDataContext portletDataContext) {
 
-		final ExportActionableDynamicQuery exportActionableDynamicQuery =
-			new ExportActionableDynamicQuery();
-
-		exportActionableDynamicQuery.setAddCriteriaMethod(
-			new ActionableDynamicQuery.AddCriteriaMethod() {
-
-				@Override
-				public void addCriteria(DynamicQuery dynamicQuery) {
-					Criterion createDateCriterion =
-						portletDataContext.getDateRangeCriteria("createDate");
-
-					if (createDateCriterion != null) {
-						dynamicQuery.add(createDateCriterion);
-					}
-
-					DynamicQuery assetEntryDynamicQuery =
-						DynamicQueryFactoryUtil.forClass(
-							AssetEntry.class, "assetEntry", getClassLoader());
-
-					assetEntryDynamicQuery.setProjection(
-						ProjectionFactoryUtil.alias(
-							ProjectionFactoryUtil.property(
-								"assetEntry.entryId"),
-							"assetEntry.assetEntryId"));
-
-					Property groupIdProperty = PropertyFactoryUtil.forName(
-						"groupId");
-
-					Criterion groupIdCriterion = groupIdProperty.eq(
-						portletDataContext.getScopeGroupId());
-
-					assetEntryDynamicQuery.add(groupIdCriterion);
-
-					Disjunction disjunction =
-						RestrictionsFactoryUtil.disjunction();
-
-					Property entryId1Property = PropertyFactoryUtil.forName(
-						"entryId1");
-					Property entryId2Property = PropertyFactoryUtil.forName(
-						"entryId2");
-
-					disjunction.add(
-						entryId1Property.in(assetEntryDynamicQuery));
-					disjunction.add(
-						entryId2Property.in(assetEntryDynamicQuery));
-
-					dynamicQuery.add(disjunction);
-				}
-
-			});
-		exportActionableDynamicQuery.setBaseLocalService(this);
-		exportActionableDynamicQuery.setClassLoader(getClassLoader());
-		exportActionableDynamicQuery.setCompanyId(
-			portletDataContext.getCompanyId());
-		exportActionableDynamicQuery.setModelClass(AssetLink.class);
-		exportActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<AssetLink>() {
-
-				@Override
-				public void performAction(AssetLink assetLink)
-					throws PortalException {
-
-					StagedAssetLink stagedAssetLink = ModelAdapterUtil.adapt(
-						assetLink, AssetLink.class, StagedAssetLink.class);
-
-					StagedModelDataHandlerUtil.exportStagedModel(
-						portletDataContext, stagedAssetLink);
-				}
-
-			});
-		exportActionableDynamicQuery.setPrimaryKeyPropertyName("linkId");
-		exportActionableDynamicQuery.setStagedModelType(
-			new StagedModelType(StagedModelType.class));
-
-		return exportActionableDynamicQuery;
+		return new ExportActionableDynamicQuery();
 	}
 
 	/**
@@ -357,6 +285,14 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 		links.addAll(e2Links);
 
 		return links;
+	}
+
+	@Override
+	public List<AssetLink> getLinks(
+		long groupId, Date startDate, Date endDate, int start, int end) {
+
+		return assetLinkFinder.findByG_C(
+			groupId, startDate, endDate, start, end);
 	}
 
 	/**
@@ -386,6 +322,18 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 		links.addAll(e2Links);
 
 		return links;
+	}
+
+	/**
+	 * Returns all the asset links of an AssetEntry.
+	 *
+	 * @param  classNameId AssetEntry's classNameId
+	 * @param  classPK AssetEntry's classPK
+	 * @return the asset links of the given entry params
+	 */
+	@Override
+	public List<AssetLink> getLinks(long classNameId, long classPK) {
+		return assetLinkFinder.findByC_C(classNameId, classPK);
 	}
 
 	/**
@@ -480,6 +428,30 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 		}
 	}
 
+	protected void addDeletionSystemEvent(AssetLink assetLink) {
+		AssetEntry assetEntry = assetEntryLocalService.fetchEntry(
+			assetLink.getEntryId1());
+
+		if (assetEntry == null) {
+			return;
+		}
+
+		StagedAssetLink stagedAssetLink = ModelAdapterUtil.adapt(
+			assetLink, AssetLink.class, StagedAssetLink.class);
+
+		StagedModelType stagedModelType = stagedAssetLink.getStagedModelType();
+
+		try {
+			systemEventLocalService.addSystemEvent(
+				0, assetEntry.getGroupId(), stagedModelType.getClassName(),
+				stagedAssetLink.getPrimaryKey(), stagedAssetLink.getUuid(),
+				null, SystemEventConstants.TYPE_DELETE, StringPool.BLANK);
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
+	}
+
 	protected List<AssetLink> filterAssetLinks(
 		List<AssetLink> assetLinks, boolean excludeInvisibleLinks) {
 
@@ -502,10 +474,6 @@ public class AssetLinkLocalServiceImpl extends AssetLinkLocalServiceBaseImpl {
 
 		return assetLinks;
 	}
-
-	private static final String _DELETE_BY_ASSET_ENTRY_GROUP_ID =
-		AssetLinkLocalServiceImpl.class.getName() +
-			".deleteByAssetEntryGroupId";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AssetLinkLocalServiceImpl.class);

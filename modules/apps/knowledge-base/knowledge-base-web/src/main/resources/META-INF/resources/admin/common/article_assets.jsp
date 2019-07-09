@@ -20,19 +20,27 @@
 KBArticle kbArticle = (KBArticle)request.getAttribute(KBWebKeys.KNOWLEDGE_BASE_KB_ARTICLE);
 %>
 
-<liferay-util:buffer var="html">
-	<liferay-ui:asset-categories-summary
+<liferay-util:buffer
+	var="html"
+>
+	<liferay-asset:asset-categories-summary
 		className="<%= KBArticle.class.getName() %>"
 		classPK="<%= kbArticle.getClassPK() %>"
 		portletURL="<%= renderResponse.createRenderURL() %>"
 	/>
 
-	<liferay-ui:asset-tags-summary
+	<liferay-asset:asset-tags-available
 		className="<%= KBArticle.class.getName() %>"
 		classPK="<%= kbArticle.getClassPK() %>"
-		message="tags"
-		portletURL="<%= renderResponse.createRenderURL() %>"
-	/>
+	>
+		<h5><liferay-ui:message key="tags" /></h5>
+
+		<liferay-asset:asset-tags-summary
+			className="<%= KBArticle.class.getName() %>"
+			classPK="<%= kbArticle.getClassPK() %>"
+			portletURL="<%= renderResponse.createRenderURL() %>"
+		/>
+	</liferay-asset:asset-tags-available>
 </liferay-util:buffer>
 
 <c:if test="<%= Validator.isNotNull(html.trim()) %>">

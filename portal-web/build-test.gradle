@@ -1,22 +1,54 @@
 import com.liferay.gradle.util.GradleUtil
 
+import java.util.regex.Matcher
+
+import org.gradle.util.GUtil
+
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.poshi.runner", version: "1.0.10"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.defaults", version: "latest.release"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.maven.plugin.builder", version: "1.2.3"
+		classpath group: "de.undercouch", name: "gradle-download-task", version: "3.3.0"
+		classpath group: "gradle.plugin.org.ysb33r.gradle", name: "gradletest", version: "1.1"
+		classpath group: "xalan", name: "xalan", version: "2.7.2"
 	}
 
 	repositories {
 		if (!Boolean.getBoolean("maven.local.ignore")) {
 			mavenLocal()
+
+			File tmpMavenRepositoryDir = null
+
+			if (hasProperty("tmp.maven.repository.dir")) {
+				tmpMavenRepositoryDir = file(properties["tmp.maven.repository.dir"])
+			}
+			else {
+				tmpMavenRepositoryDir = file("../.m2-tmp")
+			}
+
+			if (tmpMavenRepositoryDir.exists()) {
+				maven {
+					url tmpMavenRepositoryDir
+				}
+			}
 		}
 
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url System.properties["repository.url"] ?: "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
 
 apply plugin: "com.liferay.poshi.runner"
+apply plugin: "com.liferay.poshi.runner.resources.defaults"
+
+poshiRunner {
+	if (project.hasProperty("poshiRunnerExtProperties")) {
+		poshiPropertiesFile = new File(projectDir.parentFile, project.properties["poshiRunnerExtProperties"])
+	}
+
+	openCVVersion = "2.4.10-0.10"
+}
 
 task updateGradleCache
 
@@ -25,6 +57,33 @@ configurations {
 }
 
 dependencies {
+	if (poshiRunner.poshiPropertiesFile && poshiRunner.poshiPropertiesFile.exists()) {
+		Properties poshiRunnerProperties = GUtil.loadProperties(poshiRunner.poshiPropertiesFile)
+
+		String testBaseDirName = poshiRunnerProperties.getProperty("test.base.dir.name")
+
+		if (testBaseDirName) {
+			Matcher matcher = testBaseDirName =~ /.*\/(?<portalVersion>\d+(\.\d+)*).*/
+
+			if (matcher.find()) {
+				String portalVersion = matcher.group("portalVersion")
+
+				if (portalVersion.startsWith("6.1")) {
+					poshiRunnerResources group: "com.liferay.poshi.runner.resources", name: "portal-ee-6.1.x", version: "20190325111923-20a286f"
+				}
+				else if (portalVersion.startsWith("6.2")) {
+					poshiRunnerResources group: "com.liferay.poshi.runner.resources", name: "portal-ee-6.2.x", version: "20190325111857-3731418"
+				}
+				else if (portalVersion.startsWith("7.0")) {
+					poshiRunnerResources group: "com.liferay.poshi.runner.resources", name: "portal-7.0.x", version: "20190325-004214c"
+				}
+				else if (portalVersion.startsWith("7.1")) {
+					poshiRunnerResources group: "com.liferay.poshi.runner.resources", name: "portal-7.1.x", version: "20190325-f1ecc02"
+				}
+			}
+		}
+	}
+
 	["x86", "x86_64"].each {
 		sikuliComplete classifier: "linux-${it}", group: "org.bytedeco.javacpp-presets", name: "opencv", version: poshiRunner.openCVVersion
 		sikuliComplete classifier: "windows-${it}", group: "org.bytedeco.javacpp-presets", name: "opencv", version: poshiRunner.openCVVersion
@@ -33,27 +92,35 @@ dependencies {
 	sikuliComplete classifier: "macosx-x86_64", group: "org.bytedeco.javacpp-presets", name: "opencv", version: poshiRunner.openCVVersion
 }
 
-poshiRunner {
-	if (project.hasProperty("poshiRunnerExtProperties")) {
-		poshiPropertiesFile = new File(projectDir.parentFile, project.properties["poshiRunnerExtProperties"])
-	}
-
-	version = "1.0.40"
+poshiRunnerResources {
+	baseNameDir "portal", "test/functional/com/liferay/portalweb"
 }
 
 repositories {
 	if (!Boolean.getBoolean("maven.local.ignore")) {
 		mavenLocal()
+
+		if (project.hasProperty("tmp.maven.repository.dir")) {
+			File tmpMavenRepositoryDir = file(project.properties["tmp.maven.repository.dir"])
+
+			if (tmpMavenRepositoryDir.exists()) {
+				maven {
+					url tmpMavenRepositoryDir
+				}
+			}
+		}
 	}
 
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 
-updateGradleCache << {
-	configurations.poshiRunner.resolve()
-	configurations.sikuliComplete.resolve()
+updateGradleCache {
+	doLast {
+		configurations.poshiRunner.resolve()
+		configurations.sikuliComplete.resolve()
+	}
 }
 
 if (GradleUtil.getProperty(project, "local", false)) {

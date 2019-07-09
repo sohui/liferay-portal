@@ -16,12 +16,19 @@ package com.liferay.portal.jsonwebservice;
 
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceAction;
 import com.liferay.portal.kernel.jsonwebservice.NoSuchJSONWebServiceException;
+import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.util.PropsTestUtil;
+import com.liferay.portal.kernel.transaction.Isolation;
+import com.liferay.portal.kernel.util.ProxyUtil;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+
+import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -39,20 +46,36 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author Igor Spasic
  */
-@PrepareForTest({ServiceContextFactory.class, PropsUtil.class})
+@PrepareForTest(ServiceContextFactory.class)
 @RunWith(PowerMockRunner.class)
 public class JSONWebServiceTest extends BaseJSONWebServiceTestCase {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		mockStatic(PropsUtil.class);
+		final Method getDefaultPlidMethod = LayoutLocalService.class.getMethod(
+			"getDefaultPlid", long.class, boolean.class);
 
-		when(
-			PropsUtil.getArray(
-				PropsKeys.JSONWS_WEB_SERVICE_INVALID_HTTP_METHODS)
-		).thenReturn(
-			null
-		);
+		ReflectionTestUtil.setFieldValue(
+			LayoutLocalServiceUtil.class, "_service",
+			ProxyUtil.newProxyInstance(
+				LayoutLocalService.class.getClassLoader(),
+				new Class<?>[] {LayoutLocalService.class},
+				new InvocationHandler() {
+
+					@Override
+					public Object invoke(
+						Object proxy, Method method, Object[] args) {
+
+						if (getDefaultPlidMethod.equals(method)) {
+							return 0L;
+						}
+
+						throw new UnsupportedOperationException();
+					}
+
+				}));
+
+		PropsTestUtil.setProps(Collections.emptyMap());
 
 		initPortalServices();
 
@@ -67,7 +90,11 @@ public class JSONWebServiceTest extends BaseJSONWebServiceTestCase {
 			ServiceContextFactory.class, "getInstance",
 			HttpServletRequest.class);
 
-		stub(method).toReturn(new ServiceContext());
+		stub(
+			method
+		).toReturn(
+			new ServiceContext()
+		);
 	}
 
 	@Test
@@ -243,6 +270,28 @@ public class JSONWebServiceTest extends BaseJSONWebServiceTestCase {
 
 		Assert.assertEquals(
 			ServiceContext.class.getName(), jsonWebServiceAction.invoke());
+	}
+
+	@Test
+	public void testEnumParameter() throws Exception {
+		MockHttpServletRequest mockHttpServletRequest = createHttpRequest(
+			"/camelfoo/add-isolation/isolation/DEFAULT");
+
+		JSONWebServiceAction jsonWebServiceAction = lookupJSONWebServiceAction(
+			mockHttpServletRequest);
+
+		jsonWebServiceAction.invoke();
+	}
+
+	@Test
+	public void testEnumReturnValue() throws Exception {
+		MockHttpServletRequest mockHttpServletRequest = createHttpRequest(
+			"/camelfoo/get-isolation");
+
+		JSONWebServiceAction jsonWebServiceAction = lookupJSONWebServiceAction(
+			mockHttpServletRequest);
+
+		Assert.assertEquals(Isolation.DEFAULT, jsonWebServiceAction.invoke());
 	}
 
 	@Test

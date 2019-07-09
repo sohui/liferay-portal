@@ -16,9 +16,12 @@ package com.liferay.portal.kernel.zip;
 
 import java.io.File;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public interface ZipWriterFactory {
 
 	public ZipWriter getZipWriter();

@@ -14,12 +14,12 @@
 
 package com.liferay.portal.jsonwebservice;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionMapping;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MethodParameter;
 import com.liferay.portal.kernel.util.MethodParametersResolverUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.lang.reflect.Method;
@@ -69,10 +69,14 @@ public class JSONWebServiceActionConfig
 		_actionMethod = newActionMethod;
 
 		if (Validator.isNotNull(_contextName)) {
-			path = path.substring(1);
+			StringBundler sb = new StringBundler(4);
 
-			path = StringPool.SLASH.concat(_contextName).concat(
-				StringPool.PERIOD).concat(path);
+			sb.append(StringPool.SLASH);
+			sb.append(_contextName);
+			sb.append(StringPool.PERIOD);
+			sb.append(path.substring(1));
+
+			path = sb.toString();
 		}
 
 		_path = path;
@@ -88,9 +92,6 @@ public class JSONWebServiceActionConfig
 			_deprecated = false;
 		}
 
-		_methodParameters =
-			MethodParametersResolverUtil.resolveMethodParameters(actionMethod);
-
 		Method realActionMethod = null;
 
 		try {
@@ -102,15 +103,17 @@ public class JSONWebServiceActionConfig
 
 		_realActionMethod = realActionMethod;
 
-		StringBundler sb = new StringBundler(_methodParameters.length * 2 + 3);
+		Class<?>[] parameterTypes = _actionMethod.getParameterTypes();
+
+		StringBundler sb = new StringBundler(parameterTypes.length * 2 + 3);
 
 		sb.append(_path);
 		sb.append(StringPool.MINUS);
-		sb.append(_methodParameters.length);
+		sb.append(parameterTypes.length);
 
-		for (MethodParameter methodParameter : _methodParameters) {
+		for (Class<?> parameterType : parameterTypes) {
 			sb.append(StringPool.MINUS);
-			sb.append(methodParameter.getName());
+			sb.append(parameterType.getName());
 		}
 
 		_signature = sb.toString();
@@ -175,7 +178,12 @@ public class JSONWebServiceActionConfig
 
 	@Override
 	public MethodParameter[] getMethodParameters() {
-		return _methodParameters;
+		if (_realActionMethod == null) {
+			return new MethodParameter[0];
+		}
+
+		return MethodParametersResolverUtil.resolveMethodParameters(
+			_realActionMethod);
 	}
 
 	@Override
@@ -205,7 +213,7 @@ public class JSONWebServiceActionConfig
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(21);
+		StringBundler sb = new StringBundler(19);
 
 		sb.append("{actionClass=");
 		sb.append(_actionClass);
@@ -219,8 +227,6 @@ public class JSONWebServiceActionConfig
 		sb.append(_deprecated);
 		sb.append(", method=");
 		sb.append(_method);
-		sb.append(", methodParameters=");
-		sb.append(_methodParameters);
 		sb.append(", path=");
 		sb.append(_path);
 		sb.append(", realActionMethod=");
@@ -239,7 +245,6 @@ public class JSONWebServiceActionConfig
 	private final String _contextPath;
 	private final boolean _deprecated;
 	private final String _method;
-	private final MethodParameter[] _methodParameters;
 	private final String _path;
 	private final Method _realActionMethod;
 	private final String _signature;

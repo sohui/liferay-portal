@@ -1,15 +1,21 @@
-<definition>
-	<command name="changePagination">
-		<execute function="Click" locator1="Pagination#ITEMS_PER_PAGE_SELECT" />
+definition {
 
-		<var name="key_itemsPerPage" value="${itemsPerPage}" />
+	macro changePagination {
+		Click(locator1 = "Pagination#ITEMS_PER_PAGE_SELECT");
 
-		<execute function="AssertClick" locator1="MenuItem#ITEMS_PER_PAGE" value1="${itemsPerPage}" />
+		var key_itemsPerPage = "${itemsPerPage}";
 
-		<execute function="AssertTextEquals" locator1="Pagination#ITEMS_PER_PAGE_SELECT" value1="${itemsPerPage} Entries" />
-	</command>
+		MenuItem.click(menuItem = "${itemsPerPage}");
 
-	<command name="viewResults">
-		<execute function="AssertTextEquals" locator1="Pagination#RESULTS" value1="${results}" />
-	</command>
-</definition>
+		AssertTextEquals.assertPartialText(
+			locator1 = "Pagination#ITEMS_PER_PAGE_SELECT",
+			value1 = "${itemsPerPage} Entries");
+	}
+
+	macro viewResults {
+		AssertTextEquals(
+			locator1 = "Pagination#RESULTS",
+			value1 = "${results}");
+	}
+
+}

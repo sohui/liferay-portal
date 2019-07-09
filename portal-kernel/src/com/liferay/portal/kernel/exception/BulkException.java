@@ -20,8 +20,10 @@ import com.liferay.portal.kernel.util.StackTraceUtil;
 import java.util.Collection;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class BulkException extends Exception {
 
 	public BulkException(Collection<Throwable> causes) {

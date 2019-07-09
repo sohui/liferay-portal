@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.model;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Locale;
@@ -24,8 +24,11 @@ import java.util.Locale;
  * Contains constants used by roles, including the names of the default roles
  * and the role types.
  *
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ *             com.liferay.portal.kernel.model.role.RoleConstants}
  */
+@Deprecated
 public class RoleConstants {
 
 	public static final String ADMINISTRATOR = "Administrator";
@@ -90,8 +93,9 @@ public class RoleConstants {
 
 	public static final String TYPE_SITE_LABEL = "site";
 
-	public static final int[] TYPES_ORGANIZATION_AND_REGULAR =
-		{TYPE_REGULAR, TYPE_ORGANIZATION};
+	public static final int[] TYPES_ORGANIZATION_AND_REGULAR = {
+		TYPE_REGULAR, TYPE_ORGANIZATION
+	};
 
 	public static final int[] TYPES_ORGANIZATION_AND_REGULAR_AND_SITE = {
 		TYPE_REGULAR, TYPE_ORGANIZATION, TYPE_SITE
@@ -99,8 +103,9 @@ public class RoleConstants {
 
 	public static final int[] TYPES_REGULAR = {TYPE_REGULAR};
 
-	public static final int[] TYPES_REGULAR_AND_SITE =
-		{TYPE_REGULAR, TYPE_SITE};
+	public static final int[] TYPES_REGULAR_AND_SITE = {
+		TYPE_REGULAR, TYPE_SITE
+	};
 
 	public static final String USER = "User";
 
@@ -126,9 +131,8 @@ public class RoleConstants {
 		else if (type == TYPE_SITE) {
 			return TYPE_SITE_LABEL;
 		}
-		else {
-			return TYPE_REGULAR_LABEL;
-		}
+
+		return TYPE_REGULAR_LABEL;
 	}
 
 }

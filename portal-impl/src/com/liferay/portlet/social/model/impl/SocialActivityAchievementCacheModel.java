@@ -14,13 +14,9 @@
 
 package com.liferay.portlet.social.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
-
 import com.liferay.social.kernel.model.SocialActivityAchievement;
 
 import java.io.Externalizable;
@@ -28,16 +24,18 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing SocialActivityAchievement in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see SocialActivityAchievement
  * @generated
  */
 @ProviderType
-public class SocialActivityAchievementCacheModel implements CacheModel<SocialActivityAchievement>,
-	Externalizable {
+public class SocialActivityAchievementCacheModel
+	implements CacheModel<SocialActivityAchievement>, Externalizable {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -48,9 +46,13 @@ public class SocialActivityAchievementCacheModel implements CacheModel<SocialAct
 			return false;
 		}
 
-		SocialActivityAchievementCacheModel socialActivityAchievementCacheModel = (SocialActivityAchievementCacheModel)obj;
+		SocialActivityAchievementCacheModel
+			socialActivityAchievementCacheModel =
+				(SocialActivityAchievementCacheModel)obj;
 
-		if (activityAchievementId == socialActivityAchievementCacheModel.activityAchievementId) {
+		if (activityAchievementId ==
+				socialActivityAchievementCacheModel.activityAchievementId) {
+
 			return true;
 		}
 
@@ -87,16 +89,18 @@ public class SocialActivityAchievementCacheModel implements CacheModel<SocialAct
 
 	@Override
 	public SocialActivityAchievement toEntityModel() {
-		SocialActivityAchievementImpl socialActivityAchievementImpl = new SocialActivityAchievementImpl();
+		SocialActivityAchievementImpl socialActivityAchievementImpl =
+			new SocialActivityAchievementImpl();
 
-		socialActivityAchievementImpl.setActivityAchievementId(activityAchievementId);
+		socialActivityAchievementImpl.setActivityAchievementId(
+			activityAchievementId);
 		socialActivityAchievementImpl.setGroupId(groupId);
 		socialActivityAchievementImpl.setCompanyId(companyId);
 		socialActivityAchievementImpl.setUserId(userId);
 		socialActivityAchievementImpl.setCreateDate(createDate);
 
 		if (name == null) {
-			socialActivityAchievementImpl.setName(StringPool.BLANK);
+			socialActivityAchievementImpl.setName("");
 		}
 		else {
 			socialActivityAchievementImpl.setName(name);
@@ -126,8 +130,7 @@ public class SocialActivityAchievementCacheModel implements CacheModel<SocialAct
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(activityAchievementId);
 
 		objectOutput.writeLong(groupId);
@@ -139,7 +142,7 @@ public class SocialActivityAchievementCacheModel implements CacheModel<SocialAct
 		objectOutput.writeLong(createDate);
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
@@ -155,4 +158,5 @@ public class SocialActivityAchievementCacheModel implements CacheModel<SocialAct
 	public long createDate;
 	public String name;
 	public boolean firstInGroup;
+
 }

@@ -14,10 +14,9 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -25,39 +24,44 @@ import com.liferay.portal.kernel.util.ReferenceRegistry;
  */
 @ProviderType
 public class LayoutFinderUtil {
-	public static java.util.List<com.liferay.portal.kernel.model.Layout> findByNoPermissions(
-		long roleId) {
+
+	public static java.util.List<com.liferay.portal.kernel.model.Layout>
+		findByNoPermissions(long roleId) {
+
 		return getFinder().findByNoPermissions(roleId);
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.Layout> findByNullFriendlyURL() {
+	public static java.util.List<com.liferay.portal.kernel.model.Layout>
+		findByNullFriendlyURL() {
+
 		return getFinder().findByNullFriendlyURL();
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.Layout> findByScopeGroup(
-		long groupId) {
+	public static java.util.List<com.liferay.portal.kernel.model.Layout>
+		findByScopeGroup(long groupId) {
+
 		return getFinder().findByScopeGroup(groupId);
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.Layout> findByScopeGroup(
-		long groupId, boolean privateLayout) {
+	public static java.util.List<com.liferay.portal.kernel.model.Layout>
+		findByScopeGroup(long groupId, boolean privateLayout) {
+
 		return getFinder().findByScopeGroup(groupId, privateLayout);
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.LayoutReference> findByC_P_P(
-		long companyId, java.lang.String portletId,
-		java.lang.String preferencesKey, java.lang.String preferencesValue) {
-		return getFinder()
-				   .findByC_P_P(companyId, portletId, preferencesKey,
-			preferencesValue);
+	public static java.util.List
+		<com.liferay.portal.kernel.model.LayoutReference> findByC_P_P(
+			long companyId, String portletId, String preferencesKey,
+			String preferencesValue) {
+
+		return getFinder().findByC_P_P(
+			companyId, portletId, preferencesKey, preferencesValue);
 	}
 
 	public static LayoutFinder getFinder() {
 		if (_finder == null) {
-			_finder = (LayoutFinder)PortalBeanLocatorUtil.locate(LayoutFinder.class.getName());
-
-			ReferenceRegistry.registerReference(LayoutFinderUtil.class,
-				"_finder");
+			_finder = (LayoutFinder)PortalBeanLocatorUtil.locate(
+				LayoutFinder.class.getName());
 		}
 
 		return _finder;
@@ -65,9 +69,8 @@ public class LayoutFinderUtil {
 
 	public void setFinder(LayoutFinder finder) {
 		_finder = finder;
-
-		ReferenceRegistry.registerReference(LayoutFinderUtil.class, "_finder");
 	}
 
 	private static LayoutFinder _finder;
+
 }

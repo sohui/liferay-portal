@@ -81,12 +81,19 @@ Set<String> contextNames = JSONWebServiceActionsManagerUtil.getContextNames();
 		if (panelTitle.endsWith("Impl")) {
 			panelTitle = panelTitle.substring(0, panelTitle.length() - 4);
 		}
+
 		if (panelTitle.endsWith("Service")) {
 			panelTitle = panelTitle.substring(0, panelTitle.length() - 7);
 		}
 	%>
 
-		<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id='<%= "apiService" + jsonWebServiceClassName + "Panel" %>' persistState="<%= true %>" title="<%= panelTitle %>">
+		<liferay-ui:panel
+			collapsible="<%= true %>"
+			extended="<%= true %>"
+			id='<%= "apiService" + jsonWebServiceClassName + "Panel" %>'
+			persistState="<%= true %>"
+			title="<%= panelTitle %>"
+		>
 			<ul class="list-unstyled">
 
 				<%
@@ -100,7 +107,7 @@ Set<String> contextNames = JSONWebServiceActionsManagerUtil.getContextNames();
 					String serviceSignature = jsonWebServiceActionMapping.getSignature();
 				%>
 
-					<li class="lfr-api-signature <%= (serviceSignature.equals(signature)) ? "selected" : StringPool.BLANK %>">
+					<li class="lfr-api-signature <%= serviceSignature.equals(signature) ? "selected" : StringPool.BLANK %>">
 
 						<%
 						String methodURL = HttpUtil.addParameter(jsonWSContextPath, "signature", serviceSignature);

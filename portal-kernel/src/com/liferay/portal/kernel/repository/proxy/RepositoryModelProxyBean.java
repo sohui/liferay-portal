@@ -104,9 +104,8 @@ public abstract class RepositoryModelProxyBean {
 		else if (bean instanceof Folder) {
 			return newFolderProxyBean((Folder)bean);
 		}
-		else {
-			return bean;
-		}
+
+		return bean;
 	}
 
 	protected Object newProxyInstance(Object bean, Class<?> clazz) {
@@ -115,7 +114,7 @@ public abstract class RepositoryModelProxyBean {
 		}
 
 		return ProxyUtil.newProxyInstance(
-			_classLoader, new Class[] {clazz},
+			_classLoader, new Class<?>[] {clazz},
 			new ClassLoaderBeanHandler(bean, _classLoader));
 	}
 

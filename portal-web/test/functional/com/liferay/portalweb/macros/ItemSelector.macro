@@ -1,179 +1,268 @@
-<definition>
-	<command name="addFromURL">
-		<var name="key_imageSourceURL" value="${imageSourceURL}" />
+definition {
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
+	macro addFromURL {
+		var key_imageSourceURL = "${imageSourceURL}";
+		var key_navTab = "${navTab}";
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_URL" value1="URL" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		<execute function="AssertElementPresent" locator1="ItemSelector#URL_LABEL" />
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "URL");
 
-		<execute function="Type#typeAceEditor" locator1="TextInput#URL" value1="${imageSourceURL}" />
+		AssertElementPresent(locator1 = "ItemSelector#URL_LABEL");
 
-		<execute function="AssertClick" locator1="Button#ENTER" value1="Enter" />
+		Type(
+			locator1 = "TextInput#URL",
+			value1 = "${imageSourceURL}");
 
-		<execute function="AssertElementPresent" locator1="ItemSelector#URL_IMAGE_SOURCE" value1="${imageSourceURL}" />
+		AssertClick(
+			locator1 = "Button#ENTER",
+			value1 = "Enter");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
+		AssertElementPresent(locator1 = "ItemSelector#URL_IMAGE_SOURCE");
 
-		<execute function="AssertClick" locator1="ItemSelector#ADD_BUTTON" value1="Add" />
-	</command>
+		SelectFrameTop(value1 = "relative=top");
 
-	<command name="gotoItemSelectorViaAlloyEditor">
-		<execute function="Click" locator1="AlloyEditor#CONTENT_FIELD" />
+		AssertClick(
+			locator1 = "ItemSelector#ADD_BUTTON",
+			value1 = "Add");
+	}
 
-		<execute function="Click" locator1="AlloyEditor#CONTENT_ADD_BUTTON" />
+	macro gotoItemSelectorViaAlloyEditor {
+		AlloyEditor.clickContentField();
 
-		<execute function="Click" locator1="AlloyEditor#CONTENT_ADD_MENUBAR_IMAGE" />
-	</command>
+		Click(locator1 = "AlloyEditor#CONTENT_ADD_BUTTON");
 
-	<command name="searchBlogImages">
-		<var name="key_imageFileName" value="${imageFileName}" />
+		Click.clickNoMouseOver(locator1 = "AlloyEditor#CONTENT_ADD_MENUBAR_IMAGE");
+	}
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
+	macro gotoItemSelectorViaSelectButton {
+		Click(locator1 = "Button#SELECT");
+	}
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_DOCUMENTS_AND_MEDIA" value1="Documents and Media" />
+	macro searchBlogImages {
+		var key_imageFileName = "${imageFileName}";
 
-		<execute function="AssertElementNotPresent" locator1="ItemSelector#SELECT_FILE_IMAGE_PREVIEW" value1="${imageFileName}" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_BLOG_IMAGES" value1="Blog Images" />
+		var key_navTab = "Documents and Media";
 
-		<execute function="Type" locator1="Search#SEARCH_FIELD" value1="${imageFileName}" />
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "Documents and Media");
 
-		<execute function="KeyPress" locator1="Search#SEARCH_FIELD" value1="\RETURN" />
+		AssertElementNotPresent(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
 
-		<execute function="AssertTextEquals" locator1="Search#SEARCH_INFO" value1="Searched for ${imageFileName} in Blog Images" />
+		var key_navTab = "Blog Images";
 
-		<execute function="AssertElementPresent" locator1="ItemSelector#SELECT_FILE_IMAGE_PREVIEW" value1="${imageFileName}" />
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "Blog Images");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
-	</command>
+		Type(
+			locator1 = "TextInput#SEARCH",
+			value1 = "${imageFileName}");
 
-	<command name="searchDMImages">
-		<var name="key_imageFileName" value="${imageFileName}" />
-		<var name="key_uploadFileName" value="${imageFileName}" />
+		KeyPress(
+			locator1 = "TextInput#SEARCH",
+			value1 = "\RETURN");
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
+		AssertTextEquals(
+			locator1 = "Search#SEARCH_INFO",
+			value1 = "1 Results for ${imageFileName}");
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_BLOG_IMAGES" value1="Blog Images" />
+		AssertElementPresent(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
 
-		<execute function="AssertElementNotPresent" locator1="ItemSelector#SELECT_FILE_IMAGE_PREVIEW" value1="${imageFileName}" />
+		SelectFrameTop(value1 = "relative=top");
+	}
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_DOCUMENTS_AND_MEDIA" value1="Documents and Media" />
+	macro searchDMImages {
+		var key_imageFileName = "${imageFileName}";
+		var key_uploadFileName = "${imageFileName}";
 
-		<execute function="Type" locator1="Search#SEARCH_FIELD" value1="${imageFileName}" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		<execute function="KeyPress" locator1="Search#SEARCH_FIELD" value1="\RETURN" />
+		var key_navTab = "Blog Images";
 
-		<execute function="AssertTextEquals" locator1="Search#SEARCH_INFO" value1="Searched for ${imageFileName} everywhere." />
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "Blog Images");
 
-		<execute function="AssertElementPresent" locator1="ItemSelector#SELECT_FILE_IMAGE_PREVIEW" value1="${imageFileName}" />
+		LexiconCard.viewCardNotPresent(card = "${imageFileName}");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
-	</command>
+		var key_navTab = "Documents and Media";
 
-	<command name="selectBlogImage">
-		<var name="key_imageFileName" value="${imageFileName}" />
-		<var name="key_uploadFileName" value="${imageFileName}" />
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "Documents and Media");
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
+		Type(
+			locator1 = "TextInput#SEARCH",
+			value1 = "${imageFileName}");
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_BLOG_IMAGES" value1="Blog Images" />
+		KeyPress(
+			locator1 = "TextInput#SEARCH",
+			value1 = "\RETURN");
 
-		<execute function="Click" locator1="ItemSelector#SELECT_FILE_IMAGE_PREVIEW" />
+		AssertTextEquals(
+			locator1 = "Search#SEARCH_INFO",
+			value1 = "1 Results for ${imageFileName}");
 
-		<execute function="AssertTextEquals" locator1="ItemSelector#CAPTION" value1="${imageFileName}" />
+		LexiconCard.viewCardPresent(card = "${imageFileName}");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
+		SelectFrameTop(value1 = "relative=top");
+	}
 
-		<execute function="AssertClick" locator1="ItemSelector#ADD_BUTTON" value1="Add" />
-	</command>
+	macro selectBlogImage {
+		var key_imageFileName = "${imageFileName}";
+		var key_navTab = "${navTab}";
+		var key_uploadFileName = "${imageFileName}";
 
-	<command name="selectDMImage">
-		<var name="key_uploadFileName" value="${imageFileName}" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "Blog Images");
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_DOCUMENTS_AND_MEDIA" value1="Documents and Media" />
+		Click(locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW");
 
-		<if>
-			<isset var="dmFolderName" />
-			<then>
-				<var name="key_dmFolderName" value="${dmFolderName}" />
+		AssertTextEquals(
+			locator1 = "ItemSelector#CAPTION",
+			value1 = "${imageFileName}");
 
-				<execute function="AssertClick" locator1="DocumentsAndMedia#ICON_FOLDER_TITLE" value1="${dmFolderName}" />
-			</then>
-		</if>
+		SelectFrameTop(value1 = "relative=top");
 
-		<if>
-			<isset var="dmSubFolderName" />
-			<then>
-				<var name="key_dmFolderName" value="${dmSubFolderName}" />
+		AssertClick(
+			locator1 = "ItemSelector#ADD_BUTTON",
+			value1 = "Add");
+	}
 
-				<execute function="AssertClick" locator1="DocumentsAndMedia#ICON_FOLDER_TITLE" value1="${dmSubFolderName}" />
-			</then>
-		</if>
+	macro selectDMImage {
+		var key_navTab = "${navTab}";
+		var key_uploadFileName = "${imageFileName}";
 
-		<var method="StringUtil#replace('${imageFileName}', ' ', '+')" name="key_imageFileName" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		<execute function="Click" locator1="ItemSelector#SELECT_FILE_IMAGE_PREVIEW" />
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "Documents and Media");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="ItemSelector#CAPTION" value1="${imageFileName}" />
+		if (isSet(dmFolderName)) {
+			var key_dmFolderName = "${dmFolderName}";
 
-		<execute function="SelectFrameTop" value1="relative=top" />
+			AssertClick(
+				locator1 = "DocumentsAndMedia#ICON_FOLDER_TITLE",
+				value1 = "${dmFolderName}");
+		}
 
-		<execute function="Click" locator1="Button#ADD" />
-	</command>
+		if (isSet(dmSubFolderName)) {
+			var key_dmFolderName = "${dmSubFolderName}";
 
-	<command name="uploadFile">
-		<var name="key_navTab" value="${navTab}" />
-		<var name="key_uploadFileName" value="${uploadFileName}" />
+			AssertClick(
+				locator1 = "DocumentsAndMedia#ICON_FOLDER_TITLE",
+				value1 = "${dmSubFolderName}");
+		}
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
+		var key_imageFileName = StringUtil.replace("${imageFileName}", " ", "+");
 
-		<execute function="AssertClick" locator1="ItemSelector#NAVIGATION_SPECIFIC_TAB" value1="${navTab}" />
+		LexiconCard.clickCard(card = "${imageFileName}");
 
-		<execute function="AssertClick" locator1="ItemSelector#SELECT_FILE_UPLOAD_IMAGE" value1="Select File" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "ItemSelector#CAPTION",
+			value1 = "${imageFileName}");
 
-		<execute function="SikuliUploadCommonFile" locator1="OS#FILE_DIALOG_BOX_FILE_NAME_FIELD_PNG" value1="${uploadFileName}" />
+		SelectFrameTop(value1 = "relative=top");
 
-		<execute function="AssertTextEquals" locator1="ItemSelector#CAPTION" value1="${uploadFileName}" />
+		Click(locator1 = "Button#ADD");
+	}
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_MODAL_FOOTER" />
+	macro uploadFile {
+		var key_navTab = "${navTab}";
+		var key_uploadFileName = "${uploadFileName}";
 
-		<execute function="AssertClick" locator1="ItemSelector#ADD_BUTTON" value1="Add" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
-	</command>
+		AssertClick(
+			locator1 = "ItemSelector#NAVIGATION_SPECIFIC_TAB",
+			value1 = "${navTab}");
 
-	<command name="viewBlogImageDetails">
-		<var name="key_imageFileName" value="${imageFileName}" />
-		<var name="key_uploadFileName" value="${uploadFileName}" />
+		AssertElementPresent(locator1 = "ItemSelector#SELECT_FILE_UPLOAD_IMAGE");
 
-		<execute function="SelectFrame" locator1="ItemSelector#ITEM_SELECTOR_IFRAME" />
+		UploadCommonFile.uploadCommonFileHiddenNoMouseOver(
+			locator1 = "TextInput#FILE",
+			value1 = "${uploadFileName}");
 
-		<execute function="Click" locator1="ItemSelector#SELECT_FILE_IMAGE_PREVIEW" value1="${imageFileName}" />
+		AssertTextEquals(
+			locator1 = "ItemSelector#CAPTION",
+			value1 = "${uploadFileName}");
 
-		<execute function="AssertElementPresent" locator1="ItemSelector#SELECT_IMAGE_PREVIEW" />
-		<execute function="AssertTextEquals" locator1="ItemSelector#CAPTION" value1="${uploadFileName}" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_MODAL_FOOTER");
 
-		<execute function="Click" locator1="ItemSelector#FILE_INFO_ICON" />
+		AssertClick(
+			locator1 = "ItemSelector#ADD_BUTTON",
+			value1 = "Add");
 
-		<execute function="AssertElementPresent" locator1="NavTab#FILE_INFO" />
-		<execute function="AssertElementPresent" locator1="NavTab#VERSION" />
+		SelectFrameTop(value1 = "relative=top");
+	}
 
-		<execute function="AssertClick" locator1="NavTab#FILE_INFO" value1="File Info" />
+	macro viewBlogImageDetails {
+		var key_imageFileName = "${imageFileName}";
+		var key_uploadFileName = "${uploadFileName}";
 
-		<execute function="AssertTextEquals" locator1="ItemSelector#SIDEBAR_FILE_INFO_FORMAT" value1="${imageFormat}" />
-		<execute function="AssertTextEquals" locator1="ItemSelector#SIDEBAR_FILE_INFO_SIZE" value1="${imageSize}" />
-		<execute function="AssertTextEquals" locator1="ItemSelector#SIDEBAR_FILE_INFO_NAME" value1="${uploadFileName}" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="ItemSelector#SIDEBAR_FILE_INFO_MODIFIED" value1="${lastModifiedBy}" />
+		SelectFrame(locator1 = "ItemSelector#ITEM_SELECTOR_IFRAME");
 
-		<execute function="AssertClick" locator1="NavTab#VERSION" value1="Version" />
+		Click(
+			locator1 = "ItemSelector#SELECT_FILE_IMAGE_PREVIEW",
+			value1 = "${imageFileName}");
 
-		<execute function="AssertTextEquals" locator1="ItemSelector#SIDEBAR_VERSION_VERSION" value1="${versionNumber}" />
-		<execute function="AssertTextEquals" locator1="ItemSelector#SIDEBAR_VERSION_STATUS" value1="${imageStatus}" />
+		AssertElementPresent(locator1 = "ItemSelector#SELECT_IMAGE_PREVIEW");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
-	</command>
-</definition>
+		AssertTextEquals(
+			locator1 = "ItemSelector#CAPTION",
+			value1 = "${uploadFileName}");
+
+		Click(locator1 = "ItemSelector#FILE_INFO_ICON");
+
+		AssertElementPresent(
+			key_tab = "File Info",
+			locator1 = "NavTab#NAV_TABS");
+
+		AssertElementPresent(
+			key_tab = "Version",
+			locator1 = "NavTab#NAV_TABS");
+
+		AssertTextEquals(
+			locator1 = "ItemSelector#SIDEBAR_FILE_INFO_FORMAT",
+			value1 = "${imageFormat}");
+
+		AssertTextEquals(
+			locator1 = "ItemSelector#SIDEBAR_FILE_INFO_SIZE",
+			value1 = "${imageSize}");
+
+		AssertTextEquals(
+			locator1 = "ItemSelector#SIDEBAR_FILE_INFO_NAME",
+			value1 = "${uploadFileName}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "ItemSelector#SIDEBAR_FILE_INFO_MODIFIED",
+			value1 = "${lastModifiedBy}");
+
+		var key_tab = "Version";
+
+		AssertClick(
+			locator1 = "NavTab#NAV_TABS",
+			value1 = "Version");
+
+		AssertTextEquals(
+			locator1 = "ItemSelector#SIDEBAR_VERSION_VERSION",
+			value1 = "${versionNumber}");
+
+		AssertTextEquals(
+			locator1 = "ItemSelector#SIDEBAR_VERSION_STATUS",
+			value1 = "${imageStatus}");
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+}

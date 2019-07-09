@@ -1,11 +1,14 @@
-<definition default="sikuliUploadCommonFile">
-	<command name="sikuliUploadCommonFile">
-		<execute function="WaitForSPARefresh" />
+@default = "sikuliUploadCommonFile"
+definition {
 
-		<execute selenium="sikuliUploadCommonFile" />
+	function sikuliUploadCommonFile {
+		WaitForSPARefresh();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.sikuliUploadCommonFile();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

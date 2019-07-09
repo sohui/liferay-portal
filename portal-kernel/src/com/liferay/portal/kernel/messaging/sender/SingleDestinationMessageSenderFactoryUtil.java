@@ -14,19 +14,19 @@
 
 package com.liferay.portal.kernel.messaging.sender;
 
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.ServiceTracker;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class SingleDestinationMessageSenderFactoryUtil {
 
 	public static SingleDestinationMessageSender
 		createSingleDestinationMessageSender(String destinationName) {
 
-		return _instance.getSingleDestinationMessageSenderFactory().
+		return _singleDestinationMessageSenderFactory.
 			createSingleDestinationMessageSender(destinationName);
 	}
 
@@ -34,55 +34,36 @@ public class SingleDestinationMessageSenderFactoryUtil {
 		createSingleDestinationSynchronousMessageSender(
 			String destinationName, SynchronousMessageSender.Mode mode) {
 
-		return _instance.getSingleDestinationMessageSenderFactory().
+		return _singleDestinationMessageSenderFactory.
 			createSingleDestinationSynchronousMessageSender(
 				destinationName, mode);
 	}
 
 	public static int getModeCount() {
-		return _instance.getSingleDestinationMessageSenderFactory().
-			getModesCount();
+		return _singleDestinationMessageSenderFactory.getModesCount();
 	}
 
 	public static SynchronousMessageSender getSynchronousMessageSender(
 		SynchronousMessageSender.Mode mode) {
 
-		return _instance.getSingleDestinationMessageSenderFactory().
+		return _singleDestinationMessageSenderFactory.
 			getSynchronousMessageSender(mode);
 	}
 
 	protected SingleDestinationMessageSenderFactory
 		getSingleDestinationMessageSenderFactory() {
 
-		try {
-			while (_serviceTracker.getService() == null) {
-				Thread.sleep(500);
-			}
-
-			return _serviceTracker.getService();
-		}
-		catch (InterruptedException ie) {
-			throw new IllegalStateException(
-				"Unable to initialize " +
-					"SingleDestinationMessageSenderFactoryUtil",
-				ie);
-		}
+		return _singleDestinationMessageSenderFactory;
 	}
 
 	private SingleDestinationMessageSenderFactoryUtil() {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(
-			SingleDestinationMessageSenderFactory.class);
-
-		_serviceTracker.open();
 	}
 
-	private static final SingleDestinationMessageSenderFactoryUtil _instance =
-		new SingleDestinationMessageSenderFactoryUtil();
-
-	private final ServiceTracker
-		<SingleDestinationMessageSenderFactory,
-			SingleDestinationMessageSenderFactory> _serviceTracker;
+	private static volatile SingleDestinationMessageSenderFactory
+		_singleDestinationMessageSenderFactory =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				SingleDestinationMessageSenderFactory.class,
+				SingleDestinationMessageSenderFactoryUtil.class,
+				"_singleDestinationMessageSenderFactory", true);
 
 }

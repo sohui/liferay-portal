@@ -17,7 +17,7 @@ package com.liferay.portal.service.permission;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -73,8 +73,7 @@ public class UserGroupRolePermissionImpl implements UserGroupRolePermission {
 
 			String roleName = role.getName();
 
-			if (roleName.equals(
-					RoleConstants.ORGANIZATION_ADMINISTRATOR) ||
+			if (roleName.equals(RoleConstants.ORGANIZATION_ADMINISTRATOR) ||
 				roleName.equals(RoleConstants.ORGANIZATION_OWNER) ||
 				roleName.equals(RoleConstants.SITE_ADMINISTRATOR) ||
 				roleName.equals(RoleConstants.SITE_OWNER)) {
@@ -95,9 +94,8 @@ public class UserGroupRolePermissionImpl implements UserGroupRolePermission {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override

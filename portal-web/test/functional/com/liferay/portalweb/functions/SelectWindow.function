@@ -1,37 +1,48 @@
-<definition default="selectWindow">
-	<command name="selectPopUp">
-		<execute function="WaitForSPARefresh" />
+@default = "selectWindow"
+definition {
 
-		<execute argument1="5000" selenium="pause" />
+	function selectPopUp {
+		WaitForSPARefresh();
 
-		<execute selenium="selectPopUp" />
+		selenium.pause("5000");
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.selectPopUp();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
+		selenium.assertJavaScriptErrors();
 
-	<command name="selectWindow">
-		<execute function="WaitForSPARefresh" />
+		selenium.assertLiferayErrors();
+	}
 
-		<execute argument1="5000" selenium="pause" />
+	function selectWindow {
+		WaitForSPARefresh();
 
-		<execute selenium="selectWindow" />
+		selenium.pause("5000");
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.selectWindow();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
+		selenium.assertJavaScriptErrors();
 
-	<command name="selectWindowTop">
-		<execute function="WaitForSPARefresh" />
+		selenium.assertLiferayErrors();
+	}
 
-		<execute argument1="5000" selenium="pause" />
+	function selectWindowNoSPARefresh {
+		selenium.pause("5000");
 
-		<execute argument1="null" selenium="selectWindow" />
+		selenium.selectWindow();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.assertJavaScriptErrors();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.assertLiferayErrors();
+	}
+
+	function selectWindowTopNoSPARefresh {
+		selenium.pause("5000");
+
+		selenium.selectWindow("null");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

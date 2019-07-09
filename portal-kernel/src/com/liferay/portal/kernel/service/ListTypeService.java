@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -27,6 +25,8 @@ import com.liferay.portal.kernel.transaction.Transactional;
 
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for ListType. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -34,37 +34,41 @@ import java.util.List;
  *
  * @author Brian Wing Shun Chan
  * @see ListTypeServiceUtil
- * @see com.liferay.portal.service.base.ListTypeServiceBaseImpl
- * @see com.liferay.portal.service.impl.ListTypeServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface ListTypeService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link ListTypeServiceUtil} to access the list type remote service. Add custom service methods to {@link com.liferay.portal.service.impl.ListTypeServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link ListTypeServiceUtil} to access the list type remote service. Add custom service methods to <code>com.liferay.portal.service.impl.ListTypeServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ListType getListType(long listTypeId) throws PortalException;
 
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public ListType getListType(String name, String type);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<ListType> getListTypes(java.lang.String type);
+	public List<ListType> getListTypes(String type);
 
-	public void validate(long listTypeId, java.lang.String type)
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
+
+	public void validate(long listTypeId, long classNameId, String type)
 		throws PortalException;
 
-	public void validate(long listTypeId, long classNameId,
-		java.lang.String type) throws PortalException;
+	public void validate(long listTypeId, String type) throws PortalException;
+
 }

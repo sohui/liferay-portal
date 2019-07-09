@@ -23,7 +23,13 @@ import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
  * @author Brian Wing Shun Chan
  * @generated
  */
-public class PortletPreferencesFinderBaseImpl extends BasePersistenceImpl<PortletPreferences> {
+public class PortletPreferencesFinderBaseImpl
+	extends BasePersistenceImpl<PortletPreferences> {
+
+	public PortletPreferencesFinderBaseImpl() {
+		setModelClass(PortletPreferences.class);
+	}
+
 	/**
 	 * Returns the portlet preferences persistence.
 	 *
@@ -40,9 +46,11 @@ public class PortletPreferencesFinderBaseImpl extends BasePersistenceImpl<Portle
 	 */
 	public void setPortletPreferencesPersistence(
 		PortletPreferencesPersistence portletPreferencesPersistence) {
+
 		this.portletPreferencesPersistence = portletPreferencesPersistence;
 	}
 
 	@BeanReference(type = PortletPreferencesPersistence.class)
 	protected PortletPreferencesPersistence portletPreferencesPersistence;
+
 }

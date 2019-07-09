@@ -1,39 +1,31 @@
-<definition default="isTextNotEqual">
-	<command name="isNotPartialText">
-		<execute function="WaitForSPARefresh" />
+@default = "isTextNotEqual"
+definition {
 
-		<execute selenium="waitForElementPresent" />
+	function isNotText {
+		WaitForSPARefresh();
 
-		<execute selenium="isNotPartialText" />
-	</command>
+		selenium.waitForElementPresent();
 
-	<command name="isNotText">
-		<execute function="WaitForSPARefresh" />
+		selenium.isNotText();
+	}
 
-		<execute selenium="waitForElementPresent" />
+	function isNotValue {
+		WaitForSPARefresh();
 
-		<execute selenium="isNotText" />
-	</command>
+		selenium.waitForElementPresent();
 
-	<command name="isNotValue">
-		<execute function="WaitForSPARefresh" />
+		selenium.isNotValue();
+	}
 
-		<execute selenium="waitForElementPresent" />
+	function isTextNotEqual {
+		WaitForSPARefresh();
 
-		<execute selenium="isNotValue" />
-	</command>
+		if (contains("${locator1}", "/input")) {
+			IsTextNotEqual.isNotValue();
+		}
+		else {
+			IsTextNotEqual.isNotText();
+		}
+	}
 
-	<command name="isTextNotEqual">
-		<execute function="WaitForSPARefresh" />
-
-		<if>
-			<contains string="${locator1}" substring="/input" />
-			<then>
-				<execute function="IsTextNotEqual#isNotValue" />
-			</then>
-			<else>
-				<execute function="IsTextNotEqual#isNotText" />
-			</else>
-		</if>
-	</command>
-</definition>
+}

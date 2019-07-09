@@ -1,0 +1,119 @@
+@component-name = "portal-wcm"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Asset Publisher,Highest Rated Assets";
+	property testray.main.component.name = "Highest Rated Assets";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test AssertHighestRatededAsset {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addBlankCP(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		for (var n : list "1,2") {
+			SitePages.addPublicPage(pageName = "Test Page ${n}");
+		}
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 1",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		AssetPublisherPortlet.configureDisplaySettings(displaySettings = "Ratings");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 2",
+			siteName = "Site Name");
+
+		Portlet.addPG(portletName = "Highest Rated Assets");
+
+		AssetPublisherPortlet.configureDisplaySettings(
+			displaySettings = "Ratings",
+			portletName = "Highest Rated Assets");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 1",
+			siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
+
+		for (var n : list "1,2") {
+			WebContentNavigator.gotoAddCP();
+
+			WebContent.addCP(
+				webContentContent = "Web Content Content",
+				webContentTitle = "Web Content Title ${n}");
+
+			PortletEntry.publish();
+		}
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 1",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.viewAssetDetailsPG(
+			assetContent = "Web Content Content",
+			assetTitle = "Web Content Title 1");
+
+		AssetPublisherPortlet.rateAssetPG(rating = "3");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 2",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.viewAssetDetailsPG(
+			assetContent = "Web Content Content",
+			assetTitle = "Web Content Title 2");
+
+		AssetPublisherPortlet.rateAssetPG(rating = "5");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 2",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.viewAssetDetailsPG(
+			assetContent = "Web Content Content",
+			assetTitle = "Web Content Title 1");
+
+		AssetPublisherPortlet.viewAssetRatingPG(rating = "3");
+
+		Navigator.gotoSitePage(
+			pageName = "Test Page 2",
+			siteName = "Site Name");
+
+		AssetPublisherPortlet.viewAssetDetailsPG(
+			assetContent = "Web Content Content",
+			assetTitle = "Web Content Title 2");
+
+		AssetPublisherPortlet.viewAssetRatingPG(rating = "5");
+	}
+
+}

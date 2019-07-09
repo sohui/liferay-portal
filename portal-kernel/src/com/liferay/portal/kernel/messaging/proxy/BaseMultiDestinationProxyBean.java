@@ -15,10 +15,9 @@
 package com.liferay.portal.kernel.messaging.proxy;
 
 import com.liferay.portal.kernel.messaging.Message;
-import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
-import com.liferay.portal.kernel.messaging.sender.SingleDestinationMessageSenderFactoryUtil;
 import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Michael C. Han
@@ -27,9 +26,6 @@ import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
 public abstract class BaseMultiDestinationProxyBean {
 
 	public void afterPropertiesSet() {
-		_synchronousMessageSender =
-			SingleDestinationMessageSenderFactoryUtil.
-				getSynchronousMessageSender(_mode);
 	}
 
 	public abstract String getDestinationName(ProxyRequest proxyRequest);
@@ -39,23 +35,6 @@ public abstract class BaseMultiDestinationProxyBean {
 			getDestinationName(proxyRequest), buildMessage(proxyRequest));
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link MessageBusUtil#getMessageBus)
-	 */
-	@Deprecated
-	public void setMessageBus(MessageBus messageBus) {
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #setSynchronousMessageSenderMode(
-	 *             SynchronousMessageSender.Mode)}
-	 */
-	@Deprecated
-	public void setSynchronousMessageSender(
-		SynchronousMessageSender synchronousMessageSender) {
-	}
-
 	public void setSynchronousMessageSenderMode(
 		SynchronousMessageSender.Mode mode) {
 
@@ -63,9 +42,16 @@ public abstract class BaseMultiDestinationProxyBean {
 	}
 
 	public Object synchronousSend(ProxyRequest proxyRequest) throws Exception {
+		Message message = new Message();
+
+		message.setPayload(proxyRequest);
+
+		SynchronousMessageSender synchronousMessageSender =
+			_getSynchronousMessageSender();
+
 		ProxyResponse proxyResponse =
-			(ProxyResponse)_synchronousMessageSender.send(
-				getDestinationName(proxyRequest), buildMessage(proxyRequest));
+			(ProxyResponse)synchronousMessageSender.send(
+				getDestinationName(proxyRequest), message);
 
 		if (proxyResponse == null) {
 			return proxyRequest.execute(this);
@@ -88,7 +74,27 @@ public abstract class BaseMultiDestinationProxyBean {
 		return message;
 	}
 
+	private SynchronousMessageSender _getSynchronousMessageSender() {
+		if (_mode == SynchronousMessageSender.Mode.DEFAULT) {
+			return _defaultSynchronousMessageSender;
+		}
+
+		return _directSynchronousMessageSender;
+	}
+
+	private static volatile SynchronousMessageSender
+		_defaultSynchronousMessageSender =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				SynchronousMessageSender.class,
+				BaseMultiDestinationProxyBean.class,
+				"_defaultSynchronousMessageSender", "(mode=DEFAULT)", true);
+	private static volatile SynchronousMessageSender
+		_directSynchronousMessageSender =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				SynchronousMessageSender.class,
+				BaseMultiDestinationProxyBean.class,
+				"_directSynchronousMessageSender", "(mode=DIRECT)", true);
+
 	private SynchronousMessageSender.Mode _mode;
-	private SynchronousMessageSender _synchronousMessageSender;
 
 }

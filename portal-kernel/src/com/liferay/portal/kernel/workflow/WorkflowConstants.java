@@ -81,6 +81,8 @@ public class WorkflowConstants {
 
 	public static final String LABEL_SCHEDULED = "scheduled";
 
+	public static final String SERVICE_NAME = "com.liferay.portal.workflow";
+
 	public static final int STATUS_ANY = -1;
 
 	public static final int STATUS_APPROVED = 0;
@@ -136,9 +138,8 @@ public class WorkflowConstants {
 		else if (label.equals(LABEL_SCHEDULED)) {
 			return STATUS_SCHEDULED;
 		}
-		else {
-			return STATUS_ANY;
-		}
+
+		return STATUS_ANY;
 	}
 
 	public static String getStatusCssClass(int status) {
@@ -172,9 +173,8 @@ public class WorkflowConstants {
 		else if (status == STATUS_SCHEDULED) {
 			return LABEL_SCHEDULED;
 		}
-		else {
-			return LABEL_ANY;
-		}
+
+		return LABEL_ANY;
 	}
 
 	public static String getStatusLabel(int status) {
@@ -208,9 +208,8 @@ public class WorkflowConstants {
 		else if (status == STATUS_SCHEDULED) {
 			return LABEL_SCHEDULED;
 		}
-		else {
-			return LABEL_ANY;
-		}
+
+		return LABEL_ANY;
 	}
 
 }

@@ -14,11 +14,9 @@
 
 package com.liferay.portal.service.persistence.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
-import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
@@ -27,26 +25,20 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchClusterGroupException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.ClusterGroup;
-import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.service.persistence.ClusterGroupPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.ClusterGroupImpl;
 import com.liferay.portal.model.impl.ClusterGroupModelImpl;
 
 import java.io.Serializable;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The persistence implementation for the cluster group service.
@@ -56,35 +48,39 @@ import java.util.Set;
  * </p>
  *
  * @author Brian Wing Shun Chan
- * @see ClusterGroupPersistence
- * @see com.liferay.portal.kernel.service.persistence.ClusterGroupUtil
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
-public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGroup>
+public class ClusterGroupPersistenceImpl
+	extends BasePersistenceImpl<ClusterGroup>
 	implements ClusterGroupPersistence {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link ClusterGroupUtil} to access the cluster group persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
+	 * Never modify or reference this class directly. Always use <code>ClusterGroupUtil</code> to access the cluster group persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static final String FINDER_CLASS_NAME_ENTITY = ClusterGroupImpl.class.getName();
-	public static final String FINDER_CLASS_NAME_LIST_WITH_PAGINATION = FINDER_CLASS_NAME_ENTITY +
-		".List1";
-	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION = FINDER_CLASS_NAME_ENTITY +
-		".List2";
-	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_ALL = new FinderPath(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-			ClusterGroupModelImpl.FINDER_CACHE_ENABLED, ClusterGroupImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
-	public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL = new FinderPath(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-			ClusterGroupModelImpl.FINDER_CACHE_ENABLED, ClusterGroupImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0]);
-	public static final FinderPath FINDER_PATH_COUNT_ALL = new FinderPath(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-			ClusterGroupModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll", new String[0]);
+	public static final String FINDER_CLASS_NAME_ENTITY =
+		ClusterGroupImpl.class.getName();
+
+	public static final String FINDER_CLASS_NAME_LIST_WITH_PAGINATION =
+		FINDER_CLASS_NAME_ENTITY + ".List1";
+
+	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
+		FINDER_CLASS_NAME_ENTITY + ".List2";
+
+	private FinderPath _finderPathWithPaginationFindAll;
+	private FinderPath _finderPathWithoutPaginationFindAll;
+	private FinderPath _finderPathCountAll;
 
 	public ClusterGroupPersistenceImpl() {
 		setModelClass(ClusterGroup.class);
+
+		setModelImplClass(ClusterGroupImpl.class);
+		setModelPKClass(long.class);
+		setEntityCacheEnabled(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED);
 	}
 
 	/**
@@ -94,8 +90,9 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 */
 	@Override
 	public void cacheResult(ClusterGroup clusterGroup) {
-		entityCache.putResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-			ClusterGroupImpl.class, clusterGroup.getPrimaryKey(), clusterGroup);
+		EntityCacheUtil.putResult(
+			ClusterGroupModelImpl.ENTITY_CACHE_ENABLED, ClusterGroupImpl.class,
+			clusterGroup.getPrimaryKey(), clusterGroup);
 
 		clusterGroup.resetOriginalValues();
 	}
@@ -108,9 +105,11 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	@Override
 	public void cacheResult(List<ClusterGroup> clusterGroups) {
 		for (ClusterGroup clusterGroup : clusterGroups) {
-			if (entityCache.getResult(
-						ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-						ClusterGroupImpl.class, clusterGroup.getPrimaryKey()) == null) {
+			if (EntityCacheUtil.getResult(
+					ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
+					ClusterGroupImpl.class, clusterGroup.getPrimaryKey()) ==
+						null) {
+
 				cacheResult(clusterGroup);
 			}
 			else {
@@ -123,41 +122,43 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 * Clears the cache for all cluster groups.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The <code>EntityCache</code> and <code>com.liferay.portal.kernel.dao.orm.FinderCache</code> are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
-		entityCache.clearCache(ClusterGroupImpl.class);
+		EntityCacheUtil.clearCache(ClusterGroupImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	/**
 	 * Clears the cache for the cluster group.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The <code>EntityCache</code> and <code>com.liferay.portal.kernel.dao.orm.FinderCache</code> are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(ClusterGroup clusterGroup) {
-		entityCache.removeResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-			ClusterGroupImpl.class, clusterGroup.getPrimaryKey());
+		EntityCacheUtil.removeResult(
+			ClusterGroupModelImpl.ENTITY_CACHE_ENABLED, ClusterGroupImpl.class,
+			clusterGroup.getPrimaryKey());
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	@Override
 	public void clearCache(List<ClusterGroup> clusterGroups) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		for (ClusterGroup clusterGroup : clusterGroups) {
-			entityCache.removeResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
+			EntityCacheUtil.removeResult(
+				ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
 				ClusterGroupImpl.class, clusterGroup.getPrimaryKey());
 		}
 	}
@@ -188,6 +189,7 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	@Override
 	public ClusterGroup remove(long clusterGroupId)
 		throws NoSuchClusterGroupException {
+
 		return remove((Serializable)clusterGroupId);
 	}
 
@@ -201,21 +203,22 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	@Override
 	public ClusterGroup remove(Serializable primaryKey)
 		throws NoSuchClusterGroupException {
+
 		Session session = null;
 
 		try {
 			session = openSession();
 
-			ClusterGroup clusterGroup = (ClusterGroup)session.get(ClusterGroupImpl.class,
-					primaryKey);
+			ClusterGroup clusterGroup = (ClusterGroup)session.get(
+				ClusterGroupImpl.class, primaryKey);
 
 			if (clusterGroup == null) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 				}
 
-				throw new NoSuchClusterGroupException(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY +
-					primaryKey);
+				throw new NoSuchClusterGroupException(
+					_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 			}
 
 			return remove(clusterGroup);
@@ -233,16 +236,14 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 
 	@Override
 	protected ClusterGroup removeImpl(ClusterGroup clusterGroup) {
-		clusterGroup = toUnwrappedModel(clusterGroup);
-
 		Session session = null;
 
 		try {
 			session = openSession();
 
 			if (!session.contains(clusterGroup)) {
-				clusterGroup = (ClusterGroup)session.get(ClusterGroupImpl.class,
-						clusterGroup.getPrimaryKeyObj());
+				clusterGroup = (ClusterGroup)session.get(
+					ClusterGroupImpl.class, clusterGroup.getPrimaryKeyObj());
 			}
 
 			if (clusterGroup != null) {
@@ -265,8 +266,6 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 
 	@Override
 	public ClusterGroup updateImpl(ClusterGroup clusterGroup) {
-		clusterGroup = toUnwrappedModel(clusterGroup);
-
 		boolean isNew = clusterGroup.isNew();
 
 		Session session = null;
@@ -290,42 +289,26 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
 		if (isNew) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+			FinderCacheUtil.removeResult(
+				_finderPathCountAll, FINDER_ARGS_EMPTY);
+			FinderCacheUtil.removeResult(
+				_finderPathWithoutPaginationFindAll, FINDER_ARGS_EMPTY);
 		}
 
-		entityCache.putResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-			ClusterGroupImpl.class, clusterGroup.getPrimaryKey(), clusterGroup,
-			false);
+		EntityCacheUtil.putResult(
+			ClusterGroupModelImpl.ENTITY_CACHE_ENABLED, ClusterGroupImpl.class,
+			clusterGroup.getPrimaryKey(), clusterGroup, false);
 
 		clusterGroup.resetOriginalValues();
 
 		return clusterGroup;
 	}
 
-	protected ClusterGroup toUnwrappedModel(ClusterGroup clusterGroup) {
-		if (clusterGroup instanceof ClusterGroupImpl) {
-			return clusterGroup;
-		}
-
-		ClusterGroupImpl clusterGroupImpl = new ClusterGroupImpl();
-
-		clusterGroupImpl.setNew(clusterGroup.isNew());
-		clusterGroupImpl.setPrimaryKey(clusterGroup.getPrimaryKey());
-
-		clusterGroupImpl.setMvccVersion(clusterGroup.getMvccVersion());
-		clusterGroupImpl.setClusterGroupId(clusterGroup.getClusterGroupId());
-		clusterGroupImpl.setName(clusterGroup.getName());
-		clusterGroupImpl.setClusterNodeIds(clusterGroup.getClusterNodeIds());
-		clusterGroupImpl.setWholeCluster(clusterGroup.isWholeCluster());
-
-		return clusterGroupImpl;
-	}
-
 	/**
-	 * Returns the cluster group with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
+	 * Returns the cluster group with the primary key or throws a <code>com.liferay.portal.kernel.exception.NoSuchModelException</code> if it could not be found.
 	 *
 	 * @param primaryKey the primary key of the cluster group
 	 * @return the cluster group
@@ -334,6 +317,7 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	@Override
 	public ClusterGroup findByPrimaryKey(Serializable primaryKey)
 		throws NoSuchClusterGroupException {
+
 		ClusterGroup clusterGroup = fetchByPrimaryKey(primaryKey);
 
 		if (clusterGroup == null) {
@@ -341,15 +325,15 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 				_log.debug(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 			}
 
-			throw new NoSuchClusterGroupException(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY +
-				primaryKey);
+			throw new NoSuchClusterGroupException(
+				_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 		}
 
 		return clusterGroup;
 	}
 
 	/**
-	 * Returns the cluster group with the primary key or throws a {@link NoSuchClusterGroupException} if it could not be found.
+	 * Returns the cluster group with the primary key or throws a <code>NoSuchClusterGroupException</code> if it could not be found.
 	 *
 	 * @param clusterGroupId the primary key of the cluster group
 	 * @return the cluster group
@@ -358,53 +342,8 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	@Override
 	public ClusterGroup findByPrimaryKey(long clusterGroupId)
 		throws NoSuchClusterGroupException {
+
 		return findByPrimaryKey((Serializable)clusterGroupId);
-	}
-
-	/**
-	 * Returns the cluster group with the primary key or returns <code>null</code> if it could not be found.
-	 *
-	 * @param primaryKey the primary key of the cluster group
-	 * @return the cluster group, or <code>null</code> if a cluster group with the primary key could not be found
-	 */
-	@Override
-	public ClusterGroup fetchByPrimaryKey(Serializable primaryKey) {
-		ClusterGroup clusterGroup = (ClusterGroup)entityCache.getResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-				ClusterGroupImpl.class, primaryKey);
-
-		if (clusterGroup == _nullClusterGroup) {
-			return null;
-		}
-
-		if (clusterGroup == null) {
-			Session session = null;
-
-			try {
-				session = openSession();
-
-				clusterGroup = (ClusterGroup)session.get(ClusterGroupImpl.class,
-						primaryKey);
-
-				if (clusterGroup != null) {
-					cacheResult(clusterGroup);
-				}
-				else {
-					entityCache.putResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-						ClusterGroupImpl.class, primaryKey, _nullClusterGroup);
-				}
-			}
-			catch (Exception e) {
-				entityCache.removeResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-					ClusterGroupImpl.class, primaryKey);
-
-				throw processException(e);
-			}
-			finally {
-				closeSession(session);
-			}
-		}
-
-		return clusterGroup;
 	}
 
 	/**
@@ -416,98 +355,6 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	@Override
 	public ClusterGroup fetchByPrimaryKey(long clusterGroupId) {
 		return fetchByPrimaryKey((Serializable)clusterGroupId);
-	}
-
-	@Override
-	public Map<Serializable, ClusterGroup> fetchByPrimaryKeys(
-		Set<Serializable> primaryKeys) {
-		if (primaryKeys.isEmpty()) {
-			return Collections.emptyMap();
-		}
-
-		Map<Serializable, ClusterGroup> map = new HashMap<Serializable, ClusterGroup>();
-
-		if (primaryKeys.size() == 1) {
-			Iterator<Serializable> iterator = primaryKeys.iterator();
-
-			Serializable primaryKey = iterator.next();
-
-			ClusterGroup clusterGroup = fetchByPrimaryKey(primaryKey);
-
-			if (clusterGroup != null) {
-				map.put(primaryKey, clusterGroup);
-			}
-
-			return map;
-		}
-
-		Set<Serializable> uncachedPrimaryKeys = null;
-
-		for (Serializable primaryKey : primaryKeys) {
-			ClusterGroup clusterGroup = (ClusterGroup)entityCache.getResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-					ClusterGroupImpl.class, primaryKey);
-
-			if (clusterGroup == null) {
-				if (uncachedPrimaryKeys == null) {
-					uncachedPrimaryKeys = new HashSet<Serializable>();
-				}
-
-				uncachedPrimaryKeys.add(primaryKey);
-			}
-			else {
-				map.put(primaryKey, clusterGroup);
-			}
-		}
-
-		if (uncachedPrimaryKeys == null) {
-			return map;
-		}
-
-		StringBundler query = new StringBundler((uncachedPrimaryKeys.size() * 2) +
-				1);
-
-		query.append(_SQL_SELECT_CLUSTERGROUP_WHERE_PKS_IN);
-
-		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
-
-			query.append(StringPool.COMMA);
-		}
-
-		query.setIndex(query.index() - 1);
-
-		query.append(StringPool.CLOSE_PARENTHESIS);
-
-		String sql = query.toString();
-
-		Session session = null;
-
-		try {
-			session = openSession();
-
-			Query q = session.createQuery(sql);
-
-			for (ClusterGroup clusterGroup : (List<ClusterGroup>)q.list()) {
-				map.put(clusterGroup.getPrimaryKeyObj(), clusterGroup);
-
-				cacheResult(clusterGroup);
-
-				uncachedPrimaryKeys.remove(clusterGroup.getPrimaryKeyObj());
-			}
-
-			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
-					ClusterGroupImpl.class, primaryKey, _nullClusterGroup);
-			}
-		}
-		catch (Exception e) {
-			throw processException(e);
-		}
-		finally {
-			closeSession(session);
-		}
-
-		return map;
 	}
 
 	/**
@@ -524,7 +371,7 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 * Returns a range of all the cluster groups.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ClusterGroupModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>ClusterGroupModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of cluster groups
@@ -540,7 +387,7 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 * Returns an ordered range of all the cluster groups.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ClusterGroupModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>ClusterGroupModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of cluster groups
@@ -549,8 +396,9 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 * @return the ordered range of cluster groups
 	 */
 	@Override
-	public List<ClusterGroup> findAll(int start, int end,
-		OrderByComparator<ClusterGroup> orderByComparator) {
+	public List<ClusterGroup> findAll(
+		int start, int end, OrderByComparator<ClusterGroup> orderByComparator) {
+
 		return findAll(start, end, orderByComparator, true);
 	}
 
@@ -558,7 +406,7 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 * Returns an ordered range of all the cluster groups.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ClusterGroupModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>ClusterGroupModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of cluster groups
@@ -568,29 +416,31 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 * @return the ordered range of cluster groups
 	 */
 	@Override
-	public List<ClusterGroup> findAll(int start, int end,
-		OrderByComparator<ClusterGroup> orderByComparator,
+	public List<ClusterGroup> findAll(
+		int start, int end, OrderByComparator<ClusterGroup> orderByComparator,
 		boolean retrieveFromCache) {
+
 		boolean pagination = true;
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
+			(orderByComparator == null)) {
+
 			pagination = false;
-			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL;
+			finderPath = _finderPathWithoutPaginationFindAll;
 			finderArgs = FINDER_ARGS_EMPTY;
 		}
 		else {
-			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_ALL;
-			finderArgs = new Object[] { start, end, orderByComparator };
+			finderPath = _finderPathWithPaginationFindAll;
+			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<ClusterGroup> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<ClusterGroup>)finderCache.getResult(finderPath,
-					finderArgs, this);
+			list = (List<ClusterGroup>)FinderCacheUtil.getResult(
+				finderPath, finderArgs, this);
 		}
 
 		if (list == null) {
@@ -598,13 +448,13 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(2 +
-						(orderByComparator.getOrderByFields().length * 2));
+				query = new StringBundler(
+					2 + (orderByComparator.getOrderByFields().length * 2));
 
 				query.append(_SQL_SELECT_CLUSTERGROUP);
 
-				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
-					orderByComparator);
+				appendOrderByComparator(
+					query, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
 				sql = query.toString();
 			}
@@ -624,24 +474,24 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 				Query q = session.createQuery(sql);
 
 				if (!pagination) {
-					list = (List<ClusterGroup>)QueryUtil.list(q, getDialect(),
-							start, end, false);
+					list = (List<ClusterGroup>)QueryUtil.list(
+						q, getDialect(), start, end, false);
 
 					Collections.sort(list);
 
 					list = Collections.unmodifiableList(list);
 				}
 				else {
-					list = (List<ClusterGroup>)QueryUtil.list(q, getDialect(),
-							start, end);
+					list = (List<ClusterGroup>)QueryUtil.list(
+						q, getDialect(), start, end);
 				}
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -671,8 +521,8 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(FINDER_PATH_COUNT_ALL,
-				FINDER_ARGS_EMPTY, this);
+		Long count = (Long)FinderCacheUtil.getResult(
+			_finderPathCountAll, FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
 			Session session = null;
@@ -684,12 +534,12 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY,
-					count);
+				FinderCacheUtil.putResult(
+					_finderPathCountAll, FINDER_ARGS_EMPTY, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_COUNT_ALL,
-					FINDER_ARGS_EMPTY);
+				FinderCacheUtil.removeResult(
+					_finderPathCountAll, FINDER_ARGS_EMPTY);
 
 				throw processException(e);
 			}
@@ -702,6 +552,21 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	}
 
 	@Override
+	protected EntityCache getEntityCache() {
+		return EntityCacheUtil.getEntityCache();
+	}
+
+	@Override
+	protected String getPKDBName() {
+		return "clusterGroupId";
+	}
+
+	@Override
+	protected String getSelectSQL() {
+		return _SQL_SELECT_CLUSTERGROUP;
+	}
+
+	@Override
 	protected Map<String, Integer> getTableColumnsMap() {
 		return ClusterGroupModelImpl.TABLE_COLUMNS_MAP;
 	}
@@ -710,51 +575,43 @@ public class ClusterGroupPersistenceImpl extends BasePersistenceImpl<ClusterGrou
 	 * Initializes the cluster group persistence.
 	 */
 	public void afterPropertiesSet() {
+		_finderPathWithPaginationFindAll = new FinderPath(
+			ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
+			ClusterGroupModelImpl.FINDER_CACHE_ENABLED, ClusterGroupImpl.class,
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
+
+		_finderPathWithoutPaginationFindAll = new FinderPath(
+			ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
+			ClusterGroupModelImpl.FINDER_CACHE_ENABLED, ClusterGroupImpl.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll",
+			new String[0]);
+
+		_finderPathCountAll = new FinderPath(
+			ClusterGroupModelImpl.ENTITY_CACHE_ENABLED,
+			ClusterGroupModelImpl.FINDER_CACHE_ENABLED, Long.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			new String[0]);
 	}
 
 	public void destroy() {
-		entityCache.removeCache(ClusterGroupImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeCache(ClusterGroupImpl.class.getName());
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	protected EntityCache entityCache = EntityCacheUtil.getEntityCache();
-	protected FinderCache finderCache = FinderCacheUtil.getFinderCache();
-	private static final String _SQL_SELECT_CLUSTERGROUP = "SELECT clusterGroup FROM ClusterGroup clusterGroup";
-	private static final String _SQL_SELECT_CLUSTERGROUP_WHERE_PKS_IN = "SELECT clusterGroup FROM ClusterGroup clusterGroup WHERE clusterGroupId IN (";
-	private static final String _SQL_COUNT_CLUSTERGROUP = "SELECT COUNT(clusterGroup) FROM ClusterGroup clusterGroup";
+	private static final String _SQL_SELECT_CLUSTERGROUP =
+		"SELECT clusterGroup FROM ClusterGroup clusterGroup";
+
+	private static final String _SQL_COUNT_CLUSTERGROUP =
+		"SELECT COUNT(clusterGroup) FROM ClusterGroup clusterGroup";
+
 	private static final String _ORDER_BY_ENTITY_ALIAS = "clusterGroup.";
-	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No ClusterGroup exists with the primary key ";
-	private static final Log _log = LogFactoryUtil.getLog(ClusterGroupPersistenceImpl.class);
-	private static final ClusterGroup _nullClusterGroup = new ClusterGroupImpl() {
-			@Override
-			public Object clone() {
-				return this;
-			}
 
-			@Override
-			public CacheModel<ClusterGroup> toCacheModel() {
-				return _nullClusterGroupCacheModel;
-			}
-		};
+	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY =
+		"No ClusterGroup exists with the primary key ";
 
-	private static final CacheModel<ClusterGroup> _nullClusterGroupCacheModel = new NullCacheModel();
+	private static final Log _log = LogFactoryUtil.getLog(
+		ClusterGroupPersistenceImpl.class);
 
-	private static class NullCacheModel implements CacheModel<ClusterGroup>,
-		MVCCModel {
-		@Override
-		public long getMvccVersion() {
-			return -1;
-		}
-
-		@Override
-		public void setMvccVersion(long mvccVersion) {
-		}
-
-		@Override
-		public ClusterGroup toEntityModel() {
-			return _nullClusterGroup;
-		}
-	}
 }

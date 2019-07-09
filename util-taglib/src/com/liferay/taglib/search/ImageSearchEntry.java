@@ -51,11 +51,11 @@ public class ImageSearchEntry extends TextSearchEntry {
 	}
 
 	public HttpServletRequest getRequest() {
-		return _request;
+		return _httpServletRequest;
 	}
 
 	public HttpServletResponse getResponse() {
-		return _response;
+		return _httpServletResponse;
 	}
 
 	public ServletContext getServletContext() {
@@ -76,15 +76,15 @@ public class ImageSearchEntry extends TextSearchEntry {
 
 	@Override
 	public void print(
-			Writer writer, HttpServletRequest request,
-			HttpServletResponse response)
+			Writer writer, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:search-container-column-icon:href", _href);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:search-container-column-icon:src", _src);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:search-container-column-icon:toggleRowChecker",
 			_toggleRowChecker);
 
@@ -93,7 +93,8 @@ public class ImageSearchEntry extends TextSearchEntry {
 				getServletContext(), _PAGE);
 
 		requestDispatcher.include(
-			request, new PipingServletResponse(response, writer));
+			httpServletRequest,
+			new PipingServletResponse(httpServletResponse, writer));
 	}
 
 	@Override
@@ -101,12 +102,12 @@ public class ImageSearchEntry extends TextSearchEntry {
 		_href = href;
 	}
 
-	public void setRequest(HttpServletRequest request) {
-		_request = request;
+	public void setRequest(HttpServletRequest httpServletRequest) {
+		_httpServletRequest = httpServletRequest;
 	}
 
-	public void setResponse(HttpServletResponse response) {
-		_response = response;
+	public void setResponse(HttpServletResponse httpServletResponse) {
+		_httpServletResponse = httpServletResponse;
 	}
 
 	public void setServletContext(ServletContext servletContext) {
@@ -125,8 +126,8 @@ public class ImageSearchEntry extends TextSearchEntry {
 		"/html/taglib/ui/search_container/image.jsp";
 
 	private String _href;
-	private HttpServletRequest _request;
-	private HttpServletResponse _response;
+	private HttpServletRequest _httpServletRequest;
+	private HttpServletResponse _httpServletResponse;
 	private ServletContext _servletContext;
 	private String _src;
 	private boolean _toggleRowChecker;

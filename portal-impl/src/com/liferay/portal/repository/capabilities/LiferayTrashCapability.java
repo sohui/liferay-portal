@@ -47,8 +47,11 @@ import com.liferay.trash.kernel.service.TrashVersionLocalService;
 import java.util.List;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.capabilities.LiferayTrashCapability}
  */
+@Deprecated
 public class LiferayTrashCapability
 	implements RepositoryEventAware, TrashCapability {
 
@@ -98,6 +101,13 @@ public class LiferayTrashCapability
 		deleteTrashEntry(folder);
 
 		_dlFolderServiceAdapter.deleteFolder(folder.getFolderId(), false);
+	}
+
+	@Override
+	public boolean isInTrash(FileEntry fileEntry) throws PortalException {
+		DLFileEntry dlFileEntry = (DLFileEntry)fileEntry.getModel();
+
+		return dlFileEntry.isInTrash();
 	}
 
 	@Override

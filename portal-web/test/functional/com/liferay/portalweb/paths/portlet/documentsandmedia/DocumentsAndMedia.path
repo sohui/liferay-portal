@@ -10,7 +10,7 @@
 <tbody>
 <tr>
 	<td>BREADCRUMB_HOME</td>
-	<td>//div[contains(@id,'breadcrumbContainer')]//ul/li[1]</td>
+	<td>//div[contains(@id,'breadcrumbContainer')]//ol/li[1]</td>
 	<td></td>
 </tr>
 <tr>
@@ -19,38 +19,49 @@
 	<td></td>
 </tr>
 <tr>
-	<td>BREADCRUMB_LAST</td>
-	<td>//div[contains(@id,'breadcrumbContainer')]//li[contains(.,'${key_dmFolderName}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CHOOSE_FOLDER_BUTTON</td>
-	<td>//button[@data-foldername='${key_dmFolderName}']/span[contains(.,'Choose')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>CONFIGURATION_IFRAME</td>
 	<td>//iframe[contains(@id,'DLPortlet')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CONFIGURATION_OPTIONS</td>
-	<td>//a[@title='Options']</td>
+	<td>CUSTOM_FIELD</td>
+	<td>//div[contains(@class,'custom-attributes')]//input[contains(@id,'DLAdminPortlet')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_FIELD_NAME</td>
+	<td>//div[contains(@class,'custom-attributes')]/div/label[contains(.,'${key_customFieldName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DOCUMENT_VERSION_ANY</td>
+	<td>//li[contains(.,'${key_dmDocumentVersionNumber}')]//div[@class='list-group-title']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DOCUMENT_VERSION_VERTICAL_ELLIPSIS</td>
-	<td>//dl/dt[contains(.,'${key_dmDocumentVersionNumber}')]/../..//div//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//li[contains(.,'${key_dmDocumentVersionNumber}')]//a[span/*[contains(@class,'lexicon-icon-ellipsis-v')]]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>NAVBAR_CONTAINER</td>
-	<td>//div[@class='navbar ' or contains(@class,'navbar-default')]//div[contains(@class,'container')]</td>
+	<td>SELECT_FOLDER_BUTTON</td>
+	<td>//button[@data-foldername='${key_dmFolderName}']/span[contains(.,'Select')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>PORTLET_TITLE</td>
-	<td>//span[contains(@class,'header-toolbar-title')]</td>
+	<td>TAG</td>
+	<td>//span//span[contains(.,'${key_tagName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--EDIT_TAGS-->
+<tr>
+	<td>EDIT_TAGS_FIELD</td>
+	<td>//input[@class='form-control-inset']</td>
 	<td></td>
 </tr>
 <tr>
@@ -70,18 +81,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ICON_DOCUMENT_THUMBNAIL</td>
-	<td>//li[@data-title='${key_dmDocumentTitle}']//div[contains(@class,'bg-cover')]/a/img</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ICON_DOCUMENT_THUMBNAIL_GENERIC</td>
-	<td>//a[@data-folder='false']/div[@class='entry-thumbnail']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ICON_DOCUMENT_ICON_LOCKED</td>
-	<td>//div[contains(@id,'entriesContainer')]//li[contains(@data-title,'${key_dmDocumentTitle}')]//*[name()='svg'][@message='locked']</td>
+	<td>//div[contains(@id,'entriesContainer')]//li[contains(@data-title,'${key_dmDocumentTitle}')]//span/*[name()='svg'][@message='locked']</td>
 	<td></td>
 </tr>
 <tr>
@@ -95,28 +96,18 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ICON_DOCUMENT_ACTIONS</td>
-	<td>//div[contains(@class,'document-container') and contains(.,'${key_dmDocumentTitle}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ICON_DOCUMENT_SHORTCUT_ACTIONS</td>
-	<td>//div[contains(.,'${key_dmDocumentTitle}') and a/div/img[@class='shortcut-icon']]//span/div/a</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ICON_DOCUMENT_TITLE</td>
 	<td>//span[contains(@class,'lfr-card-title-text') and contains(.,'${key_dmDocumentTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ICON_DOCUMENT_TITLE_LINK</td>
-	<td>//span[contains(@class,'lfr-card-title-text') and contains(.,'${key_dmDocumentTitle}')]//a</td>
+	<td>//span[contains(@class,'lfr-card-title-text')]//a[@title='${key_dmDocumentTitle}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ICON_DOCUMENT_VERTICAL_ELLIPSIS</td>
-	<td>//li[contains(@data-title,'${key_dmDocumentTitle}')]//span[contains(@class,'icon-ellipsis-vertical')]</td>
+	<td>//div[contains(@class,'document-container')]//li[contains(.,'${key_dmDocumentTitle}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]] | //ul[contains(@class,'display-style')]/li[contains(@data-title,'${key_dmDocumentTitle}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -132,12 +123,7 @@
 <!--ICON_FOLDER-->
 <tr>
 	<td>ICON_FOLDER_THUMBNAIL</td>
-	<td>//div[contains(@class,'selectable') and contains(.,'${key_dmFolderName}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ICON_FOLDER_THUMBNAIL_GENERIC</td>
-	<td>//div[contains(@class,'card-row') and contains(@class,'selectable')]</td>
+	<td>//div[contains(@class,'card-col-content')]/span[contains(@class,'lfr-card-title-text')]/a[contains(@title,'${key_dmFolderName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -146,13 +132,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ICON_FOLDER_ACTIONS</td>
-	<td>//div[contains(@class,'selectable') and contains(.,'${key_dmFolderName}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ICON_FOLDER_TITLE</td>
-	<td>//span//a[@title='${key_dmFolderName}']</td>
+	<td>//div//a[@title='${key_dmFolderName}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -173,22 +154,17 @@
 </tr>
 <tr>
 	<td>DESCRIPTIVE_LIST_DOCUMENT_TITLE</td>
-	<td>//li[@data-title='${key_dmDocumentTitle}']//h4/a</td>
+	<td>//li[@data-title='${key_dmDocumentTitle}']//a</td>
 	<td></td>
 </tr>
 <tr>
-	<td>DESCRIPTIVE_LIST_DOCUMENT_WORKFLOW</td>
-	<td>//li[@data-title='${key_dmDocumentTitle}']//span[contains(@class,'workflow-status')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DESCRIPTIVE_LIST_DOCUMENT_LOCKED</td>
-	<td>//li[@data-title='${key_dmDocumentTitle}']//div[@class='entry-thumbnail']/img[@alt='Locked']</td>
+	<td>DESCRIPTIVE_LIST_DOCUMENT_TYPE</td>
+	<td>//li[@data-title='${key_dmDocumentTitle}']//span[contains(.,'${key_dmDocumentType}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS</td>
-	<td>//li[contains(.,'${key_dmDocumentTitle}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//li[contains(.,'${key_dmDocumentTitle}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -199,7 +175,7 @@
 <!--DESCRIPTIVE_LIST_FOLDER-->
 <tr>
 	<td>DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS</td>
-	<td>//li[contains(.,'${key_dmFolderName}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//li[contains(.,'${key_dmFolderName}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -209,12 +185,12 @@
 </tr>
 <tr>
 	<td>DESCRIPTIVE_LIST_FOLDER_ICON</td>
-	<td>//li[@data-title='${key_dmFolderName}']//*[name()='svg'][contains(@class,'icon-folder')]</td>
+	<td>//li[@data-title='${key_dmFolderName}']//div[span/*[name()='svg'][contains(@class,'icon-folder')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DESCRIPTIVE_LIST_FOLDER_TITLE</td>
-	<td>//li[@data-title='${key_dmFolderName}']//a</td>
+	<td>//li[@data-title='${key_dmFolderName}']//a|//tr[@data-title='${key_dmFolderName}']//a</td>
 	<td></td>
 </tr>
 <tr>
@@ -227,87 +203,15 @@
 	<td></td>
 	<td></td>
 </tr>
-<!--LIST_DOCUMENT-->
-<tr>
-	<td>LIST_DOCUMENT</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LIST_DOCUMENT_CHECKBOX</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]/td//input</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LIST_DOCUMENT_ACTIONS</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]//span/div/a</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LIST_DOCUMENT_TITLE</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]/td[2]//div/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LIST_DOCUMENT_WORKFLOW_STATUS</td>
-	<td>//table[@class='table table-list']//tr[contains(.,'${key_dmDocumentTitle}')]//span[@class='workflow-status']/strong</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--FILTER-->
-<tr>
-	<td>FILTER_HOME</td>
-	<td>//div[contains(@id,'folderContainer')]/ul/li/a[contains(.,'Home')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILTER_HOME_ACTIONS</td>
-	<td>//div[contains(@id,'folderContainer')]/ul/li/a[contains(.,'Home')]/../span[contains(@class,'entry-action')]/div/a</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILTER_RECENT</td>
-	<td>//div[contains(@id,'folderContainer')]/ul/li/a[contains(.,'Recent')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILTER_MINE</td>
-	<td>//div[contains(@id,'folderContainer')]/ul/li/a[contains(.,'Mine')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILTER_REPOSITORY</td>
-	<td>//li[@data-title='${key_dmRepositoryName}']//span[contains(@title,'${key_dmRepositoryName}')]/a</td>
-	<td></td>
-</tr>
 <tr>
 	<td>FILTER_REPOSITORY_GENERIC</td>
 	<td>xpath=(//div[contains(@id,'folderContainer')]/ul/li/a)[5]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>FILTER_REPOSITORY_ACTIONS</td>
-	<td>//div[contains(@id,'folderContainer')]/ul/li/a[contains(.,'${key_dmRepositoryName}')]/../span[contains(@class,'entry-action')]/div/a</td>
-	<td></td>
-</tr>
-<tr>
 	<td>FILTER_REPOSITORY_ACTIONS_GENERIC</td>
 	<td>xpath=(//div[contains(@id,'folderContainer')]/ul/li/a/../span[contains(@class,'entry-action')]/div/a)[2]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--LIFERAY_SYNC-->
-<tr>
-	<td>LIFERAY_SYNC_LINK</td>
-	<td>//div[contains(@id,'syncNotificationContent')]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -322,28 +226,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>TOOLBAR_ADD</td>
-	<td>//ul[contains(@id,'toolbarContainer')]/li/a[@title='Add']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_DISPLAY_STYLE_BUTTON</td>
-	<td>//div[contains(@id,'displayStyleButtons')]/li/a</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_MANAGE</td>
-	<td>//ul[contains(@id,'toolbarContainer')]/li/a[@title='Manage']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>TOOLBAR_SELECT_ALL_CHECKBOX</td>
-	<td>//input[contains(@id,'allRowIds')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TOOLBAR_SORT_BY</td>
-	<td>//ul[contains(@id,'toolbarContainer')]/li/a[@title='Sort By']</td>
+	<td>xpath=(//div[@class='checkbox']//input[@title='Select All'])[2]</td>
 	<td></td>
 </tr>
 <tr>
@@ -354,17 +238,28 @@
 <!--SEARCH-->
 <tr>
 	<td>SEARCH_REPOSITORY_TAB</td>
-	<td>//ul[contains(@class,'nav-tabs')]/li/a[contains(.,'${key_dmRepositoryName}')]</td>
+	<td>//div[contains(@class,'search-info')]/a[contains(.,'${dmRepositoryName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SEARCH_TITLE</td>
-	<td>//a[@class='entry-link' and contains(.,'${dmDocumentTitle}')]/div/span[@class='entry-title']</td>
+	<td>//div[contains(@class,'searchcontainer')]//a[contains(.,'${dmDocumentTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SEARCH_PARENT_FOLDER</td>
-	<td>//a[@class='entry-link' and contains(.,'${dmDocumentTitle}')]//dd</td>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--SIDEBAR-->
+<tr>
+	<td>SIDEBAR_INFO_ACTIVE</td>
+	<td>//div[contains(@class,'contextual-sidebar-visible')] | //div[contains(@class,'open')]/div[contains(@class,'info-panel')]/div[contains(@class,'sidebar')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SIDEBAR_LATEST_VERSION</td>
+	<td>//div[contains(@class,'sidebar-body')]//div[@class='h5']</td>
 	<td></td>
 </tr>
 <tr>

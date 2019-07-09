@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.service.ReleaseLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the Release service. Represents a row in the &quot;Release_&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.portal.kernel.service.ReleaseLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class ReleaseBaseImpl extends ReleaseModelImpl
-	implements Release {
+public abstract class ReleaseBaseImpl
+	extends ReleaseModelImpl implements Release {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a release model instance should use the {@link Release} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a release model instance should use the <code>Release</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class ReleaseBaseImpl extends ReleaseModelImpl
 			ReleaseLocalServiceUtil.updateRelease(this);
 		}
 	}
+
 }

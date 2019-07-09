@@ -14,9 +14,9 @@
 
 package com.liferay.taglib.search;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Writer;
@@ -52,7 +52,7 @@ public class TextSearchEntry extends SearchEntry {
 		return _name;
 	}
 
-	public String getName(HttpServletRequest request) {
+	public String getName(HttpServletRequest httpServletRequest) {
 		return getName();
 	}
 
@@ -66,12 +66,12 @@ public class TextSearchEntry extends SearchEntry {
 
 	@Override
 	public void print(
-			Writer writer, HttpServletRequest request,
-			HttpServletResponse response)
+			Writer writer, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		if (Validator.isNull(_href)) {
-			writer.write(getName(request));
+			writer.write(getName(httpServletRequest));
 		}
 		else {
 			StringBundler sb = new StringBundler();
@@ -115,7 +115,7 @@ public class TextSearchEntry extends SearchEntry {
 			}
 
 			sb.append(">");
-			sb.append(getName(request));
+			sb.append(getName(httpServletRequest));
 			sb.append("</a>");
 
 			writer.write(sb.toString());

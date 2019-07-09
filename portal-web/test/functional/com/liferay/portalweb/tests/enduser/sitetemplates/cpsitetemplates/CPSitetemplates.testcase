@@ -1,0 +1,582 @@
+@component-name = "portal-staging"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Site Templates";
+	property testray.main.component.name = "Site Templates";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Site.tearDownCP();
+
+			SiteTemplates.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test AddSiteTemplate {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(
+			siteTemplateActive = "Yes",
+			siteTemplateName = "Site Template Name");
+
+		SiteTemplates.viewCP(siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addSiteTemplateCP(
+			siteName = "Site Name",
+			siteTemplateName = "Site Template Name");
+	}
+
+	@priority = "4"
+	test AddSiteTemplateApplySiteTemplateChangesToSite {
+		property portal.release = "false";
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCP(
+			siteName = "Site Template Site Name",
+			siteTemplateName = "Site Template Name",
+			siteType = "Site Template");
+
+		ProductMenu.gotoSite(site = "Site Template Site Name");
+
+		Portlet.viewNoPortletsPresentPG();
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Manage",
+			rowEntry = "Site Template Name");
+
+		ProductMenu.gotoSiteViaLink(site = "Site Template Name");
+
+		Portlet.addPG(portletName = "Hello World");
+
+		ProductMenu.gotoSite(site = "Site Template Site Name");
+
+		if (IsElementNotPresent(locator1 = "Portlet#PORTLET_CONTENT")) {
+			Refresh();
+		}
+
+		Portlet.viewPG(portletName = "Hello World");
+	}
+
+	@description = "This is a use case for LPS-74307."
+	@priority = "5"
+	test AddSiteTemplateChangeCurrentTheme {
+		property osgi.app.includes = "frontend-theme-fjord";
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(siteTemplateName = "Site Template Name");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Manage",
+			rowEntry = "Site Template Name");
+
+		Page.changeCurrentTheme(
+			pageName = "Home",
+			themeName = "Fjord");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCP(
+			siteName = "Site Template Site Name",
+			siteTemplateName = "Site Template Name",
+			siteType = "Site Template");
+
+		ProductMenu.gotoSite(site = "Site Template Site Name");
+
+		Page.viewCurrentTheme(
+			page = "Public Pages",
+			pageName = "Home",
+			themeName = "Fjord");
+	}
+
+	@priority = "4"
+	test AddSiteTemplateDisablePageModification {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(
+			disableChanges = "true",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCP(
+			siteName = "Site Template Site Name",
+			siteTemplateName = "Site Template Name",
+			siteType = "Site Template");
+
+		ProductMenu.gotoSite(site = "Site Template Site Name");
+
+		Page.viewPageLockCheck();
+
+		AssertElementNotPresent(locator1 = "ControlMenu#ADD");
+	}
+
+	@priority = "4"
+	test DeactivateDefaultSiteTemplate {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.editTemplateStatusCP(
+			siteTemplateActiveEdit = "No",
+			siteTemplateName = "Community Site");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.viewTemplateStatusCP(
+			siteTemplateActiveEdit = "No",
+			siteTemplateName = "Community Site");
+
+		Navigator.openSiteURL(siteName = "guest");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		SiteTemplates.viewNoTemplatesDisplay(siteTemplateName = "Community Site");
+	}
+
+	@description = "This is a use case for LPS-87081."
+	@priority = "5"
+	test DeleteSiteTemplate {
+		property portal.acceptance = "true";
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(
+			siteTemplateActive = "Yes",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.deleteCP(siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.viewDefaultCP(siteTemplateNameList = "Intranet Site,Community Site");
+
+		SiteTemplates.addCP(
+			siteTemplateActive = "Yes",
+			siteTemplateName = "Site Template Name");
+
+		SiteTemplates.deleteViaDeleteIconCP(siteTemplateName = "Site Template Name");
+
+		SiteTemplates.viewDefaultCP(siteTemplateNameList = "Intranet Site,Community Site");
+	}
+
+	@priority = "4"
+	test DeleteSiteTemplateAssociatedWithASite {
+		property portal.acceptance = "true";
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(
+			siteTemplateActive = "Yes",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addSiteTemplateCP(
+			siteName = "Site Name",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.deleteCP(
+			associatedToSite = "true",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.viewCP(siteTemplateName = "Site Template Name");
+	}
+
+	@priority = "4"
+	test EditSiteTemplate {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(
+			siteTemplateActive = "Yes",
+			siteTemplateName = "Site Template Name");
+
+		SiteTemplates.viewCP(
+			siteTemplateDescription = "This is a site template description",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.editCP(
+			siteTemplateDescription = "Site Template Description Edit",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.viewCP(
+			siteTemplateDescription = "Site Template Description Edit",
+			siteTemplateName = "Site Template Name Edit");
+	}
+
+	@priority = "5"
+	test EditSiteTemplateStatus {
+		property portal.acceptance = "true";
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(
+			siteTemplateActive = "Yes",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addSiteTemplateCP(
+			siteName = "Site Name",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.editTemplateStatusCP(
+			siteTemplateActiveEdit = "No",
+			siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.viewTemplateStatusCP(
+			siteTemplateActiveEdit = "No",
+			siteTemplateName = "Site Template Name");
+	}
+
+	@priority = "4"
+	test LocalizeDefaultSiteTemplates {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.viewDefaultCP(siteTemplateNameList = "Community Site,Intranet Site");
+
+		Navigator.gotoAccountSettings();
+
+		MyAccount.changeUserLanguage(
+			languageName = "español (España)",
+			saveButton = "Save",
+			successMessage = "Su petición ha terminado con éxito.");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Sitios web",
+			panel = "Control Panel",
+			portlet = "Plantillas de sitio web");
+
+		SiteTemplates.viewDefaultDataLocalizedCP(
+			siteTemplateDescriptionList = "Sitio con foro y wiki,Sitio con documentos y noticias",
+			siteTemplateNameList = "Sitio de comunidad,Sitio de intranet");
+
+		Navigator.openURL();
+
+		UserBar.gotoDropdownItem(dropdownItem = "Mi cuenta");
+
+		MyAccount.changeUserLanguage(
+			languageName = "English (United States)",
+			saveButton = "Guardar",
+			successMessage = "Your request completed successfully.");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.viewDefaultCP(siteTemplateNameList = "Community Site,Intranet Site");
+	}
+
+	@priority = "4"
+	test OnlySiteAdminCanModifyPageAssociatedWithSiteTemplate {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(siteTemplateName = "Site Template Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCP(
+			siteName = "Site Template Site Name",
+			siteTemplateName = "Site Template Name",
+			siteType = "Site Template");
+
+		ProductMenu.gotoSite(site = "Site Template Site Name");
+
+		AssertElementPresent(locator1 = "ControlMenu#ADD");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		User.editPasswordCP(
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
+
+		ProductMenu.gotoSite(site = "Site Template Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "People",
+			panel = "Site Administration",
+			portlet = "Memberships");
+
+		Site.assignUserAsMemberCP(
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		User.logoutUserPG();
+
+		User.loginUserPG(userEmailAddress = "userea@liferay.com");
+
+		Navigator.gotoSitePage(
+			pageName = "Home",
+			siteName = "Site Template Site Name");
+
+		AssertElementNotPresent(locator1 = "ControlMenu#ADD");
+
+		User.logoutUserPG();
+
+		User.loginUserPG();
+	}
+
+	@priority = "5"
+	test ResetPageChanges {
+		property testray.component.names = "Training";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplatesNavigator.gotoSiteTemplatesPage(
+			pageName = "Home",
+			siteName = "${siteName}",
+			siteTemplateName = "Community Site");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		ProductMenu.gotoSiteViaLink(site = "Community Site");
+
+		Portlet.addPG(portletName = "Categories Navigation");
+
+		ProductMenu.gotoSiteViaLink(site = "Community Site");
+
+		Portlet.addPG(portletName = "Tags Navigation");
+
+		ProductMenu.gotoSiteViaLink(site = "Community Site");
+
+		Portlet.addPG(portletName = "Web Content Display");
+
+		Portlet.dragAndDropPortletToColumnPG(
+			columnNumberFrom = "1",
+			columnNumberTo = "2",
+			portletName = "Asset Publisher");
+
+		ProductMenu.gotoSiteViaLink(site = "Community Site");
+
+		SiteTemplates.viewResetPageChanges(
+			columnNumberFrom = "2",
+			portletName = "Asset Publisher");
+
+		Portlet.dragAndDropPortletToColumnPG(
+			columnNumberFrom = "1",
+			columnNumberTo = "2",
+			portletName = "Message Boards");
+
+		ProductMenu.gotoSiteViaLink(site = "Community Site");
+
+		Portlet.dragAndDropPortletToColumnPG(
+			columnNumberFrom = "2",
+			columnNumberTo = "1",
+			portletName = "Message Boards");
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addCommunityCP(siteName = "Site Name");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Portlet.dragAndDropPortletToColumnPG(
+			columnNumberFrom = "1",
+			columnNumberTo = "2",
+			portletName = "Message Boards");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		SiteTemplates.resetPageChanges(
+			columnNumberTo = "2",
+			portletName = "Message Boards");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		SiteTemplates.viewResetPageChanges(
+			columnNumberFrom = "1",
+			portletName = "Message Boards");
+	}
+
+	@description = "This is a use case for LPS-44550"
+	@priority = "4"
+	test SiteTemplateXSS {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Site Templates");
+
+		SiteTemplates.addCP(
+			siteTemplateActive = "Yes",
+			siteTemplateName = '''<script>alert(123);</script>''');
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addSiteTemplateCP(
+			siteName = "Site Name",
+			siteTemplateName = '''<script>alert(123);</script>''',
+			siteType = "Site Template",
+			uncheckPropagation = "true");
+
+		ProductMenu.gotoSite(site = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Settings");
+
+		AssertAlertNotPresent();
+
+		var actualScript = '''<script>alert(123);</script>''';
+
+		var escapedScript = '''&lt;script&gt;alert(123);&lt;/script&gt;''';
+
+		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+
+		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+	}
+
+}

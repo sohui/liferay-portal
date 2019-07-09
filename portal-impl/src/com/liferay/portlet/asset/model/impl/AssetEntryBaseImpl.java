@@ -14,10 +14,10 @@
 
 package com.liferay.portlet.asset.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the AssetEntry service. Represents a row in the &quot;AssetEntry&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class AssetEntryBaseImpl extends AssetEntryModelImpl
-	implements AssetEntry {
+public abstract class AssetEntryBaseImpl
+	extends AssetEntryModelImpl implements AssetEntry {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a asset entry model instance should use the {@link AssetEntry} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a asset entry model instance should use the <code>AssetEntry</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class AssetEntryBaseImpl extends AssetEntryModelImpl
 			AssetEntryLocalServiceUtil.updateAssetEntry(this);
 		}
 	}
+
 }

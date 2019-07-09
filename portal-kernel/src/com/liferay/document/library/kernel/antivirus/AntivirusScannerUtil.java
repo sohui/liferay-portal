@@ -14,8 +14,6 @@
 
 package com.liferay.document.library.kernel.antivirus;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.io.File;
 import java.io.InputStream;
 
@@ -26,9 +24,6 @@ import java.io.InputStream;
 public class AntivirusScannerUtil {
 
 	public static AntivirusScanner getAntivirusScanner() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			AntivirusScannerUtil.class);
-
 		return _antivirusScanner;
 	}
 
@@ -62,10 +57,8 @@ public class AntivirusScannerUtil {
 		}
 	}
 
-	public void setAntivirusScanner(AntivirusScanner antiVirusScanner) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
-		_antivirusScanner = antiVirusScanner;
+	public void setAntivirusScanner(AntivirusScanner antivirusScanner) {
+		_antivirusScanner = antivirusScanner;
 	}
 
 	private static AntivirusScanner _antivirusScanner;

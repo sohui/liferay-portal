@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.search;
 
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -62,7 +62,9 @@ public class IndexSearcherHelperUtil {
 		return _indexSearcherHelper.suggestKeywordQueries(searchContext, max);
 	}
 
-	private static final IndexSearcherHelper _indexSearcherHelper =
-		ProxyFactory.newServiceTrackedInstance(IndexSearcherHelper.class);
+	private static volatile IndexSearcherHelper _indexSearcherHelper =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			IndexSearcherHelper.class, IndexSearcherHelperUtil.class,
+			"_indexSearcherHelper", false);
 
 }

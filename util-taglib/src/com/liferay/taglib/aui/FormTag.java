@@ -15,7 +15,6 @@
 package com.liferay.taglib.aui;
 
 import com.liferay.portal.kernel.servlet.taglib.aui.ValidatorTag;
-import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.taglib.aui.base.BaseFormTag;
 
 import java.util.ArrayList;
@@ -70,18 +69,13 @@ public class FormTag extends BaseFormTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		super.setAttributes(request);
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		super.setAttributes(httpServletRequest);
 
-		if (getEscapeXml()) {
-			String action = getAction();
-
-			super.setAction(HtmlUtil.escape(action));
-		}
-
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"LIFERAY_SHARED_aui:form:checkboxNames", _checkboxNames);
-		request.setAttribute("aui:form:validatorTagsMap", _validatorTagsMap);
+		httpServletRequest.setAttribute(
+			"LIFERAY_SHARED_aui:form:validatorTagsMap", _validatorTagsMap);
 	}
 
 	private static final boolean _CLEAN_UP_SET_ATTRIBUTES = true;

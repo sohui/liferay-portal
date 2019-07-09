@@ -14,6 +14,7 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.layouts.admin.kernel.model.LayoutTypePortletConstants;
 import com.liferay.layouts.admin.kernel.util.SitemapURLProvider;
 import com.liferay.layouts.admin.kernel.util.SitemapUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -21,10 +22,10 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.service.LayoutServiceUtil;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.xml.Element;
@@ -34,7 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 @OSGiBeanProperties
 public class LayoutSitemapURLProvider implements SitemapURLProvider {
@@ -42,6 +43,18 @@ public class LayoutSitemapURLProvider implements SitemapURLProvider {
 	@Override
 	public String getClassName() {
 		return Layout.class.getName();
+	}
+
+	@Override
+	public void visitLayout(
+			Element element, String layoutUuid, LayoutSet layoutSet,
+			ThemeDisplay themeDisplay)
+		throws PortalException {
+
+		Layout layout = LayoutLocalServiceUtil.getLayoutByUuidAndGroupId(
+			layoutUuid, layoutSet.getGroupId(), layoutSet.isPrivateLayout());
+
+		visitLayout(element, layout, themeDisplay);
 	}
 
 	@Override
@@ -65,8 +78,8 @@ public class LayoutSitemapURLProvider implements SitemapURLProvider {
 				continue;
 			}
 
-			List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
-				layoutSet.getGroupId(), layoutSet.getPrivateLayout(),
+			List<Layout> layouts = LayoutServiceUtil.getLayouts(
+				layoutSet.getGroupId(), layoutSet.isPrivateLayout(),
 				entry.getKey());
 
 			for (Layout layout : layouts) {
@@ -83,7 +96,9 @@ public class LayoutSitemapURLProvider implements SitemapURLProvider {
 			layout.getTypeSettingsProperties();
 
 		if (!GetterUtil.getBoolean(
-				typeSettingsProperties.getProperty("sitemap-include"), true)) {
+				typeSettingsProperties.getProperty(
+					LayoutTypePortletConstants.SITEMAP_INCLUDE),
+				true)) {
 
 			return;
 		}
@@ -97,23 +112,10 @@ public class LayoutSitemapURLProvider implements SitemapURLProvider {
 		Map<Locale, String> alternateURLs = SitemapUtil.getAlternateURLs(
 			layoutFullURL, themeDisplay, layout);
 
-		SitemapUtil.addURLElement(
-			element, layoutFullURL, typeSettingsProperties,
-			layout.getModifiedDate(), layoutFullURL, alternateURLs);
-
-		if (alternateURLs.size() > 1) {
-			Locale defaultLocale = LocaleUtil.getSiteDefault();
-
-			for (Map.Entry<Locale, String> entry : alternateURLs.entrySet()) {
-				Locale availableLocale = entry.getKey();
-				String alternateURL = entry.getValue();
-
-				if (availableLocale.equals(defaultLocale)) {
-					SitemapUtil.addURLElement(
-						element, alternateURL, typeSettingsProperties,
-						layout.getModifiedDate(), layoutFullURL, alternateURLs);
-				}
-			}
+		for (String alternateURL : alternateURLs.values()) {
+			SitemapUtil.addURLElement(
+				element, alternateURL, typeSettingsProperties,
+				layout.getModifiedDate(), layoutFullURL, alternateURLs);
 		}
 	}
 

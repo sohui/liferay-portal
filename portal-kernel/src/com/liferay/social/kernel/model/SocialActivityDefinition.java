@@ -14,8 +14,9 @@
 
 package com.liferay.social.kernel.model;
 
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.HashUtil;
 
 import java.io.Serializable;
 
@@ -89,8 +90,7 @@ public class SocialActivityDefinition implements Serializable {
 				activityDefinition.getActivityProcessor()) &&
 			(_activityType == activityDefinition.getActivityType()) &&
 			(_countersEnabled == activityDefinition.isCountersEnabled()) &&
-			Objects.equals(
-				_languageKey, activityDefinition.getLanguageKey()) &&
+			Objects.equals(_languageKey, activityDefinition.getLanguageKey()) &&
 			(_logActivity == activityDefinition.isLogActivity()) &&
 			Objects.equals(_modelName, activityDefinition.getModelName())) {
 
@@ -134,7 +134,9 @@ public class SocialActivityDefinition implements Serializable {
 
 	public String getName(Locale locale) {
 		return LanguageUtil.get(
-			locale, "social.activity." + _modelName + "." + _languageKey);
+			locale,
+			StringBundler.concat(
+				"social.activity.", _modelName, ".", _languageKey));
 	}
 
 	@Override

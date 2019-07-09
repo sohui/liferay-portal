@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.workflow;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.io.Serializable;
@@ -135,6 +134,15 @@ public class WorkflowTaskManagerUtil {
 			companyId, userId, completed);
 	}
 
+	public static int getWorkflowTaskCountByUserRoles(
+			long companyId, long userId, long workflowInstanceId,
+			Boolean completed)
+		throws WorkflowException {
+
+		return getWorkflowTaskManager().getWorkflowTaskCountByUserRoles(
+			companyId, userId, workflowInstanceId, completed);
+	}
+
 	public static int getWorkflowTaskCountByWorkflowInstance(
 			long companyId, Long userId, long workflowInstanceId,
 			Boolean completed)
@@ -145,9 +153,6 @@ public class WorkflowTaskManagerUtil {
 	}
 
 	public static WorkflowTaskManager getWorkflowTaskManager() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			WorkflowTaskManagerUtil.class);
-
 		return _workflowTaskManager;
 	}
 
@@ -205,6 +210,14 @@ public class WorkflowTaskManagerUtil {
 		return getWorkflowTaskManager().getWorkflowTasksByWorkflowInstance(
 			companyId, userId, workflowInstanceId, completed, start, end,
 			orderByComparator);
+	}
+
+	public static boolean hasOtherAssignees(
+			long workflowTaskInstanceId, long userId)
+		throws WorkflowException {
+
+		return getWorkflowTaskManager().hasOtherAssignees(
+			workflowTaskInstanceId, userId);
 	}
 
 	public static List<WorkflowTask> search(
@@ -284,8 +297,6 @@ public class WorkflowTaskManagerUtil {
 
 	public void setWorkflowTaskManager(
 		WorkflowTaskManager workflowTaskManager) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_workflowTaskManager = workflowTaskManager;
 	}

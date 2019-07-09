@@ -17,7 +17,7 @@ package com.liferay.portal.sharepoint;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.servlet.filters.secure.SecureFilter;
+import com.liferay.portal.servlet.filters.secure.BaseAuthFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Bruno Farache
  * @author Alexander Chow
  */
-public class SharepointFilter extends SecureFilter {
+public class SharepointFilter extends BaseAuthFilter {
 
 	@Override
 	public void init(FilterConfig filterConfig) {
@@ -65,85 +65,87 @@ public class SharepointFilter extends SecureFilter {
 
 	@Override
 	protected void processFilter(
-			HttpServletRequest request, HttpServletResponse response,
-			FilterChain filterChain)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, FilterChain filterChain)
 		throws Exception {
 
-		String method = request.getMethod();
+		String method = httpServletRequest.getMethod();
 
 		String userAgent = GetterUtil.getString(
-			request.getHeader(HttpHeaders.USER_AGENT));
+			httpServletRequest.getHeader(HttpHeaders.USER_AGENT));
 
 		if ((userAgent.startsWith(
 				"Microsoft Data Access Internet Publishing") ||
 			 userAgent.startsWith("Microsoft Office Protocol Discovery")) &&
 			method.equals(HttpMethods.OPTIONS)) {
 
-			setOptionsHeaders(request, response);
+			setOptionsHeaders(httpServletRequest, httpServletResponse);
 
 			return;
 		}
 
-		if (!isSharepointRequest(request.getRequestURI())) {
+		if (!isSharepointRequest(httpServletRequest.getRequestURI())) {
 			processFilter(
-				SharepointFilter.class.getName(), request, response,
-				filterChain);
+				SharepointFilter.class.getName(), httpServletRequest,
+				httpServletResponse, filterChain);
 
 			return;
 		}
 
 		if (method.equals(HttpMethods.GET) || method.equals(HttpMethods.HEAD)) {
-			setGetHeaders(response);
+			setGetHeaders(httpServletResponse);
 		}
 		else if (method.equals(HttpMethods.POST)) {
-			setPostHeaders(response);
+			setPostHeaders(httpServletResponse);
 		}
 
-		super.processFilter(request, response, filterChain);
+		super.processFilter(
+			httpServletRequest, httpServletResponse, filterChain);
 	}
 
-	protected void setGetHeaders(HttpServletResponse response) {
-		response.setContentType("text/html");
+	protected void setGetHeaders(HttpServletResponse httpServletResponse) {
+		httpServletResponse.setContentType("text/html");
 
-		response.setHeader(
+		httpServletResponse.setHeader(
 			"Public-Extension", "http://schemas.microsoft.com/repl-2");
-		response.setHeader(
+		httpServletResponse.setHeader(
 			"MicrosoftSharePointTeamServices", SharepointUtil.VERSION);
-		response.setHeader("Cache-Control", "no-cache");
+		httpServletResponse.setHeader("Cache-Control", "no-cache");
 	}
 
 	protected void setOptionsHeaders(
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
-		if (isWebDAVRequest(request.getRequestURI())) {
-			response.setHeader("MS-Author-Via", "DAV,MS-FP/4.0");
+		if (isWebDAVRequest(httpServletRequest.getRequestURI())) {
+			httpServletResponse.setHeader("MS-Author-Via", "DAV,MS-FP/4.0");
 		}
 		else {
-			response.setHeader("MS-Author-Via", "MS-FP/4.0,DAV");
+			httpServletResponse.setHeader("MS-Author-Via", "MS-FP/4.0,DAV");
 		}
 
-		response.setHeader("MicrosoftOfficeWebServer", "5.0_Collab");
-		response.setHeader(
+		httpServletResponse.setHeader("MicrosoftOfficeWebServer", "5.0_Collab");
+		httpServletResponse.setHeader(
 			"MicrosoftSharePointTeamServices", SharepointUtil.VERSION);
-		response.setHeader("DAV", "1,2");
-		response.setHeader("Accept-Ranges", "none");
-		response.setHeader("Cache-Control", "no-cache");
-		response.setHeader(
+		httpServletResponse.setHeader("DAV", "1,2");
+		httpServletResponse.setHeader("Accept-Ranges", "none");
+		httpServletResponse.setHeader("Cache-Control", "no-cache");
+		httpServletResponse.setHeader(
 			"Allow",
 			"COPY, DELETE, GET, GETLIB, HEAD, LOCK, MKCOL, MOVE, OPTIONS, " +
 				"POST, PROPFIND, PROPPATCH, PUT, UNLOCK");
 	}
 
-	protected void setPostHeaders(HttpServletResponse response) {
-		response.setContentType("application/x-vermeer-rpc");
+	protected void setPostHeaders(HttpServletResponse httpServletResponse) {
+		httpServletResponse.setContentType("application/x-vermeer-rpc");
 
-		response.setHeader(
+		httpServletResponse.setHeader(
 			"MicrosoftSharePointTeamServices", SharepointUtil.VERSION);
-		response.setHeader("Cache-Control", "no-cache");
-		response.setHeader("Connection", "close");
+		httpServletResponse.setHeader("Cache-Control", "no-cache");
+		httpServletResponse.setHeader("Connection", "close");
 	}
 
-	private static final String[] _PREFIXES = new String[] {
+	private static final String[] _PREFIXES = {
 		"/_vti_inf.html", "/_vti_bin", "/sharepoint", "/history", "/resources"
 	};
 

@@ -17,17 +17,14 @@ package com.liferay.portlet.asset.social;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.social.BaseSocialActivityManager;
-import com.liferay.portal.kernel.social.SocialActivityManager;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.social.kernel.service.SocialActivityLocalService;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), moved to {@link
+ *             com.liferay.asset.web.internal.social.AssetEntrySocialActivityManager}
  */
-@OSGiBeanProperties(
-	property = "model.class.name=com.liferay.asset.kernel.model.AssetEntry",
-	service = SocialActivityManager.class
-)
+@Deprecated
 public class AssetEntrySocialActivityManager
 	extends BaseSocialActivityManager<AssetEntry> {
 

@@ -14,7 +14,7 @@
 
 package com.liferay.trash.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
@@ -31,8 +31,11 @@ import com.liferay.portal.kernel.util.ReferenceRegistry;
  * @see TrashVersionLocalService
  * @see com.liferay.portlet.trash.service.base.TrashVersionLocalServiceBaseImpl
  * @see com.liferay.portlet.trash.service.impl.TrashVersionLocalServiceImpl
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+com.liferay.trash.service.impl.TrashVersionLocalServiceImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 public class TrashVersionLocalServiceUtil {
 	/*
@@ -138,7 +141,7 @@ public class TrashVersionLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link #fetchVersion(String, long)}
+	* @deprecated As of Judson (7.1.x), replaced by {@link #fetchVersion(String, long)}
 	*/
 	@Deprecated
 	public static com.liferay.trash.kernel.model.TrashVersion fetchVersion(

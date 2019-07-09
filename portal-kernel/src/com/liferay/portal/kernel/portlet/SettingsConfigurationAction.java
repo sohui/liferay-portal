@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
@@ -37,7 +38,6 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropertiesParamUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -219,23 +219,23 @@ public abstract class SettingsConfigurationAction
 		portletPreferencesMap.put(name, values);
 	}
 
-	protected PortletConfig getSelPortletConfig(HttpServletRequest request) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+	protected PortletConfig getSelPortletConfig(
+		HttpServletRequest httpServletRequest) {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		String portletResource = ParamUtil.getString(
-			request, "portletResource");
+			httpServletRequest, "portletResource");
 
 		Portlet selPortlet = PortletLocalServiceUtil.getPortletById(
 			themeDisplay.getCompanyId(), portletResource);
 
-		ServletContext servletContext = (ServletContext)request.getAttribute(
-			WebKeys.CTX);
+		ServletContext servletContext =
+			(ServletContext)httpServletRequest.getAttribute(WebKeys.CTX);
 
-		PortletConfig selPortletConfig = PortletConfigFactoryUtil.create(
-			selPortlet, servletContext);
-
-		return selPortletConfig;
+		return PortletConfigFactoryUtil.create(selPortlet, servletContext);
 	}
 
 	protected Settings getSettings(ActionRequest actionRequest)
@@ -257,7 +257,7 @@ public abstract class SettingsConfigurationAction
 		else if (settingsScope.equals("group")) {
 			return SettingsFactoryUtil.getSettings(
 				new GroupServiceSettingsLocator(
-					themeDisplay.getSiteGroupId(), serviceName));
+					themeDisplay.getScopeGroupId(), serviceName));
 		}
 		else if (settingsScope.equals("portletInstance")) {
 			String portletResource = ParamUtil.getString(
@@ -285,7 +285,6 @@ public abstract class SettingsConfigurationAction
 		return settingsId;
 	}
 
-	@SuppressWarnings("unused")
 	protected void postProcess(
 			long companyId, PortletRequest portletRequest, Settings settings)
 		throws PortalException {

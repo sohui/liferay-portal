@@ -14,6 +14,7 @@
 
 package com.liferay.portal.events;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.events.Action;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -29,7 +30,14 @@ import javax.servlet.http.HttpServletResponse;
 public class LogMemoryUsageAction extends Action {
 
 	@Override
-	public void run(HttpServletRequest request, HttpServletResponse response) {
+	public void run(
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
+
+		if (!_log.isDebugEnabled()) {
+			return;
+		}
+
 		Runtime runtime = Runtime.getRuntime();
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -38,11 +46,10 @@ public class LogMemoryUsageAction extends Action {
 		String totalMemory = nf.format(runtime.totalMemory());
 		String maxMemory = nf.format(runtime.maxMemory());
 
-		if (_log.isDebugEnabled()) {
-			_log.debug(
-				"Memory Usage:\t" + freeMemory + "\t" + totalMemory + "\t" +
-					maxMemory);
-		}
+		_log.debug(
+			StringBundler.concat(
+				"Memory Usage:\t", freeMemory, "\t", totalMemory, "\t",
+				maxMemory));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

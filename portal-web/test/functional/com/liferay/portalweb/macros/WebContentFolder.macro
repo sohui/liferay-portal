@@ -1,135 +1,182 @@
-<definition>
-	<command name="addCP">
-		<var name="key_webContentTitle" value="${folderName}" />
+definition {
 
-		<execute function="Click" locator1="Button#PLUS" />
+	macro addCP {
+		var key_webContentTitle = "${folderName}";
 
-		<if>
-			<condition function="IsElementPresent" locator1="MenuItem#FOLDER" />
-			<then>
-				<execute function="AssertClick" locator1="MenuItem#FOLDER" value1="Folder" />
-			</then>
-		</if>
+		LexiconEntry.gotoAdd();
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${folderName}" />
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${folderDescription}" />
-		<execute macro="PortletEntry#save" />
+		if (IsElementPresent(locator1 = "MenuItem#ANY_MENU_ITEM", key_menuItem = "Folder")) {
+			MenuItem.click(menuItem = "Folder");
+		}
 
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+		PortletEntry.inputName(name = "${folderName}");
 
-		<execute function="AssertElementPresent#pauseAssertVisible" locator1="WC#ENTRY_DESCRIPTIVE_THUMBNAIL" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${folderName}" />
-	</command>
+		PortletEntry.inputDescription(description = "${folderDescription}");
 
-	<command name="addSubfolderCP">
-		<var name="key_webContentTitle" value="${folderName}" />
+		PortletEntry.save();
 
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-		<execute function="Click" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${folderName}" />
-		<execute function="AssertTextEquals" locator1="WC#FILTER_SELECTED" value1="${folderName}" />
-		<execute function="Click" locator1="Button#PLUS" />
-		<execute function="Click" locator1="MenuItem#SUBFOLDER" value1="Subfolder" />
+		AssertElementPresent.pauseAssertVisible(locator1 = "WC#ENTRY_LIST_THUMBNAIL");
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${subfolderName}" />
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${subfolderDescription}" />
-		<execute macro="Button#clickSave" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${folderName}");
+	}
 
-		<var name="key_webContentTitle" value="${subfolderName}" />
+	macro addSubfolderCP {
+		var key_webContentTitle = "${folderName}";
 
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertElementPresent#pauseAssertVisible" locator1="WC#ENTRY_DESCRIPTIVE_THUMBNAIL" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${subfolderName}" />
-	</command>
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-	<command name="configureWorkflowCP">
-		<execute macro="WebContentFolder#gotoEditCP">
-			<var name="folderName" value="${folderName}" />
-			<var name="webContentTitle" value="${folderName}" />
-		</execute>
+		Click(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${folderName}");
 
-		<if>
-			<condition function="IsElementNotPresent#isNotVisible" locator1="WCEditFolder#WORKFLOW_PARENT_FOLDER_RADIO" />
-			<then>
-				<execute function="Click" locator1="WCEditFolder#WORKFLOW_STRUCTURE_RESTRICTIONS_TOGGLE" />
-			</then>
-		</if>
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "${folderName}");
 
-		<if>
-			<equals arg1="${workflowRestriction}" arg2="Parent Folder" />
-			<then>
-				<execute function="Click" locator1="WCEditFolder#WORKFLOW_PARENT_FOLDER_RADIO" />
-			</then>
-			<elseif>
-				<equals arg1="${workflowRestriction}" arg2="Specific Restrictions" />
-				<then>
-					<execute function="Click" locator1="WCEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_RADIO" />
-					<execute function="AssertClick" locator1="WCEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_CHOOSE_STRUCTURE_BUTTON" value1="Choose Structure" />
+		LexiconEntry.gotoAdd();
 
-					<execute function="SelectFrame" value1="relative=top" />
+		if (IsElementPresent(locator1 = "MenuItem#ANY_MENU_ITEM", key_menuItem = "Subfolder")) {
+			MenuItem.click(menuItem = "Subfolder");
+		}
 
-					<execute function="SelectFrame" locator1="DDMSelectStructure#DDM_STRUCTURES_IFRAME" />
+		PortletEntry.inputName(name = "${subfolderName}");
 
-					<var name="key_ddlDataDefinitionName" value="${structureName}" />
+		PortletEntry.inputDescription(description = "${subfolderDescription}");
 
-					<execute function="AssertClickNoError" locator1="DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK" value1="${structureName}" />
+		Button.clickSave();
 
-					<execute function="Confirm#assertConfirmationNoWait" value1="Selecting a new structure changes the available input fields and available templates. Do you want to proceed?" />
+		var key_webContentTitle = "${subfolderName}";
 
-					<execute function="SelectFrame" value1="relative=top" />
+		Alert.viewSuccessMessage();
 
-					<execute function="Select" locator1="WCEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_STRUCTURE_WORKFLOW_SELECT" value1="${workflowDefinition}" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${workflowRestriction}" arg2="Default Workflow" />
-				<then>
-					<execute function="Click" locator1="WCEditFolder#WORKFLOW_DEFAULT_WORKFLOW_RADIO" />
-					<execute function="Select" locator1="WCEditFolder#WORKFLOW_DEFAULT_WORKFLOW_WORKFLOW_SELECT" value1="${workflowDefinition}" />
-				</then>
-			</elseif>
-		</if>
+		AssertElementPresent.pauseAssertVisible(locator1 = "WC#ENTRY_LIST_THUMBNAIL");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+		AssertTextEquals.assertPartialText(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${subfolderName}");
+	}
 
-	<command name="gotoCP">
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+	macro checkSubfolderPermissions {
+		var key_webContentTitle = "${folderName}";
 
-		<var name="key_webContentTitle" value="${webContentTitle}" />
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${folderName}" />
-		<execute function="AssertClick" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${folderName}" />
-	</command>
+		Click(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${folderName}");
 
-	<command name="gotoEditCP">
-		<var name="key_webContentTitle" value="${folderName}" />
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "${folderName}");
 
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+		MouseOver(locator1 = "Button#PLUS");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${webContentTitle}" />
-		<execute function="Click" locator1="WC#ENTRY_DESCRIPTIVE_MENULIST_ICON" />
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-	</command>
+		if ("${subfolder}" == "false") {
+			MenuItem.viewNotPresent(menuItem = "Subfolder");
+		}
+		else {
+			MenuItem.viewPresent(menuItem = "Subfolder");
+		}
+	}
 
-	<command name="moveToRecycleBinCP">
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+	macro configureWorkflowCP {
+		WebContentFolder.gotoEditCP(
+			folderName = "${folderName}",
+			webContentTitle = "${folderName}");
 
-		<var name="key_webContentTitle" value="${folderName}" />
+		if (IsElementNotPresent.isNotVisible(locator1 = "Radio#WORKFLOW_PARENT_FOLDER")) {
+			Click(locator1 = "WCEditFolder#WORKFLOW_STRUCTURE_RESTRICTIONS_TOGGLE");
+		}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="WC#ENTRY_DESCRIPTIVE_TITLE" value1="${folderName}" />
-		<execute function="Click" locator1="WC#ENTRY_DESCRIPTIVE_MENULIST_ICON" />
-		<execute macro="PortletEntry#clickMoveToRecycleBin" />
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
-</definition>
+		if ("${workflowRestriction}" == "Parent Folder") {
+			Click(locator1 = "Radio#WORKFLOW_PARENT_FOLDER");
+		}
+		else if ("${workflowRestriction}" == "Specific Restrictions") {
+			Click(locator1 = "Radio#WORKFLOW_SPECIFIC_RESTRICTIONS");
+
+			AssertClick(
+				locator1 = "WCEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_CHOOSE_STRUCTURE_BUTTON",
+				value1 = "Choose Structure");
+
+			SelectFrame(value1 = "relative=top");
+
+			SelectFrame(locator1 = "IFrame#DIALOG");
+
+			var key_ddlDataDefinitionName = "${structureName}";
+
+			AssertClickNoError(
+				locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK",
+				value1 = "${structureName}");
+
+			SelectFrame(value1 = "relative=top");
+
+			Select(
+				locator1 = "WCEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_STRUCTURE_WORKFLOW_SELECT",
+				value1 = "${workflowDefinition}");
+		}
+		else if ("${workflowRestriction}" == "Default Workflow") {
+			Click(locator1 = "Radio#WORKFLOW_DEFAULT_WORKFLOW");
+
+			Select(
+				locator1 = "Select#WORKFLOW_DEFAULT",
+				value1 = "${workflowDefinition}");
+		}
+
+		PortletEntry.save();
+	}
+
+	macro gotoCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		var key_webContentTitle = "${webContentTitle}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${folderName}");
+
+		AssertClick(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${folderName}");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "${folderName}");
+	}
+
+	macro gotoEditCP {
+		var key_webContentTitle = "${folderName}";
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${webContentTitle}");
+
+		Click(locator1 = "WC#ENTRY_LIST_MENULIST_ICON");
+
+		MenuItem.click(menuItem = "Edit");
+	}
+
+	macro moveToRecycleBinCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		var key_webContentTitle = "${folderName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "WC#ENTRY_LIST_TITLE",
+			value1 = "${folderName}");
+
+		WebContentNavigator.gotoEntryMenuItem(
+			entry = "${folderName}",
+			menuItem = "Move to Recycle Bin");
+
+		AssertConfirm(value1 = "Are you sure you want to move this to the Recycle Bin?");
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+	}
+
+}

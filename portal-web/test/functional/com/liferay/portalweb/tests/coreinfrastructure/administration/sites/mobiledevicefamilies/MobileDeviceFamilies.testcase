@@ -1,0 +1,149 @@
+@component-name = "portal-mobile-device-rules"
+definition {
+
+	property osgi.app.includes = "portal-mobile-device-detection-fiftyonedegrees-enterprise";
+	property osgi.module.configuration.file.names = "com.liferay.portal.bundle.blacklist.internal.BundleBlacklistConfiguration.config";
+	property osgi.module.configurations = "blacklistBundleSymbolicNames=";
+	property portal.release = "false";
+	property portal.upstream = "true";
+	property test.run.environment = "EE";
+	property testray.main.component.name = "Mobile Device Rules";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			PortalInstances.tearDownCP();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@description = "This is a use case for LPS-42381."
+	@priority = "5"
+	test AssertMobileDeviceRuleActionOnSitePage {
+		property test.name.skip.portal.instance = "MobileDeviceFamilies#AssertMobileDeviceRuleActionOnSitePage";
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addBlankCP(siteName = "Site Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Page for Linux");
+
+		SitePages.addPublicPage(pageName = "Page for Windows");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Mobile Device Families");
+
+		MobileDevice.addDeviceFamilyCP(deviceFamilyName = "Linux Family Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Mobile Device Families");
+
+		MobileDevice.addClassificationRuleCP(
+			classificationName = "Classification Name",
+			deviceType = "Any",
+			mobileDeviceFamilyName = "Linux Family Name",
+			ruleOSScope = "Linux");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Mobile Device Families");
+
+		MobileDevice.addDeviceFamilyCP(deviceFamilyName = "Windows Device Family Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Site Administration",
+			portlet = "Mobile Device Families");
+
+		MobileDevice.addClassificationRuleCP(
+			classificationName = "Classification Name",
+			deviceType = "Any",
+			mobileDeviceFamilyName = "Windows Device Family Name",
+			ruleOSScope = "Windows");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Mobile Device Family Test Page");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Mobile Device Family Test Page");
+
+		Navigator.gotoNavTab(navTab = "Advanced");
+
+		Panel.expandPanel(panel = "Mobile Device Rules");
+
+		Page.disableMobileDeviceRulesAreInheritedFromPublicPages();
+
+		Page.selectMobileDeviceFamily(deviceFamilyName = "Linux Family Name");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Permissions",
+			rowEntry = "Linux Family Name");
+
+		IFrame.selectPermissionsFrame();
+
+		Role.viewPermissionPG(
+			permissionDefinitionKey = "CONTENT_PERMISSIONS_VIEW_CHECKBOX",
+			permissionFlagged = "true",
+			roleTitle = "Owner");
+
+		IFrame.closeFrame();
+
+		Page.manageDeviceFamilyActions(
+			actionName = "Mobile Device Family Test Action",
+			actionType = "Redirect to Site",
+			deviceFamilyName = "Linux Family Name",
+			pageName = "Page for Linux",
+			siteName = "Site Name");
+
+		Refresh();
+
+		Page.selectMobileDeviceFamily(deviceFamilyName = "Windows Device Family Name");
+
+		Page.manageDeviceFamilyActions(
+			actionName = "Windows Device Family Test Action",
+			actionType = "Redirect to Site",
+			deviceFamilyName = "Windows Device Family Name",
+			pageName = "Page for Windows",
+			siteName = "Site Name");
+
+		PortletEntry.save();
+
+		Navigator.openURL();
+
+		MobileDevice.assertRedirectActionPG(
+			pageName = "Mobile Device Family Test Page",
+			redirectPageName = "Page for Linux");
+	}
+
+}

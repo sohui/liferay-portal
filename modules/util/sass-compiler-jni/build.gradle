@@ -2,9 +2,11 @@ import com.liferay.gradle.util.FileUtil
 import com.liferay.gradle.util.copy.StripPathSegmentsAction
 
 ext {
-	libSassVersion = "3.3.6"
-	sassSpecVersion = "3.3.3"
+	clayVersion = "v2.14.2"
+	libSassVersion = "3.5.5"
+	sassSpecVersion = "v3.4.3"
 
+	clayUrl = "https://github.com/liferay/clay/archive/${clayVersion}.zip"
 	libSassUrl = "https://github.com/sass/libsass/archive/${libSassVersion}.zip"
 	sassSpecUrl = "https://github.com/sass/sass-spec/archive/${sassSpecVersion}.zip"
 }
@@ -14,6 +16,7 @@ task buildLibSass_Linux_x64(type: BuildLibSassTask)
 task buildLibSass_Linux_x86(type: BuildLibSassTask)
 task buildLibSass_Win32(type: BuildLibSassTask)
 task buildLibSass_Win64(type: BuildLibSassTask)
+task downloadClay(type: Copy)
 task downloadSassSpec(type: Copy)
 task generateJNALibrary
 
@@ -28,7 +31,7 @@ buildLibSass_Darwin {
 		buildShFile.write("""\
 LIBSASS_VERSION=\"${project.libSassVersion}\"
 autoreconf --force --install
-./configure --disable-tests --enable-shared
+./configure --disable-static --disable-tests --enable-shared
 make -j5""")
 	}
 
@@ -41,14 +44,14 @@ make -j5""")
 
 buildLibSass_Linux_x64 {
 	inputFileName = "libsass.so"
-	makeExecutable = "make CXX=g++-4.6 CC=gcc-4.4 shared"
+	makeExecutable = "make shared"
 	outputFileName = "libliferaysass.so"
 	resourcesDirName = "linux_x64"
 }
 
 buildLibSass_Linux_x86 {
 	inputFileName = "libsass.so"
-	makeExecutable = "make CXX=g++-4.6 CC=gcc-4.4 shared"
+	makeExecutable = "make shared"
 	outputFileName = "libliferaysass.so"
 	resourcesDirName = "linux_x86"
 }
@@ -76,11 +79,33 @@ configurations {
 }
 
 dependencies {
-	compile group: "com.liferay", name: "com.liferay.sass.compiler.api", version: "2.0.0"
+	compile group: "com.liferay", name: "com.liferay.sass.compiler.api", version: "2.0.1"
+
+	compileInclude group: "com.nativelibs4java", name: "bridj", version: "0.7.0"
 
 	jnaerator classifier: "shaded", group: "com.nativelibs4java", name: "jnaerator", transitive: false, version: "0.12"
+}
 
-	provided group: "com.nativelibs4java", name: "bridj", transitive: false, version: "0.7.0"
+downloadClay {
+	File clayDir = file("src/test/resources/com/liferay/sass/compiler/jni/internal/dependencies/clay-css")
+
+	eachFile new StripPathSegmentsAction(5)
+
+	ext {
+		autoClean = false
+	}
+
+	from zipTree(FileUtil.get(project, project.clayUrl))
+
+	include "**/packages/clay-css/src/scss/"
+
+	includeEmptyDirs = false
+
+	into clayDir
+
+	onlyIf {
+		!clayDir.exists()
+	}
 }
 
 downloadSassSpec {
@@ -136,6 +161,10 @@ generateJNALibrary {
 	onlyIf {
 		!jnaLibraryFile.exists()
 	}
+}
+
+liferayOSGi {
+	expandCompileInclude = true
 }
 
 processTestResources {

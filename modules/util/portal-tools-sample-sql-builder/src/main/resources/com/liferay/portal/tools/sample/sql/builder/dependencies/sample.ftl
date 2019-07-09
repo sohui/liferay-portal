@@ -14,6 +14,8 @@
 
 <#include "roles.ftl">
 
+<#include "release.ftl">
+
 <#include "counters.ftl">
 
 COMMIT_TRANSACTION

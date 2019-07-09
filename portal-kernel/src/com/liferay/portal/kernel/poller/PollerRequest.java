@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.poller;
 
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
 
 import java.io.Serializable;
 
@@ -105,9 +105,8 @@ public class PollerRequest implements Serializable {
 		if (_portletId != null) {
 			return _portletId.hashCode();
 		}
-		else {
-			return 0;
-		}
+
+		return 0;
 	}
 
 	public boolean isInitialRequest() {

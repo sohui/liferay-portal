@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.messaging;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.io.Deserializer;
 import com.liferay.portal.kernel.io.Serializer;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.TransientValue;
 
 import java.io.Serializable;
@@ -63,9 +63,8 @@ public class Message implements Cloneable, Serializable {
 		if (_values == null) {
 			return false;
 		}
-		else {
-			return _values.containsKey(key);
-		}
+
+		return _values.containsKey(key);
 	}
 
 	public void copyFrom(Message message) {
@@ -115,7 +114,9 @@ public class Message implements Cloneable, Serializable {
 		Object object = get(key);
 
 		if (object instanceof Boolean) {
-			value = ((Boolean)object).booleanValue();
+			Boolean booleanObj = (Boolean)object;
+
+			value = booleanObj.booleanValue();
 		}
 		else {
 			value = GetterUtil.getBoolean((String)object);
@@ -134,7 +135,9 @@ public class Message implements Cloneable, Serializable {
 		Object object = get(key);
 
 		if (object instanceof Number) {
-			value = ((Number)object).doubleValue();
+			Number number = (Number)object;
+
+			value = number.doubleValue();
 		}
 		else {
 			value = GetterUtil.getDouble((String)object);
@@ -149,7 +152,9 @@ public class Message implements Cloneable, Serializable {
 		Object object = get(key);
 
 		if (object instanceof Number) {
-			value = ((Number)object).intValue();
+			Number number = (Number)object;
+
+			value = number.intValue();
 		}
 		else {
 			value = GetterUtil.getInteger((String)object);
@@ -164,7 +169,9 @@ public class Message implements Cloneable, Serializable {
 		Object object = get(key);
 
 		if (object instanceof Number) {
-			value = ((Number)object).longValue();
+			Number number = (Number)object;
+
+			value = number.longValue();
 		}
 		else {
 			value = GetterUtil.getLong((String)object);

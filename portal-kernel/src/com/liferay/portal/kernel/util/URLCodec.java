@@ -14,18 +14,18 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.nio.CharsetDecoderUtil;
+import com.liferay.petra.nio.CharsetEncoderUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.nio.charset.CharsetDecoderUtil;
-import com.liferay.portal.kernel.nio.charset.CharsetEncoderUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-
-import java.util.BitSet;
 
 /**
  * @author Shuyang Zhou
@@ -55,67 +55,59 @@ public class URLCodec {
 		for (int i = 0; i < encodedURLString.length(); i++) {
 			char c = encodedURLString.charAt(i);
 
-			switch (c) {
-				case CharPool.PERCENT:
-					ByteBuffer byteBuffer = _getEncodedByteBuffer(
-						encodedURLString, i);
+			if (c == CharPool.PERCENT) {
+				ByteBuffer byteBuffer = _getEncodedByteBuffer(
+					encodedURLString, i);
 
-					if (charsetDecoder == null) {
-						charsetDecoder = CharsetDecoderUtil.getCharsetDecoder(
-							charsetName);
+				if (charsetDecoder == null) {
+					charsetDecoder = CharsetDecoderUtil.getCharsetDecoder(
+						charsetName);
+				}
+
+				CharBuffer charBuffer = null;
+
+				try {
+					charBuffer = charsetDecoder.decode(byteBuffer);
+				}
+				catch (CharacterCodingException cce) {
+					_log.error(cce, cce);
+
+					return StringPool.BLANK;
+				}
+
+				if (sb == null) {
+					sb = new StringBuilder(encodedURLString.length());
+
+					if (i > 0) {
+						sb.append(encodedURLString, 0, i);
 					}
+				}
 
-					CharBuffer charBuffer = null;
+				sb.append(charBuffer);
 
-					try {
-						charBuffer = charsetDecoder.decode(byteBuffer);
+				i += byteBuffer.capacity() * 3 - 1;
+			}
+			else if (c == CharPool.PLUS) {
+				if (sb == null) {
+					sb = new StringBuilder(encodedURLString.length());
+
+					if (i > 0) {
+						sb.append(encodedURLString, 0, i);
 					}
-					catch (CharacterCodingException cce) {
-						_log.error(cce, cce);
+				}
 
-						return StringPool.BLANK;
-					}
-
-					if (sb == null) {
-						sb = new StringBuilder(encodedURLString.length());
-
-						if (i > 0) {
-							sb.append(encodedURLString, 0, i);
-						}
-					}
-
-					sb.append(charBuffer);
-
-					i += byteBuffer.capacity() * 3 - 1;
-
-					break;
-
-				case CharPool.PLUS:
-					if (sb == null) {
-						sb = new StringBuilder(encodedURLString.length());
-
-						if (i > 0) {
-							sb.append(encodedURLString, 0, i);
-						}
-					}
-
-					sb.append(CharPool.SPACE);
-
-					break;
-
-				default:
-					if (sb != null) {
-						sb.append(c);
-					}
+				sb.append(CharPool.SPACE);
+			}
+			else if (sb != null) {
+				sb.append(c);
 			}
 		}
 
 		if (sb == null) {
 			return encodedURLString;
 		}
-		else {
-			return sb.toString();
-		}
+
+		return sb.toString();
 	}
 
 	public static String encodeURL(String rawURLString) {
@@ -137,76 +129,42 @@ public class URLCodec {
 			return StringPool.BLANK;
 		}
 
-		StringBuilder sb = null;
-
 		CharsetEncoder charsetEncoder = null;
-
 		char[] hexes = new char[2];
+		int lastReplacementIndex = 0;
+		StringBuilder sb = null;
 
 		for (int i = 0; i < rawURLString.length(); i++) {
 			char c = rawURLString.charAt(i);
 
-			if (_validChars.get(c)) {
-				if (sb != null) {
-					sb.append(c);
-				}
-
+			if ((c < 128) && _VALID_CHARS[c]) {
 				continue;
 			}
 
 			if (sb == null) {
-				sb = new StringBuilder(rawURLString.length());
+				sb = new StringBuilder(rawURLString.length() + 64);
 
 				sb.append(rawURLString, 0, i);
 			}
+			else if (i > lastReplacementIndex) {
+				sb.append(rawURLString, lastReplacementIndex, i);
+			}
 
-			// The cases are ordered by frequency and not alphabetically
+			if (c < 128) {
+				char[] encodingReplacement = _ENCODING_REPLACEMENTS[c];
 
-			switch (c) {
-				case CharPool.SLASH :
-					sb.append("%2F");
-
-					continue;
-
-				case CharPool.EQUAL :
-					sb.append("%3D");
-
-					continue;
-
-				case CharPool.AMPERSAND :
-					sb.append("%26");
-
-					continue;
-
-				case CharPool.PERCENT :
-					sb.append("%25");
-
-					continue;
-
-				case CharPool.SPACE :
-					if (escapeSpaces) {
-						sb.append("%20");
-					}
-					else {
+				if (encodingReplacement != null) {
+					if (!escapeSpaces && (c == CharPool.SPACE)) {
 						sb.append(CharPool.PLUS);
 					}
+					else {
+						sb.append(encodingReplacement);
+					}
+
+					lastReplacementIndex = i + 1;
 
 					continue;
-
-				case CharPool.PLUS :
-					sb.append("%2B");
-
-					continue;
-
-				case CharPool.COLON :
-					sb.append("%3A");
-
-					continue;
-
-				case CharPool.QUESTION :
-					sb.append("%3F");
-
-					continue;
+				}
 			}
 
 			CharBuffer charBuffer = _getRawCharBuffer(
@@ -218,6 +176,8 @@ public class URLCodec {
 			}
 
 			i += charBuffer.length() - 1;
+
+			lastReplacementIndex = i + 1;
 
 			ByteBuffer byteBuffer = null;
 
@@ -241,9 +201,13 @@ public class URLCodec {
 		if (sb == null) {
 			return rawURLString;
 		}
-		else {
-			return sb.toString();
+
+		if (lastReplacementIndex < rawURLString.length()) {
+			sb.append(
+				rawURLString, lastReplacementIndex, rawURLString.length());
 		}
+
+		return sb.toString();
 	}
 
 	private static int _charToHex(char c) {
@@ -283,7 +247,7 @@ public class URLCodec {
 
 		ByteBuffer byteBuffer = ByteBuffer.allocate(count);
 
-		for (int i = start; i < start + count * 3; i += 3) {
+		for (int i = start; i < (start + count * 3); i += 3) {
 			int high = _charToHex(encodedString.charAt(i + 1));
 			int low = _charToHex(encodedString.charAt(i + 2));
 
@@ -303,18 +267,17 @@ public class URLCodec {
 		for (int i = start; i < rawString.length(); i++) {
 			char rawChar = rawString.charAt(i);
 
-			if (!_validChars.get(rawChar) &&
+			if (((rawChar >= 128) || !_VALID_CHARS[rawChar]) &&
 				(escapeSpaces || (rawChar != CharPool.SPACE))) {
 
 				count++;
 
-				if (Character.isHighSurrogate(rawChar)) {
-					if (((i + 1) < rawString.length()) &&
-						Character.isLowSurrogate(rawString.charAt(i + 1))) {
+				if (Character.isHighSurrogate(rawChar) &&
+					((i + 1) < rawString.length()) &&
+					Character.isLowSurrogate(rawString.charAt(i + 1))) {
 
-						i++;
-						count++;
-					}
+					i++;
+					count++;
 				}
 			}
 			else {
@@ -325,27 +288,38 @@ public class URLCodec {
 		return CharBuffer.wrap(rawString, start, start + count);
 	}
 
+	private static final char[][] _ENCODING_REPLACEMENTS = new char[128][];
+
+	private static final boolean[] _VALID_CHARS = new boolean[128];
+
 	private static final Log _log = LogFactoryUtil.getLog(URLCodec.class);
 
-	private static final BitSet _validChars = new BitSet(256);
-
 	static {
+		_ENCODING_REPLACEMENTS[CharPool.AMPERSAND] = "%26".toCharArray();
+		_ENCODING_REPLACEMENTS[CharPool.COLON] = "%3A".toCharArray();
+		_ENCODING_REPLACEMENTS[CharPool.EQUAL] = "%3D".toCharArray();
+		_ENCODING_REPLACEMENTS[CharPool.PERCENT] = "%25".toCharArray();
+		_ENCODING_REPLACEMENTS[CharPool.PLUS] = "%2B".toCharArray();
+		_ENCODING_REPLACEMENTS[CharPool.QUESTION] = "%3F".toCharArray();
+		_ENCODING_REPLACEMENTS[CharPool.SLASH] = "%2F".toCharArray();
+		_ENCODING_REPLACEMENTS[CharPool.SPACE] = "%20".toCharArray();
+
 		for (int i = 'a'; i <= 'z'; i++) {
-			_validChars.set(i);
+			_VALID_CHARS[i] = true;
 		}
 
 		for (int i = 'A'; i <= 'Z'; i++) {
-			_validChars.set(i);
+			_VALID_CHARS[i] = true;
 		}
 
 		for (int i = '0'; i <= '9'; i++) {
-			_validChars.set(i);
+			_VALID_CHARS[i] = true;
 		}
 
-		_validChars.set('-');
-		_validChars.set('_');
-		_validChars.set('.');
-		_validChars.set('*');
+		_VALID_CHARS['-'] = true;
+		_VALID_CHARS['_'] = true;
+		_VALID_CHARS['.'] = true;
+		_VALID_CHARS['*'] = true;
 	}
 
 }

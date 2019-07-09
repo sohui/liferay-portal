@@ -17,8 +17,10 @@ package com.liferay.knowledge.base.service.util;
 import com.liferay.knowledge.base.constants.KBActionKeys;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
-import com.liferay.knowledge.base.service.permission.KBArticlePermission;
 import com.liferay.knowledge.base.util.KnowledgeBaseUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Subscription;
 import com.liferay.portal.kernel.model.User;
@@ -27,14 +29,14 @@ import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.SubscriptionSender;
 import com.liferay.portal.kernel.util.TextFormatter;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 /**
  * @author Peter Shin
@@ -43,10 +45,48 @@ import java.util.Locale;
 public class AdminSubscriptionSender extends SubscriptionSender {
 
 	public AdminSubscriptionSender(
+		KBArticle kbArticle,
+		ModelResourcePermission<KBArticle> modelResourcePermission,
+		ServiceContext serviceContext) {
+
+		_kbArticle = kbArticle;
+		_kbArticleModelResourcePermission = modelResourcePermission;
+		_serviceContext = serviceContext;
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #AdminSubscriptionSender(KBArticle, ModelResourcePermission,
+	 *             ServiceContext)}
+	 */
+	@Deprecated
+	public AdminSubscriptionSender(
 		KBArticle kbArticle, ServiceContext serviceContext) {
 
 		_kbArticle = kbArticle;
 		_serviceContext = serviceContext;
+	}
+
+	@Override
+	public void initialize() throws Exception {
+		super.initialize();
+
+		String kbArticleURL = KnowledgeBaseUtil.getKBArticleURL(
+			_serviceContext.getPlid(), _kbArticle.getResourcePrimKey(),
+			_kbArticle.getStatus(), _serviceContext.getPortalURL(), false);
+
+		setContextAttribute("[$ARTICLE_TITLE$]", _kbArticle.getTitle());
+		setContextAttribute("[$ARTICLE_URL$]", kbArticleURL);
+		setLocalizedContextAttributeWithFunction(
+			"[$ARTICLE_ATTACHMENTS$]", _getEmailKBArticleAttachmentsFunction());
+		setLocalizedContextAttributeWithFunction(
+			"[$ARTICLE_VERSION$]",
+			locale -> LanguageUtil.format(
+				locale, "version-x", String.valueOf(_kbArticle.getVersion()),
+				false));
+		setLocalizedContextAttributeWithFunction(
+			"[$CATEGORY_TITLE$]",
+			locale -> LanguageUtil.get(locale, "category.kb"));
 	}
 
 	@Override
@@ -68,28 +108,17 @@ public class AdminSubscriptionSender extends SubscriptionSender {
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected String getEmailKBArticleAttachments(Locale locale)
 		throws Exception {
 
-		List<FileEntry> attachmentsFileEntries =
-			_kbArticle.getAttachmentsFileEntries();
+		Function<Locale, String> emailKBArticleAttachmentsFunction =
+			_getEmailKBArticleAttachmentsFunction();
 
-		if (attachmentsFileEntries.isEmpty()) {
-			return StringPool.BLANK;
-		}
-
-		StringBundler sb = new StringBundler(attachmentsFileEntries.size() * 5);
-
-		for (FileEntry fileEntry : attachmentsFileEntries) {
-			sb.append(fileEntry.getTitle());
-			sb.append(" (");
-			sb.append(
-				TextFormatter.formatStorageSize(fileEntry.getSize(), locale));
-			sb.append(")");
-			sb.append("<br />");
-		}
-
-		return sb.toString();
+		return emailKBArticleAttachmentsFunction.apply(locale);
 	}
 
 	@Override
@@ -111,7 +140,7 @@ public class AdminSubscriptionSender extends SubscriptionSender {
 
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
 
-			return KBArticlePermission.contains(
+			return _kbArticleModelResourcePermission.contains(
 				permissionChecker, _kbArticle, KBActionKeys.VIEW);
 		}
 		finally {
@@ -126,25 +155,40 @@ public class AdminSubscriptionSender extends SubscriptionSender {
 	protected String replaceContent(String content, Locale locale)
 		throws Exception {
 
-		String kbArticleAttachments = getEmailKBArticleAttachments(locale);
-		String kbArticleURL = KnowledgeBaseUtil.getKBArticleURL(
-			_serviceContext.getPlid(), _kbArticle.getResourcePrimKey(),
-			_kbArticle.getStatus(), _serviceContext.getPortalURL(), false);
-		String kbArticleVersion = LanguageUtil.format(
-			locale, "version-x", String.valueOf(_kbArticle.getVersion()),
-			false);
-		String categoryTitle = LanguageUtil.get(locale, "category.kb");
-
-		setContextAttribute("[$ARTICLE_ATTACHMENTS$]", kbArticleAttachments);
-		setContextAttribute("[$ARTICLE_TITLE$]", _kbArticle.getTitle());
-		setContextAttribute("[$ARTICLE_URL$]", kbArticleURL);
-		setContextAttribute("[$ARTICLE_VERSION$]", kbArticleVersion);
-		setContextAttribute("[$CATEGORY_TITLE$]", categoryTitle);
-
 		return super.replaceContent(content, locale);
 	}
 
+	private Function<Locale, String> _getEmailKBArticleAttachmentsFunction()
+		throws PortalException {
+
+		List<FileEntry> attachmentsFileEntries =
+			_kbArticle.getAttachmentsFileEntries();
+
+		if (attachmentsFileEntries.isEmpty()) {
+			return locale -> StringPool.BLANK;
+		}
+
+		return locale -> {
+			StringBundler sb = new StringBundler(
+				attachmentsFileEntries.size() * 5);
+
+			for (FileEntry fileEntry : attachmentsFileEntries) {
+				sb.append(fileEntry.getTitle());
+				sb.append(" (");
+				sb.append(
+					TextFormatter.formatStorageSize(
+						fileEntry.getSize(), locale));
+				sb.append(")");
+				sb.append("<br />");
+			}
+
+			return sb.toString();
+		};
+	}
+
 	private final KBArticle _kbArticle;
+	private ModelResourcePermission<KBArticle>
+		_kbArticleModelResourcePermission;
 	private final ServiceContext _serviceContext;
 
 }

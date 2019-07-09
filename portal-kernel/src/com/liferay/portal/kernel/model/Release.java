@@ -14,29 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the Release service. Represents a row in the &quot;Release_&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see ReleaseModel
- * @see com.liferay.portal.model.impl.ReleaseImpl
- * @see com.liferay.portal.model.impl.ReleaseModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.ReleaseImpl")
 @ProviderType
-public interface Release extends ReleaseModel, PersistedModel {
+public interface Release extends PersistedModel, ReleaseModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.ReleaseImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.ReleaseImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<Release, Long> RELEASE_ID_ACCESSOR = new Accessor<Release, Long>() {
+	public static final Accessor<Release, Long> RELEASE_ID_ACCESSOR =
+		new Accessor<Release, Long>() {
+
 			@Override
 			public Long get(Release release) {
 				return release.getReleaseId();
@@ -51,7 +52,9 @@ public interface Release extends ReleaseModel, PersistedModel {
 			public Class<Release> getTypeClass() {
 				return Release.class;
 			}
+
 		};
 
-	public java.lang.String getBundleSymbolicName();
+	public String getBundleSymbolicName();
+
 }

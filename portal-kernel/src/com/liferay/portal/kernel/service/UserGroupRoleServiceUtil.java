@@ -14,81 +14,85 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the remote service utility for UserGroupRole. This utility wraps
- * {@link com.liferay.portal.service.impl.UserGroupRoleServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portal.service.impl.UserGroupRoleServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see UserGroupRoleService
- * @see com.liferay.portal.service.base.UserGroupRoleServiceBaseImpl
- * @see com.liferay.portal.service.impl.UserGroupRoleServiceImpl
  * @generated
  */
 @ProviderType
 public class UserGroupRoleServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portal.service.impl.UserGroupRoleServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.UserGroupRoleServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
-		return getService().getOSGiServiceIdentifier();
-	}
-
-	public static void addUserGroupRoles(long userId, long groupId,
-		long[] roleIds)
+	public static void addUserGroupRoles(
+			long userId, long groupId, long[] roleIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().addUserGroupRoles(userId, groupId, roleIds);
 	}
 
-	public static void addUserGroupRoles(long[] userIds, long groupId,
-		long roleId) throws com.liferay.portal.kernel.exception.PortalException {
+	public static void addUserGroupRoles(
+			long[] userIds, long groupId, long roleId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().addUserGroupRoles(userIds, groupId, roleId);
 	}
 
-	public static void deleteUserGroupRoles(long userId, long groupId,
-		long[] roleIds)
+	public static void deleteUserGroupRoles(
+			long userId, long groupId, long[] roleIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().deleteUserGroupRoles(userId, groupId, roleIds);
 	}
 
-	public static void deleteUserGroupRoles(long[] userIds, long groupId,
-		long roleId) throws com.liferay.portal.kernel.exception.PortalException {
+	public static void deleteUserGroupRoles(
+			long[] userIds, long groupId, long roleId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().deleteUserGroupRoles(userIds, groupId, roleId);
 	}
 
-	public static void updateUserGroupRoles(long userId, long groupId,
-		long[] addedRoleIds, long[] deletedRoleIds)
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
+		return getService().getOSGiServiceIdentifier();
+	}
+
+	public static void updateUserGroupRoles(
+			long userId, long groupId, long[] addedRoleIds,
+			long[] deletedRoleIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService()
-			.updateUserGroupRoles(userId, groupId, addedRoleIds, deletedRoleIds);
+
+		getService().updateUserGroupRoles(
+			userId, groupId, addedRoleIds, deletedRoleIds);
 	}
 
 	public static UserGroupRoleService getService() {
 		if (_service == null) {
-			_service = (UserGroupRoleService)PortalBeanLocatorUtil.locate(UserGroupRoleService.class.getName());
-
-			ReferenceRegistry.registerReference(UserGroupRoleServiceUtil.class,
-				"_service");
+			_service = (UserGroupRoleService)PortalBeanLocatorUtil.locate(
+				UserGroupRoleService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static UserGroupRoleService _service;
+
 }

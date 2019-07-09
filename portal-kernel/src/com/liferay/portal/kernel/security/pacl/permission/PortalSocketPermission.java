@@ -14,18 +14,21 @@
 
 package com.liferay.portal.kernel.security.pacl.permission;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URL;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class PortalSocketPermission {
 
 	public static void checkConnect(Http.Options options) {
@@ -35,7 +38,8 @@ public class PortalSocketPermission {
 	public static void checkConnect(String location) {
 		String domainAndPort = HttpUtil.getDomain(location);
 
-		String[] domainAndPortArray = domainAndPort.split(StringPool.COLON);
+		String[] domainAndPortArray = StringUtil.split(
+			domainAndPort, CharPool.COLON);
 
 		String domain = domainAndPortArray[0];
 
@@ -89,8 +93,11 @@ public class PortalSocketPermission {
 			}
 		}
 
-		String location = domain.concat(StringPool.COLON).concat(
-			String.valueOf(port));
+		String location = domain.concat(
+			StringPool.COLON
+		).concat(
+			String.valueOf(port)
+		);
 
 		_pacl.checkPermission(location, "connect");
 	}

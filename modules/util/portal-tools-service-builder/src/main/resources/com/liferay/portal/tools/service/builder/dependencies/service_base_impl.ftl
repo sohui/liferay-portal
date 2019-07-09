@@ -1,6 +1,8 @@
 package ${packagePath}.service.base;
 
-import aQute.bnd.annotation.ProviderType;
+import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
+
+import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.ManifestSummary;
@@ -9,6 +11,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import ${beanLocatorUtil};
@@ -17,6 +20,7 @@ import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Conjunction;
 import com.liferay.portal.kernel.dao.orm.Criterion;
 import com.liferay.portal.kernel.dao.orm.DefaultActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Disjunction;
@@ -40,8 +44,10 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.service.Base${sessionTypeName}ServiceImpl;
+import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistryUtil;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -50,40 +56,70 @@ import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
-import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 
-<#if entity.hasColumns()>
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Reference;
+
+<#if entity.hasEntityColumns()>
 	<#if entity.hasCompoundPK()>
 		import ${apiPackagePath}.service.persistence.${entity.name}PK;
 	</#if>
 
 	import ${apiPackagePath}.model.${entity.name};
 
-	<#list entity.blobList as column>
-		<#if column.lazy>
-			import ${apiPackagePath}.model.${entity.name}${column.methodName}BlobModel;
+	<#list entity.blobEntityColumns as entityColumn>
+		<#if entityColumn.lazy>
+			import ${apiPackagePath}.model.${entity.name}${entityColumn.methodName}BlobModel;
 		</#if>
 	</#list>
 
 	import ${packagePath}.model.impl.${entity.name}Impl;
 </#if>
 
-<#list referenceList as tempEntity>
-	<#if tempEntity.hasColumns() && ((entity.name == "Counter") || (tempEntity.name != "Counter"))>
-		import ${tempEntity.apiPackagePath}.service.persistence.${tempEntity.name}Persistence;
-		import ${tempEntity.apiPackagePath}.service.persistence.${tempEntity.name}Util;
+<#if entity.localizedEntity??>
+	<#assign localizedEntity = entity.localizedEntity />
+
+	import ${apiPackagePath}.model.${localizedEntity.name};
+</#if>
+
+<#if entity.versionEntity??>
+	<#assign versionEntity = entity.versionEntity />
+
+	import ${apiPackagePath}.model.${versionEntity.name};
+	import com.liferay.portal.kernel.service.version.VersionService;
+	import com.liferay.portal.kernel.service.version.VersionServiceListener;
+	<#if entity.localizedEntity??>
+		<#assign
+			localizedEntity = entity.localizedEntity
+			localizedVersionEntity = localizedEntity.versionEntity
+		/>
+
+		import ${apiPackagePath}.model.${localizedVersionEntity.name};
+	</#if>
+</#if>
+
+<#list referenceEntities as referenceEntity>
+	<#if referenceEntity.hasEntityColumns() && referenceEntity.hasPersistence()>
+		import ${referenceEntity.apiPackagePath}.service.persistence.${referenceEntity.name}Persistence;
+		import ${referenceEntity.apiPackagePath}.service.persistence.${referenceEntity.name}Util;
 	</#if>
 
-	<#if tempEntity.hasFinderClass() && ((entity.name == "Counter") || (tempEntity.name != "Counter"))>
-		import ${tempEntity.apiPackagePath}.service.persistence.${tempEntity.name}Finder;
-		import ${tempEntity.apiPackagePath}.service.persistence.${tempEntity.name}FinderUtil;
+	<#if referenceEntity.hasFinderClassName() && (stringUtil.equals(entity.name, "Counter") || !stringUtil.equals(referenceEntity.name, "Counter"))>
+		import ${referenceEntity.apiPackagePath}.service.persistence.${referenceEntity.name}Finder;
+		import ${referenceEntity.apiPackagePath}.service.persistence.${referenceEntity.name}FinderUtil;
 	</#if>
 </#list>
 
-<#if sessionTypeName == "Local">
+<#if stringUtil.equals(sessionTypeName, "Local")>
 /**
  * Provides the base implementation for the ${entity.humanName} local service.
  *
@@ -93,7 +129,6 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
  *
  * @author ${author}
  * @see ${packagePath}.service.impl.${entity.name}LocalServiceImpl
- * @see ${apiPackagePath}.service.${entity.name}LocalServiceUtil
 <#if classDeprecated>
  * @deprecated ${classDeprecatedComment}
 </#if>
@@ -105,12 +140,24 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 </#if>
 
 	@ProviderType
-	public abstract class ${entity.name}LocalServiceBaseImpl extends BaseLocalServiceImpl implements ${entity.name}LocalService, IdentifiableOSGiService {
+	public abstract class ${entity.name}LocalServiceBaseImpl extends BaseLocalServiceImpl implements ${entity.name}LocalService,
+	<#if dependencyInjectorDS>
+		AopService,
+	</#if>
+
+	IdentifiableOSGiService
+
+	<#if entity.versionEntity??>
+		<#assign versionEntity = entity.versionEntity />
+		, VersionService<${entity.name}, ${versionEntity.name}>
+	</#if>
+
+	{
 
 		/*
 		 * NOTE FOR DEVELOPERS:
 		 *
-		 * Never modify or reference this class directly. Always use {@link ${apiPackagePath}.service.${entity.name}LocalServiceUtil} to access the ${entity.humanName} local service.
+		 * Never modify or reference this class directly. Use <code>${apiPackagePath}.service.${entity.name}LocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>${apiPackagePath}.service.${entity.name}LocalServiceUtil</code>.
 		 */
 <#else>
 /**
@@ -122,7 +169,6 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
  *
  * @author ${author}
  * @see ${packagePath}.service.impl.${entity.name}ServiceImpl
- * @see ${apiPackagePath}.service.${entity.name}ServiceUtil
 <#if classDeprecated>
  * @deprecated ${classDeprecatedComment}
 </#if>
@@ -133,17 +179,22 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 	@Deprecated
 </#if>
 
-	public abstract class ${entity.name}ServiceBaseImpl extends BaseServiceImpl implements ${entity.name}Service, IdentifiableOSGiService {
+	public abstract class ${entity.name}ServiceBaseImpl extends BaseServiceImpl implements ${entity.name}Service,
+		<#if dependencyInjectorDS>
+			AopService,
+		</#if>
+
+		IdentifiableOSGiService {
 
 		/*
 		 * NOTE FOR DEVELOPERS:
 		 *
-		 * Never modify or reference this class directly. Always use {@link ${apiPackagePath}.service.${entity.name}ServiceUtil} to access the ${entity.humanName} remote service.
+		 * Never modify or reference this class directly. Use <code>${apiPackagePath}.service.${entity.name}Service</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>${apiPackagePath}.service.${entity.name}ServiceUtil</code>.
 		 */
 </#if>
 
-	<#if (sessionTypeName == "Local") && entity.hasColumns()>
-		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + entity.name, [apiPackagePath + ".model." + entity.name], [])>
+	<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasEntityColumns() && entity.hasPersistence()>
+		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + entity.name, [apiPackagePath + ".model." + entity.name], []) />
 
 		/**
 		 * Adds the ${entity.humanName} to the database. Also notifies the appropriate model listeners.
@@ -162,18 +213,38 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			return ${entity.varName}Persistence.update(${entity.varName});
 		}
 
-		/**
-		 * Creates a new ${entity.humanName} with the primary key. Does not add the ${entity.humanName} to the database.
-		 *
-		 * @param ${entity.PKVarName} the primary key for the new ${entity.humanName}
-		 * @return the new ${entity.humanName}
-		 */
-		@Override
-		public ${entity.name} create${entity.name}(${entity.PKClassName} ${entity.PKVarName}) {
-			return ${entity.varName}Persistence.create(${entity.PKVarName});
-		}
+		<#if entity.versionEntity??>
+			/**
+			 * Creates a new ${entity.humanName}. Does not add the ${entity.humanName} to the database.
+			 *
+			 * @return the new ${entity.humanName}
+			 */
+			@Override
+			@Transactional(enabled = false)
+			public ${entity.name} create() {
+				long primaryKey = counterLocalService.increment(${entity.name}.class.getName());
 
-		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + entity.name, [entity.PKClassName], ["PortalException"])>
+				${entity.name} draft${entity.name} = ${entity.varName}Persistence.create(primaryKey);
+
+				draft${entity.name}.setHeadId(primaryKey);
+
+				return draft${entity.name};
+			}
+		<#else>
+			/**
+			 * Creates a new ${entity.humanName} with the primary key. Does not add the ${entity.humanName} to the database.
+			 *
+			 * @param ${entity.PKVarName} the primary key for the new ${entity.humanName}
+			 * @return the new ${entity.humanName}
+			 */
+			@Override
+			@Transactional(enabled = false)
+			public ${entity.name} create${entity.name}(${entity.PKClassName} ${entity.PKVarName}) {
+				return ${entity.varName}Persistence.create(${entity.PKVarName});
+			}
+		</#if>
+
+		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + entity.name, [entity.PKClassName], ["PortalException"]) />
 
 		/**
 		 * Deletes the ${entity.humanName} with the primary key from the database. Also notifies the appropriate model listeners.
@@ -181,7 +252,7 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		 * @param ${entity.PKVarName} the primary key of the ${entity.humanName}
 		 * @return the ${entity.humanName} that was removed
 		<#list serviceBaseExceptions as exception>
-		<#if exception == "PortalException">
+		<#if stringUtil.equals(exception, "PortalException")>
 		 * @throws PortalException if a ${entity.humanName} with the primary key could not be found
 		<#else>
 		 * @throws ${exception}
@@ -191,10 +262,31 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		@Indexable(type = IndexableType.DELETE)
 		@Override
 		public ${entity.name} delete${entity.name}(${entity.PKClassName} ${entity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-			return ${entity.varName}Persistence.remove(${entity.PKVarName});
+			<#if entity.versionEntity??>
+				<#if !serviceBaseExceptions?seq_contains("PortalException")>
+					try {
+				</#if>
+
+				${entity.name} ${entity.varName} = ${entity.varName}Persistence.fetchByPrimaryKey(${entity.PKVarName});
+
+				if (${entity.varName} != null) {
+					delete(${entity.varName});
+				}
+
+				return ${entity.varName};
+
+				<#if !serviceBaseExceptions?seq_contains("PortalException")>
+					}
+					catch (PortalException pe) {
+						throw new SystemException(pe);
+					}
+				</#if>
+			<#else>
+				return ${entity.varName}Persistence.remove(${entity.PKVarName});
+			</#if>
 		}
 
-		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + entity.name, [apiPackagePath + ".model." + entity.name], [])>
+		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + entity.name, [apiPackagePath + ".model." + entity.name], []) />
 
 		/**
 		 * Deletes the ${entity.humanName} from the database. Also notifies the appropriate model listeners.
@@ -208,7 +300,24 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		@Indexable(type = IndexableType.DELETE)
 		@Override
 		public ${entity.name} delete${entity.name}(${entity.name} ${entity.varName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-			return ${entity.varName}Persistence.remove(${entity.varName});
+			<#if entity.versionEntity??>
+				<#if !serviceBaseExceptions?seq_contains("PortalException")>
+					try {
+				</#if>
+
+				delete(${entity.varName});
+
+				return ${entity.varName};
+
+				<#if !serviceBaseExceptions?seq_contains("PortalException")>
+					}
+					catch (PortalException pe) {
+						throw new SystemException(pe);
+					}
+				</#if>
+			<#else>
+				return ${entity.varName}Persistence.remove(${entity.varName});
+			</#if>
 		}
 
 		@Override
@@ -287,14 +396,14 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			return ${entity.varName}Persistence.countWithDynamicQuery(dynamicQuery, projection);
 		}
 
-		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "fetch" + entity.name, [entity.PKClassName], [])>
+		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "fetch" + entity.name, [entity.PKClassName], []) />
 
 		@Override
 		public ${entity.name} fetch${entity.name}(${entity.PKClassName} ${entity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
 			return ${entity.varName}Persistence.fetchByPrimaryKey(${entity.PKVarName});
 		}
 
-		<#if entity.hasUuid() && entity.hasColumn("companyId") && (!entity.hasColumn("groupId") || (entity.name == "Group"))>
+		<#if entity.hasUuid() && entity.hasEntityColumn("companyId") && (!entity.hasEntityColumn("groupId") || stringUtil.equals(entity.name, "Group")) && !entity.versionEntity??>
 			/**
 			 * Returns the ${entity.humanName} with the matching UUID and company.
 			 *
@@ -311,8 +420,8 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			}
 		</#if>
 
-		<#if entity.hasUuid() && entity.hasColumn("groupId") && (entity.name != "Group")>
-			<#if entity.name == "Layout">
+		<#if entity.hasUuid() && entity.hasEntityColumn("groupId") && !stringUtil.equals(entity.name, "Group") && !entity.versionEntity??>
+			<#if stringUtil.equals(entity.name, "Layout")>
 				/**
 				 * Returns the ${entity.humanName} matching the UUID, group, and privacy.
 				 *
@@ -346,7 +455,24 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			</#if>
 		</#if>
 
-		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + entity.name, [entity.PKClassName], ["PortalException"])>
+		<#if entity.hasExternalReferenceCode() && entity.hasEntityColumn("companyId") && !entity.versionEntity??>
+			/**
+			 * Returns the ${entity.humanName} with the matching external reference code and company.
+			 *
+			 * @param companyId the primary key of the company
+			 * @param externalReferenceCode the ${entity.humanName}'s external reference code
+			 * @return the matching ${entity.humanName}, or <code>null</code> if a matching ${entity.humanName} could not be found
+			<#list serviceBaseExceptions as exception>
+			 * @throws ${exception}
+			</#list>
+			 */
+			@Override
+			public ${entity.name} fetch${entity.name}ByReferenceCode(long companyId, String externalReferenceCode) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+				return ${entity.varName}Persistence.fetchByC_ERC(companyId, externalReferenceCode);
+			}
+		</#if>
+
+		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + entity.name, [entity.PKClassName], ["PortalException"]) />
 
 		/**
 		 * Returns the ${entity.humanName} with the primary key.
@@ -354,7 +480,7 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		 * @param ${entity.PKVarName} the primary key of the ${entity.humanName}
 		 * @return the ${entity.humanName}
 		<#list serviceBaseExceptions as exception>
-		<#if exception == "PortalException">
+		<#if stringUtil.equals(exception, "PortalException")>
 		 * @throws PortalException if a ${entity.humanName} with the primary key could not be found
 		<#else>
 		 * @throws ${exception}
@@ -378,14 +504,14 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				<#if entity.hasPrimitivePK()>
 					actionableDynamicQuery.setPrimaryKeyPropertyName("${entity.PKVarName}");
 				<#else>
-					<#assign pkList = entity.getPKList()>
+					<#assign
+						pkEntityColumn = entity.PKEntityColumns?first
+					/>
 
-					<#assign pkColumn = pkList?first>
+					actionableDynamicQuery.setPrimaryKeyPropertyName("primaryKey.${pkEntityColumn.name}");
 
-					actionableDynamicQuery.setPrimaryKeyPropertyName("primaryKey.${pkColumn.name}");
-
-					<#list entity.getPKList() as pkColumn>
-						<#if pkColumn.name == "groupId">
+					<#list entity.PKEntityColumns as pkEntityColumn>
+						<#if stringUtil.equals(pkEntityColumn.name, "groupId")>
 							actionableDynamicQuery.setGroupIdPropertyName("primaryKey.groupId");
 						</#if>
 					</#list>
@@ -405,14 +531,14 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				<#if entity.hasPrimitivePK()>
 					indexableActionableDynamicQuery.setPrimaryKeyPropertyName("${entity.PKVarName}");
 				<#else>
-					<#assign pkList = entity.getPKList()>
+					<#assign
+						pkEntityColumn = entity.PKEntityColumns?first
+					/>
 
-					<#assign pkColumn = pkList?first>
+					indexableActionableDynamicQuery.setPrimaryKeyPropertyName("primaryKey.${pkEntityColumn.name}");
 
-					indexableActionableDynamicQuery.setPrimaryKeyPropertyName("primaryKey.${pkColumn.name}");
-
-					<#list entity.getPKList() as pkColumn>
-						<#if pkColumn.name == "groupId">
+					<#list entity.PKEntityColumns as pkEntityColumn>
+						<#if stringUtil.equals(pkEntityColumn.name, "groupId")>
 							indexableActionableDynamicQuery.setGroupIdPropertyName("primaryKey.groupId");
 						</#if>
 					</#list>
@@ -429,14 +555,14 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				<#if entity.hasPrimitivePK()>
 					actionableDynamicQuery.setPrimaryKeyPropertyName("${entity.PKVarName}");
 				<#else>
-					<#assign pkList = entity.getPKList()>
+					<#assign
+						pkEntityColumn = entity.PKEntityColumns?first
+					/>
 
-					<#assign pkColumn = pkList?first>
+					actionableDynamicQuery.setPrimaryKeyPropertyName("primaryKey.${pkEntityColumn.name}");
 
-					actionableDynamicQuery.setPrimaryKeyPropertyName("primaryKey.${pkColumn.name}");
-
-					<#list entity.getPKList() as pkColumn>
-						<#if pkColumn.name == "groupId">
+					<#list entity.PKEntityColumns as pkEntityColumn>
+						<#if stringUtil.equals(pkEntityColumn.name, "groupId")>
 							actionableDynamicQuery.setGroupIdPropertyName("primaryKey.groupId");
 						</#if>
 					</#list>
@@ -482,6 +608,27 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 							public void addCriteria(DynamicQuery dynamicQuery) {
 								<#if entity.isWorkflowEnabled()>
 									Criterion modifiedDateCriterion = portletDataContext.getDateRangeCriteria("modifiedDate");
+
+									<#if entity.isStagedGroupedModel()>
+										if (modifiedDateCriterion != null) {
+											Conjunction conjunction = RestrictionsFactoryUtil.conjunction();
+
+											conjunction.add(modifiedDateCriterion);
+
+											Disjunction disjunction = RestrictionsFactoryUtil.disjunction();
+
+											disjunction.add(RestrictionsFactoryUtil.gtProperty("modifiedDate", "lastPublishDate"));
+
+											Property lastPublishDateProperty = PropertyFactoryUtil.forName("lastPublishDate");
+
+											disjunction.add(lastPublishDateProperty.isNull());
+
+											conjunction.add(disjunction);
+
+											modifiedDateCriterion = conjunction;
+										}
+									</#if>
+
 									Criterion statusDateCriterion = portletDataContext.getDateRangeCriteria("statusDate");
 
 									if ((modifiedDateCriterion != null) && (statusDateCriterion != null)) {
@@ -566,8 +713,15 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			return ${entity.varName}Persistence.findByPrimaryKey(primaryKeyObj);
 		}
 
-		<#if entity.hasUuid() && entity.hasColumn("companyId")>
-			<#if entity.hasColumn("groupId") && (entity.name != "Group")>
+		<#if entity.isResourcedModel()>
+			@Override
+			public List<? extends PersistedModel> getPersistedModel(long resourcePrimKey) throws PortalException {
+				return ${entity.varName}Persistence.findByResourcePrimKey(resourcePrimKey);
+			}
+		</#if>
+
+		<#if entity.hasUuid() && entity.hasEntityColumn("companyId") && !entity.versionEntity??>
+			<#if entity.hasEntityColumn("groupId") && !stringUtil.equals(entity.name, "Group")>
 				/**
 				 * Returns all the ${entity.humanNames} matching the UUID and company.
 				 *
@@ -602,7 +756,7 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				 * @param companyId the primary key of the company
 				 * @return the matching ${entity.humanName}
 				<#list serviceBaseExceptions as exception>
-				<#if exception == "PortalException">
+				<#if stringUtil.equals(exception, "PortalException")>
 				 * @throws PortalException if a matching ${entity.humanName} could not be found
 				<#else>
 				 * @throws ${exception}
@@ -616,8 +770,8 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			</#if>
 		</#if>
 
-		<#if entity.hasUuid() && entity.hasColumn("groupId") && (entity.name != "Group")>
-			<#if entity.name == "Layout">
+		<#if entity.hasUuid() && entity.hasEntityColumn("groupId") && !stringUtil.equals(entity.name, "Group") && !entity.versionEntity??>
+			<#if stringUtil.equals(entity.name, "Layout")>
 				/**
 				 * Returns the ${entity.humanName} matching the UUID, group, and privacy.
 				 *
@@ -626,7 +780,7 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				 * @param privateLayout whether the ${entity.humanName} is private to the group
 				 * @return the matching ${entity.humanName}
 				<#list serviceBaseExceptions as exception>
-				<#if exception == "PortalException">
+				<#if stringUtil.equals(exception, "PortalException")>
 				 * @throws PortalException if a matching ${entity.humanName} could not be found
 				<#else>
 				 * @throws ${exception}
@@ -645,7 +799,7 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				 * @param groupId the primary key of the group
 				 * @return the matching ${entity.humanName}
 				<#list serviceBaseExceptions as exception>
-				<#if exception == "PortalException">
+				<#if stringUtil.equals(exception, "PortalException")>
 				 * @throws PortalException if a matching ${entity.humanName} could not be found
 				<#else>
 				 * @throws ${exception}
@@ -685,7 +839,7 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			return ${entity.varName}Persistence.countAll();
 		}
 
-		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "update" + entity.name, [apiPackagePath + ".model." + entity.name], [])>
+		<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "update" + entity.name, [apiPackagePath + ".model." + entity.name], []) />
 
 		/**
 		 * Updates the ${entity.humanName} in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
@@ -698,20 +852,26 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		 */
 		@Indexable(type = IndexableType.REINDEX)
 		@Override
-		public ${entity.name} update${entity.name}(${entity.name} ${entity.varName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-			return ${entity.varName}Persistence.update(${entity.varName});
-		}
+		<#if entity.versionEntity??>
+			public ${entity.name} update${entity.name}(${entity.name} draft${entity.name}) throws PortalException {
+				return updateDraft(draft${entity.name});
+			}
+		<#else>
+			public ${entity.name} update${entity.name}(${entity.name} ${entity.varName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+				return ${entity.varName}Persistence.update(${entity.varName});
+			}
+		</#if>
 
-		<#list entity.blobList as column>
-			<#if column.lazy>
+		<#list entity.blobEntityColumns as entityColumn>
+			<#if entityColumn.lazy>
 				@Override
-				public ${entity.name}${column.methodName}BlobModel get${column.methodName}BlobModel(Serializable primaryKey) {
+				public ${entity.name}${entityColumn.methodName}BlobModel get${entityColumn.methodName}BlobModel(Serializable primaryKey) {
 					Session session = null;
 
 					try {
 						session = ${entity.varName}Persistence.openSession();
 
-						return (${apiPackagePath}.model.${entity.name}${column.methodName}BlobModel)session.get(${entity.name}${column.methodName}BlobModel.class, primaryKey);
+						return (${apiPackagePath}.model.${entity.name}${entityColumn.methodName}BlobModel)session.get(${entity.name}${entityColumn.methodName}BlobModel.class, primaryKey);
 					}
 					catch (Exception e) {
 						throw ${entity.varName}Persistence.processException(e);
@@ -723,23 +883,13 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 			</#if>
 		</#list>
 
-		<#list entity.columnList as column>
-			<#if column.isCollection() && column.isMappingManyToMany()>
-				<#assign tempEntity = serviceBuilder.getEntity(column.getEJBName())>
+		<#list entity.entityColumns as entityColumn>
+			<#if entityColumn.isCollection() && entityColumn.isMappingManyToMany()>
+				<#assign
+					referenceEntity = serviceBuilder.getEntity(entityColumn.entityName)
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + tempEntity.name + entity.name, [tempEntity.PKClassName, entity.PKClassName], [])>
-
-				/**
-				<#list serviceBaseExceptions as exception>
-				 * @throws ${exception}
-				</#list>
-				 */
-				@Override
-				public void add${tempEntity.name}${entity.name}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, ${entity.PKClassName} ${entity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.add${entity.name}(${tempEntity.PKVarName}, ${entity.PKVarName});
-				}
-
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + tempEntity.name + entity.name, [tempEntity.PKClassName, apiPackagePath + ".model." + entity.name], [])>
+					serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + referenceEntity.name + entity.name, [referenceEntity.PKClassName, entity.PKClassName], [])
+				/>
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -747,11 +897,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void add${tempEntity.name}${entity.name}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, ${entity.name} ${entity.varName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.add${entity.name}(${tempEntity.PKVarName}, ${entity.varName});
+				public void add${referenceEntity.name}${entity.name}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, ${entity.PKClassName} ${entity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.add${entity.name}(${referenceEntity.PKVarName}, ${entity.PKVarName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + tempEntity.name + entity.names, [tempEntity.PKClassName, entity.PKClassName + "[]"], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + referenceEntity.name + entity.name, [referenceEntity.PKClassName, apiPackagePath + ".model." + entity.name], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -759,11 +909,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void add${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, ${entity.PKClassName}[] ${entity.PKVarNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.add${entity.names}(${tempEntity.PKVarName}, ${entity.PKVarNames});
+				public void add${referenceEntity.name}${entity.name}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, ${entity.name} ${entity.varName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.add${entity.name}(${referenceEntity.PKVarName}, ${entity.varName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + tempEntity.name + entity.names, [tempEntity.PKClassName, "java.util.List<" + entity.name + ">"], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + referenceEntity.name + entity.names, [referenceEntity.PKClassName, entity.PKClassName + "[]"], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -771,11 +921,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void add${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, List<${entity.name}> ${entity.varNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.add${entity.names}(${tempEntity.PKVarName}, ${entity.varNames});
+				public void add${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, ${entity.PKClassName}[] ${entity.PKVarNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.add${entity.names}(${referenceEntity.PKVarName}, ${entity.PKVarNames});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "clear" + tempEntity.name + entity.names, [tempEntity.PKClassName], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "add" + referenceEntity.name + entity.names, [referenceEntity.PKClassName, "java.util.List<" + entity.name + ">"], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -783,11 +933,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void clear${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.clear${entity.names}(${tempEntity.PKVarName});
+				public void add${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, List<${entity.name}> ${entity.varNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.add${entity.names}(${referenceEntity.PKVarName}, ${entity.varNames});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + tempEntity.name + entity.name, [tempEntity.PKClassName, entity.PKClassName], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "clear" + referenceEntity.name + entity.names, [referenceEntity.PKClassName], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -795,11 +945,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void delete${tempEntity.name}${entity.name}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, ${entity.PKClassName} ${entity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.remove${entity.name}(${tempEntity.PKVarName}, ${entity.PKVarName});
+				public void clear${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.clear${entity.names}(${referenceEntity.PKVarName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + tempEntity.name + entity.name, [tempEntity.PKClassName, apiPackagePath + ".model." + entity.name], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + referenceEntity.name + entity.name, [referenceEntity.PKClassName, entity.PKClassName], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -807,11 +957,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void delete${tempEntity.name}${entity.name}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, ${entity.name} ${entity.varName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.remove${entity.name}(${tempEntity.PKVarName}, ${entity.varName});
+				public void delete${referenceEntity.name}${entity.name}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, ${entity.PKClassName} ${entity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.remove${entity.name}(${referenceEntity.PKVarName}, ${entity.PKVarName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + tempEntity.name + entity.names, [tempEntity.PKClassName, entity.PKClassName + "[]"], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + referenceEntity.name + entity.name, [referenceEntity.PKClassName, apiPackagePath + ".model." + entity.name], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -819,11 +969,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void delete${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, ${entity.PKClassName}[] ${entity.PKVarNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.remove${entity.names}(${tempEntity.PKVarName}, ${entity.PKVarNames});
+				public void delete${referenceEntity.name}${entity.name}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, ${entity.name} ${entity.varName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.remove${entity.name}(${referenceEntity.PKVarName}, ${entity.varName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + tempEntity.name + entity.names, [tempEntity.PKClassName, "java.util.List<" + entity.name + ">"], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + referenceEntity.name + entity.names, [referenceEntity.PKClassName, entity.PKClassName + "[]"], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -831,22 +981,34 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void delete${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, List<${entity.name}> ${entity.varNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.remove${entity.names}(${tempEntity.PKVarName}, ${entity.varNames});
+				public void delete${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, ${entity.PKClassName}[] ${entity.PKVarNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.remove${entity.names}(${referenceEntity.PKVarName}, ${entity.PKVarNames});
+				}
+
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "delete" + referenceEntity.name + entity.names, [referenceEntity.PKClassName, "java.util.List<" + entity.name + ">"], []) />
+
+				/**
+				<#list serviceBaseExceptions as exception>
+				 * @throws ${exception}
+				</#list>
+				 */
+				@Override
+				public void delete${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, List<${entity.name}> ${entity.varNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.remove${entity.names}(${referenceEntity.PKVarName}, ${entity.varNames});
 				}
 
 				/**
-				 * Returns the ${tempEntity.PKVarName}s of the ${tempEntity.humanNames} associated with the ${entity.humanName}.
+				 * Returns the ${referenceEntity.PKVarName}s of the ${referenceEntity.humanNames} associated with the ${entity.humanName}.
 				 *
 				 * @param ${entity.PKVarName} the ${entity.PKVarName} of the ${entity.humanName}
-				 * @return long[] the ${tempEntity.PKVarName}s of ${tempEntity.humanNames} associated with the ${entity.humanName}
+				 * @return long[] the ${referenceEntity.PKVarName}s of ${referenceEntity.humanNames} associated with the ${entity.humanName}
 				 */
 				@Override
-				public long[] get${tempEntity.name}PrimaryKeys(${entity.PKClassName} ${entity.PKVarName}) {
-					return ${entity.varName}Persistence.get${tempEntity.name}PrimaryKeys(${entity.PKVarName});
+				public long[] get${referenceEntity.name}PrimaryKeys(${entity.PKClassName} ${entity.PKVarName}) {
+					return ${entity.varName}Persistence.get${referenceEntity.name}PrimaryKeys(${entity.PKVarName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + tempEntity.name + entity.names, [tempEntity.PKClassName], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + referenceEntity.name + entity.names, [referenceEntity.PKClassName], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -854,11 +1016,15 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public List<${entity.name}> get${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					return ${tempEntity.varName}Persistence.get${entity.names}(${tempEntity.PKVarName});
+				public List<${entity.name}> get${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					<#if dependencyInjectorDS>
+						return ${entity.varName}Persistence.get${referenceEntity.name}${entity.names}(${referenceEntity.PKVarName});
+					<#else>
+						return ${referenceEntity.varName}Persistence.get${entity.names}(${referenceEntity.PKVarName});
+					</#if>
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + tempEntity.name + entity.names, [tempEntity.PKClassName, "int", "int"], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + referenceEntity.name + entity.names, [referenceEntity.PKClassName, "int", "int"], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -866,11 +1032,15 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public List<${entity.name}> get${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, int start, int end) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					return ${tempEntity.varName}Persistence.get${entity.names}(${tempEntity.PKVarName}, start, end);
+				public List<${entity.name}> get${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, int start, int end) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					<#if dependencyInjectorDS>
+						return ${entity.varName}Persistence.get${referenceEntity.name}${entity.names}(${referenceEntity.PKVarName}, start, end);
+					<#else>
+						return ${referenceEntity.varName}Persistence.get${entity.names}(${referenceEntity.PKVarName}, start, end);
+					</#if>
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + tempEntity.name + entity.names, [tempEntity.PKClassName, "int", "int", "com.liferay.portal.kernel.util.OrderByComparator"], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + referenceEntity.name + entity.names, [referenceEntity.PKClassName, "int", "int", "com.liferay.portal.kernel.util.OrderByComparator"], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -878,11 +1048,15 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public List<${entity.name}> get${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, int start, int end, OrderByComparator<${entity.name}> orderByComparator) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					return ${tempEntity.varName}Persistence.get${entity.names}(${tempEntity.PKVarName}, start, end, orderByComparator);
+				public List<${entity.name}> get${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, int start, int end, OrderByComparator<${entity.name}> orderByComparator) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					<#if dependencyInjectorDS>
+						return ${entity.varName}Persistence.get${referenceEntity.name}${entity.names}(${referenceEntity.PKVarName}, start, end, orderByComparator);
+					<#else>
+						return ${referenceEntity.varName}Persistence.get${entity.names}(${referenceEntity.PKVarName}, start, end, orderByComparator);
+					</#if>
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + tempEntity.name + entity.names + "Count", [tempEntity.PKClassName], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "get" + referenceEntity.name + entity.names + "Count", [referenceEntity.PKClassName], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -890,11 +1064,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public int get${tempEntity.name}${entity.names}Count(${tempEntity.PKClassName} ${tempEntity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					return ${tempEntity.varName}Persistence.get${entity.names}Size(${tempEntity.PKVarName});
+				public int get${referenceEntity.name}${entity.names}Count(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					return ${referenceEntity.varName}Persistence.get${entity.names}Size(${referenceEntity.PKVarName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "has" + tempEntity.name + entity.name, [tempEntity.PKClassName, entity.PKClassName], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "has" + referenceEntity.name + entity.name, [referenceEntity.PKClassName, entity.PKClassName], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -902,11 +1076,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public boolean has${tempEntity.name}${entity.name}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, ${entity.PKClassName} ${entity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					return ${tempEntity.varName}Persistence.contains${entity.name}(${tempEntity.PKVarName}, ${entity.PKVarName});
+				public boolean has${referenceEntity.name}${entity.name}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, ${entity.PKClassName} ${entity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					return ${referenceEntity.varName}Persistence.contains${entity.name}(${referenceEntity.PKVarName}, ${entity.PKVarName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "has" + tempEntity.name + entity.names, [tempEntity.PKClassName], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "has" + referenceEntity.name + entity.names, [referenceEntity.PKClassName], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -914,11 +1088,11 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public boolean has${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					return ${tempEntity.varName}Persistence.contains${entity.names}(${tempEntity.PKVarName});
+				public boolean has${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					return ${referenceEntity.varName}Persistence.contains${entity.names}(${referenceEntity.PKVarName});
 				}
 
-				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "set" + tempEntity.name + entity.names, [tempEntity.PKClassName, entity.PKClassName + "[]"], [])>
+				<#assign serviceBaseExceptions = serviceBuilder.getServiceBaseExceptions(methods, "set" + referenceEntity.name + entity.names, [referenceEntity.PKClassName, entity.PKClassName + "[]"], []) />
 
 				/**
 				<#list serviceBaseExceptions as exception>
@@ -926,140 +1100,681 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 				</#list>
 				 */
 				@Override
-				public void set${tempEntity.name}${entity.names}(${tempEntity.PKClassName} ${tempEntity.PKVarName}, ${entity.PKClassName}[] ${entity.PKVarNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
-					${tempEntity.varName}Persistence.set${entity.names}(${tempEntity.PKVarName}, ${entity.PKVarNames});
+				public void set${referenceEntity.name}${entity.names}(${referenceEntity.PKClassName} ${referenceEntity.PKVarName}, ${entity.PKClassName}[] ${entity.PKVarNames}) <#if (serviceBaseExceptions?size gt 0)>throws ${stringUtil.merge(serviceBaseExceptions)} </#if>{
+					${referenceEntity.varName}Persistence.set${entity.names}(${referenceEntity.PKVarName}, ${entity.PKVarNames});
 				}
 			</#if>
 		</#list>
 	</#if>
 
-	<#list referenceList as tempEntity>
-		<#if tempEntity.hasLocalService()>
-			/**
-			 * Returns the ${tempEntity.humanName} local service.
-			 *
-			 * @return the ${tempEntity.humanName} local service
-			 */
+	<#if stringUtil.equals(sessionTypeName, "Local") && (entity.localizedEntity??) && entity.hasPersistence()>
+		<#assign
+			localizedEntity = entity.localizedEntity
+			localizedEntityColumns = entity.localizedEntityColumns
+			pkEntityColumn = entity.PKEntityColumns?first
+		/>
 
-			<#if !classDeprecated && tempEntity.isDeprecated()>
-				@SuppressWarnings("deprecation")
+		@Override
+		public ${localizedEntity.name} fetch${localizedEntity.name}(${entity.PKClassName} ${entity.PKVarName}, String languageId) {
+			return ${localizedEntity.varName}Persistence.fetchBy${pkEntityColumn.methodName}_LanguageId(${entity.PKVarName}, languageId);
+		}
+
+		@Override
+		public ${localizedEntity.name} get${localizedEntity.name}(${entity.PKClassName} ${entity.PKVarName}, String languageId) throws PortalException {
+			return ${localizedEntity.varName}Persistence.findBy${pkEntityColumn.methodName}_LanguageId(${entity.PKVarName}, languageId);
+		}
+
+		@Override
+		public List<${localizedEntity.name}> get${localizedEntity.names}(${entity.PKClassName} ${entity.PKVarName}) {
+			return ${localizedEntity.varName}Persistence.findBy${pkEntityColumn.methodName}(${entity.PKVarName});
+		}
+
+		<#assign entityVarName = entity.varName />
+
+		<#if entity.versionEntity??>
+			<#assign entityVarName = "draft" + entity.name />
+		</#if>
+
+		@Override
+		public ${localizedEntity.name} update${localizedEntity.name}(
+			${entity.name} ${entityVarName}, String languageId,
+			<#list localizedEntityColumns as entityColumn>
+				String ${entityColumn.name}
+
+				<#if entityColumn?has_next>
+					,
+				</#if>
+			</#list>
+			) throws PortalException {
+
+			${entityVarName} = ${entity.varName}Persistence.findByPrimaryKey(${entityVarName}.getPrimaryKey());
+
+			<#if entity.versionEntity??>
+				if (${entityVarName}.isHead()) {
+					throw new IllegalArgumentException("Can only update draft entries " + ${entityVarName}.getPrimaryKey());
+				}
 			</#if>
 
-			public ${tempEntity.apiPackagePath}.service.${tempEntity.name}LocalService get${tempEntity.name}LocalService() {
-				return ${tempEntity.varName}LocalService;
-			}
+			${localizedEntity.name} ${localizedEntity.varName} = ${localizedEntity.varName}Persistence.fetchBy${pkEntityColumn.methodName}_LanguageId(${entityVarName}.get${pkEntityColumn.methodName}(), languageId);
 
-			/**
-			 * Sets the ${tempEntity.humanName} local service.
-			 *
-			 * @param ${tempEntity.varName}LocalService the ${tempEntity.humanName} local service
-			 */
+			return _update${localizedEntity.name}(${entityVarName}, ${localizedEntity.varName}, languageId,
+				<#list localizedEntityColumns as entityColumn>
+					${entityColumn.name}
 
-			<#if !classDeprecated && tempEntity.isDeprecated()>
-				@SuppressWarnings("deprecation")
+					<#if entityColumn?has_next>
+						,
+					</#if>
+				</#list>
+			);
+		}
+
+		@Override
+		public List<${localizedEntity.name}> update${localizedEntity.names}(
+			${entity.name} ${entityVarName},
+			<#list localizedEntityColumns as entityColumn>
+				Map<String, String> ${entityColumn.name}Map
+
+				<#if entityColumn?has_next>
+					,
+				</#if>
+			</#list>
+			) throws PortalException {
+
+			${entityVarName} = ${entity.varName}Persistence.findByPrimaryKey(${entityVarName}.getPrimaryKey());
+
+			<#if entity.versionEntity??>
+				if (${entityVarName}.isHead()) {
+					throw new IllegalArgumentException("Can only update draft entries " + ${entityVarName}.getPrimaryKey());
+				}
 			</#if>
 
-			public void set${tempEntity.name}LocalService(${tempEntity.apiPackagePath}.service.${tempEntity.name}LocalService ${tempEntity.varName}LocalService) {
-				this.${tempEntity.varName}LocalService = ${tempEntity.varName}LocalService;
-			}
-		</#if>
+			Map<String, String[]> localizedValuesMap = new HashMap<String, String[]>();
 
-		<#if (sessionTypeName != "Local") && tempEntity.hasRemoteService()>
-			/**
-			 * Returns the ${tempEntity.humanName} remote service.
-			 *
-			 * @return the ${tempEntity.humanName} remote service
-			 */
+			<#list localizedEntityColumns as entityColumn>
+				for (Map.Entry<String, String> entry : ${entityColumn.name}Map.entrySet()) {
+					String languageId = entry.getKey();
 
-			<#if !classDeprecated && tempEntity.isDeprecated()>
-				@SuppressWarnings("deprecation")
-			</#if>
+					String[] localizedValues = localizedValuesMap.get(languageId);
 
-			public ${tempEntity.apiPackagePath}.service.${tempEntity.name}Service get${tempEntity.name}Service() {
-				return ${tempEntity.varName}Service;
-			}
+					if (localizedValues == null) {
+						localizedValues = new String[${localizedEntityColumns?size}];
 
-			/**
-			 * Sets the ${tempEntity.humanName} remote service.
-			 *
-			 * @param ${tempEntity.varName}Service the ${tempEntity.humanName} remote service
-			 */
+						localizedValuesMap.put(languageId, localizedValues);
+					}
 
-			<#if !classDeprecated && tempEntity.isDeprecated()>
-				@SuppressWarnings("deprecation")
-			</#if>
+					localizedValues[${entityColumn?index}] = entry.getValue();
+				}
+			</#list>
 
-			public void set${tempEntity.name}Service(${tempEntity.apiPackagePath}.service.${tempEntity.name}Service ${tempEntity.varName}Service) {
-				this.${tempEntity.varName}Service = ${tempEntity.varName}Service;
-			}
-		</#if>
+			List<${localizedEntity.name}> ${localizedEntity.varNames} = new ArrayList<${localizedEntity.name}>(localizedValuesMap.size());
 
-		<#if tempEntity.hasColumns() && ((entity.name == "Counter") || (tempEntity.name != "Counter"))>
-			/**
-			 * Returns the ${tempEntity.humanName} persistence.
-			 *
-			 * @return the ${tempEntity.humanName} persistence
-			 */
-			public ${tempEntity.name}Persistence get${tempEntity.name}Persistence() {
-				return ${tempEntity.varName}Persistence;
-			}
+			for (${localizedEntity.name} ${localizedEntity.varName} : ${localizedEntity.varName}Persistence.findBy${pkEntityColumn.methodName}(${entityVarName}.get${pkEntityColumn.methodName}())) {
+				String[] localizedValues = localizedValuesMap.remove(${localizedEntity.varName}.getLanguageId());
 
-			/**
-			 * Sets the ${tempEntity.humanName} persistence.
-			 *
-			 * @param ${tempEntity.varName}Persistence the ${tempEntity.humanName} persistence
-			 */
-			public void set${tempEntity.name}Persistence(${tempEntity.name}Persistence ${tempEntity.varName}Persistence) {
-				this.${tempEntity.varName}Persistence = ${tempEntity.varName}Persistence;
-			}
-		</#if>
+				if (localizedValues == null) {
+					${localizedEntity.varName}Persistence.remove(${localizedEntity.varName});
+				}
+				else {
+					<#if entity.versionEntity??>
+						<#list entity.entityColumns as entityColumn>
+							<#if !stringUtil.equals(entityColumn.name, "headId") && localizedEntity.hasEntityColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion") && !stringUtil.equals(entityColumn.name, pkEntityColumn.name)>
+								${localizedEntity.varName}.set${entityColumn.methodName}(${entityVarName}.get${entityColumn.methodName}());
+							</#if>
+						</#list>
+					<#else>
+						<#list entity.entityColumns as entityColumn>
+							<#if localizedEntity.hasEntityColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion") && !stringUtil.equals(entityColumn.name, pkEntityColumn.name)>
+								${localizedEntity.varName}.set${entityColumn.methodName}(${entityVarName}.get${entityColumn.methodName}());
+							</#if>
+						</#list>
+					</#if>
 
-		<#if tempEntity.hasFinderClass() && ((entity.name == "Counter") || (tempEntity.name != "Counter"))>
-			/**
-			 * Returns the ${tempEntity.humanName} finder.
-			 *
-			 * @return the ${tempEntity.humanName} finder
-			 */
-			public ${tempEntity.name}Finder get${tempEntity.name}Finder() {
-				return ${tempEntity.varName}Finder;
+					<#list localizedEntityColumns as entityColumn>
+						${localizedEntity.varName}.set${entityColumn.methodName}(localizedValues[${entityColumn?index}]);
+					</#list>
+
+					${localizedEntity.varNames}.add(${localizedEntity.varName}Persistence.update(${localizedEntity.varName}));
+				}
 			}
 
-			/**
-			 * Sets the ${tempEntity.humanName} finder.
-			 *
-			 * @param ${tempEntity.varName}Finder the ${tempEntity.humanName} finder
-			 */
-			public void set${tempEntity.name}Finder(${tempEntity.name}Finder ${tempEntity.varName}Finder) {
-				this.${tempEntity.varName}Finder = ${tempEntity.varName}Finder;
+			long batchCounter = counterLocalService.increment(${localizedEntity.name}.class.getName(), localizedValuesMap.size()) - localizedValuesMap.size();
+
+			for (Map.Entry<String, String[]> entry : localizedValuesMap.entrySet()) {
+				String languageId = entry.getKey();
+				String[] localizedValues = entry.getValue();
+
+				${localizedEntity.name} ${localizedEntity.varName} = ${localizedEntity.varName}Persistence.create(++batchCounter);
+
+				<#if entity.versionEntity??>
+					${localizedEntity.varName}.setHeadId(${localizedEntity.varName}.getPrimaryKey());
+
+					<#list entity.entityColumns as entityColumn>
+						<#if !stringUtil.equals(entityColumn.name, "headId") && localizedEntity.hasEntityColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion")>
+							${localizedEntity.varName}.set${entityColumn.methodName}(${entityVarName}.get${entityColumn.methodName}());
+						</#if>
+					</#list>
+				<#else>
+					<#list entity.entityColumns as entityColumn>
+						<#if localizedEntity.hasEntityColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion")>
+							${localizedEntity.varName}.set${entityColumn.methodName}(${entityVarName}.get${entityColumn.methodName}());
+						</#if>
+					</#list>
+				</#if>
+
+				${localizedEntity.varName}.setLanguageId(languageId);
+
+				<#list localizedEntityColumns as entityColumn>
+					${localizedEntity.varName}.set${entityColumn.methodName}(localizedValues[${entityColumn?index}]);
+				</#list>
+
+				${localizedEntity.varNames}.add(${localizedEntity.varName}Persistence.update(${localizedEntity.varName}));
 			}
-		</#if>
-	</#list>
 
-	public void afterPropertiesSet() {
-		<#if pluginName != "">
-			Class<?> clazz = getClass();
+			return ${localizedEntity.varNames};
+		}
 
-			_classLoader = clazz.getClassLoader();
-		</#if>
+		private ${localizedEntity.name} _update${localizedEntity.name}(
+			${entity.name} ${entityVarName}, ${localizedEntity.name} ${localizedEntity.varName}, String languageId,
+			<#list localizedEntityColumns as entityColumn>
+				String ${entityColumn.name}
 
-		<#if (sessionTypeName == "Local") && entity.hasColumns()>
-			<#if pluginName != "">
-				PersistedModelLocalServiceRegistryUtil.register("${apiPackagePath}.model.${entity.name}", ${entity.varName}LocalService);
+				<#if entityColumn?has_next>
+					,
+				</#if>
+			</#list>
+			) throws PortalException {
+
+			if (${localizedEntity.varName} == null) {
+				long ${localizedEntity.varName}Id = counterLocalService.increment(${localizedEntity.name}.class.getName());
+
+				${localizedEntity.varName} = ${localizedEntity.varName}Persistence.create(${localizedEntity.varName}Id);
+
+				${localizedEntity.varName}.set${pkEntityColumn.methodName}(${entityVarName}.get${pkEntityColumn.methodName}());
+				${localizedEntity.varName}.setLanguageId(languageId);
+			}
+
+			<#if entity.versionEntity??>
+				${localizedEntity.varName}.setHeadId(${localizedEntity.varName}.getPrimaryKey());
+
+				<#list entity.entityColumns as entityColumn>
+					<#if localizedEntity.hasEntityColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion") && !stringUtil.equals(entityColumn.name, "headId") && !stringUtil.equals(entityColumn.name, pkEntityColumn.name)>
+						${localizedEntity.varName}.set${entityColumn.methodName}(${entityVarName}.get${entityColumn.methodName}());
+					</#if>
+				</#list>
 			<#else>
-				persistedModelLocalServiceRegistry.register("${apiPackagePath}.model.${entity.name}", ${entity.varName}LocalService);
-			</#if>
-		</#if>
-	}
 
-	public void destroy() {
-		<#if (sessionTypeName == "Local") && entity.hasColumns()>
-			<#if pluginName != "">
-				PersistedModelLocalServiceRegistryUtil.unregister("${apiPackagePath}.model.${entity.name}");
-			<#else>
-				persistedModelLocalServiceRegistry.unregister("${apiPackagePath}.model.${entity.name}");
+				<#list entity.entityColumns as entityColumn>
+					<#if localizedEntity.hasEntityColumn(entityColumn.name) && !stringUtil.equals(entityColumn.name, "mvccVersion") && !stringUtil.equals(entityColumn.name, pkEntityColumn.name)>
+						${localizedEntity.varName}.set${entityColumn.methodName}(${entityVarName}.get${entityColumn.methodName}());
+					</#if>
+				</#list>
 			</#if>
+
+			<#list localizedEntityColumns as entityColumn>
+				${localizedEntity.varName}.set${entityColumn.methodName}(${entityColumn.name});
+			</#list>
+
+			return ${localizedEntity.varName}Persistence.update(${localizedEntity.varName});
+		}
+	</#if>
+
+	<#if !dependencyInjectorDS>
+		<#list referenceEntities as referenceEntity>
+			<#if referenceEntity.hasLocalService()>
+				/**
+				 * Returns the ${referenceEntity.humanName} local service.
+				 *
+				 * @return the ${referenceEntity.humanName} local service
+				 */
+
+				<#if !classDeprecated && referenceEntity.isDeprecated()>
+					@SuppressWarnings("deprecation")
+				</#if>
+
+				public ${referenceEntity.apiPackagePath}.service.${referenceEntity.name}LocalService get${referenceEntity.name}LocalService() {
+					return ${referenceEntity.varName}LocalService;
+				}
+
+				/**
+				 * Sets the ${referenceEntity.humanName} local service.
+				 *
+				 * @param ${referenceEntity.varName}LocalService the ${referenceEntity.humanName} local service
+				 */
+
+				<#if !classDeprecated && referenceEntity.isDeprecated()>
+					@SuppressWarnings("deprecation")
+				</#if>
+
+				public void set${referenceEntity.name}LocalService(${referenceEntity.apiPackagePath}.service.${referenceEntity.name}LocalService ${referenceEntity.varName}LocalService) {
+					this.${referenceEntity.varName}LocalService = ${referenceEntity.varName}LocalService;
+				}
+			</#if>
+
+			<#if !stringUtil.equals(sessionTypeName, "Local") && referenceEntity.hasRemoteService()>
+				/**
+				 * Returns the ${referenceEntity.humanName} remote service.
+				 *
+				 * @return the ${referenceEntity.humanName} remote service
+				 */
+
+				<#if !classDeprecated && referenceEntity.isDeprecated()>
+					@SuppressWarnings("deprecation")
+				</#if>
+
+				public ${referenceEntity.apiPackagePath}.service.${referenceEntity.name}Service get${referenceEntity.name}Service() {
+					return ${referenceEntity.varName}Service;
+				}
+
+				/**
+				 * Sets the ${referenceEntity.humanName} remote service.
+				 *
+				 * @param ${referenceEntity.varName}Service the ${referenceEntity.humanName} remote service
+				 */
+
+				<#if !classDeprecated && referenceEntity.isDeprecated()>
+					@SuppressWarnings("deprecation")
+				</#if>
+
+				public void set${referenceEntity.name}Service(${referenceEntity.apiPackagePath}.service.${referenceEntity.name}Service ${referenceEntity.varName}Service) {
+					this.${referenceEntity.varName}Service = ${referenceEntity.varName}Service;
+				}
+			</#if>
+
+			<#if referenceEntity.hasEntityColumns() && referenceEntity.hasPersistence()>
+				/**
+				 * Returns the ${referenceEntity.humanName} persistence.
+				 *
+				 * @return the ${referenceEntity.humanName} persistence
+				 */
+				public ${referenceEntity.name}Persistence get${referenceEntity.name}Persistence() {
+					return ${referenceEntity.varName}Persistence;
+				}
+
+				/**
+				 * Sets the ${referenceEntity.humanName} persistence.
+				 *
+				 * @param ${referenceEntity.varName}Persistence the ${referenceEntity.humanName} persistence
+				 */
+				public void set${referenceEntity.name}Persistence(${referenceEntity.name}Persistence ${referenceEntity.varName}Persistence) {
+					this.${referenceEntity.varName}Persistence = ${referenceEntity.varName}Persistence;
+				}
+			</#if>
+
+			<#if referenceEntity.hasFinderClassName() && (stringUtil.equals(entity.name, "Counter") || !stringUtil.equals(referenceEntity.name, "Counter"))>
+				/**
+				 * Returns the ${referenceEntity.humanName} finder.
+				 *
+				 * @return the ${referenceEntity.humanName} finder
+				 */
+				public ${referenceEntity.name}Finder get${referenceEntity.name}Finder() {
+					return ${referenceEntity.varName}Finder;
+				}
+
+				/**
+				 * Sets the ${referenceEntity.humanName} finder.
+				 *
+				 * @param ${referenceEntity.varName}Finder the ${referenceEntity.humanName} finder
+				 */
+				public void set${referenceEntity.name}Finder(${referenceEntity.name}Finder ${referenceEntity.varName}Finder) {
+					this.${referenceEntity.varName}Finder = ${referenceEntity.varName}Finder;
+				}
+			</#if>
+		</#list>
+	</#if>
+
+	<#if dependencyInjectorDS>
+		@Override
+		public Class<?>[] getAopInterfaces() {
+			return new Class<?>[] {
+				${entity.name}${sessionTypeName}Service.class, IdentifiableOSGiService.class
+
+				<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasEntityColumns() && entity.hasPersistence()>
+					, PersistedModelLocalService.class
+				</#if>
+			};
+		}
+
+		@Override
+		public void setAopProxy(Object aopProxy) {
+			${entity.varName}${sessionTypeName}Service = (${entity.name}${sessionTypeName}Service)aopProxy;
+		}
+
+		<#if stringUtil.equals(sessionTypeName, "Local") && entity.localizedEntity?? && entity.versionEntity?? && entity.hasPersistence()>
+			<#assign localizedEntity = entity.localizedEntity />
+
+			@Activate
+			protected void activate() {
+				registerListener(new ${localizedEntity.name}VersionServiceListener());
+			}
 		</#if>
-	}
+	<#else>
+		public void afterPropertiesSet() {
+			<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasEntityColumns() && entity.hasPersistence()>
+				<#if validator.isNotNull(pluginName)>
+					PersistedModelLocalServiceRegistryUtil.register("${apiPackagePath}.model.${entity.name}", ${entity.varName}LocalService);
+				<#else>
+					persistedModelLocalServiceRegistry.register("${apiPackagePath}.model.${entity.name}", ${entity.varName}LocalService);
+				</#if>
+			</#if>
+
+			<#if stringUtil.equals(sessionTypeName, "Local") && entity.localizedEntity?? && entity.versionEntity?? && entity.hasPersistence()>
+				<#assign localizedEntity = entity.localizedEntity />
+
+				registerListener(new ${localizedEntity.name}VersionServiceListener());
+			</#if>
+		}
+
+		public void destroy() {
+			<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasEntityColumns() && entity.hasPersistence()>
+				<#if validator.isNotNull(pluginName)>
+					PersistedModelLocalServiceRegistryUtil.unregister("${apiPackagePath}.model.${entity.name}");
+				<#else>
+					persistedModelLocalServiceRegistry.unregister("${apiPackagePath}.model.${entity.name}");
+				</#if>
+			</#if>
+		}
+	</#if>
+
+	<#if stringUtil.equals(sessionTypeName, "Local") && entity.versionEntity?? && entity.hasPersistence()>
+		<#assign
+			versionEntity = entity.versionEntity
+			pkEntityMethod = entity.PKEntityColumns?first.methodName
+		/>
+
+		@Indexable(type = IndexableType.REINDEX)
+		@Override
+		public ${entity.name} checkout(${entity.name} published${entity.name}, int version) throws PortalException {
+			if (!published${entity.name}.isHead()) {
+				throw new IllegalArgumentException("Unable to checkout with unpublished changes " + published${entity.name}.getHeadId());
+			}
+
+			${entity.name} draft${entity.name} = ${entity.varName}Persistence.fetchByHeadId(published${entity.name}.getPrimaryKey());
+
+			if (draft${entity.name} != null) {
+				throw new IllegalArgumentException("Unable to checkout with unpublished changes " + published${entity.name}.getPrimaryKey());
+			}
+
+			${versionEntity.name} ${versionEntity.varName} = getVersion(published${entity.name}, version);
+
+			draft${entity.name} = _createDraft(published${entity.name});
+
+			${versionEntity.varName}.populateVersionedModel(draft${entity.name});
+
+			draft${entity.name} = ${entity.varName}Persistence.update(draft${entity.name});
+
+			for (VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener : _versionServiceListeners) {
+				versionServiceListener.afterCheckout(draft${entity.name}, version);
+			}
+
+			return draft${entity.name};
+		}
+
+		@Indexable(type = IndexableType.DELETE)
+		@Override
+		public ${entity.name} delete(${entity.name} published${entity.name}) throws PortalException {
+			if (!published${entity.name}.isHead()) {
+				throw new IllegalArgumentException("${entity.name} is a draft " + published${entity.name}.getPrimaryKey());
+			}
+
+			${entity.name} draft${entity.name} = ${entity.varName}Persistence.fetchByHeadId(published${entity.name}.getPrimaryKey());
+
+			if (draft${entity.name} != null) {
+				deleteDraft(draft${entity.name});
+			}
+
+			for (${versionEntity.name} ${versionEntity.varName} : getVersions(published${entity.name})) {
+				${versionEntity.varName}Persistence.remove(${versionEntity.varName});
+			}
+
+			${entity.varName}Persistence.remove(published${entity.name});
+
+			for (VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener : _versionServiceListeners) {
+				versionServiceListener.afterDelete(published${entity.name});
+			}
+
+			return published${entity.name};
+		}
+
+		@Indexable(type = IndexableType.DELETE)
+		@Override
+		public ${entity.name} deleteDraft(${entity.name} draft${entity.name})
+			throws PortalException {
+
+			if (draft${entity.name}.isHead()) {
+				throw new IllegalArgumentException("${entity.name} is not a draft " + draft${entity.name}.getPrimaryKey());
+			}
+
+			${entity.varName}Persistence.remove(draft${entity.name});
+
+			for (VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener : _versionServiceListeners) {
+				versionServiceListener.afterDeleteDraft(draft${entity.name});
+			}
+
+			return draft${entity.name};
+		}
+
+		@Override
+		public ${versionEntity.name} deleteVersion(${versionEntity.name} ${versionEntity.varName}) throws PortalException {
+			${versionEntity.name} latest${versionEntity.name} = ${versionEntity.varName}Persistence.findBy${pkEntityMethod}_First(${versionEntity.varName}.getVersionedModelId(), null);
+
+			if (latest${versionEntity.name}.getVersion() == ${versionEntity.varName}.getVersion()) {
+				throw new IllegalArgumentException("Unable to delete latest version " + ${versionEntity.varName}.getVersion());
+			}
+
+			${versionEntity.varName} = ${versionEntity.varName}Persistence.remove(${versionEntity.varName});
+
+			for (VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener : _versionServiceListeners) {
+				versionServiceListener.afterDeleteVersion(${versionEntity.varName});
+			}
+
+			return ${versionEntity.varName};
+		}
+
+		@Override
+		public ${entity.name} fetchDraft(${entity.name} ${entity.varName}) {
+			if (${entity.varName}.isHead()) {
+				return ${entity.varName}Persistence.fetchByHeadId(${entity.varName}.getPrimaryKey());
+			}
+
+			return ${entity.varName};
+		}
+
+		@Override
+		public ${entity.name} fetchDraft(long primaryKey) {
+			return ${entity.varName}Persistence.fetchByHeadId(primaryKey);
+		}
+
+		@Override
+		public ${versionEntity.name} fetchLatestVersion(${entity.name} ${entity.varName}) {
+			long primaryKey = ${entity.varName}.getHeadId();
+
+			if (${entity.varName}.isHead()) {
+				primaryKey = ${entity.varName}.getPrimaryKey();
+			}
+
+			return ${versionEntity.varName}Persistence.fetchBy${pkEntityMethod}_First(primaryKey, null);
+		}
+
+		@Override
+		public ${entity.name} fetchPublished(${entity.name} ${entity.varName}) {
+			if (${entity.varName}.isHead()) {
+				return ${entity.varName};
+			}
+
+			if (${entity.varName}.getHeadId() == ${entity.varName}.getPrimaryKey()) {
+				return null;
+			}
+
+			return ${entity.varName}Persistence.fetchByPrimaryKey(${entity.varName}.getHeadId());
+		}
+
+		@Override
+		public ${entity.name} fetchPublished(long primaryKey) {
+			${entity.name} ${entity.varName} = ${entity.varName}Persistence.fetchByPrimaryKey(primaryKey);
+
+			if ((${entity.varName} == null) || (${entity.varName}.getHeadId() == ${entity.varName}.getPrimaryKey())) {
+				return null;
+			}
+
+			return ${entity.varName};
+		}
+
+		@Override
+		public ${entity.name} getDraft(${entity.name} ${entity.varName}) throws PortalException {
+			if (!${entity.varName}.isHead()) {
+				return ${entity.varName};
+			}
+
+			${entity.name} draft${entity.name} = ${entity.varName}Persistence.fetchByHeadId(${entity.varName}.getPrimaryKey());
+
+			if (draft${entity.name} == null) {
+				draft${entity.name} = ${entity.varName}LocalService.updateDraft(_createDraft(${entity.varName}));
+			}
+
+			return draft${entity.name};
+		}
+
+		@Override
+		public ${entity.name} getDraft(long primaryKey) throws PortalException {
+			${entity.name} draft${entity.name} = ${entity.varName}Persistence.fetchByHeadId(primaryKey);
+
+			if (draft${entity.name} == null) {
+				${entity.name} ${entity.varName} = ${entity.varName}Persistence.findByPrimaryKey(primaryKey);
+
+				draft${entity.name} = ${entity.varName}LocalService.updateDraft(_createDraft(${entity.varName}));
+			}
+
+			return draft${entity.name};
+		}
+
+		@Override
+		public ${versionEntity.name} getVersion(${entity.name} ${entity.varName}, int version) throws PortalException {
+			long primaryKey = ${entity.varName}.getHeadId();
+
+			if (${entity.varName}.isHead()) {
+				primaryKey = ${entity.varName}.getPrimaryKey();
+			}
+
+			return ${versionEntity.varName}Persistence.findBy${pkEntityMethod}_Version(primaryKey, version);
+		}
+
+		@Override
+		public List<${versionEntity.name}> getVersions(${entity.name} ${entity.varName}) {
+			long primaryKey = ${entity.varName}.getPrimaryKey();
+
+			if (!${entity.varName}.isHead()) {
+				if (${entity.varName}.getHeadId() == ${entity.varName}.getPrimaryKey()) {
+					return Collections.emptyList();
+				}
+
+				primaryKey = ${entity.varName}.getHeadId();
+			}
+
+			return ${versionEntity.varName}Persistence.findBy${pkEntityMethod}(primaryKey);
+		}
+
+		@Indexable(type = IndexableType.REINDEX)
+		@Override
+		public ${entity.name} publishDraft(${entity.name} draft${entity.name}) throws PortalException {
+			if (draft${entity.name}.isHead()) {
+				throw new IllegalArgumentException("Can only publish drafts " + draft${entity.name}.getPrimaryKey());
+			}
+
+			${entity.name} head${entity.name} = null;
+
+			int version = 1;
+
+			if (draft${entity.name}.getHeadId() == draft${entity.name}.getPrimaryKey()) {
+				head${entity.name} = create();
+
+				draft${entity.name}.setHeadId(head${entity.name}.getPrimaryKey());
+			}
+			else {
+				head${entity.name} = ${entity.varName}Persistence.findByPrimaryKey(draft${entity.name}.getHeadId());
+
+				${versionEntity.name} latest${versionEntity.name} = ${versionEntity.varName}Persistence.findBy${pkEntityMethod}_First(draft${entity.name}.getHeadId(), null);
+
+				version = latest${versionEntity.name}.getVersion() + 1;
+			}
+
+			${versionEntity.name} ${versionEntity.varName} = ${versionEntity.varName}Persistence.create(counterLocalService.increment(${versionEntity.name}.class.getName()));
+
+			${versionEntity.varName}.setVersion(version);
+			${versionEntity.varName}.setVersionedModelId(head${entity.name}.getPrimaryKey());
+
+			draft${entity.name}.populateVersionModel(${versionEntity.varName});
+
+			${versionEntity.varName}Persistence.update(${versionEntity.varName});
+
+			${versionEntity.varName}.populateVersionedModel(head${entity.name});
+
+			head${entity.name}.setHeadId(-head${entity.name}.getPrimaryKey());
+
+			head${entity.name} = ${entity.varName}Persistence.update(head${entity.name});
+
+			for (VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener : _versionServiceListeners) {
+				versionServiceListener.afterPublishDraft(draft${entity.name}, version);
+			}
+
+			deleteDraft(draft${entity.name});
+
+			return head${entity.name};
+		}
+
+		@Override
+		public void registerListener(VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener) {
+			_versionServiceListeners.add(versionServiceListener);
+		}
+
+		@Override
+		public void unregisterListener(VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener) {
+			_versionServiceListeners.remove(versionServiceListener);
+		}
+
+		@Indexable(type = IndexableType.REINDEX)
+		@Override
+		public ${entity.name} updateDraft(${entity.name} draft${entity.name}) throws PortalException {
+			if (draft${entity.name}.isHead()) {
+				throw new IllegalArgumentException("Can only update draft entries " + draft${entity.name}.getPrimaryKey());
+			}
+
+			${entity.name} previous${entity.name} = ${entity.varName}Persistence.fetchByPrimaryKey(draft${entity.name}.getPrimaryKey());
+
+			draft${entity.name} = ${entity.varName}Persistence.update(draft${entity.name});
+
+			if (previous${entity.name} == null) {
+				for (VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener : _versionServiceListeners) {
+					versionServiceListener.afterCreateDraft(draft${entity.name});
+				}
+			}
+			else {
+				for (VersionServiceListener<${entity.name}, ${versionEntity.name}> versionServiceListener : _versionServiceListeners) {
+					versionServiceListener.afterUpdateDraft(draft${entity.name});
+				}
+			}
+
+			return draft${entity.name};
+		}
+
+		private ${entity.name} _createDraft(${entity.name} published${entity.name}) throws PortalException {
+			${entity.name} draft${entity.name} = create();
+
+			<#list entity.entityColumns as entityColumn>
+				<#if stringUtil.equals(entityColumn.methodName, "HeadId")>
+					draft${entity.name}.setHeadId(published${entity.name}.getPrimaryKey());
+				<#elseif !entityColumn.isPrimary() && !stringUtil.equals(entityColumn.methodName, "MvccVersion") && !entityColumn.isMappingManyToMany()>
+					draft${entity.name}.set${entityColumn.methodName}(published${entity.name}.get${entityColumn.methodName}());
+				</#if>
+			</#list>
+
+			draft${entity.name}.resetOriginalValues();
+
+			return draft${entity.name};
+		}
+
+		private final Set<VersionServiceListener<${entity.name}, ${versionEntity.name}>> _versionServiceListeners = Collections.newSetFromMap(new ConcurrentHashMap<VersionServiceListener<${entity.name}, ${versionEntity.name}>, Boolean>());
+
+	</#if>
 
 	/**
 	 * Returns the OSGi service identifier.
@@ -1068,39 +1783,14 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 	 */
 	@Override
 	public String getOSGiServiceIdentifier() {
-		<#if sessionTypeName == "Local">
+		<#if stringUtil.equals(sessionTypeName, "Local")>
 			return ${entity.name}LocalService.class.getName();
 		<#else>
 			return ${entity.name}Service.class.getName();
 		</#if>
 	}
 
-	<#if pluginName != "">
-		@Override
-		public Object invokeMethod(
-				String name, String[] parameterTypes, Object[] arguments)
-			throws Throwable {
-
-			Thread currentThread = Thread.currentThread();
-
-			ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-
-			if (contextClassLoader != _classLoader) {
-				currentThread.setContextClassLoader(_classLoader);
-			}
-
-			try {
-				return _clpInvoker.invokeMethod(name, parameterTypes, arguments);
-			}
-			finally {
-				if (contextClassLoader != _classLoader) {
-					currentThread.setContextClassLoader(contextClassLoader);
-				}
-			}
-		}
-	</#if>
-
-	<#if entity.hasColumns()>
+	<#if entity.hasEntityColumns()>
 		protected Class<?> getModelClass() {
 			return ${entity.name}.class;
 		}
@@ -1110,85 +1800,107 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		}
 	</#if>
 
-	/**
-	 * Performs a SQL query.
-	 *
-	 * @param sql the sql query
-	 */
-	protected void runSQL(String sql) {
-		try {
-			<#if entity.hasColumns()>
-				DataSource dataSource = ${entity.varName}Persistence.getDataSource();
-			<#else>
-				DataSource dataSource = InfrastructureUtil.getDataSource();
-			</#if>
+	<#if entity.hasPersistence()>
+		/**
+		 * Performs a SQL query.
+		 *
+		 * @param sql the sql query
+		 */
+		protected void runSQL(String sql) {
+			try {
+				<#if entity.hasEntityColumns()>
+					DataSource dataSource = ${entity.varName}Persistence.getDataSource();
+				<#else>
+					DataSource dataSource = InfrastructureUtil.getDataSource();
+				</#if>
 
-			DB db = DBManagerUtil.getDB();
+				DB db = DBManagerUtil.getDB();
 
-			sql = db.buildSQL(sql);
-			sql = PortalUtil.transformSQL(sql);
+				sql = db.buildSQL(sql);
+				sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource, sql);
+				SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource, sql);
 
-			sqlUpdate.update();
+				sqlUpdate.update();
+			}
+			catch (Exception e) {
+				throw new SystemException(e);
+			}
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
-		}
-	}
+	</#if>
 
-	<#list referenceList as tempEntity>
-		<#if tempEntity.hasLocalService()>
-			<#if osgiModule && (tempEntity.apiPackagePath != apiPackagePath)>
-				@ServiceReference(type = ${tempEntity.apiPackagePath}.service.${tempEntity.name}LocalService.class)
-			<#else>
-				@BeanReference(type = ${tempEntity.apiPackagePath}.service.${tempEntity.name}LocalService.class)
+	<#list referenceEntities as referenceEntity>
+		<#if referenceEntity.hasLocalService()>
+			<#if !dependencyInjectorDS || (referenceEntity.apiPackagePath != apiPackagePath) || (entity == referenceEntity)>
+				<#if dependencyInjectorDS>
+					<#if !stringUtil.equals(sessionTypeName, "Local") || (entity != referenceEntity)>
+						@Reference
+					</#if>
+				<#elseif osgiModule && (referenceEntity.apiPackagePath != apiPackagePath)>
+					@ServiceReference(type = ${referenceEntity.apiPackagePath}.service.${referenceEntity.name}LocalService.class)
+				<#else>
+					@BeanReference(type = ${referenceEntity.apiPackagePath}.service.${referenceEntity.name}LocalService.class)
+				</#if>
+
+				<#if !classDeprecated && referenceEntity.isDeprecated()>
+					@SuppressWarnings("deprecation")
+				</#if>
+
+				protected ${referenceEntity.apiPackagePath}.service.${referenceEntity.name}LocalService ${referenceEntity.varName}LocalService;
 			</#if>
-
-			<#if !classDeprecated && tempEntity.isDeprecated()>
-				@SuppressWarnings("deprecation")
-			</#if>
-
-			protected ${tempEntity.apiPackagePath}.service.${tempEntity.name}LocalService ${tempEntity.varName}LocalService;
 		</#if>
 
-		<#if (sessionTypeName != "Local") && tempEntity.hasRemoteService()>
-			<#if osgiModule && (tempEntity.apiPackagePath != apiPackagePath)>
-				@ServiceReference(type = ${tempEntity.apiPackagePath}.service.${tempEntity.name}Service.class)
-			<#else>
-				@BeanReference(type = ${tempEntity.apiPackagePath}.service.${tempEntity.name}Service.class)
-			</#if>
+		<#if !stringUtil.equals(sessionTypeName, "Local") && referenceEntity.hasRemoteService()>
+			<#if !dependencyInjectorDS || (referenceEntity.apiPackagePath != apiPackagePath) || (entity == referenceEntity)>
+				<#if dependencyInjectorDS>
+					<#if entity != referenceEntity>
+						@Reference
+					</#if>
+				<#elseif osgiModule && (referenceEntity.apiPackagePath != apiPackagePath)>
+					@ServiceReference(type = ${referenceEntity.apiPackagePath}.service.${referenceEntity.name}Service.class)
+				<#else>
+					@BeanReference(type = ${referenceEntity.apiPackagePath}.service.${referenceEntity.name}Service.class)
+				</#if>
 
-			<#if !classDeprecated && tempEntity.isDeprecated()>
-				@SuppressWarnings("deprecation")
-			</#if>
+				<#if !classDeprecated && referenceEntity.isDeprecated()>
+					@SuppressWarnings("deprecation")
+				</#if>
 
-			protected ${tempEntity.apiPackagePath}.service.${tempEntity.name}Service ${tempEntity.varName}Service;
+				protected ${referenceEntity.apiPackagePath}.service.${referenceEntity.name}Service ${referenceEntity.varName}Service;
+			</#if>
 		</#if>
 
-		<#if tempEntity.hasColumns() && ((entity.name == "Counter") || (tempEntity.name != "Counter"))>
-			<#if osgiModule && (tempEntity.apiPackagePath != apiPackagePath)>
-				@ServiceReference(type = ${tempEntity.name}Persistence.class)
-			<#else>
-				@BeanReference(type = ${tempEntity.name}Persistence.class)
-			</#if>
+		<#if referenceEntity.hasEntityColumns() && referenceEntity.hasPersistence()>
+			<#if !dependencyInjectorDS || (referenceEntity.apiPackagePath == apiPackagePath)>
+				<#if dependencyInjectorDS>
+					@Reference
+				<#elseif osgiModule && (referenceEntity.apiPackagePath != apiPackagePath)>
+					@ServiceReference(type = ${referenceEntity.name}Persistence.class)
+				<#else>
+					@BeanReference(type = ${referenceEntity.name}Persistence.class)
+				</#if>
 
-			protected ${tempEntity.name}Persistence ${tempEntity.varName}Persistence;
+				protected ${referenceEntity.name}Persistence ${referenceEntity.varName}Persistence;
+			</#if>
 		</#if>
 
-		<#if tempEntity.hasFinderClass() && ((entity.name == "Counter") || (tempEntity.name != "Counter"))>
-			<#if osgiModule && (tempEntity.apiPackagePath != apiPackagePath)>
-				@ServiceReference(type = ${tempEntity.name}Finder.class)
-			<#else>
-				@BeanReference(type = ${tempEntity.name}Finder.class)
-			</#if>
+		<#if referenceEntity.hasFinderClassName() && (stringUtil.equals(entity.name, "Counter") || !stringUtil.equals(referenceEntity.name, "Counter"))>
+			<#if !dependencyInjectorDS || (referenceEntity.apiPackagePath == apiPackagePath)>
+				<#if dependencyInjectorDS>
+					@Reference
+				<#elseif osgiModule && (referenceEntity.apiPackagePath != apiPackagePath)>
+					@ServiceReference(type = ${referenceEntity.name}Finder.class)
+				<#else>
+					@BeanReference(type = ${referenceEntity.name}Finder.class)
+				</#if>
 
-			protected ${tempEntity.name}Finder ${tempEntity.varName}Finder;
+				protected ${referenceEntity.name}Finder ${referenceEntity.varName}Finder;
+			</#if>
 		</#if>
 	</#list>
 
-	<#if (sessionTypeName == "Local") && entity.hasColumns()>
-		<#if pluginName == "">
+	<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasEntityColumns() && entity.hasPersistence() && !dependencyInjectorDS>
+		<#if validator.isNull(pluginName)>
 			<#if osgiModule>
 				@ServiceReference(type = PersistedModelLocalServiceRegistry.class)
 			<#else>
@@ -1199,9 +1911,151 @@ import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 		</#if>
 	</#if>
 
-	<#if pluginName != "">
-		private ClassLoader _classLoader;
-		private ${entity.name}${sessionTypeName}ServiceClpInvoker _clpInvoker = new ${entity.name}${sessionTypeName}ServiceClpInvoker();
-	</#if>
+	<#if stringUtil.equals(sessionTypeName, "Local") && entity.localizedEntity?? && entity.versionEntity?? && entity.hasPersistence()>
+		<#assign
+			localizedEntity = entity.localizedEntity
+			versionEntity = entity.versionEntity
+			localizedVersionEntity = localizedEntity.versionEntity
+			pkEntityMethod = entity.PKEntityColumns?first.methodName
+		/>
 
+		private class ${localizedEntity.name}VersionServiceListener implements VersionServiceListener<${entity.name}, ${versionEntity.name}> {
+
+			@Override
+			public void afterCheckout(${entity.name} draft${entity.name}, int version) throws PortalException {
+				Map<String, ${localizedEntity.name}> published${localizedEntity.name}Map = new HashMap<String, ${localizedEntity.name}>();
+
+				for (${localizedEntity.name} published${localizedEntity.name} : ${localizedEntity.varName}Persistence.findBy${pkEntityMethod}(draft${entity.name}.getHeadId())) {
+					published${localizedEntity.name}Map.put(published${localizedEntity.name}.getLanguageId(), published${localizedEntity.name});
+				}
+
+				List<${localizedVersionEntity.name}> ${localizedVersionEntity.varNames} = ${localizedVersionEntity.varName}Persistence.findBy${pkEntityMethod}_Version(draft${entity.name}.getHeadId(), version);
+
+				long ${localizedVersionEntity.varName}BatchCounter = counterLocalService.increment(${localizedVersionEntity.name}.class.getName(), ${localizedVersionEntity.varNames}.size()) - ${localizedVersionEntity.varNames}.size();
+
+				for (${localizedVersionEntity.name} ${localizedVersionEntity.varName} : ${localizedVersionEntity.varNames}) {
+					${localizedEntity.name} draft${localizedEntity.name} = ${localizedEntity.varName}Persistence.create(++${localizedVersionEntity.varName}BatchCounter);
+
+					long headId = draft${localizedEntity.name}.getPrimaryKey();
+
+					${localizedEntity.name} published${localizedEntity.name} = published${localizedEntity.name}Map.get(${localizedVersionEntity.varName}.getLanguageId());
+
+					if (published${localizedEntity.name} != null) {
+						headId = published${localizedEntity.name}.getPrimaryKey();
+					}
+
+					draft${localizedEntity.name}.setHeadId(headId);
+
+					draft${localizedEntity.name}.set${pkEntityMethod}(draft${entity.name}.getPrimaryKey());
+					draft${localizedEntity.name}.setLanguageId(${localizedVersionEntity.varName}.getLanguageId());
+
+					<#list localizedEntityColumns as entityColumn>
+						draft${localizedEntity.name}.set${entityColumn.methodName}(${localizedVersionEntity.varName}.get${entityColumn.methodName}());
+					</#list>
+
+					${localizedEntity.varName}Persistence.update(draft${localizedEntity.name});
+				}
+			}
+
+			@Override
+			public void afterCreateDraft(${entity.name} draft${entity.name}) throws PortalException {
+				if (draft${entity.name}.getHeadId() == draft${entity.name}.getPrimaryKey()) {
+					return;
+				}
+
+				for (${localizedEntity.name} published${localizedEntity.name} : ${localizedEntity.varName}Persistence.findBy${pkEntityMethod}(draft${entity.name}.getHeadId())) {
+					_update${localizedEntity.name}(
+						draft${entity.name}, null, published${localizedEntity.name}.getLanguageId(),
+							<#list localizedEntityColumns as entityColumn>
+								published${localizedEntity.name}.get${entityColumn.methodName}()
+
+								<#if entityColumn?has_next>
+									,
+								</#if>
+							</#list>
+						);
+				}
+			}
+
+			@Override
+			public void afterDelete(${entity.name} published${entity.name}) throws PortalException {
+				${localizedEntity.varName}Persistence.removeBy${pkEntityMethod}(published${entity.name}.getPrimaryKey());
+				${localizedVersionEntity.varName}Persistence.removeBy${pkEntityMethod}(published${entity.name}.getPrimaryKey());
+			}
+
+			@Override
+			public void afterDeleteDraft(${entity.name} draft${entity.name}) throws PortalException {
+				${localizedEntity.varName}Persistence.removeBy${pkEntityMethod}(draft${entity.name}.getPrimaryKey());
+			}
+
+			@Override
+			public void afterDeleteVersion(${versionEntity.name} ${versionEntity.varName}) throws PortalException {
+				${localizedVersionEntity.varName}Persistence.removeBy${pkEntityMethod}_Version(${versionEntity.varName}.getVersionedModelId(), ${versionEntity.varName}.getVersion());
+			}
+
+			@Override
+			public void afterPublishDraft(${entity.name} draft${entity.name}, int version) throws PortalException {
+				Map<String, ${localizedEntity.name}> draft${localizedEntity.name}Map = new HashMap<String, ${localizedEntity.name}>();
+
+				for (${localizedEntity.name} draft${localizedEntity.name} : ${localizedEntity.varName}Persistence.findBy${pkEntityMethod}(draft${entity.name}.getPrimaryKey())) {
+					draft${localizedEntity.name}Map.put(draft${localizedEntity.name}.getLanguageId(), draft${localizedEntity.name});
+				}
+
+				long ${localizedVersionEntity.varName}BatchCounter = counterLocalService.increment(${localizedVersionEntity.name}.class.getName(), draft${localizedEntity.name}Map.size()) - draft${localizedEntity.name}Map.size();
+
+				for (${localizedEntity.name} published${localizedEntity.name} : ${localizedEntity.varName}Persistence.findBy${pkEntityMethod}(draft${entity.name}.getHeadId())) {
+					${localizedEntity.name} draft${localizedEntity.name} = draft${localizedEntity.name}Map.remove(published${localizedEntity.name}.getLanguageId());
+
+					if (draft${localizedEntity.name} == null) {
+						${localizedEntity.varName}Persistence.remove(published${localizedEntity.name});
+					}
+					else {
+						published${localizedEntity.name}.setHeadId(-published${localizedEntity.name}.getPrimaryKey());
+
+						<#list localizedEntityColumns as entityColumn>
+							published${localizedEntity.name}.set${entityColumn.methodName}(draft${localizedEntity.name}.get${entityColumn.methodName}());
+						</#list>
+
+						${localizedEntity.varName}Persistence.update(published${localizedEntity.name});
+
+						_publish${localizedVersionEntity.name}(published${localizedEntity.name}, ++${localizedVersionEntity.varName}BatchCounter, version);
+					}
+				}
+
+				long ${localizedEntity.varName}BatchCounter = counterLocalService.increment(${localizedEntity.name}.class.getName(), draft${localizedEntity.name}Map.size()) - draft${localizedEntity.name}Map.size();
+
+				for (${localizedEntity.name} draft${localizedEntity.name} : draft${localizedEntity.name}Map.values()) {
+					${localizedEntity.name} ${localizedEntity.varName} = ${localizedEntity.varName}Persistence.create(++${localizedEntity.varName}BatchCounter);
+
+					${localizedEntity.varName}.setHeadId(${localizedEntity.varName}.getPrimaryKey());
+					${localizedEntity.varName}.set${pkEntityMethod}(draft${entity.name}.getHeadId());
+					${localizedEntity.varName}.setLanguageId(draft${localizedEntity.name}.getLanguageId());
+
+					<#list localizedEntityColumns as entityColumn>
+						${localizedEntity.varName}.set${entityColumn.methodName}(draft${localizedEntity.name}.get${entityColumn.methodName}());
+					</#list>
+
+					${localizedEntity.varName}Persistence.update(${localizedEntity.varName});
+
+					_publish${localizedVersionEntity.name}(${localizedEntity.varName}, ++${localizedVersionEntity.varName}BatchCounter, version);
+				}
+			}
+
+			@Override
+			public void afterUpdateDraft(${entity.name} draft${entity.name}) {
+			}
+
+			private void _publish${localizedVersionEntity.name}(${localizedEntity.name} ${localizedEntity.varName}, long primaryKey, int version) {
+				${localizedVersionEntity.name} ${localizedVersionEntity.varName} = ${localizedVersionEntity.varName}Persistence.create(primaryKey);
+
+				${localizedVersionEntity.varName}.setVersion(version);
+				${localizedVersionEntity.varName}.setVersionedModelId(${localizedEntity.varName}.getPrimaryKey());
+
+				${localizedEntity.varName}.populateVersionModel(${localizedVersionEntity.varName});
+
+				${localizedVersionEntity.varName}Persistence.update(${localizedVersionEntity.varName});
+			}
+
+		}
+	</#if>
 }

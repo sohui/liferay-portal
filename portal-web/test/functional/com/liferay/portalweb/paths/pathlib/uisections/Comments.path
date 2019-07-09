@@ -9,28 +9,23 @@
 </thead>
 <tbody>
 <tr>
-	<td>ADD_COMMENT_LINK</td>
-	<td>link=Add Comment</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PANEL_TOGGLE</td>
-	<td>//div[contains(.,'Comments')]//div[@class='panel-heading']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>BE_THE_FIRST_LINK</td>
-	<td>link=Be the first.</td>
+	<td>PANEL_HEADING</td>
+	<td>//fieldset[contains(@class,'add-comment')]//strong[contains(.,'Comments')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COMMENT_ACTIONS</td>
-	<td>//div[contains(@class,'card-row') and contains(.,'${key_entryComment}')]//div[contains(@class,'card-col-field')]//span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]</td>
+	<td>//div[contains(@class,'comment')]/div[contains(.,'${key_entryComment}')]/..//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>COMMENT_BODY</td>
 	<td>//div[(@class='lfr-discussion-message-body')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>COMMENT_BODY_ASSET</td>
+	<td>//div/p[contains(.,'${key_commentBody}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -44,18 +39,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>COMMENT_LABEL</td>
-	<td>//label[contains(.,'Comment')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DELETE_LINK</td>
-	<td>//div[(@class='lfr-discussion-body') and contains (.,'${key_entryComment}')]//a[contains(.,'Delete')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DELETE_LINK_GENERIC</td>
-	<td>//ul[@class='lfr-discussion-actions']/li/span/a[contains(.,'Delete')]</td>
+	<td>COMMENT_INFO</td>
+	<td>//fieldset[contains(@class,'add-comment')]//div[contains(@class,'alert-info')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -64,68 +49,23 @@
 	<td></td>
 </tr>
 <tr>
-	<td>EDIT_LINK</td>
-	<td>//div[(@class='lfr-discussion-body') and contains (.,'${key_entryComment}')]//a[contains(.,'Edit')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ENTRY_COUNT_PANEL</td>
-	<td>//h2[contains(.,'Comments')]</td>
+	<td>//div[contains(@class,'autofit-row')]/span[contains(.,'Comment')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>THUMBS_UP</td>
-	<td>//a[contains(@class,'thumbs-up')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>THUMBS_DOWN</td>
-	<td>//a[contains(@class,'thumbs-down')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SUBSCRIBE_TO_COMMENTS_LINK</td>
-	<td>link=Subscribe to Comments</td>
-	<td></td>
-</tr>
-<tr>
-	<td>UNSUBSCRIBE_FROM_COMMENTS_LINK</td>
-	<td>link=Unsubscribe from Comments</td>
-	<td></td>
-</tr>
-<tr>
-	<td>POST_REPLY_BODY</td>
-	<td>//textarea[@class='field']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PUBLISH_COMMENT_BUTTON</td>
-	<td>//div[(@class='lfr-discussion-body') and contains (.,'${key_entryComment}')]//button[contains(.,'Publish')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>REPLY_BODY</td>
-	<td>//div[@class='lfr-discussion-message']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>REPLY_TO_COMMENT</td>
-	<td>//div[@class='lfr-discussion-body' and contains(.,'${key_entryComment}')]//span[contains(.,'Reply')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SUCCESS_MESSAGE</td>
-	<td>//div[contains(@class,'lfr-message-response') and contains(@class,'alert') and contains(@class,'alert-success')]</td>
+	<td>ANY_BUTTON_IN_COMMENT</td>
+	<td>//article[contains(@class,'discussion')]/div[contains(.,'${key_entryComment}')]//*[normalize-space(text())='${key_text}']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>USER_NAME</td>
-	<td>//header[@class='lfr-discussion-message-author']/a | //header[@class='lfr-discussion-message-author']//span[contains(.,'${key_userFullName}')]</td>
+	<td>//div[contains(.,'${key_entryComment}')]//*[self::a or self::span][contains(@class,'username') and contains(.,'${key_userFullName}')] | //div[contains(.,'${key_entryComment}')]//*[self::a or self::span][contains(@class,'author-link') and contains(.,'${key_userFullName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>WORKFLOW_STATUS</td>
-	<td>//div[contains(@class,'lfr-discussion-body') and contains(.,'${key_commentBody}')]//span[contains(@class,'workflow-status')]/strong</td>
+	<td>//span[contains(@class,'workflow-status')]/strong</td>
 	<td></td>
 </tr>
 </tbody>

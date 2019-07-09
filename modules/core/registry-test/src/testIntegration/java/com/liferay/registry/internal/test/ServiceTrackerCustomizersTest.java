@@ -14,20 +14,22 @@
 
 package com.liferay.registry.internal.test;
 
+import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistration;
 import com.liferay.registry.collections.ServiceTrackerCollections;
 import com.liferay.registry.collections.ServiceTrackerCustomizers;
-import com.liferay.registry.collections.ServiceTrackerCustomizers.ServiceWrapper;
 import com.liferay.registry.collections.ServiceTrackerMap;
 
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.jboss.arquillian.junit.Arquillian;
-
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,12 +39,19 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ServiceTrackerCustomizersTest {
 
+	@ClassRule
+	@Rule
+	public static final AggregateTestRule aggregateTestRule =
+		new LiferayIntegrationTestRule();
+
 	@Test
 	public void testServiceWrapper() {
-		ServiceTrackerMap<String, ServiceWrapper<TrackedOne>>
-			serviceTrackerMap = ServiceTrackerCollections.openSingleValueMap(
-				TrackedOne.class, "target",
-				ServiceTrackerCustomizers.<TrackedOne>serviceWrapper());
+		ServiceTrackerMap
+			<String, ServiceTrackerCustomizers.ServiceWrapper<TrackedOne>>
+				serviceTrackerMap =
+					ServiceTrackerCollections.openSingleValueMap(
+						TrackedOne.class, "target",
+						ServiceTrackerCustomizers.<TrackedOne>serviceWrapper());
 
 		try {
 			Map<String, Object> properties = new Hashtable<>();
@@ -58,8 +67,8 @@ public class ServiceTrackerCustomizersTest {
 				registry.registerService(
 					TrackedOne.class, trackedOne, properties);
 
-			ServiceWrapper<TrackedOne> serviceWrapper =
-				serviceTrackerMap.getService("aTarget");
+			ServiceTrackerCustomizers.ServiceWrapper<TrackedOne>
+				serviceWrapper = serviceTrackerMap.getService("aTarget");
 
 			Assert.assertEquals(trackedOne, serviceWrapper.getService());
 

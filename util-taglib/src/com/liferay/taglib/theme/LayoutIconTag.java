@@ -15,54 +15,124 @@
 package com.liferay.taglib.theme;
 
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
+import com.liferay.taglib.ui.MessageTag;
+import com.liferay.taglib.util.IncludeTag;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.JspException;
+import javax.servlet.jsp.JspWriter;
+import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.BodyTag;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Mueller (7.2.x), since 7.2, unused
  */
-public class LayoutIconTag
-	extends com.liferay.taglib.util.IncludeTag implements BodyTag {
+@Deprecated
+public class LayoutIconTag extends IncludeTag implements BodyTag {
 
-	public static void doTag(
-			Layout layout, ServletContext servletContext,
-			HttpServletRequest request, HttpServletResponse response)
-		throws Exception {
+	public static void doTag(Layout layout, PageContext pageContext)
+		throws JspException {
 
-		doTag(_PAGE, layout, servletContext, request, response);
+		if ((layout == null) || !layout.isIconImage()) {
+			return;
+		}
+
+		JspWriter jspWriter = pageContext.getOut();
+
+		try {
+			jspWriter.write("<img alt=\"");
+
+			MessageTag.doTag(
+				null, false, true, "page-icon", false, false, false,
+				pageContext);
+
+			jspWriter.write("\" class=\"layout-logo-");
+			jspWriter.write(String.valueOf(layout.getPlid()));
+			jspWriter.write("\" src=\"");
+
+			ThemeDisplay themeDisplay = (ThemeDisplay)pageContext.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+			if (themeDisplay == null) {
+				ServletRequest servletRequest = pageContext.getRequest();
+
+				themeDisplay = (ThemeDisplay)servletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+			}
+
+			jspWriter.write(themeDisplay.getPathImage());
+
+			jspWriter.write("/layout_icon?img_id=");
+			jspWriter.write(String.valueOf(layout.getIconImageId()));
+			jspWriter.write("&t=");
+			jspWriter.write(
+				WebServerServletTokenUtil.getToken(layout.getIconImageId()));
+			jspWriter.write("\" />");
+		}
+		catch (Exception e) {
+			throw new JspException(e);
+		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #doTag(Layout,
+	 *             PageContext)}
+	 */
+	@Deprecated
 	public static void doTag(
-			String page, Layout layout, ServletContext servletContext,
-			HttpServletRequest request, HttpServletResponse response)
+			Layout layout, ServletContext servletContext,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		setRequestAttributes(request, layout);
+		doTag(
+			_PAGE, layout, servletContext, httpServletRequest,
+			httpServletResponse);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #doTag(Layout,
+	 *             PageContext)}
+	 */
+	@Deprecated
+	public static void doTag(
+			String page, Layout layout, ServletContext servletContext,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
+		throws Exception {
+
+		setRequestAttributes(httpServletRequest, layout);
 
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher(page);
 
-		requestDispatcher.include(request, response);
+		requestDispatcher.include(httpServletRequest, httpServletResponse);
 	}
 
 	public static void setRequestAttributes(
-		HttpServletRequest request, Layout layout) {
+		HttpServletRequest httpServletRequest, Layout layout) {
 
-		request.setAttribute("liferay-theme:layout-icon:layout", layout);
+		httpServletRequest.setAttribute(
+			"liferay-theme:layout-icon:layout", layout);
 	}
 
 	@Override
-	public int doStartTag() {
-		HttpServletRequest request =
-			(HttpServletRequest)pageContext.getRequest();
+	public int doStartTag() throws JspException {
+		doTag(_layout, pageContext);
 
-		setRequestAttributes(request, _layout);
+		return SKIP_BODY;
+	}
 
-		return EVAL_BODY_BUFFERED;
+	public Layout getLayout() {
+		return _layout;
 	}
 
 	public void setLayout(Layout layout) {

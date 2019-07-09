@@ -14,14 +14,14 @@
 
 package com.liferay.portal.fabric.netty.agent;
 
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.process.ProcessCallable;
+import com.liferay.petra.process.ProcessException;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.fabric.netty.NettyTestUtil;
 import com.liferay.portal.fabric.netty.rpc.handlers.NettyRPCChannelHandler;
-import com.liferay.portal.fabric.status.JMXProxyUtil.ProcessCallableExecutor;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
-import com.liferay.portal.kernel.process.ProcessCallable;
-import com.liferay.portal.kernel.process.ProcessException;
+import com.liferay.portal.fabric.status.JMXProxyUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.StringPool;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -53,7 +53,7 @@ public class NettyFabricAgentProcessCallableExecutorTest {
 		channelPipeline.addFirst(
 			NettyRPCChannelHandler.NAME, NettyRPCChannelHandler.INSTANCE);
 
-		ProcessCallableExecutor processCallableExecutor =
+		JMXProxyUtil.ProcessCallableExecutor processCallableExecutor =
 			new NettyFabricAgentProcessCallableExecutor(embeddedChannel);
 
 		NoticeableFuture<Serializable> noticeableFuture =
@@ -67,8 +67,8 @@ public class NettyFabricAgentProcessCallableExecutorTest {
 
 				});
 
-		embeddedChannel.writeInbound(embeddedChannel.readOutbound());
-		embeddedChannel.writeInbound(embeddedChannel.readOutbound());
+		embeddedChannel.writeOneInbound(embeddedChannel.readOutbound());
+		embeddedChannel.writeOneInbound(embeddedChannel.readOutbound());
 
 		Assert.assertEquals(StringPool.BLANK, noticeableFuture.get());
 
@@ -84,8 +84,8 @@ public class NettyFabricAgentProcessCallableExecutorTest {
 
 			});
 
-		embeddedChannel.writeInbound(embeddedChannel.readOutbound());
-		embeddedChannel.writeInbound(embeddedChannel.readOutbound());
+		embeddedChannel.writeOneInbound(embeddedChannel.readOutbound());
+		embeddedChannel.writeOneInbound(embeddedChannel.readOutbound());
 
 		try {
 			noticeableFuture.get();

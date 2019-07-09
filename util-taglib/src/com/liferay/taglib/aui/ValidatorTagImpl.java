@@ -14,11 +14,11 @@
 
 package com.liferay.taglib.aui;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.servlet.taglib.aui.ValidatorTag;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.BaseValidatorTagSupport;
 import com.liferay.taglib.aui.base.BaseValidatorTagImpl;
@@ -85,10 +85,12 @@ public class ValidatorTagImpl
 
 			sb.append(StringPool.UNDERLINE);
 
-			HttpServletRequest request =
+			HttpServletRequest httpServletRequest =
 				(HttpServletRequest)pageContext.getRequest();
 
-			sb.append(PortalUtil.getUniqueElementId(request, namespace, name));
+			sb.append(
+				PortalUtil.getUniqueElementId(
+					httpServletRequest, namespace, name));
 
 			name = sb.toString();
 		}

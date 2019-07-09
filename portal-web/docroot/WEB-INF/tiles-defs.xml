@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN" "http://jakarta.apache.org/struts/dtds/tiles-config_1_1.dtd">
 
 <tiles-definitions>
 
@@ -40,6 +39,7 @@
 	</definition>
 
 	<definition extends="portal" name="portal.license">
+		<put name="pop_up" value="true" />
 		<put name="title" value="license" />
 		<put name="content" value="/portal/license.jsp" />
 	</definition>

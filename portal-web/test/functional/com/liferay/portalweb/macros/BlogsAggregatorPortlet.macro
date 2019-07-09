@@ -1,46 +1,57 @@
-<definition>
-	<command name="configureSelectionMethod">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="Blogs Aggregator" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+definition {
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
+	macro configureSelectionMethod {
+		Portlet.gotoPortletOptions(
+			portletName = "Blogs Aggregator",
+			portletOption = "Configuration");
 
-		<execute function="Select" locator1="Configuration#SELECTION_METHOD_SELECT" value1="${selectionMethod}" />
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-		<execute macro="PortletEntry#save" />
+		Select(
+			locator1 = "Configuration#SELECTION_METHOD_SELECT",
+			value1 = "${selectionMethod}");
 
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
+		PortletEntry.save();
 
-	<command name="viewBlogsEntryViaBAPortletPG">
-		<for list="${viewEntryTitle}" param="entryTitle">
-			<var name="key_entryTitle" value="${entryTitle}" />
+		SelectFrame(value1 = "relative=top");
+	}
 
-			<execute function="AssertTextEquals" locator1="BlogsAggregator#ENTRY_TITLE" value1="${entryTitle}" />
-		</for>
-	</command>
+	macro viewBlogsEntryViaBAPortletPG {
+		for (var entryTitle : list "${viewEntryTitle}") {
+			var key_entryTitle = "${entryTitle}";
 
-	<command name="viewParentOrganizationPG">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="${portletName}" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+			AssertTextEquals(
+				locator1 = "BlogsAggregator#ENTRY_TITLE",
+				value1 = "${entryTitle}");
+		}
+	}
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
+	macro viewParentOrganizationPG {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
 
-		<execute function="AssertClick" locator1="Button#SELECT" value1="Select" />
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-		<execute function="SelectFrame" value1="relative=top" />
+		AssertClick(
+			locator1 = "Button#SELECT",
+			value1 = "Select");
 
-		<execute function="SelectFrame" locator1="UsersAndOrganizationsSelectOrganization#SELECT_ORGANIZATION_IFRAME" />
+		SelectFrame(value1 = "relative=top");
 
-		<var name="key_orgName" value="${orgName}" />
+		SelectFrame(locator1 = "UsersAndOrganizationsSelectOrganization#SELECT_ORGANIZATION_IFRAME");
 
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsSelectOrganization#ORGANIZATION_TABLE_NAME" value1="${orgName}" />
-		<execute function="AssertTextEquals" locator1="UsersAndOrganizationsSelectOrganization#ORGANIZATION_TABLE_PARENT_ORGANIZATION" value1="${parentOrgName}" />
+		var key_orgName = "${orgName}";
 
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-</definition>
+		AssertTextEquals(
+			locator1 = "ContentRow#ORGANIZATION_TABLE_NAME",
+			value1 = "${orgName}");
+
+		AssertTextEquals(
+			locator1 = "ContentRow#ORGANIZATION_TABLE_NAME_SECOND_COLUMN",
+			value1 = "${parentOrgName}");
+
+		SelectFrame(value1 = "relative=top");
+	}
+
+}

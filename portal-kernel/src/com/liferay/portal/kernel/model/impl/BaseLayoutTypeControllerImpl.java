@@ -14,11 +14,12 @@
 
 package com.liferay.portal.kernel.model.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypeController;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.servlet.TransferHeadersHelperUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Collection;
@@ -54,25 +55,26 @@ public abstract class BaseLayoutTypeControllerImpl
 
 	@Override
 	public String includeEditContent(
-			HttpServletRequest request, HttpServletResponse response,
-			Layout layout)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Layout layout)
 		throws Exception {
 
 		RequestDispatcher requestDispatcher =
-			servletContext.getRequestDispatcher(getEditPage());
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
+				servletContext.getRequestDispatcher(getEditPage()));
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
 		ServletResponse servletResponse = createServletResponse(
-			response, unsyncStringWriter);
+			httpServletResponse, unsyncStringWriter);
 
 		try {
-			addAttributes(request);
+			addAttributes(httpServletRequest);
 
-			requestDispatcher.include(request, servletResponse);
+			requestDispatcher.include(httpServletRequest, servletResponse);
 		}
 		finally {
-			removeAttributes(request);
+			removeAttributes(httpServletRequest);
 		}
 
 		return unsyncStringWriter.toString();
@@ -80,39 +82,41 @@ public abstract class BaseLayoutTypeControllerImpl
 
 	@Override
 	public boolean includeLayoutContent(
-			HttpServletRequest request, HttpServletResponse response,
-			Layout layout)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Layout layout)
 		throws Exception {
 
 		RequestDispatcher requestDispatcher =
-			servletContext.getRequestDispatcher(getViewPage());
+			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
+				servletContext.getRequestDispatcher(getViewPage()));
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
 		ServletResponse servletResponse = createServletResponse(
-			response, unsyncStringWriter);
+			httpServletResponse, unsyncStringWriter);
 
 		String contentType = servletResponse.getContentType();
-		String includeServletPath = (String)request.getAttribute(
+
+		String includeServletPath = (String)httpServletRequest.getAttribute(
 			RequestDispatcher.INCLUDE_SERVLET_PATH);
 
 		try {
-			addAttributes(request);
+			addAttributes(httpServletRequest);
 
-			requestDispatcher.include(request, servletResponse);
+			requestDispatcher.include(httpServletRequest, servletResponse);
 		}
 		finally {
-			removeAttributes(request);
+			removeAttributes(httpServletRequest);
 
-			request.setAttribute(
+			httpServletRequest.setAttribute(
 				RequestDispatcher.INCLUDE_SERVLET_PATH, includeServletPath);
 		}
 
 		if (contentType != null) {
-			response.setContentType(contentType);
+			httpServletResponse.setContentType(contentType);
 		}
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			WebKeys.LAYOUT_CONTENT, unsyncStringWriter.getStringBundler());
 
 		return false;
@@ -140,7 +144,8 @@ public abstract class BaseLayoutTypeControllerImpl
 
 	@Override
 	public boolean matches(
-		HttpServletRequest request, String friendlyURL, Layout layout) {
+		HttpServletRequest httpServletRequest, String friendlyURL,
+		Layout layout) {
 
 		try {
 			Map<Locale, String> friendlyURLMap = layout.getFriendlyURLMap();
@@ -154,17 +159,18 @@ public abstract class BaseLayoutTypeControllerImpl
 		}
 	}
 
-	protected void addAttributes(HttpServletRequest request) {
+	protected void addAttributes(HttpServletRequest httpServletRequest) {
 	}
 
 	protected abstract ServletResponse createServletResponse(
-		HttpServletResponse response, UnsyncStringWriter unsyncStringWriter);
+		HttpServletResponse httpServletResponse,
+		UnsyncStringWriter unsyncStringWriter);
 
 	protected abstract String getEditPage();
 
 	protected abstract String getViewPage();
 
-	protected void removeAttributes(HttpServletRequest request) {
+	protected void removeAttributes(HttpServletRequest httpServletRequest) {
 	}
 
 	protected ServletContext servletContext;

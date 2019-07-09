@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -22,9 +22,11 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface UserGroupRoleFinder {
-	public java.util.List<com.liferay.portal.kernel.model.UserGroupRole> findByGroupRoleType(
-		long groupId, int roleType);
 
-	public java.util.List<com.liferay.portal.kernel.model.UserGroupRole> findByUserUserGroupGroupRole(
-		long userId, long groupId);
+	public java.util.List<com.liferay.portal.kernel.model.UserGroupRole>
+		findByGroupRoleType(long groupId, int roleType);
+
+	public java.util.List<com.liferay.portal.kernel.model.UserGroupRole>
+		findByUserUserGroupGroupRole(long userId, long groupId);
+
 }

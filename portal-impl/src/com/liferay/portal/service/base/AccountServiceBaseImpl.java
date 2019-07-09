@@ -38,15 +38,15 @@ import javax.sql.DataSource;
  *
  * @author Brian Wing Shun Chan
  * @see com.liferay.portal.service.impl.AccountServiceImpl
- * @see com.liferay.portal.kernel.service.AccountServiceUtil
  * @generated
  */
-public abstract class AccountServiceBaseImpl extends BaseServiceImpl
-	implements AccountService, IdentifiableOSGiService {
+public abstract class AccountServiceBaseImpl
+	extends BaseServiceImpl implements AccountService, IdentifiableOSGiService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link com.liferay.portal.kernel.service.AccountServiceUtil} to access the account remote service.
+	 * Never modify or reference this class directly. Use <code>AccountService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.AccountServiceUtil</code>.
 	 */
 
 	/**
@@ -54,7 +54,9 @@ public abstract class AccountServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the account local service
 	 */
-	public com.liferay.portal.kernel.service.AccountLocalService getAccountLocalService() {
+	public com.liferay.portal.kernel.service.AccountLocalService
+		getAccountLocalService() {
+
 		return accountLocalService;
 	}
 
@@ -64,7 +66,9 @@ public abstract class AccountServiceBaseImpl extends BaseServiceImpl
 	 * @param accountLocalService the account local service
 	 */
 	public void setAccountLocalService(
-		com.liferay.portal.kernel.service.AccountLocalService accountLocalService) {
+		com.liferay.portal.kernel.service.AccountLocalService
+			accountLocalService) {
+
 		this.accountLocalService = accountLocalService;
 	}
 
@@ -109,7 +113,9 @@ public abstract class AccountServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the counter local service
 	 */
-	public com.liferay.counter.kernel.service.CounterLocalService getCounterLocalService() {
+	public com.liferay.counter.kernel.service.CounterLocalService
+		getCounterLocalService() {
+
 		return counterLocalService;
 	}
 
@@ -119,7 +125,9 @@ public abstract class AccountServiceBaseImpl extends BaseServiceImpl
 	 * @param counterLocalService the counter local service
 	 */
 	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService counterLocalService) {
+		com.liferay.counter.kernel.service.CounterLocalService
+			counterLocalService) {
+
 		this.counterLocalService = counterLocalService;
 	}
 
@@ -161,8 +169,8 @@ public abstract class AccountServiceBaseImpl extends BaseServiceImpl
 			sql = db.buildSQL(sql);
 			sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource,
-					sql);
+			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(
+				dataSource, sql);
 
 			sqlUpdate.update();
 		}
@@ -171,12 +179,22 @@ public abstract class AccountServiceBaseImpl extends BaseServiceImpl
 		}
 	}
 
-	@BeanReference(type = com.liferay.portal.kernel.service.AccountLocalService.class)
-	protected com.liferay.portal.kernel.service.AccountLocalService accountLocalService;
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.AccountLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.AccountLocalService
+		accountLocalService;
+
 	@BeanReference(type = AccountService.class)
 	protected AccountService accountService;
+
 	@BeanReference(type = AccountPersistence.class)
 	protected AccountPersistence accountPersistence;
-	@BeanReference(type = com.liferay.counter.kernel.service.CounterLocalService.class)
-	protected com.liferay.counter.kernel.service.CounterLocalService counterLocalService;
+
+	@BeanReference(
+		type = com.liferay.counter.kernel.service.CounterLocalService.class
+	)
+	protected com.liferay.counter.kernel.service.CounterLocalService
+		counterLocalService;
+
 }

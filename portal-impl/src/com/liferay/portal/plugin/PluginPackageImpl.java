@@ -14,13 +14,13 @@
 
 package com.liferay.portal.plugin;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.plugin.License;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.plugin.RemotePluginPackageRepository;
 import com.liferay.portal.kernel.plugin.Screenshot;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -121,11 +121,18 @@ public class PluginPackageImpl
 
 	@Override
 	public String getDownloadURL() {
-		String useDownloadURL = getRepository().getSettings().getProperty(
-			RemotePluginPackageRepository.SETTING_USE_DOWNLOAD_URL);
+		RemotePluginPackageRepository remotePluginPackageRepository =
+			getRepository();
 
-		if (!GetterUtil.getBoolean(useDownloadURL, true)) {
-			return getArtifactURL();
+		if (remotePluginPackageRepository != null) {
+			Properties settings = remotePluginPackageRepository.getSettings();
+
+			String useDownloadURL = settings.getProperty(
+				RemotePluginPackageRepository.SETTING_USE_DOWNLOAD_URL);
+
+			if (!GetterUtil.getBoolean(useDownloadURL, true)) {
+				return getArtifactURL();
+			}
 		}
 
 		if (Validator.isNotNull(_downloadURL)) {
@@ -201,9 +208,8 @@ public class PluginPackageImpl
 		if (_repository != null) {
 			return _repository.getRepositoryURL();
 		}
-		else {
-			return RemotePluginPackageRepository.LOCAL_URL;
-		}
+
+		return RemotePluginPackageRepository.LOCAL_URL;
 	}
 
 	@Override

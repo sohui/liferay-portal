@@ -15,9 +15,9 @@
 package com.liferay.portal.tools.data.partitioning.sql.builder.postgresql.exporter;
 
 import com.liferay.portal.tools.data.partitioning.sql.builder.exporter.BaseDataPartitioningExporter;
-
-import java.sql.Date;
-import java.sql.Timestamp;
+import com.liferay.portal.tools.data.partitioning.sql.builder.exporter.InsertSQLBuilder;
+import com.liferay.portal.tools.data.partitioning.sql.builder.exporter.context.ExportContext;
+import com.liferay.portal.tools.data.partitioning.sql.builder.postgresql.exporter.serializer.PostgreSQLFieldSerializer;
 
 /**
  * @author Manuel de la Peña
@@ -25,19 +25,23 @@ import java.sql.Timestamp;
 public class PostgreSQLDataPartitioningExporter
 	extends BaseDataPartitioningExporter {
 
+	public PostgreSQLDataPartitioningExporter() {
+		super(new InsertSQLBuilder(new PostgreSQLFieldSerializer()));
+	}
+
 	@Override
-	public String getControlTableNamesSQL(String schema) {
+	public String getControlTableNamesSQL(ExportContext exportContext) {
 		StringBuilder sb = new StringBuilder(11);
 
 		sb.append("select c1.");
 		sb.append(getTableNameFieldName());
 		sb.append(
 			" from information_schema.columns c1 where c1.table_catalog = '");
-		sb.append(schema);
+		sb.append(exportContext.getSchemaName());
 		sb.append("' and c1.table_schema = 'public' and c1.");
 		sb.append(getTableNameFieldName());
 		sb.append(" not in (");
-		sb.append(getPartitionedTableNamesSQL(schema));
+		sb.append(getPartitionedTableNamesSQL(exportContext));
 		sb.append(") group by c1.");
 		sb.append(getTableNameFieldName());
 		sb.append(" order by c1.table_name");
@@ -46,14 +50,14 @@ public class PostgreSQLDataPartitioningExporter
 	}
 
 	@Override
-	public String getPartitionedTableNamesSQL(String schema) {
+	public String getPartitionedTableNamesSQL(ExportContext exportContext) {
 		StringBuilder sb = new StringBuilder(9);
 
 		sb.append("select c2.");
 		sb.append(getTableNameFieldName());
 		sb.append(
 			" from information_schema.columns c2 where c2.table_catalog = '");
-		sb.append(schema);
+		sb.append(exportContext.getSchemaName());
 		sb.append("' and c2.table_schema = 'public' and c2.column_name = ");
 		sb.append("'companyid' group by c2.");
 		sb.append(getTableNameFieldName());
@@ -66,36 +70,6 @@ public class PostgreSQLDataPartitioningExporter
 	@Override
 	public String getTableNameFieldName() {
 		return "table_name";
-	}
-
-	@Override
-	public String serializeTableField(Object field) {
-		StringBuilder sb = new StringBuilder();
-
-		if (field == null) {
-			sb.append("null");
-		}
-		else if ((field instanceof Date) || (field instanceof Timestamp)) {
-			sb.append("to_timestamp('");
-			sb.append(formatDateTime(field));
-			sb.append("', 'YYYY-MM-DD HH24:MI:SS:MS')");
-		}
-		else if (field instanceof String) {
-			sb.append("'");
-
-			String value = (String)field;
-
-			sb.append(value.replace("'", "\\'"));
-
-			sb.append("'");
-		}
-		else {
-			sb.append("'");
-			sb.append(field);
-			sb.append("'");
-		}
-
-		return sb.toString();
 	}
 
 }

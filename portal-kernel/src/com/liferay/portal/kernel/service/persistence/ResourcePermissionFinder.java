@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -22,18 +22,23 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface ResourcePermissionFinder {
+
 	public int countByR_S(long roleId, int[] scopes);
 
-	public int countByC_N_S_P_R_A(long companyId, java.lang.String name,
-		int scope, java.lang.String primKey, long[] roleIds, long actionId);
+	public int countByC_N_S_P_R_A(
+		long companyId, String name, int scope, String primKey, long[] roleIds,
+		long actionId);
 
-	public java.util.List<com.liferay.portal.kernel.model.ResourcePermission> findByResource(
-		long companyId, long groupId, java.lang.String name,
-		java.lang.String primKey);
+	public java.util.Map
+		<java.io.Serializable,
+		 com.liferay.portal.kernel.model.ResourcePermission> fetchByPrimaryKeys(
+			java.util.Set<java.io.Serializable> primaryKeys);
 
-	public java.util.Map<java.io.Serializable, com.liferay.portal.kernel.model.ResourcePermission> fetchByPrimaryKeys(
-		java.util.Set<java.io.Serializable> primaryKeys);
+	public java.util.List<com.liferay.portal.kernel.model.ResourcePermission>
+		findByResource(
+			long companyId, long groupId, String name, String primKey);
 
-	public java.util.List<com.liferay.portal.kernel.model.ResourcePermission> findByR_S(
-		long roleId, int[] scopes, int start, int end);
+	public java.util.List<com.liferay.portal.kernel.model.ResourcePermission>
+		findByR_S(long roleId, int[] scopes, int start, int end);
+
 }

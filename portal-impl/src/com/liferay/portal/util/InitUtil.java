@@ -14,6 +14,9 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.log4j.Log4JUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.bean.BeanLocatorImpl;
 import com.liferay.portal.configuration.ConfigurationFactoryImpl;
 import com.liferay.portal.dao.db.DBManagerImpl;
@@ -25,30 +28,47 @@ import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataSourceFactoryUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.log.SanitizerLogWrapper;
-import com.liferay.portal.kernel.upgrade.dao.orm.UpgradeOptimizedConnectionProviderRegistryUtil;
-import com.liferay.portal.kernel.util.ClassLoaderUtil;
+import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
+import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
+import com.liferay.portal.kernel.util.BasePortalLifecycle;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.OSDetector;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.PortalLifecycle;
+import com.liferay.portal.kernel.util.PortalLifecycleUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.log.Log4jLogFactoryImpl;
 import com.liferay.portal.module.framework.ModuleFrameworkUtilAdapter;
-import com.liferay.portal.security.lang.DoPrivilegedUtil;
-import com.liferay.portal.security.lang.SecurityManagerUtil;
+import com.liferay.portal.security.xml.SecureXMLFactoryProviderImpl;
+import com.liferay.portal.spring.bean.LiferayBeanFactory;
+import com.liferay.portal.spring.configurator.ConfigurableApplicationContextConfigurator;
 import com.liferay.portal.spring.context.ArrayApplicationContext;
-import com.liferay.portal.upgrade.dao.orm.UpgradeOptimizedConnectionProviderRegistryImpl;
-import com.liferay.util.log4j.Log4JUtil;
+import com.liferay.portal.xml.SAXReaderImpl;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.ServiceRegistration;
 
 import com.sun.syndication.io.XmlReader;
 
+import java.lang.reflect.Field;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.lang.time.StopWatch;
 
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -59,6 +79,20 @@ public class InitUtil {
 	public static synchronized void init() {
 		if (_initialized) {
 			return;
+		}
+
+		try {
+			if (!OSDetector.isWindows() && !JavaDetector.isJDK11()) {
+				Field field = ReflectionUtil.getDeclaredField(
+					ZipFile.class, "usemmap");
+
+				if ((boolean)field.get(null)) {
+					field.setBoolean(null, false);
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		StopWatch stopWatch = new StopWatch();
@@ -83,9 +117,11 @@ public class InitUtil {
 
 		// Shared class loader
 
+		Thread currentThread = Thread.currentThread();
+
 		try {
 			PortalClassLoaderUtil.setClassLoader(
-				ClassLoaderUtil.getContextClassLoader());
+				currentThread.getContextClassLoader());
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -118,40 +154,31 @@ public class InitUtil {
 
 		SanitizerLogWrapper.init();
 
-		// Security manager
-
-		SecurityManagerUtil.init();
-
-		if (SecurityManagerUtil.ENABLED) {
-			com.liferay.portal.kernel.util.PropsUtil.setProps(
-				DoPrivilegedUtil.wrap(
-					com.liferay.portal.kernel.util.PropsUtil.getProps()));
-
-			LogFactoryUtil.setLogFactory(
-				DoPrivilegedUtil.wrap(LogFactoryUtil.getLogFactory()));
-		}
-
 		// Configuration factory
 
 		ConfigurationFactoryUtil.setConfigurationFactory(
-			DoPrivilegedUtil.wrap(new ConfigurationFactoryImpl()));
+			new ConfigurationFactoryImpl());
 
 		// Data source factory
 
-		DataSourceFactoryUtil.setDataSourceFactory(
-			DoPrivilegedUtil.wrap(new DataSourceFactoryImpl()));
+		DataSourceFactoryUtil.setDataSourceFactory(new DataSourceFactoryImpl());
 
 		// DB manager
 
-		DBManagerUtil.setDBManager(DoPrivilegedUtil.wrap(new DBManagerImpl()));
+		DBManagerUtil.setDBManager(new DBManagerImpl());
 
-		// Upgrade optimized connection provider registry
+		// XML
 
-		UpgradeOptimizedConnectionProviderRegistryUtil.
-			setUpgradeOptimizedConnectionProviderRegistry(
-				new UpgradeOptimizedConnectionProviderRegistryImpl());
+		SecureXMLFactoryProviderUtil secureXMLFactoryProviderUtil =
+			new SecureXMLFactoryProviderUtil();
 
-		// ROME
+		secureXMLFactoryProviderUtil.setSecureXMLFactoryProvider(
+			new SecureXMLFactoryProviderImpl());
+
+		UnsecureSAXReaderUtil unsecureSAXReaderUtil =
+			new UnsecureSAXReaderUtil();
+
+		unsecureSAXReaderUtil.setSAXReader(new SAXReaderImpl());
 
 		XmlReader.setDefaultEncoding(StringPool.UTF8);
 
@@ -163,17 +190,16 @@ public class InitUtil {
 		_initialized = true;
 	}
 
-	public synchronized static void initWithSpring(
+	public static synchronized void initWithSpring(
 		boolean initModuleFramework, boolean registerContext) {
 
 		List<String> configLocations = ListUtil.fromArray(
-			PropsUtil.getArray(
-				com.liferay.portal.kernel.util.PropsKeys.SPRING_CONFIGS));
+			PropsUtil.getArray(PropsKeys.SPRING_CONFIGS));
 
 		initWithSpring(configLocations, initModuleFramework, registerContext);
 	}
 
-	public synchronized static void initWithSpring(
+	public static synchronized void initWithSpring(
 		List<String> configLocations, boolean initModuleFramework,
 		boolean registerContext) {
 
@@ -202,13 +228,37 @@ public class InitUtil {
 				ModuleFrameworkUtilAdapter.startFramework();
 			}
 
-			ApplicationContext appApplicationContext =
+			ConfigurableApplicationContext configurableApplicationContext =
 				new ClassPathXmlApplicationContext(
-					configLocations.toArray(new String[configLocations.size()]),
-					infrastructureApplicationContext);
+					configLocations.toArray(new String[0]), false,
+					infrastructureApplicationContext) {
+
+					@Override
+					protected DefaultListableBeanFactory createBeanFactory() {
+						return new LiferayBeanFactory(
+							getInternalParentBeanFactory());
+					}
+
+				};
+
+			if (infrastructureApplicationContext.containsBean(
+					"configurableApplicationContextConfigurator")) {
+
+				ConfigurableApplicationContextConfigurator
+					configurableApplicationContextConfigurator =
+						infrastructureApplicationContext.getBean(
+							"configurableApplicationContextConfigurator",
+							ConfigurableApplicationContextConfigurator.class);
+
+				configurableApplicationContextConfigurator.configure(
+					configurableApplicationContext);
+			}
+
+			configurableApplicationContext.refresh();
 
 			BeanLocator beanLocator = new BeanLocatorImpl(
-				ClassLoaderUtil.getPortalClassLoader(), appApplicationContext);
+				PortalClassLoaderUtil.getClassLoader(),
+				configurableApplicationContext);
 
 			PortalBeanLocatorUtil.setBeanLocator(beanLocator);
 
@@ -216,11 +266,13 @@ public class InitUtil {
 				ModuleFrameworkUtilAdapter.startRuntime();
 			}
 
-			_appApplicationContext = appApplicationContext;
+			_appApplicationContext = configurableApplicationContext;
 
 			if (initModuleFramework && registerContext) {
 				registerContext();
 			}
+
+			registerSpringInitialized();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
@@ -239,7 +291,40 @@ public class InitUtil {
 		}
 	}
 
-	public synchronized static void stopModuleFramework() {
+	public static void registerSpringInitialized() {
+		Registry registry = RegistryUtil.getRegistry();
+
+		Map<String, Object> properties = new HashMap<>();
+
+		properties.put("module.service.lifecycle", "spring.initialized");
+		properties.put("service.vendor", ReleaseInfo.getVendor());
+		properties.put("service.version", ReleaseInfo.getVersion());
+
+		final ServiceRegistration<ModuleServiceLifecycle>
+			moduleServiceLifecycleServiceRegistration =
+				registry.registerService(
+					ModuleServiceLifecycle.class,
+					new ModuleServiceLifecycle() {
+					},
+					properties);
+
+		PortalLifecycleUtil.register(
+			new BasePortalLifecycle() {
+
+				@Override
+				protected void doPortalDestroy() {
+					moduleServiceLifecycleServiceRegistration.unregister();
+				}
+
+				@Override
+				protected void doPortalInit() {
+				}
+
+			},
+			PortalLifecycle.METHOD_DESTROY);
+	}
+
+	public static synchronized void stopModuleFramework() {
 		try {
 			ModuleFrameworkUtilAdapter.stopFramework(0);
 		}
@@ -248,7 +333,7 @@ public class InitUtil {
 		}
 	}
 
-	public synchronized static void stopRuntime() {
+	public static synchronized void stopRuntime() {
 		try {
 			ModuleFrameworkUtilAdapter.stopRuntime();
 		}

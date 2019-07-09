@@ -14,13 +14,16 @@
 
 package com.liferay.portal.kernel.dao.orm;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
  * @author Brian Wing Shun Chan
  */
 public class DynamicQueryFactoryUtil {
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #forClass(Class,
+	 *             ClassLoader)}
+	 */
+	@Deprecated
 	public static DynamicQuery forClass(Class<?> clazz) {
 		return getDynamicQueryFactory().forClass(clazz);
 	}
@@ -31,6 +34,11 @@ public class DynamicQueryFactoryUtil {
 		return getDynamicQueryFactory().forClass(clazz, classLoader);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link #forClass(Class,
+	 *             String, ClassLoader)}
+	 */
+	@Deprecated
 	public static DynamicQuery forClass(Class<?> clazz, String alias) {
 		return getDynamicQueryFactory().forClass(clazz, alias);
 	}
@@ -42,16 +50,11 @@ public class DynamicQueryFactoryUtil {
 	}
 
 	public static DynamicQueryFactory getDynamicQueryFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			DynamicQueryFactoryUtil.class);
-
 		return _dynamicQueryFactory;
 	}
 
 	public void setDynamicQueryFactory(
 		DynamicQueryFactory dynamicQueryFactory) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_dynamicQueryFactory = dynamicQueryFactory;
 	}

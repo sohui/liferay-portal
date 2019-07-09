@@ -14,8 +14,9 @@
 
 package com.liferay.portal.spring.transaction;
 
-import org.aopalliance.intercept.MethodInvocation;
+import com.liferay.petra.function.UnsafeSupplier;
 
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
@@ -25,13 +26,19 @@ import org.springframework.transaction.support.TransactionCallback;
 public class CounterCallbackPreferringTransactionExecutor
 	extends CallbackPreferringTransactionExecutor {
 
+	public CounterCallbackPreferringTransactionExecutor(
+		PlatformTransactionManager platformTransactionManager) {
+
+		super(platformTransactionManager);
+	}
+
 	@Override
 	protected TransactionCallback<Object> createTransactionCallback(
 		TransactionAttributeAdapter transactionAttributeAdapter,
-		MethodInvocation methodInvocation) {
+		UnsafeSupplier<Object, Throwable> unsafeSupplier) {
 
 		return new CounterCallbackPreferringTransactionCallback(
-			transactionAttributeAdapter, methodInvocation);
+			transactionAttributeAdapter, unsafeSupplier);
 	}
 
 	private static class CounterCallbackPreferringTransactionCallback
@@ -40,33 +47,31 @@ public class CounterCallbackPreferringTransactionExecutor
 		@Override
 		public Object doInTransaction(TransactionStatus transactionStatus) {
 			try {
-				return _methodInvocation.proceed();
+				return _unsafeSupplier.get();
 			}
 			catch (Throwable throwable) {
 				if (_transactionAttributeAdapter.rollbackOn(throwable)) {
 					if (throwable instanceof RuntimeException) {
 						throw (RuntimeException)throwable;
 					}
-					else {
-						throw new ThrowableHolderException(throwable);
-					}
+
+					throw new ThrowableHolderException(throwable);
 				}
-				else {
-					return new ThrowableHolder(throwable);
-				}
+
+				return new ThrowableHolder(throwable);
 			}
 		}
 
 		private CounterCallbackPreferringTransactionCallback(
 			TransactionAttributeAdapter transactionAttributeAdapter,
-			MethodInvocation methodInvocation) {
+			UnsafeSupplier<Object, Throwable> unsafeSupplier) {
 
 			_transactionAttributeAdapter = transactionAttributeAdapter;
-			_methodInvocation = methodInvocation;
+			_unsafeSupplier = unsafeSupplier;
 		}
 
-		private final MethodInvocation _methodInvocation;
 		private final TransactionAttributeAdapter _transactionAttributeAdapter;
+		private final UnsafeSupplier<Object, Throwable> _unsafeSupplier;
 
 	}
 

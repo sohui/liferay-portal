@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.servlet;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 import java.io.Serializable;
 
@@ -45,12 +45,13 @@ public class ProtectedPrincipal implements Principal, Serializable {
 
 		ProtectedPrincipal protectedPrincipal = (ProtectedPrincipal)obj;
 
-		if (protectedPrincipal.getName().equals(_name)) {
+		String name = protectedPrincipal.getName();
+
+		if (name.equals(_name)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override

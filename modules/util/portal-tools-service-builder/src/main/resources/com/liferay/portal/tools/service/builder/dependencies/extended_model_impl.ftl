@@ -1,12 +1,12 @@
 package ${packagePath}.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
+import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
 
 /**
  * The extended model implementation for the ${entity.name} service. Represents a row in the &quot;${entity.table}&quot; database table, with each column mapped to a property of this class.
  *
  * <p>
- * Helper methods and all application logic should be put in this class. Whenever methods are added, rerun ServiceBuilder to copy their definitions into the {@link ${apiPackagePath}.model.${entity.name}} interface.
+ * Helper methods and all application logic should be put in this class. Whenever methods are added, rerun ServiceBuilder to copy their definitions into the <code>${apiPackagePath}.model.${entity.name}<code> interface.
  * </p>
  *
  * @author ${author}

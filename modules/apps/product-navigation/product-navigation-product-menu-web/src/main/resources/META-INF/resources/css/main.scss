@@ -1,0 +1,183 @@
+@import 'bourbon';
+@import 'mixins';
+
+.product-menu {
+	.sidebar-header {
+		line-height: 32px;
+		padding-bottom: 8px;
+		padding-right: 9px;
+		padding-top: 8px;
+
+		@include sm() {
+			padding-bottom: 12px;
+			padding-left: 24px;
+			padding-top: 12px;
+		}
+
+		.sidenav-close {
+			float: right;
+			margin-right: -2px;
+		}
+	}
+
+	.sidebar-header-logo {
+		margin-right: 10px;
+	}
+
+	.sidebar-body {
+		bottom: 0;
+		left: 0;
+		padding: 0;
+		position: absolute;
+		right: 0;
+		top: 55px;
+
+		@include sm() {
+			top: 64px;
+		}
+
+		@include media-query(null, 320px) {
+			overflow: visible;
+			position: static;
+		}
+
+		.panel-group {
+			border-radius: 0;
+		}
+	}
+
+	.lfr-product-menu-sidebar .panel-group {
+		overflow: hidden;
+	}
+
+	small {
+		display: block;
+	}
+
+	.list-group {
+		> .collapse,
+		> .collapsing {
+			> .list-group-item > .tabular-list-group {
+				margin-bottom: -10px;
+				margin-top: -10px;
+			}
+		}
+	}
+
+	.list-group-heading {
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6 {
+			margin-bottom: 0;
+			margin-top: 0;
+		}
+	}
+
+	.list-group-item {
+		border-top-width: 0;
+		padding: 10px 20px;
+	}
+
+	.nav-nested-margins > li .nav > li {
+		.nav > li {
+			margin-bottom: 1px;
+		}
+	}
+
+	&.popover {
+		background-color: #fff;
+	}
+
+	.impersonation-message {
+		font-size: 12px;
+	}
+
+	.manage-sites-link {
+		padding: 1em;
+	}
+
+	.site-selector {
+		box-shadow: none;
+
+		.selectable-site {
+			color: #333;
+			height: auto;
+		}
+
+		.list-group-item-content,
+		.list-group-item-field {
+			vertical-align: middle;
+		}
+
+		.site-link {
+			color: #333;
+
+			&.selected-site {
+				color: #999;
+			}
+		}
+
+		.site-logo-container {
+			padding: 2em;
+		}
+	}
+
+	.staging-links {
+		font-size: 12px;
+		margin: 10px 22px 4px 16px;
+	}
+}
+
+/* ---------- Icon animation ---------- */
+
+.toast-animation {
+	display: inline-block;
+	height: 18px;
+	margin: 8px 6px 0;
+	position: relative;
+	width: 20px;
+
+	.pm {
+		border-left: 1px solid #fff;
+		border-radius: 1px;
+		height: 16px;
+		left: 0;
+		position: absolute;
+		top: 0;
+
+		@include transition(all 0.6s $ease-out-quart);
+		@include transition-delay(0.2s);
+	}
+
+	.cn {
+		border: 1px solid #fff;
+		border-radius: 1px;
+		content: '';
+		height: 18px;
+		position: absolute;
+		right: 0;
+		top: -1px;
+
+		@include transition(all 0.3s $ease-out-quart);
+		@include transition-delay(0.2s);
+
+		width: 15px;
+	}
+}
+
+body.open .toast-animation {
+	.pm {
+		border-left-width: 6px;
+		height: 18px;
+		left: 4px;
+		top: -1px;
+	}
+
+	.cn {
+		border-left-width: 9px;
+		width: 19px;
+	}
+}

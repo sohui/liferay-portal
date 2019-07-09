@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.PasswordPolicyRel;
 import com.liferay.portal.kernel.service.PasswordPolicyRelLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the PasswordPolicyRel service. Represents a row in the &quot;PasswordPolicyRel&quot; database table, with each column mapped to a property of this class.
@@ -34,10 +34,11 @@ import com.liferay.portal.kernel.service.PasswordPolicyRelLocalServiceUtil;
 @ProviderType
 public abstract class PasswordPolicyRelBaseImpl
 	extends PasswordPolicyRelModelImpl implements PasswordPolicyRel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a password policy rel model instance should use the {@link PasswordPolicyRel} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a password policy rel model instance should use the <code>PasswordPolicyRel</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class PasswordPolicyRelBaseImpl
 			PasswordPolicyRelLocalServiceUtil.updatePasswordPolicyRel(this);
 		}
 	}
+
 }

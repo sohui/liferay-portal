@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.resiliency.spi.remote;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.io.Serializer;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
@@ -26,8 +27,7 @@ import com.liferay.portal.kernel.nio.intraband.test.MockRegistrationReference;
 import com.liferay.portal.kernel.nio.intraband.welder.Welder;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.process.ProcessException;
-import com.liferay.portal.kernel.process.local.LocalProcessLauncher.ProcessContext;
-import com.liferay.portal.kernel.process.log.ProcessOutputStream;
+import com.liferay.portal.kernel.process.local.LocalProcessLauncher;
 import com.liferay.portal.kernel.resiliency.mpi.MPIHelperUtil;
 import com.liferay.portal.kernel.resiliency.mpi.MPIHelperUtilTestUtil;
 import com.liferay.portal.kernel.resiliency.spi.MockRemoteSPI;
@@ -43,9 +43,7 @@ import com.liferay.portal.kernel.resiliency.spi.agent.SPIAgent;
 import com.liferay.portal.kernel.resiliency.spi.agent.SPIAgentFactoryUtil;
 import com.liferay.portal.kernel.resiliency.spi.provider.SPIProvider;
 import com.liferay.portal.kernel.resiliency.spi.provider.SPISynchronousQueueUtil;
-import com.liferay.portal.kernel.resiliency.spi.remote.RemoteSPI.RegisterCallback;
 import com.liferay.portal.kernel.resiliency.spi.remote.RemoteSPI.SPIShutdownHook;
-import com.liferay.portal.kernel.resiliency.spi.remote.RemoteSPI.UnregisterSPIProcessCallable;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -57,6 +55,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -155,35 +154,41 @@ public class RemoteSPITest {
 
 		// Success
 
-		ProcessOutputStream processOutputStream = new ProcessOutputStream(
-			new ObjectOutputStream(new UnsyncByteArrayOutputStream())) {
+		Class<?> clazz = Class.forName(
+			LocalProcessLauncher.class.getName() + "$ProcessOutputStream");
 
-			@Override
-			public void writeProcessCallable(ProcessCallable<?> processCallable)
-				throws IOException {
+		Constructor<?> constructor = clazz.getDeclaredConstructor(
+			ObjectOutputStream.class, boolean.class);
 
-				if (throwIOException.get()) {
-					throw new IOException();
-				}
-
-				super.writeProcessCallable(processCallable);
-			}
-
-		};
+		constructor.setAccessible(true);
 
 		ReflectionTestUtil.setFieldValue(
-			ProcessContext.class, "_processOutputStream", processOutputStream);
+			LocalProcessLauncher.ProcessContext.class, "_processOutputStream",
+			constructor.newInstance(
+				new ObjectOutputStream(new UnsyncByteArrayOutputStream()) {
+
+					@Override
+					public void flush() throws IOException {
+						if (throwIOException.get()) {
+							throw new IOException();
+						}
+
+						super.flush();
+					}
+
+				},
+				false));
 
 		ConcurrentMap<String, Object> attributes =
-			ProcessContext.getAttributes();
+			LocalProcessLauncher.ProcessContext.getAttributes();
 
 		SPI spi = _mockRemoteSPI.call();
 
 		Assert.assertSame(spi, UnicastRemoteObject.toStub(_mockRemoteSPI));
 
-		Assert.assertTrue(ProcessContext.isAttached());
+		Assert.assertTrue(LocalProcessLauncher.ProcessContext.isAttached());
 
-		ProcessContext.detach();
+		LocalProcessLauncher.ProcessContext.detach();
 
 		Assert.assertSame(
 			_mockRemoteSPI,
@@ -202,9 +207,9 @@ public class RemoteSPITest {
 			Assert.assertSame(ExportException.class, throwable.getClass());
 		}
 
-		Assert.assertTrue(ProcessContext.isAttached());
+		Assert.assertTrue(LocalProcessLauncher.ProcessContext.isAttached());
 
-		ProcessContext.detach();
+		LocalProcessLauncher.ProcessContext.detach();
 
 		Assert.assertNull(attributes.remove(SPI.SPI_INSTANCE_PUBLICATION_KEY));
 
@@ -225,9 +230,9 @@ public class RemoteSPITest {
 			Assert.assertSame(IOException.class, throwable.getClass());
 		}
 
-		Assert.assertTrue(ProcessContext.isAttached());
+		Assert.assertTrue(LocalProcessLauncher.ProcessContext.isAttached());
 
-		ProcessContext.detach();
+		LocalProcessLauncher.ProcessContext.detach();
 
 		Assert.assertNull(attributes.remove(SPI.SPI_INSTANCE_PUBLICATION_KEY));
 
@@ -326,17 +331,18 @@ public class RemoteSPITest {
 
 		takeSPIThread.start();
 
-		RegisterCallback registerCallback = new RegisterCallback(
-			uuid, _mockRemoteSPI);
+		RemoteSPI.RegisterCallback registerCallback =
+			new RemoteSPI.RegisterCallback(uuid, _mockRemoteSPI);
 
 		Assert.assertSame(_mockRemoteSPI, registerCallback.call());
+
 		Assert.assertSame(_mockRemoteSPI, takeSPIFutureTask.get());
 
 		// Interrupted on notify waiting
 
 		SPISynchronousQueueUtil.createSynchronousQueue(uuid);
 
-		registerCallback = new RegisterCallback(uuid, _mockRemoteSPI);
+		registerCallback = new RemoteSPI.RegisterCallback(uuid, _mockRemoteSPI);
 
 		Thread currentThread = Thread.currentThread();
 
@@ -378,6 +384,7 @@ public class RemoteSPITest {
 		Object object = objectInputStream.readObject();
 
 		Assert.assertSame(MockRemoteSPI.class, object.getClass());
+
 		Assert.assertEquals(
 			ExecutorIntraband.class.getName(),
 			System.getProperty(PropsKeys.INTRABAND_IMPL));
@@ -419,16 +426,21 @@ public class RemoteSPITest {
 
 		Class<?>[] parameterTypes = readObjectMethod.getParameterTypes();
 
-		Assert.assertEquals(1, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 1, parameterTypes.length);
 		Assert.assertSame(ObjectInputStream.class, parameterTypes[0]);
 
 		List<Class<?>> exceptionTypes = Arrays.asList(
 			readObjectMethod.getExceptionTypes());
 
-		Assert.assertEquals(2, exceptionTypes.size());
+		Assert.assertEquals(
+			exceptionTypes.toString(), 2, exceptionTypes.size());
 		Assert.assertTrue(
+			exceptionTypes.toString(),
 			exceptionTypes.contains(ClassNotFoundException.class));
-		Assert.assertTrue(exceptionTypes.contains(IOException.class));
+		Assert.assertTrue(
+			exceptionTypes.toString(),
+			exceptionTypes.contains(IOException.class));
 
 		// Write object
 
@@ -441,12 +453,14 @@ public class RemoteSPITest {
 
 		parameterTypes = writeObjectMethod.getParameterTypes();
 
-		Assert.assertEquals(1, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 1, parameterTypes.length);
 		Assert.assertSame(ObjectOutputStream.class, parameterTypes[0]);
 
 		Class<?>[] exceptionTypeArray = writeObjectMethod.getExceptionTypes();
 
-		Assert.assertEquals(1, exceptionTypeArray.length);
+		Assert.assertEquals(
+			Arrays.toString(exceptionTypeArray), 1, exceptionTypeArray.length);
 		Assert.assertSame(IOException.class, exceptionTypeArray[0]);
 	}
 
@@ -467,7 +481,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 	}
 
@@ -499,7 +513,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(3, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 3, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -554,7 +568,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 
 		unexported();
@@ -597,7 +611,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 
 		Assert.assertNull(future.get());
@@ -632,7 +646,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(2, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -678,7 +692,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(2, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -716,7 +730,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 
 		unexported();
@@ -739,7 +753,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 
 		unexported();
@@ -762,7 +776,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(2, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -801,7 +815,7 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 	}
 
@@ -814,7 +828,7 @@ public class RemoteSPITest {
 		String spiId = "spiId";
 
 		ProcessCallable<Boolean> processCallable =
-			new UnregisterSPIProcessCallable(spiProviderName, spiId);
+			new RemoteSPI.UnregisterSPIProcessCallable(spiProviderName, spiId);
 
 		Assert.assertFalse(processCallable.call());
 
@@ -836,13 +850,14 @@ public class RemoteSPITest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
 			Assert.assertEquals(
-				"Not unregistering SPI " + mockSPI + " with foreign MPI null " +
-					"versus " + MPIHelperUtil.getMPI(),
+				StringBundler.concat(
+					"Not unregistering SPI ", mockSPI,
+					" with foreign MPI null versus ", MPIHelperUtil.getMPI()),
 				logRecord.getMessage());
 		}
 

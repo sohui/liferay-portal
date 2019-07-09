@@ -14,9 +14,8 @@
 
 package com.liferay.portal.kernel.repository.proxy;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppHelperLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -44,6 +43,8 @@ import java.io.File;
 import java.io.InputStream;
 
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Mika Koivisto
@@ -88,45 +89,6 @@ public class BaseRepositoryProxyBean
 		return newFileEntryProxyBean(fileEntry);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, see {@link #addFileEntry(long, long, String,
-	 *             String, String, String, String, File, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public FileEntry addFileEntry(
-			long folderId, String sourceFileName, String mimeType, String title,
-			String description, String changeLog, File file,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return addFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, sourceFileName, mimeType, title, description, changeLog,
-			file, serviceContext);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, see {@link #addFileEntry(long, long, String,
-	 *             String, String, String, String, InputStream, long,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public FileEntry addFileEntry(
-			long folderId, String sourceFileName, String mimeType, String title,
-			String description, String changeLog, InputStream is, long size,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return addFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, sourceFileName, mimeType, title, description, changeLog,
-			is, size, serviceContext);
-	}
-
 	@Override
 	public FileShortcut addFileShortcut(
 			long userId, long folderId, long toFileEntryId,
@@ -151,51 +113,39 @@ public class BaseRepositoryProxyBean
 		return newFolderProxyBean(folder);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #addFolder(long, long,
-	 *             String, String, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public Folder addFolder(
-			long parentFolderId, String name, String description,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return addFolder(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			parentFolderId, name, description, serviceContext);
-	}
-
 	@Override
 	public FileVersion cancelCheckOut(long fileEntryId) throws PortalException {
 		return _baseRepository.cancelCheckOut(fileEntryId);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #checkInFileEntry(long, long,
-	 *             boolean, String, ServiceContext)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #checkInFileEntry(long, long, DLVersionNumberIncrease,
+	 *             String, ServiceContext)}
 	 */
 	@Deprecated
-	@Override
-	public void checkInFileEntry(
-			long fileEntryId, boolean major, String changeLog,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		_baseRepository.checkInFileEntry(
-			fileEntryId, major, changeLog, serviceContext);
-	}
-
 	@Override
 	public void checkInFileEntry(
 			long userId, long fileEntryId, boolean majorVersion,
 			String changeLog, ServiceContext serviceContext)
 		throws PortalException {
 
+		checkInFileEntry(
+			userId, fileEntryId,
+			DLVersionNumberIncrease.fromMajorVersion(majorVersion), changeLog,
+			serviceContext);
+	}
+
+	@Override
+	public void checkInFileEntry(
+			long userId, long fileEntryId,
+			DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+			ServiceContext serviceContext)
+		throws PortalException {
+
 		_baseRepository.checkInFileEntry(
-			userId, fileEntryId, majorVersion, changeLog, serviceContext);
+			userId, fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 	}
 
 	@Override
@@ -206,19 +156,6 @@ public class BaseRepositoryProxyBean
 
 		_baseRepository.checkInFileEntry(
 			userId, fileEntryId, lockUuid, serviceContext);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #checkInFileEntry(long, long,
-	 *             String, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public void checkInFileEntry(
-			long fileEntryId, String lockUuid, ServiceContext serviceContext)
-		throws PortalException {
-
-		_baseRepository.checkInFileEntry(fileEntryId, lockUuid, serviceContext);
 	}
 
 	@Override
@@ -254,23 +191,6 @@ public class BaseRepositoryProxyBean
 			userId, groupId, fileEntryId, destFolderId, serviceContext);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #copyFileEntry(long, long,
-	 *             long, long, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public FileEntry copyFileEntry(
-			long groupId, long fileEntryId, long destFolderId,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return copyFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			groupId, fileEntryId, destFolderId, serviceContext);
-	}
-
 	@Override
 	public void deleteAll() throws PortalException {
 		_baseRepository.deleteAll();
@@ -296,6 +216,11 @@ public class BaseRepositoryProxyBean
 	@Override
 	public void deleteFileShortcuts(long toFileEntryId) throws PortalException {
 		_baseRepository.deleteFileShortcuts(toFileEntryId);
+	}
+
+	@Override
+	public void deleteFileVersion(long fileVersionId) throws PortalException {
+		_baseRepository.deleteFileVersion(fileVersionId);
 	}
 
 	@Override
@@ -355,6 +280,16 @@ public class BaseRepositoryProxyBean
 			folderId, documentTypeId, start, end, obc);
 
 		return toFileEntryProxyBeans(fileEntries);
+	}
+
+	@Override
+	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int status, int start, int end,
+			OrderByComparator<FileEntry> obc)
+		throws PortalException {
+
+		return _baseRepository.getFileEntries(
+			folderId, mimeTypes, status, start, end, obc);
 	}
 
 	@Override
@@ -422,6 +357,14 @@ public class BaseRepositoryProxyBean
 		throws PortalException {
 
 		return _baseRepository.getFileEntriesCount(folderId, mimeTypes);
+	}
+
+	@Override
+	public int getFileEntriesCount(
+			long folderId, String[] mimeTypes, int status)
+		throws PortalException {
+
+		return _baseRepository.getFileEntriesCount(folderId, mimeTypes, status);
 	}
 
 	@Override
@@ -667,12 +610,9 @@ public class BaseRepositoryProxyBean
 		return _baseRepository.getSubfolderIds(folderId, recurse);
 	}
 
-	@Deprecated
-	@Override
-	public String[] getSupportedConfigurations() {
-		return _baseRepository.getSupportedConfigurations();
-	}
-
+	/**
+	 * @deprecated As of Wilberforce (7.0.x)
+	 */
 	@Deprecated
 	@Override
 	public String[][] getSupportedParameters() {
@@ -722,22 +662,6 @@ public class BaseRepositoryProxyBean
 		return newFileEntryProxyBean(fileEntry);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #moveFileEntry(long, long,
-	 *             long, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public FileEntry moveFileEntry(
-			long fileEntryId, long newFolderId, ServiceContext serviceContext)
-		throws PortalException {
-
-		return moveFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			fileEntryId, newFolderId, serviceContext);
-	}
-
 	@Override
 	public Folder moveFolder(
 			long userId, long folderId, long parentFolderId,
@@ -748,23 +672,6 @@ public class BaseRepositoryProxyBean
 			userId, folderId, parentFolderId, serviceContext);
 
 		return newFolderProxyBean(folder);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #moveFolder(long, long, long,
-	 *             ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public Folder moveFolder(
-			long folderId, long newParentFolderId,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		return moveFolder(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, newParentFolderId, serviceContext);
 	}
 
 	@Override
@@ -797,19 +704,6 @@ public class BaseRepositoryProxyBean
 
 		_baseRepository.revertFileEntry(
 			userId, fileEntryId, version, serviceContext);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #revertFileEntry(long, long,
-	 *             String, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public void revertFileEntry(
-			long fileEntryId, String version, ServiceContext serviceContext)
-		throws PortalException {
-
-		_baseRepository.revertFileEntry(fileEntryId, version, serviceContext);
 	}
 
 	@Override
@@ -918,6 +812,12 @@ public class BaseRepositoryProxyBean
 		_baseRepository.unlockFolder(parentFolderId, name, lockUuid);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #updateFileEntry(long, long, String, String, String, String,
+	 *             String, DLVersionNumberIncrease, File, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
@@ -925,65 +825,59 @@ public class BaseRepositoryProxyBean
 			boolean majorVersion, File file, ServiceContext serviceContext)
 		throws PortalException {
 
-		FileEntry fileEntry = _baseRepository.updateFileEntry(
+		return updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, file, serviceContext);
-
-		return newFileEntryProxyBean(fileEntry);
-	}
-
-	@Override
-	public FileEntry updateFileEntry(
-			long userId, long fileEntryId, String sourceFileName,
-			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		FileEntry fileEntry = _baseRepository.updateFileEntry(
-			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, is, size, serviceContext);
-
-		return newFileEntryProxyBean(fileEntry);
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			file, serviceContext);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateFileEntry(long, long,
-	 *             String, String, String, String, String, boolean, File,
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #updateFileEntry(long, long, String, String, String, String,
+	 *             String, DLVersionNumberIncrease, InputStream, long,
 	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
 	public FileEntry updateFileEntry(
-			long fileEntryId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
-		throws PortalException {
-
-		FileEntry fileEntry = _baseRepository.updateFileEntry(
-			fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, file, serviceContext);
-
-		return newFileEntryProxyBean(fileEntry);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateFileEntry(long, long,
-	 *             String, String, String, String, String, boolean, InputStream,
-	 *             long, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public FileEntry updateFileEntry(
-			long fileEntryId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog,
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
 			boolean majorVersion, InputStream is, long size,
 			ServiceContext serviceContext)
 		throws PortalException {
 
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			is, size, serviceContext);
+	}
+
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
+		throws PortalException {
+
 		FileEntry fileEntry = _baseRepository.updateFileEntry(
-			fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, is, size, serviceContext);
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, dlVersionNumberIncrease, file, serviceContext);
+
+		return newFileEntryProxyBean(fileEntry);
+	}
+
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
+		throws PortalException {
+
+		FileEntry fileEntry = _baseRepository.updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
 
 		return newFileEntryProxyBean(fileEntry);
 	}

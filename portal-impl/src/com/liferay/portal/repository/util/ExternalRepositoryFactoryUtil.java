@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 public class ExternalRepositoryFactoryUtil {
 
 	/**
-	 * @deprecated As of 7.0.0 replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             com.liferay.portal.repository.registry.RepositoryDefinitionCatalogUtil#getExternalRepositoryClassNames(
 	 *             )}
 	 */
@@ -36,7 +36,7 @@ public class ExternalRepositoryFactoryUtil {
 	public static String[] getExternalRepositoryClassNames() {
 		Set<String> classNames = _externalRepositoryFactories.keySet();
 
-		return classNames.toArray(new String[classNames.size()]);
+		return classNames.toArray(new String[0]);
 	}
 
 	public static BaseRepository getInstance(String className)

@@ -14,8 +14,7 @@
 
 package com.liferay.portal.kernel.audit;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Michael C. Han
@@ -24,8 +23,6 @@ import com.liferay.portal.kernel.util.ProxyFactory;
 public class AuditRouterUtil {
 
 	public static AuditRouter getAuditRouter() {
-		PortalRuntimePermission.checkGetBeanProperty(AuditRouterUtil.class);
-
 		return _auditRouter;
 	}
 
@@ -37,8 +34,9 @@ public class AuditRouterUtil {
 		getAuditRouter().route(auditMessage);
 	}
 
-	private static final AuditRouter _auditRouter =
-		ProxyFactory.newServiceTrackedInstance(
-			AuditRouter.class, "(audit.router.proxy=true)");
+	private static volatile AuditRouter _auditRouter =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			AuditRouter.class, AuditRouterUtil.class, "_auditRouter",
+			"(audit.router.proxy=true)", false);
 
 }

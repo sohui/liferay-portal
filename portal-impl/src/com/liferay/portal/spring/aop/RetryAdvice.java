@@ -14,6 +14,9 @@
 
 package com.liferay.portal.spring.aop;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.aop.AopMethodInvocation;
+import com.liferay.portal.kernel.aop.ChainableMethodAdvice;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.RetryAcceptor;
@@ -22,40 +25,31 @@ import com.liferay.portal.kernel.spring.aop.Retry;
 import com.liferay.portal.util.PropsValues;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.aopalliance.intercept.MethodInvocation;
-
 /**
  * @author Matthew Tambara
  */
-public class RetryAdvice extends AnnotationChainableMethodAdvice<Retry> {
+public class RetryAdvice extends ChainableMethodAdvice {
 
 	@Override
-	public Retry getNullAnnotation() {
-		return _nullRetry;
-	}
+	public Object createMethodContext(
+		Class<?> targetClass, Method method,
+		Map<Class<? extends Annotation>, Annotation> annotations) {
 
-	@Override
-	public Object invoke(MethodInvocation methodInvocation) throws Throwable {
-		Retry retry = findAnnotation(methodInvocation);
+		Retry retry = (Retry)annotations.get(Retry.class);
 
-		if (retry == _nullRetry) {
-			return methodInvocation.proceed();
+		if (retry == null) {
+			return null;
 		}
 
 		int retries = retry.retries();
 
 		if (retries < 0) {
 			retries = PropsValues.RETRY_ADVICE_MAX_RETRIES;
-		}
-
-		int totalRetries = retries;
-
-		if (retries >= 0) {
-			retries++;
 		}
 
 		Map<String, String> properties = new HashMap<>();
@@ -66,19 +60,43 @@ public class RetryAdvice extends AnnotationChainableMethodAdvice<Retry> {
 
 		Class<? extends RetryAcceptor> clazz = retry.acceptor();
 
-		RetryAcceptor retryAcceptor = clazz.newInstance();
+		try {
+			RetryAcceptor retryAcceptor = clazz.newInstance();
 
-		ServiceBeanMethodInvocation serviceBeanMethodInvocation =
-			(ServiceBeanMethodInvocation)methodInvocation;
+			return new RetryContext(retryAcceptor, properties, retries);
+		}
+		catch (ReflectiveOperationException roe) {
+			_log.error(roe, roe);
 
-		serviceBeanMethodInvocation.mark();
+			return null;
+		}
+	}
+
+	@Override
+	public Object invoke(
+			AopMethodInvocation aopMethodInvocation, Object[] arguments)
+		throws Throwable {
+
+		RetryContext retryContext =
+			aopMethodInvocation.getAdviceMethodContext();
+
+		RetryAcceptor retryAcceptor = retryContext._retryAcceptor;
+		Map<String, String> properties = retryContext._properties;
+
+		int retries = retryContext._retries;
+
+		int totalRetries = retries;
+
+		if (retries >= 0) {
+			retries++;
+		}
 
 		Object returnValue = null;
 		Throwable throwable = null;
 
 		while ((retries < 0) || (retries-- > 0)) {
 			try {
-				returnValue = serviceBeanMethodInvocation.proceed();
+				returnValue = aopMethodInvocation.proceed(arguments);
 
 				if (!retryAcceptor.acceptResult(returnValue, properties)) {
 					return returnValue;
@@ -92,8 +110,9 @@ public class RetryAdvice extends AnnotationChainableMethodAdvice<Retry> {
 					}
 
 					_log.warn(
-						"Retry on " + methodInvocation + " for " + number +
-							" more times due to result " + returnValue);
+						StringBundler.concat(
+							"Retry on ", aopMethodInvocation, " for ", number,
+							" more times due to result ", returnValue));
 				}
 			}
 			catch (Throwable t) {
@@ -111,21 +130,22 @@ public class RetryAdvice extends AnnotationChainableMethodAdvice<Retry> {
 					}
 
 					_log.warn(
-						"Retry on " + methodInvocation + " for " + number +
-							" more times due to exception " + throwable,
+						StringBundler.concat(
+							"Retry on ", aopMethodInvocation, " for ", number,
+							" more times due to exception ", throwable),
 						throwable);
 				}
 			}
-
-			serviceBeanMethodInvocation.reset();
 		}
 
 		if (throwable != null) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Give up retrying on " + methodInvocation + " after " +
-						totalRetries + " retries and rethrow last retry's " +
-							"exception " + throwable,
+					StringBundler.concat(
+						"Give up retrying on ", aopMethodInvocation, " after ",
+						totalRetries,
+						" retries and rethrow last retry's exception ",
+						throwable),
 					throwable);
 			}
 
@@ -134,9 +154,11 @@ public class RetryAdvice extends AnnotationChainableMethodAdvice<Retry> {
 
 		if (_log.isWarnEnabled()) {
 			_log.warn(
-				"Give up retrying on " + methodInvocation + " after " +
-					totalRetries + " retries and returning the last retry's " +
-						"result " + returnValue);
+				StringBundler.concat(
+					"Give up retrying on ", aopMethodInvocation, " after ",
+					totalRetries,
+					" retries and returning the last retry's result ",
+					returnValue));
 		}
 
 		return returnValue;
@@ -144,28 +166,21 @@ public class RetryAdvice extends AnnotationChainableMethodAdvice<Retry> {
 
 	private static final Log _log = LogFactoryUtil.getLog(RetryAdvice.class);
 
-	private static final Retry _nullRetry = new Retry() {
+	private static class RetryContext {
 
-		@Override
-		public Class<? extends RetryAcceptor> acceptor() {
-			return null;
+		private RetryContext(
+			RetryAcceptor retryAcceptor, Map<String, String> properties,
+			int retries) {
+
+			_retryAcceptor = retryAcceptor;
+			_properties = properties;
+			_retries = retries;
 		}
 
-		@Override
-		public Class<? extends Annotation> annotationType() {
-			return Retry.class;
-		}
+		private final Map<String, String> _properties;
+		private final int _retries;
+		private final RetryAcceptor _retryAcceptor;
 
-		@Override
-		public Property[] properties() {
-			return null;
-		}
-
-		@Override
-		public int retries() {
-			return 0;
-		}
-
-	};
+	}
 
 }

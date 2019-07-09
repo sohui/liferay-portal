@@ -14,6 +14,7 @@
 
 package com.liferay.portal.util.test;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.model.CustomizedPages;
 import com.liferay.portal.kernel.model.Group;
@@ -37,7 +38,6 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.test.randomizerbumpers.FriendlyURLRandomizerBumper;
 
@@ -50,7 +50,7 @@ import javax.portlet.PortletPreferences;
 
 /**
  * @author Manuel de la Peña
- * @author Mate Thurzo
+ * @author Máté Thurzó
  */
 public class LayoutTestUtil {
 
@@ -108,15 +108,39 @@ public class LayoutTestUtil {
 			Map<Locale, String> friendlyURLMap)
 		throws Exception {
 
+		return addLayout(
+			groupId, privateLayout, nameMap, friendlyURLMap, false);
+	}
+
+	public static Layout addLayout(
+			long groupId, boolean privateLayout, Map<Locale, String> nameMap,
+			Map<Locale, String> friendlyURLMap, boolean hidden)
+		throws Exception {
+
+		return addLayout(
+			groupId, privateLayout, nameMap, nameMap,
+			new HashMap<Locale, String>(), new HashMap<Locale, String>(),
+			new HashMap<Locale, String>(), StringPool.BLANK, friendlyURLMap,
+			hidden);
+	}
+
+	public static Layout addLayout(
+			long groupId, boolean privateLayout, Map<Locale, String> nameMap,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			Map<Locale, String> keywordsMap, Map<Locale, String> robotsMap,
+			String typeSettings, Map<Locale, String> friendlyURLMap,
+			boolean hidden)
+		throws Exception {
+
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(groupId);
 
 		return LayoutLocalServiceUtil.addLayout(
 			serviceContext.getUserId(), groupId, privateLayout,
-			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, nameMap, nameMap,
-			new HashMap<Locale, String>(), new HashMap<Locale, String>(),
-			new HashMap<Locale, String>(), LayoutConstants.TYPE_PORTLET,
-			StringPool.BLANK, false, friendlyURLMap, serviceContext);
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, nameMap, titleMap,
+			descriptionMap, keywordsMap, robotsMap,
+			LayoutConstants.TYPE_PORTLET, typeSettings, hidden, friendlyURLMap,
+			serviceContext);
 	}
 
 	public static Layout addLayout(long groupId, long parentLayoutPlid)
@@ -130,6 +154,18 @@ public class LayoutTestUtil {
 		return LayoutLocalServiceUtil.fetchLayout(layout.getPlid());
 	}
 
+	public static Layout addLayout(long groupId, String typeSettings)
+		throws Exception {
+
+		return addLayout(
+			groupId, false, RandomTestUtil.randomLocaleStringMap(),
+			RandomTestUtil.randomLocaleStringMap(),
+			RandomTestUtil.randomLocaleStringMap(),
+			RandomTestUtil.randomLocaleStringMap(),
+			RandomTestUtil.randomLocaleStringMap(), typeSettings,
+			new HashMap<Locale, String>(), false);
+	}
+
 	public static Layout addLayout(
 			long groupId, String name, boolean privateLayout)
 		throws Exception {
@@ -140,6 +176,16 @@ public class LayoutTestUtil {
 	public static Layout addLayout(
 			long groupId, String name, boolean privateLayout,
 			LayoutPrototype layoutPrototype, boolean linkEnabled)
+		throws Exception {
+
+		return addLayout(
+			groupId, name, privateLayout, layoutPrototype, linkEnabled, false);
+	}
+
+	public static Layout addLayout(
+			long groupId, String name, boolean privateLayout,
+			LayoutPrototype layoutPrototype, boolean linkEnabled,
+			boolean hidden)
 		throws Exception {
 
 		String friendlyURL =
@@ -171,7 +217,7 @@ public class LayoutTestUtil {
 		return LayoutLocalServiceUtil.addLayout(
 			TestPropsValues.getUserId(), groupId, privateLayout,
 			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, name, null, description,
-			LayoutConstants.TYPE_PORTLET, false, friendlyURL, serviceContext);
+			LayoutConstants.TYPE_PORTLET, hidden, friendlyURL, serviceContext);
 	}
 
 	public static Layout addLayout(
@@ -262,8 +308,8 @@ public class LayoutTestUtil {
 		PortletPreferences portletPreferences = getPortletPreferences(
 			layout, newPortletId);
 
-		for (String key : preferenceMap.keySet()) {
-			portletPreferences.setValues(key, preferenceMap.get(key));
+		for (Map.Entry<String, String[]> entry : preferenceMap.entrySet()) {
+			portletPreferences.setValues(entry.getKey(), entry.getValue());
 		}
 
 		portletPreferences.store();

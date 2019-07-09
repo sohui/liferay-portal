@@ -19,10 +19,10 @@
 	<td></td>
 	<td></td>
 </tr>
-<!--CHOOSE_BUTTON-->
+<!--SELECT_BUTTON-->
 <tr>
-	<td>CHOOSE_BUTTON</td>
-	<td>//tr[contains(.,'Liferay')]/td//button</td>
+	<td>SELECT_BUTTON</td>
+	<td>//div[contains(@class,'portlet-body')]//tr[contains(.,'${key_siteName}')]/td//button</td>
 	<td></td>
 </tr>
 <tr>
@@ -33,12 +33,7 @@
 <!--SITES_TABLE-->
 <tr>
 	<td>SITES_TABLE_NAME</td>
-	<td>//div[contains(@id,'groupsSearchContainerSearchContainer')]/table//tbody/tr[contains(.,'${key_parentSiteName}')]/td[1]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SITES_TABLE_TYPE</td>
-	<td>//div[contains(@id,'groupsSearchContainerSearchContainer')]/table/tbody/tr[contains(.,'${key_parentSiteName}')]/td[2]</td>
+	<td>//div[contains(@id,'groupsSearchContainerSearchContainer')]//table//tbody/tr[contains(.,'${key_parentSiteName}')]/td[1]</td>
 	<td></td>
 </tr>
 <tr>

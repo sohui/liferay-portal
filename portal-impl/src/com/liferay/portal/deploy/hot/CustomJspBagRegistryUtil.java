@@ -14,17 +14,17 @@
 
 package com.liferay.portal.deploy.hot;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.log.SanitizerLogWrapper;
 import com.liferay.portal.kernel.url.URLContainer;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.CustomJspRegistryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.registry.Filter;
@@ -141,6 +141,7 @@ public class CustomJspBagRegistryUtil {
 
 			if (customJspGlobal) {
 				File portalJspFile = new File(portalWebDir + portalJsp);
+
 				File portalJspBackupFile = getPortalJspBackupFile(
 					portalJspFile);
 
@@ -323,8 +324,8 @@ public class CustomJspBagRegistryUtil {
 					verifyCustomJsps(contextId, customJspBag);
 				}
 				catch (DuplicateCustomJspException dcje) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(dcje.getMessage(), dcje);
+					if (_log.isWarnEnabled()) {
+						_log.warn(dcje.getMessage(), dcje);
 					}
 
 					registry.ungetService(serviceReference);
@@ -340,8 +341,8 @@ public class CustomJspBagRegistryUtil {
 				initCustomJspBag(contextId, contextName, customJspBag);
 			}
 			catch (Exception e) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(e.getMessage(), e);
+				if (_log.isWarnEnabled()) {
+					_log.warn(e.getMessage(), e);
 				}
 
 				registry.ungetService(serviceReference);
@@ -387,6 +388,7 @@ public class CustomJspBagRegistryUtil {
 				if (customJspBag.isCustomJspGlobal()) {
 					File portalJspFile = new File(
 						PortalUtil.getPortalWebDir() + portalJsp);
+
 					File portalJspBackupFile = getPortalJspBackupFile(
 						portalJspFile);
 

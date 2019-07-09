@@ -14,9 +14,7 @@
 
 package com.liferay.document.library.kernel.store;
 
-import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 import java.io.File;
 import java.io.InputStream;
@@ -53,8 +51,7 @@ import java.io.InputStream;
  * DLStoreUtil.addFile(
  * companyId, repositoryId, dirName + "/" + fileName, file);
  * </code>
- * </pre>
- * </p>
+ * </pre></p>
  *
  * @author Brian Wing Shun Chan
  * @author Alexander Chow
@@ -187,11 +184,12 @@ public class DLStoreUtil {
 	}
 
 	/**
-	 * Ensures company's root directory exists. Only implemented by {@link
-	 * JCRStore#checkRoot(long)}.
+	 * Ensures company's root directory exists.
 	 *
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
 	 * @param companyId the primary key of the company
 	 */
+	@Deprecated
 	public static void checkRoot(long companyId) {
 		getStore().checkRoot(companyId);
 	}
@@ -447,13 +445,6 @@ public class DLStoreUtil {
 	 * @return Returns the {@link DLStore} object
 	 */
 	public static DLStore getStore() {
-		if (_store == null) {
-			_store = (DLStore)PortalBeanLocatorUtil.locate(
-				DLStore.class.getName());
-
-			ReferenceRegistry.registerReference(DLStoreUtil.class, "_store");
-		}
-
 		return _store;
 	}
 
@@ -516,12 +507,13 @@ public class DLStoreUtil {
 	}
 
 	/**
-	 * Moves an existing directory. Only implemented by {@link
-	 * JCRStore#move(String, String)}.
+	 * Moves an existing directory.
 	 *
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
 	 * @param srcDir the original directory's name
 	 * @param destDir the new directory's name
 	 */
+	@Deprecated
 	public static void move(String srcDir, String destDir) {
 		getStore().move(srcDir, destDir);
 	}
@@ -744,8 +736,6 @@ public class DLStoreUtil {
 	 */
 	public void setStore(DLStore store) {
 		_store = store;
-
-		ReferenceRegistry.registerReference(DLStoreUtil.class, "_store");
 	}
 
 	private static DLStore _store;

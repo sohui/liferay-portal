@@ -14,6 +14,7 @@
 
 package com.liferay.portal.aspectj;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -106,8 +107,9 @@ public class WeavingClassLoader extends URLClassLoader {
 
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"Woven class " + name + " result in " +
-							dumpFile.getCanonicalPath());
+						StringBundler.concat(
+							"Woven class ", name, " result in ",
+							dumpFile.getCanonicalPath()));
 				}
 			}
 			else {

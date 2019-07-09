@@ -14,18 +14,13 @@
 
 package com.liferay.asset.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.portal.kernel.model.ModelWrapper;
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -34,23 +29,18 @@ import java.util.Objects;
  *
  * @author Brian Wing Shun Chan
  * @see AssetTagStats
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ com.liferay.asset.tag.stats.model.impl.AssetTagStatsImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
-public class AssetTagStatsWrapper implements AssetTagStats,
-	ModelWrapper<AssetTagStats> {
+public class AssetTagStatsWrapper
+	extends BaseModelWrapper<AssetTagStats>
+	implements AssetTagStats, ModelWrapper<AssetTagStats> {
+
 	public AssetTagStatsWrapper(AssetTagStats assetTagStats) {
-		_assetTagStats = assetTagStats;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return AssetTagStats.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return AssetTagStats.class.getName();
+		super(assetTagStats);
 	}
 
 	@Override
@@ -99,280 +89,149 @@ public class AssetTagStatsWrapper implements AssetTagStats,
 		}
 	}
 
-	@Override
-	public AssetTagStats toEscapedModel() {
-		return new AssetTagStatsWrapper(_assetTagStats.toEscapedModel());
-	}
-
-	@Override
-	public AssetTagStats toUnescapedModel() {
-		return new AssetTagStatsWrapper(_assetTagStats.toUnescapedModel());
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _assetTagStats.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _assetTagStats.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _assetTagStats.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _assetTagStats.getExpandoBridge();
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.CacheModel<AssetTagStats> toCacheModel() {
-		return _assetTagStats.toCacheModel();
-	}
-
-	@Override
-	public int compareTo(AssetTagStats assetTagStats) {
-		return _assetTagStats.compareTo(assetTagStats);
-	}
-
 	/**
-	* Returns the asset count of this asset tag stats.
-	*
-	* @return the asset count of this asset tag stats
-	*/
+	 * Returns the asset count of this asset tag stats.
+	 *
+	 * @return the asset count of this asset tag stats
+	 */
 	@Override
 	public int getAssetCount() {
-		return _assetTagStats.getAssetCount();
-	}
-
-	@Override
-	public int hashCode() {
-		return _assetTagStats.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _assetTagStats.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new AssetTagStatsWrapper((AssetTagStats)_assetTagStats.clone());
+		return model.getAssetCount();
 	}
 
 	/**
-	* Returns the fully qualified class name of this asset tag stats.
-	*
-	* @return the fully qualified class name of this asset tag stats
-	*/
+	 * Returns the fully qualified class name of this asset tag stats.
+	 *
+	 * @return the fully qualified class name of this asset tag stats
+	 */
 	@Override
-	public java.lang.String getClassName() {
-		return _assetTagStats.getClassName();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _assetTagStats.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _assetTagStats.toXmlString();
+	public String getClassName() {
+		return model.getClassName();
 	}
 
 	/**
-	* Returns the class name ID of this asset tag stats.
-	*
-	* @return the class name ID of this asset tag stats
-	*/
+	 * Returns the class name ID of this asset tag stats.
+	 *
+	 * @return the class name ID of this asset tag stats
+	 */
 	@Override
 	public long getClassNameId() {
-		return _assetTagStats.getClassNameId();
+		return model.getClassNameId();
 	}
 
 	/**
-	* Returns the company ID of this asset tag stats.
-	*
-	* @return the company ID of this asset tag stats
-	*/
+	 * Returns the company ID of this asset tag stats.
+	 *
+	 * @return the company ID of this asset tag stats
+	 */
 	@Override
 	public long getCompanyId() {
-		return _assetTagStats.getCompanyId();
+		return model.getCompanyId();
 	}
 
 	/**
-	* Returns the primary key of this asset tag stats.
-	*
-	* @return the primary key of this asset tag stats
-	*/
+	 * Returns the primary key of this asset tag stats.
+	 *
+	 * @return the primary key of this asset tag stats
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _assetTagStats.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Returns the tag ID of this asset tag stats.
-	*
-	* @return the tag ID of this asset tag stats
-	*/
+	 * Returns the tag ID of this asset tag stats.
+	 *
+	 * @return the tag ID of this asset tag stats
+	 */
 	@Override
 	public long getTagId() {
-		return _assetTagStats.getTagId();
+		return model.getTagId();
 	}
 
 	/**
-	* Returns the tag stats ID of this asset tag stats.
-	*
-	* @return the tag stats ID of this asset tag stats
-	*/
+	 * Returns the tag stats ID of this asset tag stats.
+	 *
+	 * @return the tag stats ID of this asset tag stats
+	 */
 	@Override
 	public long getTagStatsId() {
-		return _assetTagStats.getTagStatsId();
+		return model.getTagStatsId();
 	}
 
 	@Override
 	public void persist() {
-		_assetTagStats.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets the asset count of this asset tag stats.
-	*
-	* @param assetCount the asset count of this asset tag stats
-	*/
+	 * Sets the asset count of this asset tag stats.
+	 *
+	 * @param assetCount the asset count of this asset tag stats
+	 */
 	@Override
 	public void setAssetCount(int assetCount) {
-		_assetTagStats.setAssetCount(assetCount);
+		model.setAssetCount(assetCount);
 	}
 
 	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_assetTagStats.setCachedModel(cachedModel);
-	}
-
-	@Override
-	public void setClassName(java.lang.String className) {
-		_assetTagStats.setClassName(className);
+	public void setClassName(String className) {
+		model.setClassName(className);
 	}
 
 	/**
-	* Sets the class name ID of this asset tag stats.
-	*
-	* @param classNameId the class name ID of this asset tag stats
-	*/
+	 * Sets the class name ID of this asset tag stats.
+	 *
+	 * @param classNameId the class name ID of this asset tag stats
+	 */
 	@Override
 	public void setClassNameId(long classNameId) {
-		_assetTagStats.setClassNameId(classNameId);
+		model.setClassNameId(classNameId);
 	}
 
 	/**
-	* Sets the company ID of this asset tag stats.
-	*
-	* @param companyId the company ID of this asset tag stats
-	*/
+	 * Sets the company ID of this asset tag stats.
+	 *
+	 * @param companyId the company ID of this asset tag stats
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_assetTagStats.setCompanyId(companyId);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_assetTagStats.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(
-		com.liferay.portal.kernel.model.BaseModel<?> baseModel) {
-		_assetTagStats.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_assetTagStats.setExpandoBridgeAttributes(serviceContext);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_assetTagStats.setNew(n);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the primary key of this asset tag stats.
-	*
-	* @param primaryKey the primary key of this asset tag stats
-	*/
+	 * Sets the primary key of this asset tag stats.
+	 *
+	 * @param primaryKey the primary key of this asset tag stats
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_assetTagStats.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_assetTagStats.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the tag ID of this asset tag stats.
-	*
-	* @param tagId the tag ID of this asset tag stats
-	*/
+	 * Sets the tag ID of this asset tag stats.
+	 *
+	 * @param tagId the tag ID of this asset tag stats
+	 */
 	@Override
 	public void setTagId(long tagId) {
-		_assetTagStats.setTagId(tagId);
+		model.setTagId(tagId);
 	}
 
 	/**
-	* Sets the tag stats ID of this asset tag stats.
-	*
-	* @param tagStatsId the tag stats ID of this asset tag stats
-	*/
+	 * Sets the tag stats ID of this asset tag stats.
+	 *
+	 * @param tagStatsId the tag stats ID of this asset tag stats
+	 */
 	@Override
 	public void setTagStatsId(long tagStatsId) {
-		_assetTagStats.setTagStatsId(tagStatsId);
+		model.setTagStatsId(tagStatsId);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof AssetTagStatsWrapper)) {
-			return false;
-		}
-
-		AssetTagStatsWrapper assetTagStatsWrapper = (AssetTagStatsWrapper)obj;
-
-		if (Objects.equals(_assetTagStats, assetTagStatsWrapper._assetTagStats)) {
-			return true;
-		}
-
-		return false;
+	protected AssetTagStatsWrapper wrap(AssetTagStats assetTagStats) {
+		return new AssetTagStatsWrapper(assetTagStats);
 	}
 
-	@Override
-	public AssetTagStats getWrappedModel() {
-		return _assetTagStats;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _assetTagStats.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _assetTagStats.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_assetTagStats.resetOriginalValues();
-	}
-
-	private final AssetTagStats _assetTagStats;
 }

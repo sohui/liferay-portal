@@ -14,9 +14,8 @@
 
 package com.liferay.portal.spring.transaction;
 
+import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.portal.kernel.transaction.TransactionLifecycleManager;
-
-import org.aopalliance.intercept.MethodInvocation;
 
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -30,44 +29,34 @@ import org.springframework.transaction.support.TransactionCallback;
 public class CallbackPreferringTransactionExecutor
 	implements TransactionExecutor {
 
+	public CallbackPreferringTransactionExecutor(
+		PlatformTransactionManager platformTransactionManager) {
+
+		_platformTransactionManager = platformTransactionManager;
+	}
+
 	@Override
-	public Object execute(
-			PlatformTransactionManager platformTransactionManager,
+	public <T> T execute(
 			TransactionAttributeAdapter transactionAttributeAdapter,
-			MethodInvocation methodInvocation)
+			UnsafeSupplier<T, Throwable> unsafeSupplier)
 		throws Throwable {
 
-		CallbackPreferringPlatformTransactionManager
-			callbackPreferringPlatformTransactionManager =
-				(CallbackPreferringPlatformTransactionManager)
-					platformTransactionManager;
+		return _execute(
+			_platformTransactionManager, transactionAttributeAdapter,
+			unsafeSupplier);
+	}
 
-		try {
-			Object result =
-				callbackPreferringPlatformTransactionManager.execute(
-					transactionAttributeAdapter,
-					createTransactionCallback(
-						transactionAttributeAdapter, methodInvocation));
-
-			if (result instanceof ThrowableHolder) {
-				ThrowableHolder throwableHolder = (ThrowableHolder)result;
-
-				throw throwableHolder.getThrowable();
-			}
-
-			return result;
-		}
-		catch (ThrowableHolderException the) {
-			throw the.getCause();
-		}
+	@Override
+	public PlatformTransactionManager getPlatformTransactionManager() {
+		return _platformTransactionManager;
 	}
 
 	protected TransactionCallback<Object> createTransactionCallback(
 		TransactionAttributeAdapter transactionAttributeAdapter,
-		MethodInvocation methodInvocation) {
+		UnsafeSupplier<Object, Throwable> unsafeSupplier) {
 
 		return new CallbackPreferringTransactionCallback(
-			transactionAttributeAdapter, methodInvocation);
+			transactionAttributeAdapter, unsafeSupplier);
 	}
 
 	protected static class ThrowableHolder {
@@ -92,6 +81,40 @@ public class CallbackPreferringTransactionExecutor
 
 	}
 
+	private <T> T _execute(
+			PlatformTransactionManager platformTransactionManager,
+			TransactionAttributeAdapter transactionAttributeAdapter,
+			UnsafeSupplier<T, Throwable> unsafeSupplier)
+		throws Throwable {
+
+		CallbackPreferringPlatformTransactionManager
+			callbackPreferringPlatformTransactionManager =
+				(CallbackPreferringPlatformTransactionManager)
+					platformTransactionManager;
+
+		try {
+			Object result =
+				callbackPreferringPlatformTransactionManager.execute(
+					transactionAttributeAdapter,
+					createTransactionCallback(
+						transactionAttributeAdapter,
+						(UnsafeSupplier<Object, Throwable>)unsafeSupplier));
+
+			if (result instanceof ThrowableHolder) {
+				ThrowableHolder throwableHolder = (ThrowableHolder)result;
+
+				throw throwableHolder.getThrowable();
+			}
+
+			return (T)result;
+		}
+		catch (ThrowableHolderException the) {
+			throw the.getCause();
+		}
+	}
+
+	private final PlatformTransactionManager _platformTransactionManager;
+
 	private class CallbackPreferringTransactionCallback
 		implements TransactionCallback<Object> {
 
@@ -100,13 +123,16 @@ public class CallbackPreferringTransactionExecutor
 			TransactionStatusAdapter transactionStatusAdapter =
 				new TransactionStatusAdapter(transactionStatus);
 
+			TransactionExecutorThreadLocal.pushTransactionExecutor(
+				CallbackPreferringTransactionExecutor.this);
+
 			TransactionLifecycleManager.fireTransactionCreatedEvent(
 				_transactionAttributeAdapter, transactionStatusAdapter);
 
 			boolean rollback = false;
 
 			try {
-				return _methodInvocation.proceed();
+				return _unsafeSupplier.get();
 			}
 			catch (Throwable throwable) {
 				if (_transactionAttributeAdapter.rollbackOn(throwable)) {
@@ -121,32 +147,32 @@ public class CallbackPreferringTransactionExecutor
 					if (throwable instanceof RuntimeException) {
 						throw (RuntimeException)throwable;
 					}
-					else {
-						throw new ThrowableHolderException(throwable);
-					}
+
+					throw new ThrowableHolderException(throwable);
 				}
-				else {
-					return new ThrowableHolder(throwable);
-				}
+
+				return new ThrowableHolder(throwable);
 			}
 			finally {
 				if (!rollback) {
 					TransactionLifecycleManager.fireTransactionCommittedEvent(
 						_transactionAttributeAdapter, transactionStatusAdapter);
 				}
+
+				TransactionExecutorThreadLocal.popTransactionExecutor();
 			}
 		}
 
 		private CallbackPreferringTransactionCallback(
 			TransactionAttributeAdapter transactionAttributeAdapter,
-			MethodInvocation methodInvocation) {
+			UnsafeSupplier<Object, Throwable> unsafeSupplier) {
 
 			_transactionAttributeAdapter = transactionAttributeAdapter;
-			_methodInvocation = methodInvocation;
+			_unsafeSupplier = unsafeSupplier;
 		}
 
-		private final MethodInvocation _methodInvocation;
 		private final TransactionAttributeAdapter _transactionAttributeAdapter;
+		private final UnsafeSupplier<Object, Throwable> _unsafeSupplier;
 
 	}
 

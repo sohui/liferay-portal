@@ -14,20 +14,14 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -39,19 +33,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class AddressWrapper implements Address, ModelWrapper<Address> {
+public class AddressWrapper
+	extends BaseModelWrapper<Address>
+	implements Address, ModelWrapper<Address> {
+
 	public AddressWrapper(Address address) {
-		_address = address;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return Address.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return Address.class.getName();
+		super(address);
 	}
 
 	@Override
@@ -76,8 +63,8 @@ public class AddressWrapper implements Address, ModelWrapper<Address> {
 		attributes.put("regionId", getRegionId());
 		attributes.put("countryId", getCountryId());
 		attributes.put("typeId", getTypeId());
-		attributes.put("mailing", getMailing());
-		attributes.put("primary", getPrimary());
+		attributes.put("mailing", isMailing());
+		attributes.put("primary", isPrimary());
 
 		return attributes;
 	}
@@ -205,639 +192,509 @@ public class AddressWrapper implements Address, ModelWrapper<Address> {
 		}
 	}
 
+	/**
+	 * Returns the address ID of this address.
+	 *
+	 * @return the address ID of this address
+	 */
 	@Override
-	public Address toEscapedModel() {
-		return new AddressWrapper(_address.toEscapedModel());
+	public long getAddressId() {
+		return model.getAddressId();
 	}
 
+	/**
+	 * Returns the city of this address.
+	 *
+	 * @return the city of this address
+	 */
 	@Override
-	public Address toUnescapedModel() {
-		return new AddressWrapper(_address.toUnescapedModel());
+	public String getCity() {
+		return model.getCity();
 	}
 
+	/**
+	 * Returns the fully qualified class name of this address.
+	 *
+	 * @return the fully qualified class name of this address
+	 */
 	@Override
-	public CacheModel<Address> toCacheModel() {
-		return _address.toCacheModel();
+	public String getClassName() {
+		return model.getClassName();
+	}
+
+	/**
+	 * Returns the class name ID of this address.
+	 *
+	 * @return the class name ID of this address
+	 */
+	@Override
+	public long getClassNameId() {
+		return model.getClassNameId();
+	}
+
+	/**
+	 * Returns the class pk of this address.
+	 *
+	 * @return the class pk of this address
+	 */
+	@Override
+	public long getClassPK() {
+		return model.getClassPK();
+	}
+
+	/**
+	 * Returns the company ID of this address.
+	 *
+	 * @return the company ID of this address
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
 	}
 
 	@Override
 	public Country getCountry() {
-		return _address.getCountry();
+		return model.getCountry();
 	}
 
+	/**
+	 * Returns the country ID of this address.
+	 *
+	 * @return the country ID of this address
+	 */
 	@Override
-	public ListType getType() {
-		return _address.getType();
+	public long getCountryId() {
+		return model.getCountryId();
+	}
+
+	/**
+	 * Returns the create date of this address.
+	 *
+	 * @return the create date of this address
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the mailing of this address.
+	 *
+	 * @return the mailing of this address
+	 */
+	@Override
+	public boolean getMailing() {
+		return model.getMailing();
+	}
+
+	/**
+	 * Returns the modified date of this address.
+	 *
+	 * @return the modified date of this address
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this address.
+	 *
+	 * @return the mvcc version of this address
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
+	 * Returns the primary of this address.
+	 *
+	 * @return the primary of this address
+	 */
+	@Override
+	public boolean getPrimary() {
+		return model.getPrimary();
+	}
+
+	/**
+	 * Returns the primary key of this address.
+	 *
+	 * @return the primary key of this address
+	 */
+	@Override
+	public long getPrimaryKey() {
+		return model.getPrimaryKey();
 	}
 
 	@Override
 	public Region getRegion() {
-		return _address.getRegion();
+		return model.getRegion();
 	}
 
 	/**
-	* Returns the mailing of this address.
-	*
-	* @return the mailing of this address
-	*/
-	@Override
-	public boolean getMailing() {
-		return _address.getMailing();
-	}
-
-	/**
-	* Returns the primary of this address.
-	*
-	* @return the primary of this address
-	*/
-	@Override
-	public boolean getPrimary() {
-		return _address.getPrimary();
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _address.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _address.isEscapedModel();
-	}
-
-	/**
-	* Returns <code>true</code> if this address is mailing.
-	*
-	* @return <code>true</code> if this address is mailing; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isMailing() {
-		return _address.isMailing();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _address.isNew();
-	}
-
-	/**
-	* Returns <code>true</code> if this address is primary.
-	*
-	* @return <code>true</code> if this address is primary; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isPrimary() {
-		return _address.isPrimary();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _address.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(Address address) {
-		return _address.compareTo(address);
-	}
-
-	@Override
-	public int hashCode() {
-		return _address.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _address.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new AddressWrapper((Address)_address.clone());
-	}
-
-	/**
-	* Returns the city of this address.
-	*
-	* @return the city of this address
-	*/
-	@Override
-	public java.lang.String getCity() {
-		return _address.getCity();
-	}
-
-	/**
-	* Returns the fully qualified class name of this address.
-	*
-	* @return the fully qualified class name of this address
-	*/
-	@Override
-	public java.lang.String getClassName() {
-		return _address.getClassName();
-	}
-
-	/**
-	* Returns the street1 of this address.
-	*
-	* @return the street1 of this address
-	*/
-	@Override
-	public java.lang.String getStreet1() {
-		return _address.getStreet1();
-	}
-
-	/**
-	* Returns the street2 of this address.
-	*
-	* @return the street2 of this address
-	*/
-	@Override
-	public java.lang.String getStreet2() {
-		return _address.getStreet2();
-	}
-
-	/**
-	* Returns the street3 of this address.
-	*
-	* @return the street3 of this address
-	*/
-	@Override
-	public java.lang.String getStreet3() {
-		return _address.getStreet3();
-	}
-
-	/**
-	* Returns the user name of this address.
-	*
-	* @return the user name of this address
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _address.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this address.
-	*
-	* @return the user uuid of this address
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _address.getUserUuid();
-	}
-
-	/**
-	* Returns the uuid of this address.
-	*
-	* @return the uuid of this address
-	*/
-	@Override
-	public java.lang.String getUuid() {
-		return _address.getUuid();
-	}
-
-	/**
-	* Returns the zip of this address.
-	*
-	* @return the zip of this address
-	*/
-	@Override
-	public java.lang.String getZip() {
-		return _address.getZip();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _address.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _address.toXmlString();
-	}
-
-	/**
-	* Returns the create date of this address.
-	*
-	* @return the create date of this address
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _address.getCreateDate();
-	}
-
-	/**
-	* Returns the modified date of this address.
-	*
-	* @return the modified date of this address
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _address.getModifiedDate();
-	}
-
-	/**
-	* Returns the address ID of this address.
-	*
-	* @return the address ID of this address
-	*/
-	@Override
-	public long getAddressId() {
-		return _address.getAddressId();
-	}
-
-	/**
-	* Returns the class name ID of this address.
-	*
-	* @return the class name ID of this address
-	*/
-	@Override
-	public long getClassNameId() {
-		return _address.getClassNameId();
-	}
-
-	/**
-	* Returns the class p k of this address.
-	*
-	* @return the class p k of this address
-	*/
-	@Override
-	public long getClassPK() {
-		return _address.getClassPK();
-	}
-
-	/**
-	* Returns the company ID of this address.
-	*
-	* @return the company ID of this address
-	*/
-	@Override
-	public long getCompanyId() {
-		return _address.getCompanyId();
-	}
-
-	/**
-	* Returns the country ID of this address.
-	*
-	* @return the country ID of this address
-	*/
-	@Override
-	public long getCountryId() {
-		return _address.getCountryId();
-	}
-
-	/**
-	* Returns the mvcc version of this address.
-	*
-	* @return the mvcc version of this address
-	*/
-	@Override
-	public long getMvccVersion() {
-		return _address.getMvccVersion();
-	}
-
-	/**
-	* Returns the primary key of this address.
-	*
-	* @return the primary key of this address
-	*/
-	@Override
-	public long getPrimaryKey() {
-		return _address.getPrimaryKey();
-	}
-
-	/**
-	* Returns the region ID of this address.
-	*
-	* @return the region ID of this address
-	*/
+	 * Returns the region ID of this address.
+	 *
+	 * @return the region ID of this address
+	 */
 	@Override
 	public long getRegionId() {
-		return _address.getRegionId();
+		return model.getRegionId();
 	}
 
 	/**
-	* Returns the type ID of this address.
-	*
-	* @return the type ID of this address
-	*/
+	 * Returns the street1 of this address.
+	 *
+	 * @return the street1 of this address
+	 */
+	@Override
+	public String getStreet1() {
+		return model.getStreet1();
+	}
+
+	/**
+	 * Returns the street2 of this address.
+	 *
+	 * @return the street2 of this address
+	 */
+	@Override
+	public String getStreet2() {
+		return model.getStreet2();
+	}
+
+	/**
+	 * Returns the street3 of this address.
+	 *
+	 * @return the street3 of this address
+	 */
+	@Override
+	public String getStreet3() {
+		return model.getStreet3();
+	}
+
+	@Override
+	public ListType getType() {
+		return model.getType();
+	}
+
+	/**
+	 * Returns the type ID of this address.
+	 *
+	 * @return the type ID of this address
+	 */
 	@Override
 	public long getTypeId() {
-		return _address.getTypeId();
+		return model.getTypeId();
 	}
 
 	/**
-	* Returns the user ID of this address.
-	*
-	* @return the user ID of this address
-	*/
+	 * Returns the user ID of this address.
+	 *
+	 * @return the user ID of this address
+	 */
 	@Override
 	public long getUserId() {
-		return _address.getUserId();
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user name of this address.
+	 *
+	 * @return the user name of this address
+	 */
+	@Override
+	public String getUserName() {
+		return model.getUserName();
+	}
+
+	/**
+	 * Returns the user uuid of this address.
+	 *
+	 * @return the user uuid of this address
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the uuid of this address.
+	 *
+	 * @return the uuid of this address
+	 */
+	@Override
+	public String getUuid() {
+		return model.getUuid();
+	}
+
+	/**
+	 * Returns the zip of this address.
+	 *
+	 * @return the zip of this address
+	 */
+	@Override
+	public String getZip() {
+		return model.getZip();
+	}
+
+	/**
+	 * Returns <code>true</code> if this address is mailing.
+	 *
+	 * @return <code>true</code> if this address is mailing; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isMailing() {
+		return model.isMailing();
+	}
+
+	/**
+	 * Returns <code>true</code> if this address is primary.
+	 *
+	 * @return <code>true</code> if this address is primary; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isPrimary() {
+		return model.isPrimary();
 	}
 
 	@Override
 	public void persist() {
-		_address.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets the address ID of this address.
-	*
-	* @param addressId the address ID of this address
-	*/
+	 * Sets the address ID of this address.
+	 *
+	 * @param addressId the address ID of this address
+	 */
 	@Override
 	public void setAddressId(long addressId) {
-		_address.setAddressId(addressId);
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_address.setCachedModel(cachedModel);
+		model.setAddressId(addressId);
 	}
 
 	/**
-	* Sets the city of this address.
-	*
-	* @param city the city of this address
-	*/
+	 * Sets the city of this address.
+	 *
+	 * @param city the city of this address
+	 */
 	@Override
-	public void setCity(java.lang.String city) {
-		_address.setCity(city);
+	public void setCity(String city) {
+		model.setCity(city);
 	}
 
 	@Override
-	public void setClassName(java.lang.String className) {
-		_address.setClassName(className);
+	public void setClassName(String className) {
+		model.setClassName(className);
 	}
 
 	/**
-	* Sets the class name ID of this address.
-	*
-	* @param classNameId the class name ID of this address
-	*/
+	 * Sets the class name ID of this address.
+	 *
+	 * @param classNameId the class name ID of this address
+	 */
 	@Override
 	public void setClassNameId(long classNameId) {
-		_address.setClassNameId(classNameId);
+		model.setClassNameId(classNameId);
 	}
 
 	/**
-	* Sets the class p k of this address.
-	*
-	* @param classPK the class p k of this address
-	*/
+	 * Sets the class pk of this address.
+	 *
+	 * @param classPK the class pk of this address
+	 */
 	@Override
 	public void setClassPK(long classPK) {
-		_address.setClassPK(classPK);
+		model.setClassPK(classPK);
 	}
 
 	/**
-	* Sets the company ID of this address.
-	*
-	* @param companyId the company ID of this address
-	*/
+	 * Sets the company ID of this address.
+	 *
+	 * @param companyId the company ID of this address
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_address.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the country ID of this address.
-	*
-	* @param countryId the country ID of this address
-	*/
+	 * Sets the country ID of this address.
+	 *
+	 * @param countryId the country ID of this address
+	 */
 	@Override
 	public void setCountryId(long countryId) {
-		_address.setCountryId(countryId);
+		model.setCountryId(countryId);
 	}
 
 	/**
-	* Sets the create date of this address.
-	*
-	* @param createDate the create date of this address
-	*/
+	 * Sets the create date of this address.
+	 *
+	 * @param createDate the create date of this address
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_address.setCreateDate(createDate);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_address.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_address.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_address.setExpandoBridgeAttributes(serviceContext);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets whether this address is mailing.
-	*
-	* @param mailing the mailing of this address
-	*/
+	 * Sets whether this address is mailing.
+	 *
+	 * @param mailing the mailing of this address
+	 */
 	@Override
 	public void setMailing(boolean mailing) {
-		_address.setMailing(mailing);
+		model.setMailing(mailing);
 	}
 
 	/**
-	* Sets the modified date of this address.
-	*
-	* @param modifiedDate the modified date of this address
-	*/
+	 * Sets the modified date of this address.
+	 *
+	 * @param modifiedDate the modified date of this address
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_address.setModifiedDate(modifiedDate);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the mvcc version of this address.
-	*
-	* @param mvccVersion the mvcc version of this address
-	*/
+	 * Sets the mvcc version of this address.
+	 *
+	 * @param mvccVersion the mvcc version of this address
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_address.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_address.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets whether this address is primary.
-	*
-	* @param primary the primary of this address
-	*/
+	 * Sets whether this address is primary.
+	 *
+	 * @param primary the primary of this address
+	 */
 	@Override
 	public void setPrimary(boolean primary) {
-		_address.setPrimary(primary);
+		model.setPrimary(primary);
 	}
 
 	/**
-	* Sets the primary key of this address.
-	*
-	* @param primaryKey the primary key of this address
-	*/
+	 * Sets the primary key of this address.
+	 *
+	 * @param primaryKey the primary key of this address
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_address.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_address.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the region ID of this address.
-	*
-	* @param regionId the region ID of this address
-	*/
+	 * Sets the region ID of this address.
+	 *
+	 * @param regionId the region ID of this address
+	 */
 	@Override
 	public void setRegionId(long regionId) {
-		_address.setRegionId(regionId);
+		model.setRegionId(regionId);
 	}
 
 	/**
-	* Sets the street1 of this address.
-	*
-	* @param street1 the street1 of this address
-	*/
+	 * Sets the street1 of this address.
+	 *
+	 * @param street1 the street1 of this address
+	 */
 	@Override
-	public void setStreet1(java.lang.String street1) {
-		_address.setStreet1(street1);
+	public void setStreet1(String street1) {
+		model.setStreet1(street1);
 	}
 
 	/**
-	* Sets the street2 of this address.
-	*
-	* @param street2 the street2 of this address
-	*/
+	 * Sets the street2 of this address.
+	 *
+	 * @param street2 the street2 of this address
+	 */
 	@Override
-	public void setStreet2(java.lang.String street2) {
-		_address.setStreet2(street2);
+	public void setStreet2(String street2) {
+		model.setStreet2(street2);
 	}
 
 	/**
-	* Sets the street3 of this address.
-	*
-	* @param street3 the street3 of this address
-	*/
+	 * Sets the street3 of this address.
+	 *
+	 * @param street3 the street3 of this address
+	 */
 	@Override
-	public void setStreet3(java.lang.String street3) {
-		_address.setStreet3(street3);
+	public void setStreet3(String street3) {
+		model.setStreet3(street3);
 	}
 
 	/**
-	* Sets the type ID of this address.
-	*
-	* @param typeId the type ID of this address
-	*/
+	 * Sets the type ID of this address.
+	 *
+	 * @param typeId the type ID of this address
+	 */
 	@Override
 	public void setTypeId(long typeId) {
-		_address.setTypeId(typeId);
+		model.setTypeId(typeId);
 	}
 
 	/**
-	* Sets the user ID of this address.
-	*
-	* @param userId the user ID of this address
-	*/
+	 * Sets the user ID of this address.
+	 *
+	 * @param userId the user ID of this address
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_address.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user name of this address.
-	*
-	* @param userName the user name of this address
-	*/
+	 * Sets the user name of this address.
+	 *
+	 * @param userName the user name of this address
+	 */
 	@Override
-	public void setUserName(java.lang.String userName) {
-		_address.setUserName(userName);
+	public void setUserName(String userName) {
+		model.setUserName(userName);
 	}
 
 	/**
-	* Sets the user uuid of this address.
-	*
-	* @param userUuid the user uuid of this address
-	*/
+	 * Sets the user uuid of this address.
+	 *
+	 * @param userUuid the user uuid of this address
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_address.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets the uuid of this address.
-	*
-	* @param uuid the uuid of this address
-	*/
+	 * Sets the uuid of this address.
+	 *
+	 * @param uuid the uuid of this address
+	 */
 	@Override
-	public void setUuid(java.lang.String uuid) {
-		_address.setUuid(uuid);
+	public void setUuid(String uuid) {
+		model.setUuid(uuid);
 	}
 
 	/**
-	* Sets the zip of this address.
-	*
-	* @param zip the zip of this address
-	*/
+	 * Sets the zip of this address.
+	 *
+	 * @param zip the zip of this address
+	 */
 	@Override
-	public void setZip(java.lang.String zip) {
-		_address.setZip(zip);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof AddressWrapper)) {
-			return false;
-		}
-
-		AddressWrapper addressWrapper = (AddressWrapper)obj;
-
-		if (Objects.equals(_address, addressWrapper._address)) {
-			return true;
-		}
-
-		return false;
+	public void setZip(String zip) {
+		model.setZip(zip);
 	}
 
 	@Override
 	public StagedModelType getStagedModelType() {
-		return _address.getStagedModelType();
+		return model.getStagedModelType();
 	}
 
 	@Override
-	public Address getWrappedModel() {
-		return _address;
+	protected AddressWrapper wrap(Address address) {
+		return new AddressWrapper(address);
 	}
 
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _address.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _address.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_address.resetOriginalValues();
-	}
-
-	private final Address _address;
 }

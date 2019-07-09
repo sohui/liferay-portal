@@ -14,19 +14,21 @@
 
 package com.liferay.portal.service;
 
+import com.liferay.portal.kernel.aop.AopMethodInvocation;
+import com.liferay.portal.kernel.aop.ChainableMethodAdvice;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
-import com.liferay.portal.spring.aop.ServiceBeanAopCacheManager;
+import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
+import com.liferay.portal.spring.aop.AopInvocationHandler;
+import com.liferay.portal.spring.transaction.TransactionExecutor;
 
-import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
@@ -34,163 +36,158 @@ import org.junit.Test;
  */
 public class ServiceContextAdviceTest {
 
+	@ClassRule
+	public static final CodeCoverageAssertor codeCoverageAssertor =
+		CodeCoverageAssertor.INSTANCE;
+
 	@Before
-	public void setUp() {
-		_testServiceBeanAopCacheManager = new TestServiceBeanAopCacheManager();
+	public void setUp() throws Exception {
+		Constructor<AopInvocationHandler> constructor =
+			AopInvocationHandler.class.getDeclaredConstructor(
+				Object.class, ChainableMethodAdvice[].class,
+				TransactionExecutor.class);
 
-		_serviceContextAdvice = new ServiceContextAdvice();
+		constructor.setAccessible(true);
 
-		ReflectionTestUtil.setFieldValue(
-			_serviceContextAdvice, "serviceBeanAopCacheManager",
-			_testServiceBeanAopCacheManager);
-
-		_serviceContext = new ServiceContext();
-
-		ServiceContextThreadLocal.pushServiceContext(_serviceContext);
+		_aopInvocationHandler = constructor.newInstance(
+			_testInterceptedClass,
+			new ChainableMethodAdvice[] {new ServiceContextAdvice()}, null);
 	}
 
 	@Test
 	public void testThreadLocalValue() throws Throwable {
-		MethodInvocation methodInvocation = createMethodInvocation(
-			new Object[] {new ServiceContext()},
-			new Class<?>[] {ServiceContext.class}, false);
+		ServiceContext serviceContext1 = new ServiceContext();
 
-		_serviceContextAdvice.invoke(methodInvocation);
+		ServiceContextThreadLocal.pushServiceContext(serviceContext1);
 
-		Assert.assertFalse(
-			_testServiceBeanAopCacheManager.isRemovedMethodInterceptor());
+		Method method = ReflectionTestUtil.getMethod(
+			TestInterceptedClass.class, "method", ServiceContext.class);
+
+		ServiceContext serviceContext2 = new ServiceContext();
+
+		AopMethodInvocation aopMethodInvocation = _createTestMethodInvocation(
+			method);
+
+		aopMethodInvocation.proceed(new Object[] {serviceContext2});
+
+		Assert.assertSame(
+			serviceContext1, ServiceContextThreadLocal.popServiceContext());
 	}
 
 	@Test
-	public void testWithNoArguments() throws Throwable {
-		MethodInvocation methodInvocation = createMethodInvocation(
-			new Object[0], new Class<?>[0], true);
+	public void testWithNoArguments() {
+		Method method = ReflectionTestUtil.getMethod(
+			TestInterceptedClass.class, "method");
 
-		_serviceContextAdvice.invoke(methodInvocation);
+		AopMethodInvocation aopMethodInvocation = ReflectionTestUtil.invoke(
+			_aopInvocationHandler, "_getAopMethodInvocation",
+			new Class<?>[] {Method.class}, method);
 
-		Assert.assertTrue(
-			_testServiceBeanAopCacheManager.isRemovedMethodInterceptor());
+		Assert.assertNull(
+			ReflectionTestUtil.getFieldValue(
+				aopMethodInvocation, "_nextAopMethodInvocation"));
 	}
 
 	@Test
-	public void testWithNullServiceContextArgument() throws Throwable {
-		MethodInvocation methodInvocation = createMethodInvocation(
-			new Object[0], new Class<?>[] {ServiceContext.class}, true);
+	public void testWithNullServiceContext() throws Throwable {
+		ServiceContext serviceContext = new ServiceContext();
 
-		_serviceContextAdvice.invoke(methodInvocation);
+		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
-		Assert.assertFalse(
-			_testServiceBeanAopCacheManager.isRemovedMethodInterceptor());
+		Method method = ReflectionTestUtil.getMethod(
+			TestInterceptedClass.class, "method", ServiceContext.class);
+
+		AopMethodInvocation aopMethodInvocation = _createTestMethodInvocation(
+			method);
+
+		aopMethodInvocation.proceed(new Object[] {null});
+
+		Assert.assertSame(
+			serviceContext, ServiceContextThreadLocal.popServiceContext());
 	}
 
 	@Test
-	public void testWithoutServiceContextParameter() throws Throwable {
-		MethodInvocation methodInvocation = createMethodInvocation(
-			new Object[] {null}, new Class<?>[] {Object.class}, true);
+	public void testWithoutServiceContextParameter() {
+		ServiceContextThreadLocal.pushServiceContext(new ServiceContext());
 
-		_serviceContextAdvice.invoke(methodInvocation);
+		Method method = ReflectionTestUtil.getMethod(
+			TestInterceptedClass.class, "method", Object.class);
 
-		Assert.assertTrue(
-			_testServiceBeanAopCacheManager.isRemovedMethodInterceptor());
+		AopMethodInvocation aopMethodInvocation = ReflectionTestUtil.invoke(
+			_aopInvocationHandler, "_getAopMethodInvocation",
+			new Class<?>[] {Method.class}, method);
+
+		Assert.assertNull(
+			ReflectionTestUtil.getFieldValue(
+				aopMethodInvocation, "_nextAopMethodInvocation"));
 	}
 
 	@Test
 	public void testWithServiceContextWrapper() throws Throwable {
-		MethodInvocation methodInvocation = createMethodInvocation(
-			new Object[] {new TestServiceContextWrapper()},
-			new Class<?>[] {TestServiceContextWrapper.class}, false);
+		ServiceContext serviceContext = new ServiceContext();
 
-		_serviceContextAdvice.invoke(methodInvocation);
+		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
-		Assert.assertFalse(
-			_testServiceBeanAopCacheManager.isRemovedMethodInterceptor());
+		Method method = ReflectionTestUtil.getMethod(
+			TestInterceptedClass.class, "method",
+			TestServiceContextWrapper.class, Object.class);
+
+		TestServiceContextWrapper testServiceContextWrapper =
+			new TestServiceContextWrapper();
+
+		AopMethodInvocation aopMethodInvocation = _createTestMethodInvocation(
+			method);
+
+		aopMethodInvocation.proceed(
+			new Object[] {testServiceContextWrapper, null});
+
+		Assert.assertSame(
+			serviceContext, ServiceContextThreadLocal.popServiceContext());
 	}
 
-	protected MethodInvocation createMethodInvocation(
-			final Object[] arguments, Class<?>[] parameterTypes,
-			final boolean expectedOriginalServiceContext)
-		throws Throwable {
-
-		final Method method = ReflectionTestUtil.getMethod(
-			TestInterceptedClass.class, "method", parameterTypes);
-
-		return new MethodInvocation() {
-
-			@Override
-			public Method getMethod() {
-				return method;
-			}
-
-			@Override
-			public Object[] getArguments() {
-				return arguments;
-			}
-
-			@Override
-			public Object proceed() throws Throwable {
-				ServiceContext serviceContext =
-					ServiceContextThreadLocal.getServiceContext();
-
-				Assert.assertEquals(
-					expectedOriginalServiceContext,
-					_serviceContext == serviceContext);
-
-				return null;
-			}
-
-			@Override
-			public Object getThis() {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public AccessibleObject getStaticPart() {
-				throw new UnsupportedOperationException();
-			}
-
-		};
+	private AopMethodInvocation _createTestMethodInvocation(Method method) {
+		return ReflectionTestUtil.invoke(
+			_aopInvocationHandler, "_getAopMethodInvocation",
+			new Class<?>[] {Method.class}, method);
 	}
 
-	private ServiceContext _serviceContext;
-	private ServiceContextAdvice _serviceContextAdvice;
-	private TestServiceBeanAopCacheManager _testServiceBeanAopCacheManager;
+	private AopInvocationHandler _aopInvocationHandler;
+	private final TestInterceptedClass _testInterceptedClass =
+		new TestInterceptedClass();
 
 	private static class TestInterceptedClass {
 
 		@SuppressWarnings("unused")
 		public void method() {
+			throw new UnsupportedOperationException();
 		}
 
 		@SuppressWarnings("unused")
 		public void method(Object obj) {
+			throw new UnsupportedOperationException();
 		}
 
 		@SuppressWarnings("unused")
 		public void method(ServiceContext serviceContext) {
+			if (serviceContext == null) {
+				Assert.assertNotNull(
+					ServiceContextThreadLocal.getServiceContext());
+			}
+			else {
+				Assert.assertSame(
+					serviceContext,
+					ServiceContextThreadLocal.getServiceContext());
+			}
 		}
 
 		@SuppressWarnings("unused")
-		public void method(TestServiceContextWrapper serviceContextWrapper) {
+		public void method(
+			TestServiceContextWrapper serviceContextWrapper, Object obj) {
+
+			Assert.assertSame(
+				serviceContextWrapper,
+				ServiceContextThreadLocal.getServiceContext());
 		}
-
-	}
-
-	private static class TestServiceBeanAopCacheManager
-		extends ServiceBeanAopCacheManager {
-
-		public boolean isRemovedMethodInterceptor() {
-			return _removedMethodInterceptor;
-		}
-
-		@Override
-		public void removeMethodInterceptor(
-			MethodInvocation methodInvocation,
-			MethodInterceptor methodInterceptor) {
-
-			_removedMethodInterceptor = true;
-		}
-
-		private boolean _removedMethodInterceptor;
 
 	}
 

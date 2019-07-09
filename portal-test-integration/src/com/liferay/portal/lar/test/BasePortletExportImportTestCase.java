@@ -20,14 +20,17 @@ import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetLinkLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.kernel.DDMTemplate;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationConstants;
-import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
+import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleConstants;
+import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManagerUtil;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
@@ -46,9 +49,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.portlet.dynamicdatamapping.util.test.DDMTemplateTestUtil;
 
@@ -129,7 +130,7 @@ public abstract class BasePortletExportImportTestCase
 
 		exportParameterMap.put(
 			PortletDataHandlerKeys.DELETIONS,
-			new String[] {String.valueOf(true)});
+			new String[] {Boolean.TRUE.toString()});
 
 		exportImportPortlet(
 			getPortletId(), exportParameterMap, getImportParameterMap());
@@ -143,7 +144,7 @@ public abstract class BasePortletExportImportTestCase
 
 		importParameterMap.put(
 			PortletDataHandlerKeys.DELETIONS,
-			new String[] {String.valueOf(true)});
+			new String[] {Boolean.TRUE.toString()});
 
 		exportImportPortlet(
 			getPortletId(), exportParameterMap, importParameterMap);
@@ -233,7 +234,7 @@ public abstract class BasePortletExportImportTestCase
 
 		exportParameterMap.put(
 			PortletDataHandlerKeys.UPDATE_LAST_PUBLISH_DATE,
-			new String[] {String.valueOf(true)});
+			new String[] {Boolean.TRUE.toString()});
 		exportParameterMap.put(
 			"range",
 			new String[] {ExportImportDateUtil.RANGE_FROM_LAST_PUBLISH_DATE});
@@ -396,7 +397,7 @@ public abstract class BasePortletExportImportTestCase
 		MapUtil.merge(getExportParameterMap(), exportParameterMap);
 
 		Map<String, Serializable> settingsMap =
-			ExportImportConfigurationSettingsMapFactory.
+			ExportImportConfigurationSettingsMapFactoryUtil.
 				buildExportPortletSettingsMap(
 					user, layout.getPlid(), layout.getGroupId(), portletId,
 					exportParameterMap, StringPool.BLANK);
@@ -405,10 +406,20 @@ public abstract class BasePortletExportImportTestCase
 			ExportImportConfigurationLocalServiceUtil.
 				addDraftExportImportConfiguration(
 					user.getUserId(),
-					ExportImportConfigurationConstants.TYPE_EXPORT_PORTLET,
+					ExportImportConfigurationConstants.
+						TYPE_PUBLISH_PORTLET_LOCAL,
 					settingsMap);
 
 		ExportImportThreadLocal.setPortletStagingInProcess(true);
+
+		ExportImportLifecycleManagerUtil.fireExportImportLifecycleEvent(
+			ExportImportLifecycleConstants.
+				EVENT_PUBLICATION_PORTLET_LOCAL_STARTED,
+			ExportImportLifecycleConstants.
+				PROCESS_FLAG_PORTLET_STAGING_IN_PROCESS,
+			String.valueOf(
+				exportImportConfiguration.getExportImportConfigurationId()),
+			exportImportConfiguration);
 
 		try {
 			larFile = ExportImportLocalServiceUtil.exportPortletInfoAsFile(
@@ -419,7 +430,7 @@ public abstract class BasePortletExportImportTestCase
 			MapUtil.merge(getImportParameterMap(), importParameterMap);
 
 			settingsMap =
-				ExportImportConfigurationSettingsMapFactory.
+				ExportImportConfigurationSettingsMapFactoryUtil.
 					buildImportPortletSettingsMap(
 						user, importedLayout.getPlid(),
 						importedGroup.getGroupId(), portletId,
@@ -427,18 +438,33 @@ public abstract class BasePortletExportImportTestCase
 
 			exportImportConfiguration =
 				ExportImportConfigurationLocalServiceUtil.
-					addExportImportConfiguration(
-						user.getUserId(), importedGroup.getGroupId(),
-						StringPool.BLANK, StringPool.BLANK,
-						ExportImportConfigurationConstants.TYPE_IMPORT_PORTLET,
-						settingsMap, WorkflowConstants.STATUS_DRAFT,
+					updateExportImportConfiguration(
+						user.getUserId(),
+						exportImportConfiguration.
+							getExportImportConfigurationId(),
+						StringPool.BLANK, StringPool.BLANK, settingsMap,
 						new ServiceContext());
+
+			exportImportConfiguration.setGroupId(importedGroup.getGroupId());
+
+			exportImportConfiguration =
+				ExportImportConfigurationLocalServiceUtil.
+					updateExportImportConfiguration(exportImportConfiguration);
 
 			ExportImportLocalServiceUtil.importPortletDataDeletions(
 				exportImportConfiguration, larFile);
 
 			ExportImportLocalServiceUtil.importPortletInfo(
 				exportImportConfiguration, larFile);
+
+			ExportImportLifecycleManagerUtil.fireExportImportLifecycleEvent(
+				ExportImportLifecycleConstants.
+					EVENT_PUBLICATION_PORTLET_LOCAL_SUCCEEDED,
+				ExportImportLifecycleConstants.
+					PROCESS_FLAG_PORTLET_STAGING_IN_PROCESS,
+				String.valueOf(
+					exportImportConfiguration.getExportImportConfigurationId()),
+				exportImportConfiguration);
 		}
 		finally {
 			ExportImportThreadLocal.setPortletStagingInProcess(false);
@@ -450,8 +476,8 @@ public abstract class BasePortletExportImportTestCase
 		throws Exception {
 
 		String portletId = LayoutTestUtil.addPortletToLayout(
-			TestPropsValues.getUserId(), this.layout, getPortletId(),
-			"column-1", preferenceMap);
+			TestPropsValues.getUserId(), layout, getPortletId(), "column-1",
+			preferenceMap);
 
 		exportImportPortlet(portletId);
 
@@ -517,7 +543,9 @@ public abstract class BasePortletExportImportTestCase
 
 		TemplateHandler templateHandler = portlet.getTemplateHandlerInstance();
 
-		if (templateHandler == null) {
+		if ((templateHandler == null) ||
+			!templateHandler.isDisplayTemplateHandler()) {
+
 			Assert.assertTrue("This test does not apply", true);
 
 			return;
@@ -592,7 +620,8 @@ public abstract class BasePortletExportImportTestCase
 			importedAssetEntry.getEntryId());
 
 		Assert.assertEquals(
-			originalAssetLinks.size(), importedAssetLinks.size());
+			importedAssetLinks.toString(), originalAssetLinks.size(),
+			importedAssetLinks.size());
 
 		for (AssetLink originalLink : originalAssetLinks) {
 			AssetEntry sourceAssetEntry = AssetEntryLocalServiceUtil.getEntry(
@@ -609,9 +638,6 @@ public abstract class BasePortletExportImportTestCase
 				AssetEntry importedLinkSourceAssetEntry =
 					AssetEntryLocalServiceUtil.getEntry(
 						importedLink.getEntryId1());
-				AssetEntry importedLinkTargetAssetEntry =
-					AssetEntryLocalServiceUtil.getEntry(
-						importedLink.getEntryId2());
 
 				if (!Objects.equals(
 						sourceAssetEntry.getClassUuid(),
@@ -619,6 +645,10 @@ public abstract class BasePortletExportImportTestCase
 
 					continue;
 				}
+
+				AssetEntry importedLinkTargetAssetEntry =
+					AssetEntryLocalServiceUtil.getEntry(
+						importedLink.getEntryId2());
 
 				if (!Objects.equals(
 						targetAssetEntry.getClassUuid(),
@@ -638,7 +668,8 @@ public abstract class BasePortletExportImportTestCase
 			}
 		}
 
-		Assert.assertEquals(0, importedAssetLinks.size());
+		Assert.assertEquals(
+			importedAssetLinks.toString(), 0, importedAssetLinks.size());
 	}
 
 	protected void validateVersions() throws Exception {

@@ -14,14 +14,18 @@
 
 package com.liferay.portal.kernel.io;
 
+import com.liferay.petra.string.StringBundler;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
 import java.nio.ByteBuffer;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class RestrictedByteArrayCacheOutputStream extends OutputStream {
 
 	public RestrictedByteArrayCacheOutputStream(
@@ -37,8 +41,9 @@ public class RestrictedByteArrayCacheOutputStream extends OutputStream {
 
 		if (initialCacheSize > cacheCapacity) {
 			throw new IllegalArgumentException(
-				"Initial cache size " + initialCacheSize +
-					" is larger than cache capacity " + cacheCapacity);
+				StringBundler.concat(
+					"Initial cache size ", initialCacheSize,
+					" is larger than cache capacity ", cacheCapacity));
 		}
 
 		this.outputStream = outputStream;

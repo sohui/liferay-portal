@@ -35,8 +35,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.Globals;
-
 /**
  * @author Raymond Augé
  */
@@ -44,20 +42,21 @@ public class ServletAuthorizingFilter extends BasePortalFilter {
 
 	@Override
 	protected void processFilter(
-			HttpServletRequest request, HttpServletResponse response,
-			FilterChain filterChain)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, FilterChain filterChain)
 		throws Exception {
 
-		HttpSession session = request.getSession();
+		HttpSession session = httpServletRequest.getSession();
 
 		// Company id
 
-		PortalInstances.getCompanyId(request);
+		PortalInstances.getCompanyId(httpServletRequest);
 
 		// Authorize
 
-		long userId = PortalUtil.getUserId(request);
-		String remoteUser = request.getRemoteUser();
+		long userId = PortalUtil.getUserId(httpServletRequest);
+
+		String remoteUser = httpServletRequest.getRemoteUser();
 
 		if (!PropsValues.PORTAL_JAAS_ENABLE) {
 			String jRemoteUser = (String)session.getAttribute("j_remoteuser");
@@ -79,7 +78,10 @@ public class ServletAuthorizingFilter extends BasePortalFilter {
 		// authenticated user. We use ProtectedServletRequest to ensure we get
 		// similar behavior across all servers.
 
-		request = new ProtectedServletRequest(request, remoteUser);
+		if (remoteUser != null) {
+			httpServletRequest = new ProtectedServletRequest(
+				httpServletRequest, remoteUser);
+		}
 
 		if ((userId > 0) || (remoteUser != null)) {
 
@@ -116,7 +118,7 @@ public class ServletAuthorizingFilter extends BasePortalFilter {
 
 				// User locale
 
-				session.setAttribute(Globals.LOCALE_KEY, user.getLocale());
+				session.setAttribute(WebKeys.LOCALE, user.getLocale());
 			}
 			catch (Exception e) {
 				_log.error(e, e);
@@ -124,8 +126,8 @@ public class ServletAuthorizingFilter extends BasePortalFilter {
 		}
 
 		processFilter(
-			ServletAuthorizingFilter.class.getName(), request, response,
-			filterChain);
+			ServletAuthorizingFilter.class.getName(), httpServletRequest,
+			httpServletResponse, filterChain);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

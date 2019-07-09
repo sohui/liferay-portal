@@ -14,29 +14,40 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
 
-import java.lang.reflect.Field;
-
+import java.util.HashMap;
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.powermock.api.mockito.PowerMockito;
-
 /**
  * @author Tomas Polesovsky
  */
-public class PortalImplEscapeRedirectTest extends PowerMockito {
+public class PortalImplEscapeRedirectTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		HttpUtil httpUtil = new HttpUtil();
 
 		httpUtil.setHttp(new HttpImpl());
+
+		PropsTestUtil.setProps(
+			new HashMap<String, Object>() {
+				{
+					put(
+						PropsKeys.DNS_SECURITY_ADDRESS_TIMEOUT_SECONDS,
+						String.valueOf(2));
+					put(
+						PropsKeys.DNS_SECURITY_THREAD_LIMIT,
+						String.valueOf(10));
+				}
+			});
 	}
 
 	@Test
@@ -51,6 +62,7 @@ public class PortalImplEscapeRedirectTest extends PowerMockito {
 			new String[] {"google.com", "localhost"});
 
 		try {
+			Assert.assertEquals("/", _portalImpl.escapeRedirect("/"));
 			Assert.assertEquals(
 				"/web/guest", _portalImpl.escapeRedirect("/web/guest"));
 			Assert.assertEquals(
@@ -72,6 +84,14 @@ public class PortalImplEscapeRedirectTest extends PowerMockito {
 				"https://google.com:8080/a/b;c=d?e=f&g=h#x=y",
 				_portalImpl.escapeRedirect(
 					"https://google.com:8080/a/b;c=d?e=f&g=h#x=y"));
+			Assert.assertEquals(
+				"test:test@google.com",
+				_portalImpl.escapeRedirect("test:test@google.com"));
+			Assert.assertEquals(
+				"test@google.com",
+				_portalImpl.escapeRedirect("test@google.com"));
+			Assert.assertEquals(
+				":@google.com", _portalImpl.escapeRedirect(":@google.com"));
 			Assert.assertNull(_portalImpl.escapeRedirect("liferay.com"));
 			Assert.assertNull(_portalImpl.escapeRedirect("http://liferay.com"));
 			Assert.assertNull(
@@ -81,6 +101,14 @@ public class PortalImplEscapeRedirectTest extends PowerMockito {
 			Assert.assertNull(_portalImpl.escapeRedirect("google.com.suffix"));
 			Assert.assertNull(_portalImpl.escapeRedirect("prefixgoogle.com"));
 			Assert.assertNull(_portalImpl.escapeRedirect("prefix.google.com"));
+			Assert.assertNull(_portalImpl.escapeRedirect(":google.com"));
+			Assert.assertNull(_portalImpl.escapeRedirect("test:google.com"));
+			Assert.assertNull(
+				_portalImpl.escapeRedirect("test:test@liferay.com"));
+			Assert.assertNull(_portalImpl.escapeRedirect("test@liferay.com"));
+			Assert.assertNull(_portalImpl.escapeRedirect("@liferay.com"));
+			Assert.assertNull(_portalImpl.escapeRedirect(":@liferay.com"));
+			Assert.assertNull(_portalImpl.escapeRedirect("//www.google.com"));
 		}
 		finally {
 			setPropsValuesValue(
@@ -95,12 +123,16 @@ public class PortalImplEscapeRedirectTest extends PowerMockito {
 		String[] redirectURLIPsAllowed = PropsValues.REDIRECT_URL_IPS_ALLOWED;
 		String redirectURLSecurityMode = PropsValues.REDIRECT_URL_SECURITY_MODE;
 
+		setPropsValuesValue("DNS_SECURITY_THREAD_LIMIT", 10);
+		setPropsValuesValue("DNS_SECURITY_ADDRESS_TIMEOUT_SECONDS", 2);
+
 		setPropsValuesValue("REDIRECT_URL_SECURITY_MODE", "ip");
 		setPropsValuesValue(
 			"REDIRECT_URL_IPS_ALLOWED",
 			new String[] {"127.0.0.1", "SERVER_IP"});
 
 		try {
+			Assert.assertEquals("/", _portalImpl.escapeRedirect("/"));
 			Assert.assertEquals(
 				"/web/guest", _portalImpl.escapeRedirect("/web/guest"));
 			Assert.assertEquals(
@@ -137,6 +169,8 @@ public class PortalImplEscapeRedirectTest extends PowerMockito {
 			Assert.assertNull(_portalImpl.escapeRedirect("prefix.127.0.0.1"));
 		}
 		finally {
+			setPropsValuesValue("DNS_SECURITY_THREAD_LIMIT", 10);
+			setPropsValuesValue("DNS_SECURITY_ADDRESS_TIMEOUT_SECONDS", 2);
 			setPropsValuesValue(
 				"REDIRECT_URL_IPS_ALLOWED", redirectURLIPsAllowed);
 			setPropsValuesValue(
@@ -156,6 +190,7 @@ public class PortalImplEscapeRedirectTest extends PowerMockito {
 			new String[] {"*.test.liferay.com", "google.com"});
 
 		try {
+			Assert.assertEquals("/", _portalImpl.escapeRedirect("/"));
 			Assert.assertEquals(
 				"/web/guest", _portalImpl.escapeRedirect("/web/guest"));
 			Assert.assertEquals(
@@ -218,10 +253,7 @@ public class PortalImplEscapeRedirectTest extends PowerMockito {
 	protected void setPropsValuesValue(String name, Object value)
 		throws Exception {
 
-		Field field = ReflectionUtil.unfinalField(
-			field(PropsValues.class, name));
-
-		field.set(PropsValues.class, value);
+		ReflectionTestUtil.setFieldValue(PropsValues.class, name, value);
 	}
 
 	private final PortalImpl _portalImpl = new PortalImpl();

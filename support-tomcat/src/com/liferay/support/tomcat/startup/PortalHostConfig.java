@@ -14,6 +14,7 @@
 
 package com.liferay.support.tomcat.startup;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringComparator;
@@ -29,9 +30,9 @@ import org.apache.catalina.startup.HostConfig;
  * Tomcat will always process XML descriptors first, then packaged WARs, and
  * then exploded WARs. However, Tomcat does not have a predictable load order
  * for the XML descriptors or the WARs. It relies on Java's
- * <code>File.list()</code> implementation which is not predictable.
- * This class overrides several of the deploy methods to ensure that the files
- * are always processed alphabetically (case sensitive).
+ * <code>File.list()</code> implementation which is not predictable. This class
+ * overrides several of the deploy methods to ensure that the files are always
+ * processed alphabetically (case sensitive).
  * </p>
  *
  * <p>
@@ -73,7 +74,7 @@ public class PortalHostConfig extends HostConfig {
 			_log.debug("Sort " + files.length + " files");
 
 			for (int i = 0; i < files.length; i++) {
-				_log.debug("File " + i + " " + files[i]);
+				_log.debug(StringBundler.concat("File ", i, " ", files[i]));
 			}
 		}
 

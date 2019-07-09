@@ -14,7 +14,8 @@
 
 package com.liferay.portal.spring.bean;
 
-import com.liferay.portal.cluster.ClusterableAdvice;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.internal.cluster.ClusterableAdvice;
 import com.liferay.portal.kernel.bean.BeanLocatorException;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
@@ -33,7 +34,6 @@ import java.util.Map;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.util.ReflectionUtils;
@@ -43,17 +43,9 @@ import org.springframework.util.ReflectionUtils;
  * @author Shuyang Zhou
  */
 public class BeanReferenceAnnotationBeanPostProcessor
-	implements BeanFactoryAware, BeanPostProcessor {
-
-	public BeanReferenceAnnotationBeanPostProcessor() {
-		if (_log.isDebugEnabled()) {
-			_log.debug("Creating instance " + this.hashCode());
-		}
-	}
+	implements BeanPostProcessor {
 
 	public BeanReferenceAnnotationBeanPostProcessor(BeanFactory beanFactory) {
-		this();
-
 		_beanFactory = beanFactory;
 	}
 
@@ -76,19 +68,15 @@ public class BeanReferenceAnnotationBeanPostProcessor
 			beanName.endsWith("Service") && _log.isWarnEnabled()) {
 
 			_log.warn(
-				beanName + " should implement " +
-					IdentifiableOSGiService.class.getName() + " for " +
-						ClusterableAdvice.class.getName());
+				StringBundler.concat(
+					beanName, " should implement ",
+					IdentifiableOSGiService.class.getName(), " for ",
+					ClusterableAdvice.class.getName()));
 		}
 
 		_autoInject(bean, beanName, bean.getClass());
 
 		return bean;
-	}
-
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		_beanFactory = beanFactory;
 	}
 
 	private void _autoInject(
@@ -164,9 +152,6 @@ public class BeanReferenceAnnotationBeanPostProcessor
 
 			ReflectionUtils.makeAccessible(field);
 
-			BeanReferenceRefreshUtil.registerRefreshPoint(
-				_beanFactory, targetBean, field, referencedBeanName);
-
 			try {
 				field.set(targetBean, referencedBean);
 			}
@@ -186,7 +171,7 @@ public class BeanReferenceAnnotationBeanPostProcessor
 	private static final Log _log = LogFactoryUtil.getLog(
 		BeanReferenceAnnotationBeanPostProcessor.class);
 
-	private BeanFactory _beanFactory;
+	private final BeanFactory _beanFactory;
 	private final Map<String, Object> _beans = new HashMap<>();
 
 }

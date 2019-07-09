@@ -14,20 +14,14 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -39,19 +33,11 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class UserWrapper implements User, ModelWrapper<User> {
+public class UserWrapper
+	extends BaseModelWrapper<User> implements User, ModelWrapper<User> {
+
 	public UserWrapper(User user) {
-		_user = user;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return User.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return User.class.getName();
+		super(user);
 	}
 
 	@Override
@@ -60,15 +46,16 @@ public class UserWrapper implements User, ModelWrapper<User> {
 
 		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("userId", getUserId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
-		attributes.put("defaultUser", getDefaultUser());
+		attributes.put("defaultUser", isDefaultUser());
 		attributes.put("contactId", getContactId());
 		attributes.put("password", getPassword());
-		attributes.put("passwordEncrypted", getPasswordEncrypted());
-		attributes.put("passwordReset", getPasswordReset());
+		attributes.put("passwordEncrypted", isPasswordEncrypted());
+		attributes.put("passwordReset", isPasswordReset());
 		attributes.put("passwordModifiedDate", getPasswordModifiedDate());
 		attributes.put("digest", getDigest());
 		attributes.put("reminderQueryQuestion", getReminderQueryQuestion());
@@ -95,10 +82,10 @@ public class UserWrapper implements User, ModelWrapper<User> {
 		attributes.put("lastLoginIP", getLastLoginIP());
 		attributes.put("lastFailedLoginDate", getLastFailedLoginDate());
 		attributes.put("failedLoginAttempts", getFailedLoginAttempts());
-		attributes.put("lockout", getLockout());
+		attributes.put("lockout", isLockout());
 		attributes.put("lockoutDate", getLockoutDate());
-		attributes.put("agreedToTermsOfUse", getAgreedToTermsOfUse());
-		attributes.put("emailAddressVerified", getEmailAddressVerified());
+		attributes.put("agreedToTermsOfUse", isAgreedToTermsOfUse());
+		attributes.put("emailAddressVerified", isEmailAddressVerified());
 		attributes.put("status", getStatus());
 
 		return attributes;
@@ -116,6 +103,13 @@ public class UserWrapper implements User, ModelWrapper<User> {
 
 		if (uuid != null) {
 			setUuid(uuid);
+		}
+
+		String externalReferenceCode = (String)attributes.get(
+			"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
 		}
 
 		Long userId = (Long)attributes.get("userId");
@@ -160,7 +154,8 @@ public class UserWrapper implements User, ModelWrapper<User> {
 			setPassword(password);
 		}
 
-		Boolean passwordEncrypted = (Boolean)attributes.get("passwordEncrypted");
+		Boolean passwordEncrypted = (Boolean)attributes.get(
+			"passwordEncrypted");
 
 		if (passwordEncrypted != null) {
 			setPasswordEncrypted(passwordEncrypted);
@@ -172,7 +167,8 @@ public class UserWrapper implements User, ModelWrapper<User> {
 			setPasswordReset(passwordReset);
 		}
 
-		Date passwordModifiedDate = (Date)attributes.get("passwordModifiedDate");
+		Date passwordModifiedDate = (Date)attributes.get(
+			"passwordModifiedDate");
 
 		if (passwordModifiedDate != null) {
 			setPasswordModifiedDate(passwordModifiedDate);
@@ -185,14 +181,14 @@ public class UserWrapper implements User, ModelWrapper<User> {
 		}
 
 		String reminderQueryQuestion = (String)attributes.get(
-				"reminderQueryQuestion");
+			"reminderQueryQuestion");
 
 		if (reminderQueryQuestion != null) {
 			setReminderQueryQuestion(reminderQueryQuestion);
 		}
 
 		String reminderQueryAnswer = (String)attributes.get(
-				"reminderQueryAnswer");
+			"reminderQueryAnswer");
 
 		if (reminderQueryAnswer != null) {
 			setReminderQueryAnswer(reminderQueryAnswer);
@@ -325,7 +321,7 @@ public class UserWrapper implements User, ModelWrapper<User> {
 		}
 
 		Integer failedLoginAttempts = (Integer)attributes.get(
-				"failedLoginAttempts");
+			"failedLoginAttempts");
 
 		if (failedLoginAttempts != null) {
 			setFailedLoginAttempts(failedLoginAttempts);
@@ -344,14 +340,14 @@ public class UserWrapper implements User, ModelWrapper<User> {
 		}
 
 		Boolean agreedToTermsOfUse = (Boolean)attributes.get(
-				"agreedToTermsOfUse");
+			"agreedToTermsOfUse");
 
 		if (agreedToTermsOfUse != null) {
 			setAgreedToTermsOfUse(agreedToTermsOfUse);
 		}
 
 		Boolean emailAddressVerified = (Boolean)attributes.get(
-				"emailAddressVerified");
+			"emailAddressVerified");
 
 		if (emailAddressVerified != null) {
 			setEmailAddressVerified(emailAddressVerified);
@@ -365,1667 +361,1522 @@ public class UserWrapper implements User, ModelWrapper<User> {
 	}
 
 	@Override
-	public CacheModel<User> toCacheModel() {
-		return _user.toCacheModel();
+	public void addRemotePreference(
+		com.liferay.portal.kernel.util.RemotePreference remotePreference) {
+
+		model.addRemotePreference(remotePreference);
 	}
 
 	@Override
 	public Contact fetchContact() {
-		return _user.fetchContact();
+		return model.fetchContact();
+	}
+
+	@Override
+	public String fetchPortraitURL(
+		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay) {
+
+		return model.fetchPortraitURL(themeDisplay);
 	}
 
 	/**
-	* Returns the user's associated contact.
-	*
-	* @return the user's associated contact
-	* @see Contact
-	*/
+	 * Returns the user's addresses.
+	 *
+	 * @return the user's addresses
+	 */
+	@Override
+	public java.util.List<Address> getAddresses() {
+		return model.getAddresses();
+	}
+
+	/**
+	 * Returns the agreed to terms of use of this user.
+	 *
+	 * @return the agreed to terms of use of this user
+	 */
+	@Override
+	public boolean getAgreedToTermsOfUse() {
+		return model.getAgreedToTermsOfUse();
+	}
+
+	/**
+	 * Returns the user's birth date.
+	 *
+	 * @return the user's birth date
+	 */
+	@Override
+	public Date getBirthday()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getBirthday();
+	}
+
+	/**
+	 * Returns the comments of this user.
+	 *
+	 * @return the comments of this user
+	 */
+	@Override
+	public String getComments() {
+		return model.getComments();
+	}
+
+	/**
+	 * Returns the company ID of this user.
+	 *
+	 * @return the company ID of this user
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the user's company's mail domain.
+	 *
+	 * @return the user's company's mail domain
+	 */
+	@Override
+	public String getCompanyMx()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getCompanyMx();
+	}
+
+	/**
+	 * Returns the user's associated contact.
+	 *
+	 * @return the user's associated contact
+	 * @see Contact
+	 */
 	@Override
 	public Contact getContact()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getContact();
+
+		return model.getContact();
+	}
+
+	/**
+	 * Returns the contact ID of this user.
+	 *
+	 * @return the contact ID of this user
+	 */
+	@Override
+	public long getContactId() {
+		return model.getContactId();
+	}
+
+	/**
+	 * Returns the create date of this user.
+	 *
+	 * @return the create date of this user
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the default user of this user.
+	 *
+	 * @return the default user of this user
+	 */
+	@Override
+	public boolean getDefaultUser() {
+		return model.getDefaultUser();
+	}
+
+	/**
+	 * Returns the digest of this user.
+	 *
+	 * @return the digest of this user
+	 */
+	@Override
+	public String getDigest() {
+		return model.getDigest();
+	}
+
+	/**
+	 * Returns a digest for the user, incorporating the password.
+	 *
+	 * @param password a password to incorporate with the digest
+	 * @return a digest for the user, incorporating the password
+	 */
+	@Override
+	public String getDigest(String password) {
+		return model.getDigest(password);
+	}
+
+	/**
+	 * Returns the user's primary email address, or a blank string if the
+	 * address is fake.
+	 *
+	 * @return the user's primary email address, or a blank string if the
+	 address is fake
+	 */
+	@Override
+	public String getDisplayEmailAddress() {
+		return model.getDisplayEmailAddress();
+	}
+
+	/**
+	 * Returns the user's display URL based on the theme display, discounting
+	 * the URL of the user's default intranet site home page.
+	 *
+	 * <p>
+	 * The logic for the display URL to return is as follows:
+	 * </p>
+	 *
+	 * <ol>
+	 * <li>
+	 * If the user is the guest user, return an empty string.
+	 * </li>
+	 * <li>
+	 * Else, if a friendly URL is available for the user's profile, return that
+	 * friendly URL.
+	 * </li>
+	 * <li>
+	 * Otherwise, return the URL of the user's default extranet site home page.
+	 * </li>
+	 * </ol>
+	 *
+	 * @param themeDisplay the theme display
+	 * @return the user's display URL
+	 */
+	@Override
+	public String getDisplayURL(
+			com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getDisplayURL(themeDisplay);
+	}
+
+	/**
+	 * Returns the user's display URL based on the theme display.
+	 *
+	 * <p>
+	 * The logic for the display URL to return is as follows:
+	 * </p>
+	 *
+	 * <ol>
+	 * <li>
+	 * If the user is the guest user, return an empty string.
+	 * </li>
+	 * <li>
+	 * Else, if a friendly URL is available for the user's profile, return that
+	 * friendly URL.
+	 * </li>
+	 * <li>
+	 * Else, if <code>privateLayout</code> is <code>true</code>, return the URL
+	 * of the user's default intranet site home page.
+	 * </li>
+	 * <li>
+	 * Otherwise, return the URL of the user's default extranet site home page.
+	 * </li>
+	 * </ol>
+	 *
+	 * @param themeDisplay the theme display
+	 * @param privateLayout whether to use the URL of the user's default
+	 intranet (versus extranet) site home page, if no friendly URL is
+	 available for the user's profile
+	 * @return the user's display URL
+	 * @throws PortalException
+	 */
+	@Override
+	public String getDisplayURL(
+			com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay,
+			boolean privateLayout)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getDisplayURL(themeDisplay, privateLayout);
+	}
+
+	/**
+	 * Returns the email address of this user.
+	 *
+	 * @return the email address of this user
+	 */
+	@Override
+	public String getEmailAddress() {
+		return model.getEmailAddress();
+	}
+
+	/**
+	 * Returns the user's email addresses.
+	 *
+	 * @return the user's email addresses
+	 */
+	@Override
+	public java.util.List<EmailAddress> getEmailAddresses() {
+		return model.getEmailAddresses();
+	}
+
+	/**
+	 * Returns the email address verified of this user.
+	 *
+	 * @return the email address verified of this user
+	 */
+	@Override
+	public boolean getEmailAddressVerified() {
+		return model.getEmailAddressVerified();
+	}
+
+	/**
+	 * Returns the external reference code of this user.
+	 *
+	 * @return the external reference code of this user
+	 */
+	@Override
+	public String getExternalReferenceCode() {
+		return model.getExternalReferenceCode();
+	}
+
+	/**
+	 * Returns the facebook ID of this user.
+	 *
+	 * @return the facebook ID of this user
+	 */
+	@Override
+	public long getFacebookId() {
+		return model.getFacebookId();
+	}
+
+	/**
+	 * Returns the failed login attempts of this user.
+	 *
+	 * @return the failed login attempts of this user
+	 */
+	@Override
+	public int getFailedLoginAttempts() {
+		return model.getFailedLoginAttempts();
+	}
+
+	/**
+	 * Returns <code>true</code> if the user is female.
+	 *
+	 * @return <code>true</code> if the user is female; <code>false</code>
+	 otherwise
+	 */
+	@Override
+	public boolean getFemale()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getFemale();
+	}
+
+	/**
+	 * Returns the first name of this user.
+	 *
+	 * @return the first name of this user
+	 */
+	@Override
+	public String getFirstName() {
+		return model.getFirstName();
+	}
+
+	/**
+	 * Returns the user's full name.
+	 *
+	 * @return the user's full name
+	 */
+	@Override
+	public String getFullName() {
+		return model.getFullName();
+	}
+
+	/**
+	 * Returns the user's full name.
+	 *
+	 * @return the user's full name
+	 */
+	@Override
+	public String getFullName(boolean usePrefix, boolean useSuffix) {
+		return model.getFullName(usePrefix, useSuffix);
+	}
+
+	/**
+	 * Returns the google user ID of this user.
+	 *
+	 * @return the google user ID of this user
+	 */
+	@Override
+	public String getGoogleUserId() {
+		return model.getGoogleUserId();
+	}
+
+	/**
+	 * Returns the grace login count of this user.
+	 *
+	 * @return the grace login count of this user
+	 */
+	@Override
+	public int getGraceLoginCount() {
+		return model.getGraceLoginCount();
+	}
+
+	/**
+	 * Returns the greeting of this user.
+	 *
+	 * @return the greeting of this user
+	 */
+	@Override
+	public String getGreeting() {
+		return model.getGreeting();
 	}
 
 	@Override
 	public Group getGroup() {
-		return _user.getGroup();
+		return model.getGroup();
 	}
 
 	@Override
-	public PasswordPolicy getPasswordPolicy()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getPasswordPolicy();
+	public long getGroupId() {
+		return model.getGroupId();
 	}
 
 	@Override
-	public User toEscapedModel() {
-		return new UserWrapper(_user.toEscapedModel());
-	}
-
-	@Override
-	public User toUnescapedModel() {
-		return new UserWrapper(_user.toUnescapedModel());
-	}
-
-	/**
-	* Returns the agreed to terms of use of this user.
-	*
-	* @return the agreed to terms of use of this user
-	*/
-	@Override
-	public boolean getAgreedToTermsOfUse() {
-		return _user.getAgreedToTermsOfUse();
-	}
-
-	/**
-	* Returns the default user of this user.
-	*
-	* @return the default user of this user
-	*/
-	@Override
-	public boolean getDefaultUser() {
-		return _user.getDefaultUser();
-	}
-
-	/**
-	* Returns the email address verified of this user.
-	*
-	* @return the email address verified of this user
-	*/
-	@Override
-	public boolean getEmailAddressVerified() {
-		return _user.getEmailAddressVerified();
-	}
-
-	/**
-	* Returns <code>true</code> if the user is female.
-	*
-	* @return <code>true</code> if the user is female; <code>false</code>
-	otherwise
-	*/
-	@Override
-	public boolean getFemale()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getFemale();
-	}
-
-	/**
-	* Returns the lockout of this user.
-	*
-	* @return the lockout of this user
-	*/
-	@Override
-	public boolean getLockout() {
-		return _user.getLockout();
-	}
-
-	/**
-	* Returns <code>true</code> if the user is male.
-	*
-	* @return <code>true</code> if the user is male; <code>false</code>
-	otherwise
-	*/
-	@Override
-	public boolean getMale()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getMale();
-	}
-
-	/**
-	* Returns the password encrypted of this user.
-	*
-	* @return the password encrypted of this user
-	*/
-	@Override
-	public boolean getPasswordEncrypted() {
-		return _user.getPasswordEncrypted();
-	}
-
-	@Override
-	public boolean getPasswordModified() {
-		return _user.getPasswordModified();
-	}
-
-	/**
-	* Returns the password reset of this user.
-	*
-	* @return the password reset of this user
-	*/
-	@Override
-	public boolean getPasswordReset() {
-		return _user.getPasswordReset();
-	}
-
-	@Override
-	public boolean hasCompanyMx()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.hasCompanyMx();
-	}
-
-	@Override
-	public boolean hasCompanyMx(java.lang.String emailAddress)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.hasCompanyMx(emailAddress);
-	}
-
-	@Override
-	public boolean hasMySites()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.hasMySites();
-	}
-
-	@Override
-	public boolean hasOrganization() {
-		return _user.hasOrganization();
-	}
-
-	@Override
-	public boolean hasPrivateLayouts()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.hasPrivateLayouts();
-	}
-
-	@Override
-	public boolean hasPublicLayouts()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.hasPublicLayouts();
-	}
-
-	@Override
-	public boolean hasReminderQuery() {
-		return _user.hasReminderQuery();
-	}
-
-	@Override
-	public boolean isActive() {
-		return _user.isActive();
-	}
-
-	/**
-	* Returns <code>true</code> if this user is agreed to terms of use.
-	*
-	* @return <code>true</code> if this user is agreed to terms of use; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isAgreedToTermsOfUse() {
-		return _user.isAgreedToTermsOfUse();
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _user.isCachedModel();
-	}
-
-	/**
-	* Returns <code>true</code> if this user is default user.
-	*
-	* @return <code>true</code> if this user is default user; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isDefaultUser() {
-		return _user.isDefaultUser();
-	}
-
-	@Override
-	public boolean isEmailAddressComplete() {
-		return _user.isEmailAddressComplete();
-	}
-
-	@Override
-	public boolean isEmailAddressVerificationComplete() {
-		return _user.isEmailAddressVerificationComplete();
-	}
-
-	/**
-	* Returns <code>true</code> if this user is email address verified.
-	*
-	* @return <code>true</code> if this user is email address verified; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isEmailAddressVerified() {
-		return _user.isEmailAddressVerified();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _user.isEscapedModel();
-	}
-
-	@Override
-	public boolean isFemale()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.isFemale();
-	}
-
-	/**
-	* Returns <code>true</code> if this user is lockout.
-	*
-	* @return <code>true</code> if this user is lockout; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isLockout() {
-		return _user.isLockout();
-	}
-
-	@Override
-	public boolean isMale()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.isMale();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _user.isNew();
-	}
-
-	/**
-	* Returns <code>true</code> if this user is password encrypted.
-	*
-	* @return <code>true</code> if this user is password encrypted; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isPasswordEncrypted() {
-		return _user.isPasswordEncrypted();
-	}
-
-	@Override
-	public boolean isPasswordModified() {
-		return _user.isPasswordModified();
-	}
-
-	/**
-	* Returns <code>true</code> if this user is password reset.
-	*
-	* @return <code>true</code> if this user is password reset; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isPasswordReset() {
-		return _user.isPasswordReset();
-	}
-
-	@Override
-	public boolean isReminderQueryComplete() {
-		return _user.isReminderQueryComplete();
-	}
-
-	@Override
-	public boolean isSetupComplete() {
-		return _user.isSetupComplete();
-	}
-
-	@Override
-	public boolean isTermsOfUseComplete() {
-		return _user.isTermsOfUseComplete();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _user.getExpandoBridge();
-	}
-
-	@Override
-	public com.liferay.portal.kernel.util.RemotePreference getRemotePreference(
-		java.lang.String name) {
-		return _user.getRemotePreference(name);
-	}
-
-	@Override
-	public int compareTo(User user) {
-		return _user.compareTo(user);
-	}
-
-	/**
-	* Returns the failed login attempts of this user.
-	*
-	* @return the failed login attempts of this user
-	*/
-	@Override
-	public int getFailedLoginAttempts() {
-		return _user.getFailedLoginAttempts();
-	}
-
-	/**
-	* Returns the grace login count of this user.
-	*
-	* @return the grace login count of this user
-	*/
-	@Override
-	public int getGraceLoginCount() {
-		return _user.getGraceLoginCount();
-	}
-
-	@Override
-	public int getPrivateLayoutsPageCount()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getPrivateLayoutsPageCount();
-	}
-
-	@Override
-	public int getPublicLayoutsPageCount()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getPublicLayoutsPageCount();
-	}
-
-	/**
-	* Returns the status of this user.
-	*
-	* @return the status of this user
-	*/
-	@Override
-	public int getStatus() {
-		return _user.getStatus();
-	}
-
-	@Override
-	public int hashCode() {
-		return _user.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _user.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Iterable<com.liferay.portal.kernel.util.RemotePreference> getRemotePreferences() {
-		return _user.getRemotePreferences();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new UserWrapper((User)_user.clone());
-	}
-
-	/**
-	* Returns the comments of this user.
-	*
-	* @return the comments of this user
-	*/
-	@Override
-	public java.lang.String getComments() {
-		return _user.getComments();
-	}
-
-	/**
-	* Returns the user's company's mail domain.
-	*
-	* @return the user's company's mail domain
-	*/
-	@Override
-	public java.lang.String getCompanyMx()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getCompanyMx();
-	}
-
-	/**
-	* Returns the digest of this user.
-	*
-	* @return the digest of this user
-	*/
-	@Override
-	public java.lang.String getDigest() {
-		return _user.getDigest();
-	}
-
-	/**
-	* Returns a digest for the user, incorporating the password.
-	*
-	* @param password a password to incorporate with the digest
-	* @return a digest for the user, incorporating the password
-	*/
-	@Override
-	public java.lang.String getDigest(java.lang.String password) {
-		return _user.getDigest(password);
-	}
-
-	/**
-	* Returns the user's primary email address, or a blank string if the
-	* address is fake.
-	*
-	* @return the user's primary email address, or a blank string if the
-	address is fake
-	*/
-	@Override
-	public java.lang.String getDisplayEmailAddress() {
-		return _user.getDisplayEmailAddress();
-	}
-
-	/**
-	* Returns the user's display URL based on the theme display, discounting
-	* the URL of the user's default intranet site home page.
-	*
-	* <p>
-	* The logic for the display URL to return is as follows:
-	* </p>
-	*
-	* <ol>
-	* <li>
-	* If the user is the guest user, return an empty string.
-	* </li>
-	* <li>
-	* Else, if a friendly URL is available for the user's profile, return that
-	* friendly URL.
-	* </li>
-	* <li>
-	* Otherwise, return the URL of the user's default extranet site home page.
-	* </li>
-	* </ol>
-	*
-	* @param themeDisplay the theme display
-	* @return the user's display URL
-	*/
-	@Override
-	public java.lang.String getDisplayURL(
-		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getDisplayURL(themeDisplay);
-	}
-
-	/**
-	* Returns the user's display URL based on the theme display.
-	*
-	* <p>
-	* The logic for the display URL to return is as follows:
-	* </p>
-	*
-	* <ol>
-	* <li>
-	* If the user is the guest user, return an empty string.
-	* </li>
-	* <li>
-	* Else, if a friendly URL is available for the user's profile, return that
-	* friendly URL.
-	* </li>
-	* <li>
-	* Else, if <code>privateLayout</code> is <code>true</code>, return the URL
-	* of the user's default intranet site home page.
-	* </li>
-	* <li>
-	* Otherwise, return the URL of the user's default extranet site home page.
-	* </li>
-	* </ol>
-	*
-	* @param themeDisplay the theme display
-	* @param privateLayout whether to use the URL of the user's default
-	intranet (versus extranet) site home page, if no friendly URL is
-	available for the user's profile
-	* @return the user's display URL
-	* @throws PortalException
-	*/
-	@Override
-	public java.lang.String getDisplayURL(
-		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay,
-		boolean privateLayout)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getDisplayURL(themeDisplay, privateLayout);
-	}
-
-	/**
-	* Returns the user's display URL, discounting the URL of the user's default
-	* intranet site home page.
-	*
-	* <p>
-	* The logic for the display URL to return is as follows:
-	* </p>
-	*
-	* <ol>
-	* <li>
-	* If the user is the guest user, return an empty string.
-	* </li>
-	* <li>
-	* Else, if a friendly URL is available for the user's profile, return that
-	* friendly URL.
-	* </li>
-	* <li>
-	* Otherwise, return the URL of the user's default extranet site home page.
-	* </li>
-	* </ol>
-	*
-	* @param portalURL the portal's URL
-	* @param mainPath the main path
-	* @return the user's display URL
-	* @deprecated As of 7.0.0, replaced by {@link #getDisplayURL(ThemeDisplay)}
-	*/
-	@Deprecated
-	@Override
-	public java.lang.String getDisplayURL(java.lang.String portalURL,
-		java.lang.String mainPath)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getDisplayURL(portalURL, mainPath);
-	}
-
-	/**
-	* Returns the user's display URL.
-	*
-	* <p>
-	* The logic for the display URL to return is as follows:
-	* </p>
-	*
-	* <ol>
-	* <li>
-	* If the user is the guest user, return an empty string.
-	* </li>
-	* <li>
-	* Else, if a friendly URL is available for the user's profile, return that
-	* friendly URL.
-	* </li>
-	* <li>
-	* Else, if <code>privateLayout</code> is <code>true</code>, return the URL
-	* of the user's default intranet site home page.
-	* </li>
-	* <li>
-	* Otherwise, return the URL of the user's default extranet site home page.
-	* </li>
-	* </ol>
-	*
-	* @param portalURL the portal's URL
-	* @param mainPath the main path
-	* @param privateLayout whether to use the URL of the user's default
-	intranet(versus extranet)  site home page, if no friendly URL
-	is available for the user's profile
-	* @return the user's display URL
-	* @throws PortalException
-	* @deprecated As of 7.0.0, replaced by {@link #getDisplayURL(ThemeDisplay)}
-	*/
-	@Deprecated
-	@Override
-	public java.lang.String getDisplayURL(java.lang.String portalURL,
-		java.lang.String mainPath, boolean privateLayout)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getDisplayURL(portalURL, mainPath, privateLayout);
-	}
-
-	/**
-	* Returns the email address of this user.
-	*
-	* @return the email address of this user
-	*/
-	@Override
-	public java.lang.String getEmailAddress() {
-		return _user.getEmailAddress();
-	}
-
-	/**
-	* Returns the first name of this user.
-	*
-	* @return the first name of this user
-	*/
-	@Override
-	public java.lang.String getFirstName() {
-		return _user.getFirstName();
-	}
-
-	/**
-	* Returns the user's full name.
-	*
-	* @return the user's full name
-	*/
-	@Override
-	public java.lang.String getFullName() {
-		return _user.getFullName();
-	}
-
-	/**
-	* Returns the user's full name.
-	*
-	* @return the user's full name
-	*/
-	@Override
-	public java.lang.String getFullName(boolean usePrefix, boolean useSuffix) {
-		return _user.getFullName(usePrefix, useSuffix);
-	}
-
-	/**
-	* Returns the google user ID of this user.
-	*
-	* @return the google user ID of this user
-	*/
-	@Override
-	public java.lang.String getGoogleUserId() {
-		return _user.getGoogleUserId();
-	}
-
-	/**
-	* Returns the greeting of this user.
-	*
-	* @return the greeting of this user
-	*/
-	@Override
-	public java.lang.String getGreeting() {
-		return _user.getGreeting();
-	}
-
-	@Override
-	public java.lang.String getInitials() {
-		return _user.getInitials();
-	}
-
-	/**
-	* Returns the job title of this user.
-	*
-	* @return the job title of this user
-	*/
-	@Override
-	public java.lang.String getJobTitle() {
-		return _user.getJobTitle();
-	}
-
-	/**
-	* Returns the language ID of this user.
-	*
-	* @return the language ID of this user
-	*/
-	@Override
-	public java.lang.String getLanguageId() {
-		return _user.getLanguageId();
-	}
-
-	/**
-	* Returns the last login i p of this user.
-	*
-	* @return the last login i p of this user
-	*/
-	@Override
-	public java.lang.String getLastLoginIP() {
-		return _user.getLastLoginIP();
-	}
-
-	/**
-	* Returns the last name of this user.
-	*
-	* @return the last name of this user
-	*/
-	@Override
-	public java.lang.String getLastName() {
-		return _user.getLastName();
-	}
-
-	@Override
-	public java.lang.String getLogin()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getLogin();
-	}
-
-	/**
-	* Returns the login i p of this user.
-	*
-	* @return the login i p of this user
-	*/
-	@Override
-	public java.lang.String getLoginIP() {
-		return _user.getLoginIP();
-	}
-
-	/**
-	* Returns the middle name of this user.
-	*
-	* @return the middle name of this user
-	*/
-	@Override
-	public java.lang.String getMiddleName() {
-		return _user.getMiddleName();
-	}
-
-	/**
-	* Returns the open ID of this user.
-	*
-	* @return the open ID of this user
-	*/
-	@Override
-	public java.lang.String getOpenId() {
-		return _user.getOpenId();
-	}
-
-	@Override
-	public java.lang.String getOriginalEmailAddress() {
-		return _user.getOriginalEmailAddress();
-	}
-
-	/**
-	* Returns the password of this user.
-	*
-	* @return the password of this user
-	*/
-	@Override
-	public java.lang.String getPassword() {
-		return _user.getPassword();
-	}
-
-	@Override
-	public java.lang.String getPasswordUnencrypted() {
-		return _user.getPasswordUnencrypted();
-	}
-
-	@Override
-	public java.lang.String getPortraitURL(
-		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getPortraitURL(themeDisplay);
-	}
-
-	/**
-	* Returns the reminder query answer of this user.
-	*
-	* @return the reminder query answer of this user
-	*/
-	@Override
-	public java.lang.String getReminderQueryAnswer() {
-		return _user.getReminderQueryAnswer();
-	}
-
-	/**
-	* Returns the reminder query question of this user.
-	*
-	* @return the reminder query question of this user
-	*/
-	@Override
-	public java.lang.String getReminderQueryQuestion() {
-		return _user.getReminderQueryQuestion();
-	}
-
-	/**
-	* Returns the screen name of this user.
-	*
-	* @return the screen name of this user
-	*/
-	@Override
-	public java.lang.String getScreenName() {
-		return _user.getScreenName();
-	}
-
-	/**
-	* Returns the time zone ID of this user.
-	*
-	* @return the time zone ID of this user
-	*/
-	@Override
-	public java.lang.String getTimeZoneId() {
-		return _user.getTimeZoneId();
-	}
-
-	/**
-	* Returns the user uuid of this user.
-	*
-	* @return the user uuid of this user
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _user.getUserUuid();
-	}
-
-	/**
-	* Returns the uuid of this user.
-	*
-	* @return the uuid of this user
-	*/
-	@Override
-	public java.lang.String getUuid() {
-		return _user.getUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _user.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _user.toXmlString();
-	}
-
-	/**
-	* Returns the user's birth date.
-	*
-	* @return the user's birth date
-	*/
-	@Override
-	public Date getBirthday()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getBirthday();
-	}
-
-	/**
-	* Returns the create date of this user.
-	*
-	* @return the create date of this user
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _user.getCreateDate();
-	}
-
-	/**
-	* Returns the last failed login date of this user.
-	*
-	* @return the last failed login date of this user
-	*/
-	@Override
-	public Date getLastFailedLoginDate() {
-		return _user.getLastFailedLoginDate();
-	}
-
-	/**
-	* Returns the last login date of this user.
-	*
-	* @return the last login date of this user
-	*/
-	@Override
-	public Date getLastLoginDate() {
-		return _user.getLastLoginDate();
-	}
-
-	/**
-	* Returns the lockout date of this user.
-	*
-	* @return the lockout date of this user
-	*/
-	@Override
-	public Date getLockoutDate() {
-		return _user.getLockoutDate();
-	}
-
-	/**
-	* Returns the login date of this user.
-	*
-	* @return the login date of this user
-	*/
-	@Override
-	public Date getLoginDate() {
-		return _user.getLoginDate();
-	}
-
-	/**
-	* Returns the modified date of this user.
-	*
-	* @return the modified date of this user
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _user.getModifiedDate();
-	}
-
-	/**
-	* Returns the password modified date of this user.
-	*
-	* @return the password modified date of this user
-	*/
-	@Override
-	public Date getPasswordModifiedDate() {
-		return _user.getPasswordModifiedDate();
-	}
-
-	@Override
-	public Date getUnlockDate()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getUnlockDate();
-	}
-
-	@Override
-	public Date getUnlockDate(PasswordPolicy passwordPolicy) {
-		return _user.getUnlockDate(passwordPolicy);
-	}
-
-	/**
-	* Returns the user's addresses.
-	*
-	* @return the user's addresses
-	*/
-	@Override
-	public java.util.List<Address> getAddresses() {
-		return _user.getAddresses();
-	}
-
-	/**
-	* Returns the user's email addresses.
-	*
-	* @return the user's email addresses
-	*/
-	@Override
-	public java.util.List<EmailAddress> getEmailAddresses() {
-		return _user.getEmailAddresses();
+	public long[] getGroupIds() {
+		return model.getGroupIds();
 	}
 
 	@Override
 	public java.util.List<Group> getGroups() {
-		return _user.getGroups();
+		return model.getGroups();
+	}
+
+	@Override
+	public String getInitials() {
+		return model.getInitials();
+	}
+
+	/**
+	 * Returns the job title of this user.
+	 *
+	 * @return the job title of this user
+	 */
+	@Override
+	public String getJobTitle() {
+		return model.getJobTitle();
+	}
+
+	/**
+	 * Returns the language ID of this user.
+	 *
+	 * @return the language ID of this user
+	 */
+	@Override
+	public String getLanguageId() {
+		return model.getLanguageId();
+	}
+
+	/**
+	 * Returns the last failed login date of this user.
+	 *
+	 * @return the last failed login date of this user
+	 */
+	@Override
+	public Date getLastFailedLoginDate() {
+		return model.getLastFailedLoginDate();
+	}
+
+	/**
+	 * Returns the last login date of this user.
+	 *
+	 * @return the last login date of this user
+	 */
+	@Override
+	public Date getLastLoginDate() {
+		return model.getLastLoginDate();
+	}
+
+	/**
+	 * Returns the last login ip of this user.
+	 *
+	 * @return the last login ip of this user
+	 */
+	@Override
+	public String getLastLoginIP() {
+		return model.getLastLoginIP();
+	}
+
+	/**
+	 * Returns the last name of this user.
+	 *
+	 * @return the last name of this user
+	 */
+	@Override
+	public String getLastName() {
+		return model.getLastName();
+	}
+
+	/**
+	 * Returns the ldap server ID of this user.
+	 *
+	 * @return the ldap server ID of this user
+	 */
+	@Override
+	public long getLdapServerId() {
+		return model.getLdapServerId();
+	}
+
+	@Override
+	public java.util.Locale getLocale() {
+		return model.getLocale();
+	}
+
+	/**
+	 * Returns the lockout of this user.
+	 *
+	 * @return the lockout of this user
+	 */
+	@Override
+	public boolean getLockout() {
+		return model.getLockout();
+	}
+
+	/**
+	 * Returns the lockout date of this user.
+	 *
+	 * @return the lockout date of this user
+	 */
+	@Override
+	public Date getLockoutDate() {
+		return model.getLockoutDate();
+	}
+
+	@Override
+	public String getLogin()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getLogin();
+	}
+
+	/**
+	 * Returns the login date of this user.
+	 *
+	 * @return the login date of this user
+	 */
+	@Override
+	public Date getLoginDate() {
+		return model.getLoginDate();
+	}
+
+	/**
+	 * Returns the login ip of this user.
+	 *
+	 * @return the login ip of this user
+	 */
+	@Override
+	public String getLoginIP() {
+		return model.getLoginIP();
+	}
+
+	/**
+	 * Returns <code>true</code> if the user is male.
+	 *
+	 * @return <code>true</code> if the user is male; <code>false</code>
+	 otherwise
+	 */
+	@Override
+	public boolean getMale()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getMale();
+	}
+
+	/**
+	 * Returns the middle name of this user.
+	 *
+	 * @return the middle name of this user
+	 */
+	@Override
+	public String getMiddleName() {
+		return model.getMiddleName();
+	}
+
+	/**
+	 * Returns the modified date of this user.
+	 *
+	 * @return the modified date of this user
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this user.
+	 *
+	 * @return the mvcc version of this user
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	@Override
 	public java.util.List<Group> getMySiteGroups()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getMySiteGroups();
+
+		return model.getMySiteGroups();
 	}
 
 	@Override
 	public java.util.List<Group> getMySiteGroups(int max)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getMySiteGroups(max);
+
+		return model.getMySiteGroups(max);
 	}
 
 	@Override
-	public java.util.List<Group> getMySiteGroups(
-		java.lang.String[] classNames, int max)
+	public java.util.List<Group> getMySiteGroups(String[] classNames, int max)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getMySiteGroups(classNames, max);
-	}
 
-	@Override
-	public java.util.List<Organization> getOrganizations()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getOrganizations();
-	}
-
-	@Override
-	public java.util.List<Organization> getOrganizations(
-		boolean includeAdministrative)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getOrganizations(includeAdministrative);
-	}
-
-	@Override
-	public java.util.List<Phone> getPhones() {
-		return _user.getPhones();
-	}
-
-	@Override
-	public java.util.List<Role> getRoles() {
-		return _user.getRoles();
-	}
-
-	@Override
-	public java.util.List<Group> getSiteGroups()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getSiteGroups();
-	}
-
-	@Override
-	public java.util.List<Group> getSiteGroups(boolean includeAdministrative)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getSiteGroups(includeAdministrative);
-	}
-
-	@Override
-	public java.util.List<Team> getTeams() {
-		return _user.getTeams();
-	}
-
-	@Override
-	public java.util.List<UserGroup> getUserGroups() {
-		return _user.getUserGroups();
-	}
-
-	@Override
-	public java.util.List<Website> getWebsites() {
-		return _user.getWebsites();
-	}
-
-	@Override
-	public java.util.Locale getLocale() {
-		return _user.getLocale();
-	}
-
-	@Override
-	public java.util.Set<java.lang.String> getReminderQueryQuestions()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getReminderQueryQuestions();
-	}
-
-	@Override
-	public java.util.TimeZone getTimeZone() {
-		return _user.getTimeZone();
+		return model.getMySiteGroups(classNames, max);
 	}
 
 	/**
-	* Returns the company ID of this user.
-	*
-	* @return the company ID of this user
-	*/
+	 * Returns the open ID of this user.
+	 *
+	 * @return the open ID of this user
+	 */
 	@Override
-	public long getCompanyId() {
-		return _user.getCompanyId();
-	}
-
-	/**
-	* Returns the contact ID of this user.
-	*
-	* @return the contact ID of this user
-	*/
-	@Override
-	public long getContactId() {
-		return _user.getContactId();
-	}
-
-	/**
-	* Returns the facebook ID of this user.
-	*
-	* @return the facebook ID of this user
-	*/
-	@Override
-	public long getFacebookId() {
-		return _user.getFacebookId();
-	}
-
-	@Override
-	public long getGroupId() {
-		return _user.getGroupId();
-	}
-
-	/**
-	* Returns the ldap server ID of this user.
-	*
-	* @return the ldap server ID of this user
-	*/
-	@Override
-	public long getLdapServerId() {
-		return _user.getLdapServerId();
-	}
-
-	/**
-	* Returns the mvcc version of this user.
-	*
-	* @return the mvcc version of this user
-	*/
-	@Override
-	public long getMvccVersion() {
-		return _user.getMvccVersion();
-	}
-
-	/**
-	* Returns the portrait ID of this user.
-	*
-	* @return the portrait ID of this user
-	*/
-	@Override
-	public long getPortraitId() {
-		return _user.getPortraitId();
-	}
-
-	/**
-	* Returns the primary key of this user.
-	*
-	* @return the primary key of this user
-	*/
-	@Override
-	public long getPrimaryKey() {
-		return _user.getPrimaryKey();
-	}
-
-	/**
-	* Returns the user ID of this user.
-	*
-	* @return the user ID of this user
-	*/
-	@Override
-	public long getUserId() {
-		return _user.getUserId();
-	}
-
-	@Override
-	public long[] getGroupIds() {
-		return _user.getGroupIds();
+	public String getOpenId() {
+		return model.getOpenId();
 	}
 
 	@Override
 	public long[] getOrganizationIds()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getOrganizationIds();
+
+		return model.getOrganizationIds();
 	}
 
 	@Override
 	public long[] getOrganizationIds(boolean includeAdministrative)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _user.getOrganizationIds(includeAdministrative);
+
+		return model.getOrganizationIds(includeAdministrative);
+	}
+
+	@Override
+	public java.util.List<Organization> getOrganizations()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getOrganizations();
+	}
+
+	@Override
+	public java.util.List<Organization> getOrganizations(
+			boolean includeAdministrative)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getOrganizations(includeAdministrative);
+	}
+
+	@Override
+	public String getOriginalEmailAddress() {
+		return model.getOriginalEmailAddress();
+	}
+
+	/**
+	 * Returns the password of this user.
+	 *
+	 * @return the password of this user
+	 */
+	@Override
+	public String getPassword() {
+		return model.getPassword();
+	}
+
+	/**
+	 * Returns the password encrypted of this user.
+	 *
+	 * @return the password encrypted of this user
+	 */
+	@Override
+	public boolean getPasswordEncrypted() {
+		return model.getPasswordEncrypted();
+	}
+
+	@Override
+	public boolean getPasswordModified() {
+		return model.getPasswordModified();
+	}
+
+	/**
+	 * Returns the password modified date of this user.
+	 *
+	 * @return the password modified date of this user
+	 */
+	@Override
+	public Date getPasswordModifiedDate() {
+		return model.getPasswordModifiedDate();
+	}
+
+	@Override
+	public PasswordPolicy getPasswordPolicy()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getPasswordPolicy();
+	}
+
+	/**
+	 * Returns the password reset of this user.
+	 *
+	 * @return the password reset of this user
+	 */
+	@Override
+	public boolean getPasswordReset() {
+		return model.getPasswordReset();
+	}
+
+	@Override
+	public String getPasswordUnencrypted() {
+		return model.getPasswordUnencrypted();
+	}
+
+	@Override
+	public java.util.List<Phone> getPhones() {
+		return model.getPhones();
+	}
+
+	/**
+	 * Returns the portrait ID of this user.
+	 *
+	 * @return the portrait ID of this user
+	 */
+	@Override
+	public long getPortraitId() {
+		return model.getPortraitId();
+	}
+
+	@Override
+	public String getPortraitURL(
+			com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getPortraitURL(themeDisplay);
+	}
+
+	/**
+	 * Returns the primary key of this user.
+	 *
+	 * @return the primary key of this user
+	 */
+	@Override
+	public long getPrimaryKey() {
+		return model.getPrimaryKey();
+	}
+
+	@Override
+	public int getPrivateLayoutsPageCount()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getPrivateLayoutsPageCount();
+	}
+
+	@Override
+	public int getPublicLayoutsPageCount()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getPublicLayoutsPageCount();
+	}
+
+	/**
+	 * Returns the reminder query answer of this user.
+	 *
+	 * @return the reminder query answer of this user
+	 */
+	@Override
+	public String getReminderQueryAnswer() {
+		return model.getReminderQueryAnswer();
+	}
+
+	/**
+	 * Returns the reminder query question of this user.
+	 *
+	 * @return the reminder query question of this user
+	 */
+	@Override
+	public String getReminderQueryQuestion() {
+		return model.getReminderQueryQuestion();
+	}
+
+	@Override
+	public java.util.Set<String> getReminderQueryQuestions()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getReminderQueryQuestions();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.util.RemotePreference getRemotePreference(
+		String name) {
+
+		return model.getRemotePreference(name);
+	}
+
+	@Override
+	public Iterable<com.liferay.portal.kernel.util.RemotePreference>
+		getRemotePreferences() {
+
+		return model.getRemotePreferences();
 	}
 
 	@Override
 	public long[] getRoleIds() {
-		return _user.getRoleIds();
+		return model.getRoleIds();
+	}
+
+	@Override
+	public java.util.List<Role> getRoles() {
+		return model.getRoles();
+	}
+
+	/**
+	 * Returns the screen name of this user.
+	 *
+	 * @return the screen name of this user
+	 */
+	@Override
+	public String getScreenName() {
+		return model.getScreenName();
+	}
+
+	@Override
+	public java.util.List<Group> getSiteGroups()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getSiteGroups();
+	}
+
+	@Override
+	public java.util.List<Group> getSiteGroups(boolean includeAdministrative)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getSiteGroups(includeAdministrative);
+	}
+
+	/**
+	 * Returns the status of this user.
+	 *
+	 * @return the status of this user
+	 */
+	@Override
+	public int getStatus() {
+		return model.getStatus();
 	}
 
 	@Override
 	public long[] getTeamIds() {
-		return _user.getTeamIds();
+		return model.getTeamIds();
+	}
+
+	@Override
+	public java.util.List<Team> getTeams() {
+		return model.getTeams();
+	}
+
+	@Override
+	public java.util.TimeZone getTimeZone() {
+		return model.getTimeZone();
+	}
+
+	/**
+	 * Returns the time zone ID of this user.
+	 *
+	 * @return the time zone ID of this user
+	 */
+	@Override
+	public String getTimeZoneId() {
+		return model.getTimeZoneId();
+	}
+
+	@Override
+	public Date getUnlockDate()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getUnlockDate();
+	}
+
+	@Override
+	public Date getUnlockDate(PasswordPolicy passwordPolicy) {
+		return model.getUnlockDate(passwordPolicy);
 	}
 
 	@Override
 	public long[] getUserGroupIds() {
-		return _user.getUserGroupIds();
+		return model.getUserGroupIds();
 	}
 
 	@Override
-	public void addRemotePreference(
-		com.liferay.portal.kernel.util.RemotePreference remotePreference) {
-		_user.addRemotePreference(remotePreference);
+	public java.util.List<UserGroup> getUserGroups() {
+		return model.getUserGroups();
+	}
+
+	/**
+	 * Returns the user ID of this user.
+	 *
+	 * @return the user ID of this user
+	 */
+	@Override
+	public long getUserId() {
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user uuid of this user.
+	 *
+	 * @return the user uuid of this user
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the uuid of this user.
+	 *
+	 * @return the uuid of this user
+	 */
+	@Override
+	public String getUuid() {
+		return model.getUuid();
+	}
+
+	@Override
+	public java.util.List<Website> getWebsites() {
+		return model.getWebsites();
+	}
+
+	@Override
+	public boolean hasCompanyMx()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.hasCompanyMx();
+	}
+
+	@Override
+	public boolean hasCompanyMx(String emailAddress)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.hasCompanyMx(emailAddress);
+	}
+
+	@Override
+	public boolean hasMySites()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.hasMySites();
+	}
+
+	@Override
+	public boolean hasOrganization() {
+		return model.hasOrganization();
+	}
+
+	@Override
+	public boolean hasPrivateLayouts()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.hasPrivateLayouts();
+	}
+
+	@Override
+	public boolean hasPublicLayouts()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.hasPublicLayouts();
+	}
+
+	@Override
+	public boolean hasReminderQuery() {
+		return model.hasReminderQuery();
+	}
+
+	@Override
+	public boolean isActive() {
+		return model.isActive();
+	}
+
+	/**
+	 * Returns <code>true</code> if this user is agreed to terms of use.
+	 *
+	 * @return <code>true</code> if this user is agreed to terms of use; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isAgreedToTermsOfUse() {
+		return model.isAgreedToTermsOfUse();
+	}
+
+	/**
+	 * Returns <code>true</code> if this user is default user.
+	 *
+	 * @return <code>true</code> if this user is default user; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isDefaultUser() {
+		return model.isDefaultUser();
+	}
+
+	@Override
+	public boolean isEmailAddressComplete() {
+		return model.isEmailAddressComplete();
+	}
+
+	@Override
+	public boolean isEmailAddressVerificationComplete() {
+		return model.isEmailAddressVerificationComplete();
+	}
+
+	/**
+	 * Returns <code>true</code> if this user is email address verified.
+	 *
+	 * @return <code>true</code> if this user is email address verified; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isEmailAddressVerified() {
+		return model.isEmailAddressVerified();
+	}
+
+	@Override
+	public boolean isFemale()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.isFemale();
+	}
+
+	/**
+	 * Returns <code>true</code> if this user is lockout.
+	 *
+	 * @return <code>true</code> if this user is lockout; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isLockout() {
+		return model.isLockout();
+	}
+
+	@Override
+	public boolean isMale()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.isMale();
+	}
+
+	/**
+	 * Returns <code>true</code> if this user is password encrypted.
+	 *
+	 * @return <code>true</code> if this user is password encrypted; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isPasswordEncrypted() {
+		return model.isPasswordEncrypted();
+	}
+
+	@Override
+	public boolean isPasswordModified() {
+		return model.isPasswordModified();
+	}
+
+	/**
+	 * Returns <code>true</code> if this user is password reset.
+	 *
+	 * @return <code>true</code> if this user is password reset; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isPasswordReset() {
+		return model.isPasswordReset();
+	}
+
+	@Override
+	public boolean isReminderQueryComplete() {
+		return model.isReminderQueryComplete();
+	}
+
+	@Override
+	public boolean isSetupComplete() {
+		return model.isSetupComplete();
+	}
+
+	@Override
+	public boolean isTermsOfUseComplete() {
+		return model.isTermsOfUseComplete();
 	}
 
 	@Override
 	public void persist() {
-		_user.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets whether this user is agreed to terms of use.
-	*
-	* @param agreedToTermsOfUse the agreed to terms of use of this user
-	*/
+	 * Sets whether this user is agreed to terms of use.
+	 *
+	 * @param agreedToTermsOfUse the agreed to terms of use of this user
+	 */
 	@Override
 	public void setAgreedToTermsOfUse(boolean agreedToTermsOfUse) {
-		_user.setAgreedToTermsOfUse(agreedToTermsOfUse);
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_user.setCachedModel(cachedModel);
+		model.setAgreedToTermsOfUse(agreedToTermsOfUse);
 	}
 
 	/**
-	* Sets the comments of this user.
-	*
-	* @param comments the comments of this user
-	*/
+	 * Sets the comments of this user.
+	 *
+	 * @param comments the comments of this user
+	 */
 	@Override
-	public void setComments(java.lang.String comments) {
-		_user.setComments(comments);
+	public void setComments(String comments) {
+		model.setComments(comments);
 	}
 
 	/**
-	* Sets the company ID of this user.
-	*
-	* @param companyId the company ID of this user
-	*/
+	 * Sets the company ID of this user.
+	 *
+	 * @param companyId the company ID of this user
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_user.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the contact ID of this user.
-	*
-	* @param contactId the contact ID of this user
-	*/
+	 * Sets the contact ID of this user.
+	 *
+	 * @param contactId the contact ID of this user
+	 */
 	@Override
 	public void setContactId(long contactId) {
-		_user.setContactId(contactId);
+		model.setContactId(contactId);
 	}
 
 	/**
-	* Sets the create date of this user.
-	*
-	* @param createDate the create date of this user
-	*/
+	 * Sets the create date of this user.
+	 *
+	 * @param createDate the create date of this user
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_user.setCreateDate(createDate);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets whether this user is default user.
-	*
-	* @param defaultUser the default user of this user
-	*/
+	 * Sets whether this user is default user.
+	 *
+	 * @param defaultUser the default user of this user
+	 */
 	@Override
 	public void setDefaultUser(boolean defaultUser) {
-		_user.setDefaultUser(defaultUser);
+		model.setDefaultUser(defaultUser);
 	}
 
 	/**
-	* Sets the digest of this user.
-	*
-	* @param digest the digest of this user
-	*/
+	 * Sets the digest of this user.
+	 *
+	 * @param digest the digest of this user
+	 */
 	@Override
-	public void setDigest(java.lang.String digest) {
-		_user.setDigest(digest);
+	public void setDigest(String digest) {
+		model.setDigest(digest);
 	}
 
 	/**
-	* Sets the email address of this user.
-	*
-	* @param emailAddress the email address of this user
-	*/
+	 * Sets the email address of this user.
+	 *
+	 * @param emailAddress the email address of this user
+	 */
 	@Override
-	public void setEmailAddress(java.lang.String emailAddress) {
-		_user.setEmailAddress(emailAddress);
+	public void setEmailAddress(String emailAddress) {
+		model.setEmailAddress(emailAddress);
 	}
 
 	/**
-	* Sets whether this user is email address verified.
-	*
-	* @param emailAddressVerified the email address verified of this user
-	*/
+	 * Sets whether this user is email address verified.
+	 *
+	 * @param emailAddressVerified the email address verified of this user
+	 */
 	@Override
 	public void setEmailAddressVerified(boolean emailAddressVerified) {
-		_user.setEmailAddressVerified(emailAddressVerified);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_user.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_user.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_user.setExpandoBridgeAttributes(serviceContext);
+		model.setEmailAddressVerified(emailAddressVerified);
 	}
 
 	/**
-	* Sets the facebook ID of this user.
-	*
-	* @param facebookId the facebook ID of this user
-	*/
+	 * Sets the external reference code of this user.
+	 *
+	 * @param externalReferenceCode the external reference code of this user
+	 */
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		model.setExternalReferenceCode(externalReferenceCode);
+	}
+
+	/**
+	 * Sets the facebook ID of this user.
+	 *
+	 * @param facebookId the facebook ID of this user
+	 */
 	@Override
 	public void setFacebookId(long facebookId) {
-		_user.setFacebookId(facebookId);
+		model.setFacebookId(facebookId);
 	}
 
 	/**
-	* Sets the failed login attempts of this user.
-	*
-	* @param failedLoginAttempts the failed login attempts of this user
-	*/
+	 * Sets the failed login attempts of this user.
+	 *
+	 * @param failedLoginAttempts the failed login attempts of this user
+	 */
 	@Override
 	public void setFailedLoginAttempts(int failedLoginAttempts) {
-		_user.setFailedLoginAttempts(failedLoginAttempts);
+		model.setFailedLoginAttempts(failedLoginAttempts);
 	}
 
 	/**
-	* Sets the first name of this user.
-	*
-	* @param firstName the first name of this user
-	*/
+	 * Sets the first name of this user.
+	 *
+	 * @param firstName the first name of this user
+	 */
 	@Override
-	public void setFirstName(java.lang.String firstName) {
-		_user.setFirstName(firstName);
+	public void setFirstName(String firstName) {
+		model.setFirstName(firstName);
 	}
 
 	/**
-	* Sets the google user ID of this user.
-	*
-	* @param googleUserId the google user ID of this user
-	*/
+	 * Sets the google user ID of this user.
+	 *
+	 * @param googleUserId the google user ID of this user
+	 */
 	@Override
-	public void setGoogleUserId(java.lang.String googleUserId) {
-		_user.setGoogleUserId(googleUserId);
+	public void setGoogleUserId(String googleUserId) {
+		model.setGoogleUserId(googleUserId);
 	}
 
 	/**
-	* Sets the grace login count of this user.
-	*
-	* @param graceLoginCount the grace login count of this user
-	*/
+	 * Sets the grace login count of this user.
+	 *
+	 * @param graceLoginCount the grace login count of this user
+	 */
 	@Override
 	public void setGraceLoginCount(int graceLoginCount) {
-		_user.setGraceLoginCount(graceLoginCount);
+		model.setGraceLoginCount(graceLoginCount);
 	}
 
 	/**
-	* Sets the greeting of this user.
-	*
-	* @param greeting the greeting of this user
-	*/
+	 * Sets the greeting of this user.
+	 *
+	 * @param greeting the greeting of this user
+	 */
 	@Override
-	public void setGreeting(java.lang.String greeting) {
-		_user.setGreeting(greeting);
+	public void setGreeting(String greeting) {
+		model.setGreeting(greeting);
 	}
 
 	/**
-	* Sets the job title of this user.
-	*
-	* @param jobTitle the job title of this user
-	*/
+	 * Sets the job title of this user.
+	 *
+	 * @param jobTitle the job title of this user
+	 */
 	@Override
-	public void setJobTitle(java.lang.String jobTitle) {
-		_user.setJobTitle(jobTitle);
+	public void setJobTitle(String jobTitle) {
+		model.setJobTitle(jobTitle);
 	}
 
 	/**
-	* Sets the language ID of this user.
-	*
-	* @param languageId the language ID of this user
-	*/
+	 * Sets the language ID of this user.
+	 *
+	 * @param languageId the language ID of this user
+	 */
 	@Override
-	public void setLanguageId(java.lang.String languageId) {
-		_user.setLanguageId(languageId);
+	public void setLanguageId(String languageId) {
+		model.setLanguageId(languageId);
 	}
 
 	/**
-	* Sets the last failed login date of this user.
-	*
-	* @param lastFailedLoginDate the last failed login date of this user
-	*/
+	 * Sets the last failed login date of this user.
+	 *
+	 * @param lastFailedLoginDate the last failed login date of this user
+	 */
 	@Override
 	public void setLastFailedLoginDate(Date lastFailedLoginDate) {
-		_user.setLastFailedLoginDate(lastFailedLoginDate);
+		model.setLastFailedLoginDate(lastFailedLoginDate);
 	}
 
 	/**
-	* Sets the last login date of this user.
-	*
-	* @param lastLoginDate the last login date of this user
-	*/
+	 * Sets the last login date of this user.
+	 *
+	 * @param lastLoginDate the last login date of this user
+	 */
 	@Override
 	public void setLastLoginDate(Date lastLoginDate) {
-		_user.setLastLoginDate(lastLoginDate);
+		model.setLastLoginDate(lastLoginDate);
 	}
 
 	/**
-	* Sets the last login i p of this user.
-	*
-	* @param lastLoginIP the last login i p of this user
-	*/
+	 * Sets the last login ip of this user.
+	 *
+	 * @param lastLoginIP the last login ip of this user
+	 */
 	@Override
-	public void setLastLoginIP(java.lang.String lastLoginIP) {
-		_user.setLastLoginIP(lastLoginIP);
+	public void setLastLoginIP(String lastLoginIP) {
+		model.setLastLoginIP(lastLoginIP);
 	}
 
 	/**
-	* Sets the last name of this user.
-	*
-	* @param lastName the last name of this user
-	*/
+	 * Sets the last name of this user.
+	 *
+	 * @param lastName the last name of this user
+	 */
 	@Override
-	public void setLastName(java.lang.String lastName) {
-		_user.setLastName(lastName);
+	public void setLastName(String lastName) {
+		model.setLastName(lastName);
 	}
 
 	/**
-	* Sets the ldap server ID of this user.
-	*
-	* @param ldapServerId the ldap server ID of this user
-	*/
+	 * Sets the ldap server ID of this user.
+	 *
+	 * @param ldapServerId the ldap server ID of this user
+	 */
 	@Override
 	public void setLdapServerId(long ldapServerId) {
-		_user.setLdapServerId(ldapServerId);
+		model.setLdapServerId(ldapServerId);
 	}
 
 	/**
-	* Sets whether this user is lockout.
-	*
-	* @param lockout the lockout of this user
-	*/
+	 * Sets whether this user is lockout.
+	 *
+	 * @param lockout the lockout of this user
+	 */
 	@Override
 	public void setLockout(boolean lockout) {
-		_user.setLockout(lockout);
+		model.setLockout(lockout);
 	}
 
 	/**
-	* Sets the lockout date of this user.
-	*
-	* @param lockoutDate the lockout date of this user
-	*/
+	 * Sets the lockout date of this user.
+	 *
+	 * @param lockoutDate the lockout date of this user
+	 */
 	@Override
 	public void setLockoutDate(Date lockoutDate) {
-		_user.setLockoutDate(lockoutDate);
+		model.setLockoutDate(lockoutDate);
 	}
 
 	/**
-	* Sets the login date of this user.
-	*
-	* @param loginDate the login date of this user
-	*/
+	 * Sets the login date of this user.
+	 *
+	 * @param loginDate the login date of this user
+	 */
 	@Override
 	public void setLoginDate(Date loginDate) {
-		_user.setLoginDate(loginDate);
+		model.setLoginDate(loginDate);
 	}
 
 	/**
-	* Sets the login i p of this user.
-	*
-	* @param loginIP the login i p of this user
-	*/
+	 * Sets the login ip of this user.
+	 *
+	 * @param loginIP the login ip of this user
+	 */
 	@Override
-	public void setLoginIP(java.lang.String loginIP) {
-		_user.setLoginIP(loginIP);
+	public void setLoginIP(String loginIP) {
+		model.setLoginIP(loginIP);
 	}
 
 	/**
-	* Sets the middle name of this user.
-	*
-	* @param middleName the middle name of this user
-	*/
+	 * Sets the middle name of this user.
+	 *
+	 * @param middleName the middle name of this user
+	 */
 	@Override
-	public void setMiddleName(java.lang.String middleName) {
-		_user.setMiddleName(middleName);
+	public void setMiddleName(String middleName) {
+		model.setMiddleName(middleName);
 	}
 
 	/**
-	* Sets the modified date of this user.
-	*
-	* @param modifiedDate the modified date of this user
-	*/
+	 * Sets the modified date of this user.
+	 *
+	 * @param modifiedDate the modified date of this user
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_user.setModifiedDate(modifiedDate);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the mvcc version of this user.
-	*
-	* @param mvccVersion the mvcc version of this user
-	*/
+	 * Sets the mvcc version of this user.
+	 *
+	 * @param mvccVersion the mvcc version of this user
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_user.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_user.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the open ID of this user.
-	*
-	* @param openId the open ID of this user
-	*/
+	 * Sets the open ID of this user.
+	 *
+	 * @param openId the open ID of this user
+	 */
 	@Override
-	public void setOpenId(java.lang.String openId) {
-		_user.setOpenId(openId);
+	public void setOpenId(String openId) {
+		model.setOpenId(openId);
 	}
 
 	/**
-	* Sets the password of this user.
-	*
-	* @param password the password of this user
-	*/
+	 * Sets the password of this user.
+	 *
+	 * @param password the password of this user
+	 */
 	@Override
-	public void setPassword(java.lang.String password) {
-		_user.setPassword(password);
+	public void setPassword(String password) {
+		model.setPassword(password);
 	}
 
 	/**
-	* Sets whether this user is password encrypted.
-	*
-	* @param passwordEncrypted the password encrypted of this user
-	*/
+	 * Sets whether this user is password encrypted.
+	 *
+	 * @param passwordEncrypted the password encrypted of this user
+	 */
 	@Override
 	public void setPasswordEncrypted(boolean passwordEncrypted) {
-		_user.setPasswordEncrypted(passwordEncrypted);
+		model.setPasswordEncrypted(passwordEncrypted);
 	}
 
 	@Override
 	public void setPasswordModified(boolean passwordModified) {
-		_user.setPasswordModified(passwordModified);
+		model.setPasswordModified(passwordModified);
 	}
 
 	/**
-	* Sets the password modified date of this user.
-	*
-	* @param passwordModifiedDate the password modified date of this user
-	*/
+	 * Sets the password modified date of this user.
+	 *
+	 * @param passwordModifiedDate the password modified date of this user
+	 */
 	@Override
 	public void setPasswordModifiedDate(Date passwordModifiedDate) {
-		_user.setPasswordModifiedDate(passwordModifiedDate);
+		model.setPasswordModifiedDate(passwordModifiedDate);
 	}
 
 	/**
-	* Sets whether this user is password reset.
-	*
-	* @param passwordReset the password reset of this user
-	*/
+	 * Sets whether this user is password reset.
+	 *
+	 * @param passwordReset the password reset of this user
+	 */
 	@Override
 	public void setPasswordReset(boolean passwordReset) {
-		_user.setPasswordReset(passwordReset);
+		model.setPasswordReset(passwordReset);
 	}
 
 	@Override
-	public void setPasswordUnencrypted(java.lang.String passwordUnencrypted) {
-		_user.setPasswordUnencrypted(passwordUnencrypted);
+	public void setPasswordUnencrypted(String passwordUnencrypted) {
+		model.setPasswordUnencrypted(passwordUnencrypted);
 	}
 
 	/**
-	* Sets the portrait ID of this user.
-	*
-	* @param portraitId the portrait ID of this user
-	*/
+	 * Sets the portrait ID of this user.
+	 *
+	 * @param portraitId the portrait ID of this user
+	 */
 	@Override
 	public void setPortraitId(long portraitId) {
-		_user.setPortraitId(portraitId);
+		model.setPortraitId(portraitId);
 	}
 
 	/**
-	* Sets the primary key of this user.
-	*
-	* @param primaryKey the primary key of this user
-	*/
+	 * Sets the primary key of this user.
+	 *
+	 * @param primaryKey the primary key of this user
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_user.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_user.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the reminder query answer of this user.
-	*
-	* @param reminderQueryAnswer the reminder query answer of this user
-	*/
+	 * Sets the reminder query answer of this user.
+	 *
+	 * @param reminderQueryAnswer the reminder query answer of this user
+	 */
 	@Override
-	public void setReminderQueryAnswer(java.lang.String reminderQueryAnswer) {
-		_user.setReminderQueryAnswer(reminderQueryAnswer);
+	public void setReminderQueryAnswer(String reminderQueryAnswer) {
+		model.setReminderQueryAnswer(reminderQueryAnswer);
 	}
 
 	/**
-	* Sets the reminder query question of this user.
-	*
-	* @param reminderQueryQuestion the reminder query question of this user
-	*/
+	 * Sets the reminder query question of this user.
+	 *
+	 * @param reminderQueryQuestion the reminder query question of this user
+	 */
 	@Override
-	public void setReminderQueryQuestion(java.lang.String reminderQueryQuestion) {
-		_user.setReminderQueryQuestion(reminderQueryQuestion);
+	public void setReminderQueryQuestion(String reminderQueryQuestion) {
+		model.setReminderQueryQuestion(reminderQueryQuestion);
 	}
 
 	/**
-	* Sets the screen name of this user.
-	*
-	* @param screenName the screen name of this user
-	*/
+	 * Sets the screen name of this user.
+	 *
+	 * @param screenName the screen name of this user
+	 */
 	@Override
-	public void setScreenName(java.lang.String screenName) {
-		_user.setScreenName(screenName);
+	public void setScreenName(String screenName) {
+		model.setScreenName(screenName);
 	}
 
 	/**
-	* Sets the status of this user.
-	*
-	* @param status the status of this user
-	*/
+	 * Sets the status of this user.
+	 *
+	 * @param status the status of this user
+	 */
 	@Override
 	public void setStatus(int status) {
-		_user.setStatus(status);
+		model.setStatus(status);
 	}
 
 	/**
-	* Sets the time zone ID of this user.
-	*
-	* @param timeZoneId the time zone ID of this user
-	*/
+	 * Sets the time zone ID of this user.
+	 *
+	 * @param timeZoneId the time zone ID of this user
+	 */
 	@Override
-	public void setTimeZoneId(java.lang.String timeZoneId) {
-		_user.setTimeZoneId(timeZoneId);
+	public void setTimeZoneId(String timeZoneId) {
+		model.setTimeZoneId(timeZoneId);
 	}
 
 	/**
-	* Sets the user ID of this user.
-	*
-	* @param userId the user ID of this user
-	*/
+	 * Sets the user ID of this user.
+	 *
+	 * @param userId the user ID of this user
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_user.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user uuid of this user.
-	*
-	* @param userUuid the user uuid of this user
-	*/
+	 * Sets the user uuid of this user.
+	 *
+	 * @param userUuid the user uuid of this user
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_user.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets the uuid of this user.
-	*
-	* @param uuid the uuid of this user
-	*/
+	 * Sets the uuid of this user.
+	 *
+	 * @param uuid the uuid of this user
+	 */
 	@Override
-	public void setUuid(java.lang.String uuid) {
-		_user.setUuid(uuid);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof UserWrapper)) {
-			return false;
-		}
-
-		UserWrapper userWrapper = (UserWrapper)obj;
-
-		if (Objects.equals(_user, userWrapper._user)) {
-			return true;
-		}
-
-		return false;
+	public void setUuid(String uuid) {
+		model.setUuid(uuid);
 	}
 
 	@Override
 	public StagedModelType getStagedModelType() {
-		return _user.getStagedModelType();
+		return model.getStagedModelType();
 	}
 
 	@Override
-	public User getWrappedModel() {
-		return _user;
+	protected UserWrapper wrap(User user) {
+		return new UserWrapper(user);
 	}
 
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _user.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _user.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_user.resetOriginalValues();
-	}
-
-	private final User _user;
 }

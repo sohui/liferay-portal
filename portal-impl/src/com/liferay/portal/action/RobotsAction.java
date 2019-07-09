@@ -14,6 +14,7 @@
 
 package com.liferay.portal.action;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -27,32 +28,30 @@ import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.struts.Action;
+import com.liferay.portal.struts.model.ActionForward;
+import com.liferay.portal.struts.model.ActionMapping;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.RobotsUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-
 /**
  * @author David Truong
  */
-public class RobotsAction extends Action {
+public class RobotsAction implements Action {
 
 	@Override
 	public ActionForward execute(
-			ActionMapping actionMapping, ActionForm actionForm,
-			HttpServletRequest request, HttpServletResponse response)
+			ActionMapping actionMapping, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		try {
-			String host = GetterUtil.getString(PortalUtil.getHost(request));
+			String host = GetterUtil.getString(
+				PortalUtil.getHost(httpServletRequest));
 
 			LayoutSet layoutSet = null;
 
@@ -63,7 +62,7 @@ public class RobotsAction extends Action {
 				layoutSet = LayoutSetLocalServiceUtil.fetchLayoutSet(host);
 			}
 			else {
-				Company company = PortalUtil.getCompany(request);
+				Company company = PortalUtil.getCompany(httpServletRequest);
 
 				if (host.equals(company.getVirtualHostname()) &&
 					Validator.isNotNull(
@@ -77,11 +76,12 @@ public class RobotsAction extends Action {
 				}
 			}
 
-			String robots = RobotsUtil.getRobots(layoutSet);
+			String robots = RobotsUtil.getRobots(
+				layoutSet, httpServletRequest.isSecure());
 
 			ServletResponseUtil.sendFile(
-				request, response, null, robots.getBytes(StringPool.UTF8),
-				ContentTypes.TEXT_PLAIN_UTF8);
+				httpServletRequest, httpServletResponse, null,
+				robots.getBytes(StringPool.UTF8), ContentTypes.TEXT_PLAIN_UTF8);
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
@@ -89,8 +89,8 @@ public class RobotsAction extends Action {
 			}
 
 			PortalUtil.sendError(
-				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, request,
-				response);
+				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e,
+				httpServletRequest, httpServletResponse);
 		}
 
 		return null;

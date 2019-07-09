@@ -14,11 +14,11 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutType;
 import com.liferay.portal.kernel.model.LayoutTypeAccessPolicy;
 import com.liferay.portal.kernel.model.LayoutTypeController;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -29,6 +29,14 @@ import java.util.Map;
  * @author Brian Wing Shun Chan
  */
 public class LayoutTypeImpl implements LayoutType {
+
+	public static String getURL(String url, Map<String, String> variables) {
+		if (Validator.isNull(url)) {
+			url = getDefaultURL();
+		}
+
+		return replaceVariables(url, variables);
+	}
 
 	public LayoutTypeImpl(
 		Layout layout, LayoutTypeController layoutTypeController,
@@ -83,13 +91,7 @@ public class LayoutTypeImpl implements LayoutType {
 
 	@Override
 	public String getURL(Map<String, String> variables) {
-		String url = _layoutTypeController.getURL();
-
-		if (Validator.isNull(url)) {
-			url = getDefaultURL();
-		}
-
-		return replaceVariables(url, variables);
+		return getURL(_layoutTypeController.getURL(), variables);
 	}
 
 	@Override
@@ -117,14 +119,6 @@ public class LayoutTypeImpl implements LayoutType {
 		return _layoutTypeController.isURLFriendliable();
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	@Override
-	public void setLayout(Layout layout) {
-	}
-
 	@Override
 	public void setTypeSettingsProperty(String key, String value) {
 		UnicodeProperties typeSettingsProperties = getTypeSettingsProperties();
@@ -132,11 +126,11 @@ public class LayoutTypeImpl implements LayoutType {
 		typeSettingsProperties.setProperty(key, value);
 	}
 
-	protected String getDefaultURL() {
+	protected static String getDefaultURL() {
 		return _URL;
 	}
 
-	protected String replaceVariables(
+	protected static String replaceVariables(
 		String url, Map<String, String> variables) {
 
 		return StringUtil.replace(

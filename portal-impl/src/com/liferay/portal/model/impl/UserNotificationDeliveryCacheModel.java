@@ -14,30 +14,29 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.UserNotificationDelivery;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing UserNotificationDelivery in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see UserNotificationDelivery
  * @generated
  */
 @ProviderType
-public class UserNotificationDeliveryCacheModel implements CacheModel<UserNotificationDelivery>,
-	Externalizable, MVCCModel {
+public class UserNotificationDeliveryCacheModel
+	implements CacheModel<UserNotificationDelivery>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -48,10 +47,14 @@ public class UserNotificationDeliveryCacheModel implements CacheModel<UserNotifi
 			return false;
 		}
 
-		UserNotificationDeliveryCacheModel userNotificationDeliveryCacheModel = (UserNotificationDeliveryCacheModel)obj;
+		UserNotificationDeliveryCacheModel userNotificationDeliveryCacheModel =
+			(UserNotificationDeliveryCacheModel)obj;
 
-		if ((userNotificationDeliveryId == userNotificationDeliveryCacheModel.userNotificationDeliveryId) &&
-				(mvccVersion == userNotificationDeliveryCacheModel.mvccVersion)) {
+		if ((userNotificationDeliveryId ==
+				userNotificationDeliveryCacheModel.
+					userNotificationDeliveryId) &&
+			(mvccVersion == userNotificationDeliveryCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -104,15 +107,17 @@ public class UserNotificationDeliveryCacheModel implements CacheModel<UserNotifi
 
 	@Override
 	public UserNotificationDelivery toEntityModel() {
-		UserNotificationDeliveryImpl userNotificationDeliveryImpl = new UserNotificationDeliveryImpl();
+		UserNotificationDeliveryImpl userNotificationDeliveryImpl =
+			new UserNotificationDeliveryImpl();
 
 		userNotificationDeliveryImpl.setMvccVersion(mvccVersion);
-		userNotificationDeliveryImpl.setUserNotificationDeliveryId(userNotificationDeliveryId);
+		userNotificationDeliveryImpl.setUserNotificationDeliveryId(
+			userNotificationDeliveryId);
 		userNotificationDeliveryImpl.setCompanyId(companyId);
 		userNotificationDeliveryImpl.setUserId(userId);
 
 		if (portletId == null) {
-			userNotificationDeliveryImpl.setPortletId(StringPool.BLANK);
+			userNotificationDeliveryImpl.setPortletId("");
 		}
 		else {
 			userNotificationDeliveryImpl.setPortletId(portletId);
@@ -149,8 +154,7 @@ public class UserNotificationDeliveryCacheModel implements CacheModel<UserNotifi
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(userNotificationDeliveryId);
@@ -160,7 +164,7 @@ public class UserNotificationDeliveryCacheModel implements CacheModel<UserNotifi
 		objectOutput.writeLong(userId);
 
 		if (portletId == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(portletId);
@@ -184,4 +188,5 @@ public class UserNotificationDeliveryCacheModel implements CacheModel<UserNotifi
 	public int notificationType;
 	public int deliveryType;
 	public boolean deliver;
+
 }

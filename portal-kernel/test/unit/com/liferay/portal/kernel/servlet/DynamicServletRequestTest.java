@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.portlet.PortletParameterUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Collections;
 import java.util.Map;
@@ -37,13 +37,15 @@ public class DynamicServletRequestTest {
 		String queryString = PortletParameterUtil.addNamespace(
 			"15", StringPool.BLANK);
 
-		HttpServletRequest request = DynamicServletRequest.addQueryString(
-			new MockHttpServletRequest(),
-			Collections.<String, String[]>emptyMap(), queryString, false);
+		HttpServletRequest httpServletRequest =
+			DynamicServletRequest.addQueryString(
+				new MockHttpServletRequest(),
+				Collections.<String, String[]>emptyMap(), queryString, false);
 
-		Map<String, String[]> parameterMap = request.getParameterMap();
+		Map<String, String[]> parameterMap =
+			httpServletRequest.getParameterMap();
 
-		Assert.assertEquals(1, parameterMap.size());
+		Assert.assertEquals(parameterMap.toString(), 1, parameterMap.size());
 		Assert.assertArrayEquals(
 			new String[] {"15"}, parameterMap.get("p_p_id"));
 	}
@@ -53,13 +55,15 @@ public class DynamicServletRequestTest {
 		String queryString = PortletParameterUtil.addNamespace(
 			"15", "param1=value1&param2=value2&param3=value3");
 
-		HttpServletRequest request = DynamicServletRequest.addQueryString(
-			new MockHttpServletRequest(),
-			Collections.<String, String[]>emptyMap(), queryString, false);
+		HttpServletRequest httpServletRequest =
+			DynamicServletRequest.addQueryString(
+				new MockHttpServletRequest(),
+				Collections.<String, String[]>emptyMap(), queryString, false);
 
-		Map<String, String[]> parameterMap = request.getParameterMap();
+		Map<String, String[]> parameterMap =
+			httpServletRequest.getParameterMap();
 
-		Assert.assertEquals(4, parameterMap.size());
+		Assert.assertEquals(parameterMap.toString(), 4, parameterMap.size());
 		Assert.assertArrayEquals(
 			new String[] {"15"}, parameterMap.get("p_p_id"));
 		Assert.assertArrayEquals(

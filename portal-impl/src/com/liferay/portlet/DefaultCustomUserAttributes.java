@@ -54,13 +54,12 @@ public class DefaultCustomUserAttributes implements CustomUserAttributes {
 		}
 
 		if (name.equals("user.name.random")) {
-			String[] names = new String[] {"Aaa", "Bbb", "Ccc"};
+			String[] names = {"Aaa", "Bbb", "Ccc"};
 
 			return names[RandomUtil.nextInt(3)];
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

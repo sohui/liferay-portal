@@ -14,36 +14,41 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.security.auth.AlwaysAllowDoAsUser;
+import com.liferay.portal.kernel.servlet.PersistentHttpServletRequestWrapper;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.test.mockito.ReturnArgumentCalledAnswer;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.ServiceRegistration;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.Objects;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.mockito.Mockito;
-
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Miguel Pastor
  */
-@PowerMockIgnore("javax.xml.datatype.*")
-@PrepareForTest({HttpUtil.class, PropsValues.class})
-@RunWith(PowerMockRunner.class)
-public class PortalImplUnitTest extends PowerMockito {
+public class PortalImplUnitTest {
+
+	@BeforeClass
+	public static void setUpClass() {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+	}
 
 	@Test
 	public void testGetForwardedHost() {
@@ -240,6 +245,115 @@ public class PortalImplUnitTest extends PowerMockito {
 			setPropsValuesValue(
 				"WEB_SERVER_FORWARDED_PORT_ENABLED",
 				webServerForwardedPortEnabled);
+		}
+	}
+
+	@Test
+	public void testGetOriginalServletRequest() {
+		HttpServletRequest httpServletRequest = new MockHttpServletRequest();
+
+		Assert.assertSame(
+			httpServletRequest,
+			_portalImpl.getOriginalServletRequest(httpServletRequest));
+
+		HttpServletRequestWrapper requestWrapper1 =
+			new HttpServletRequestWrapper(httpServletRequest);
+
+		Assert.assertSame(
+			httpServletRequest,
+			_portalImpl.getOriginalServletRequest(requestWrapper1));
+
+		HttpServletRequestWrapper requestWrapper2 =
+			new HttpServletRequestWrapper(requestWrapper1);
+
+		Assert.assertSame(
+			httpServletRequest,
+			_portalImpl.getOriginalServletRequest(requestWrapper2));
+
+		HttpServletRequestWrapper requestWrapper3 =
+			new PersistentHttpServletRequestWrapper1(requestWrapper2);
+
+		HttpServletRequest originalHttpServletRequest =
+			_portalImpl.getOriginalServletRequest(requestWrapper3);
+
+		Assert.assertSame(
+			PersistentHttpServletRequestWrapper1.class,
+			originalHttpServletRequest.getClass());
+		Assert.assertNotSame(requestWrapper3, originalHttpServletRequest);
+		Assert.assertSame(
+			httpServletRequest, getWrappedRequest(originalHttpServletRequest));
+
+		HttpServletRequestWrapper requestWrapper4 =
+			new PersistentHttpServletRequestWrapper2(requestWrapper3);
+
+		originalHttpServletRequest = _portalImpl.getOriginalServletRequest(
+			requestWrapper4);
+
+		Assert.assertSame(
+			PersistentHttpServletRequestWrapper2.class,
+			originalHttpServletRequest.getClass());
+		Assert.assertNotSame(requestWrapper4, originalHttpServletRequest);
+
+		originalHttpServletRequest = getWrappedRequest(
+			originalHttpServletRequest);
+
+		Assert.assertSame(
+			PersistentHttpServletRequestWrapper1.class,
+			originalHttpServletRequest.getClass());
+		Assert.assertNotSame(requestWrapper3, originalHttpServletRequest);
+		Assert.assertSame(
+			httpServletRequest, getWrappedRequest(originalHttpServletRequest));
+	}
+
+	@Test
+	public void testGetUserId() {
+		PropsUtil.setProps(new PropsImpl());
+
+		Registry registry = RegistryUtil.getRegistry();
+
+		boolean[] calledAlwaysAllowDoAsUser = {false};
+
+		ServiceRegistration<AlwaysAllowDoAsUser> serviceRegistration =
+			registry.registerService(
+				AlwaysAllowDoAsUser.class,
+				(AlwaysAllowDoAsUser)ProxyUtil.newProxyInstance(
+					AlwaysAllowDoAsUser.class.getClassLoader(),
+					new Class<?>[] {AlwaysAllowDoAsUser.class},
+					(proxy, method, args) -> {
+						calledAlwaysAllowDoAsUser[0] = true;
+
+						if (Objects.equals(method.getName(), "equals")) {
+							return true;
+						}
+
+						if (Objects.equals(method.getName(), "hashcode")) {
+							return 0;
+						}
+
+						return Collections.emptyList();
+					}));
+
+		try {
+			MockHttpServletRequest mockHttpServletRequest =
+				new MockHttpServletRequest();
+
+			mockHttpServletRequest.setParameter("doAsUserId", "1");
+
+			_portalImpl.getUserId(mockHttpServletRequest);
+
+			Assert.assertTrue(
+				"AlwaysAllowDoAsUser not called", calledAlwaysAllowDoAsUser[0]);
+
+			calledAlwaysAllowDoAsUser[0] = false;
+
+			_portalImpl.getUserId(new MockHttpServletRequest());
+
+			Assert.assertFalse(
+				"AlwaysAllowDoAsUser should not be called",
+				calledAlwaysAllowDoAsUser[0]);
+		}
+		finally {
+			serviceRegistration.unregister();
 		}
 	}
 
@@ -447,57 +561,91 @@ public class PortalImplUnitTest extends PowerMockito {
 	}
 
 	@Test
+	public void testIsValidResourceId() {
+		Assert.assertTrue(_portalImpl.isValidResourceId("/view.jsp"));
+		Assert.assertFalse(
+			_portalImpl.isValidResourceId("/META-INF/MANIFEST.MF"));
+		Assert.assertFalse(
+			_portalImpl.isValidResourceId("/META-INF\\MANIFEST.MF"));
+		Assert.assertFalse(
+			_portalImpl.isValidResourceId("\\META-INF/MANIFEST.MF"));
+		Assert.assertFalse(
+			_portalImpl.isValidResourceId("\\META-INF\\MANIFEST.MF"));
+		Assert.assertFalse(_portalImpl.isValidResourceId("/WEB-INF/web.xml"));
+		Assert.assertFalse(_portalImpl.isValidResourceId("/WEB-INF\\web.xml"));
+		Assert.assertFalse(_portalImpl.isValidResourceId("\\WEB-INF/web.xml"));
+		Assert.assertFalse(_portalImpl.isValidResourceId("\\WEB-INF\\web.xml"));
+	}
+
+	@Test
 	public void testUpdateRedirectRemoveLayoutURL() {
-		mockStatic(HttpUtil.class);
+		HttpUtil httpUtil = new HttpUtil();
 
-		when(
-			HttpUtil.getQueryString(Mockito.anyString())
-		).thenReturn(
-			StringPool.BLANK
-		);
+		httpUtil.setHttp(
+			new HttpImpl() {
 
-		when(
-			HttpUtil.getParameter(
-				Mockito.anyString(), Mockito.anyString(), Mockito.eq(false))
-		).thenReturn(
-			StringPool.BLANK
-		);
+				@Override
+				public String getParameter(
+					String url, String name, boolean escaped) {
 
-		when(
-			HttpUtil.encodeURL(Mockito.anyString())
-		).thenAnswer(
-			new ReturnArgumentCalledAnswer<String>(0)
-		);
+					return StringPool.BLANK;
+				}
 
-		when(
-			HttpUtil.getPath(Mockito.anyString())
-		).thenAnswer(
-			new ReturnArgumentCalledAnswer<String>(0)
-		);
+				@Override
+				public String getPath(String url) {
+					return url;
+				}
+
+				@Override
+				public String getQueryString(String url) {
+					return StringPool.BLANK;
+				}
+
+			});
 
 		Assert.assertEquals(
 			"/web/group",
 			_portalImpl.updateRedirect(
 				"/web/group/layout", "/group/layout", "/group"));
+	}
 
-		verifyStatic();
+	protected HttpServletRequest getWrappedRequest(
+		HttpServletRequest httpServletRequest) {
+
+		HttpServletRequestWrapper requestWrapper =
+			(HttpServletRequestWrapper)httpServletRequest;
+
+		return (HttpServletRequest)requestWrapper.getRequest();
 	}
 
 	protected void setPropsValuesValue(String fieldName, Object value)
 		throws Exception {
 
-		Field field = field(PropsValues.class, fieldName);
-
-		field.setAccessible(true);
-
-		Field modifiersField = Field.class.getDeclaredField("modifiers");
-
-		modifiersField.setAccessible(true);
-		modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-		field.set(PropsValues.class, value);
+		ReflectionTestUtil.setFieldValue(PropsValues.class, fieldName, value);
 	}
 
 	private final PortalImpl _portalImpl = new PortalImpl();
+
+	private static class PersistentHttpServletRequestWrapper1
+		extends PersistentHttpServletRequestWrapper {
+
+		private PersistentHttpServletRequestWrapper1(
+			HttpServletRequest httpServletRequest) {
+
+			super(httpServletRequest);
+		}
+
+	}
+
+	private static class PersistentHttpServletRequestWrapper2
+		extends PersistentHttpServletRequestWrapper {
+
+		private PersistentHttpServletRequestWrapper2(
+			HttpServletRequest httpServletRequest) {
+
+			super(httpServletRequest);
+		}
+
+	}
 
 }

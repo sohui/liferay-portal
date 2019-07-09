@@ -1,0 +1,120 @@
+@component-name = "portal-user-management-and-portal-configuration"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Users and Organizations";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.tearDownCP();
+
+			Site.tearDownCP();
+
+			Suborganization.tearDownCP();
+
+			Organization.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test ConfigureLookAndFeelCurrentSiteAndMyDashboard {
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Users",
+			configurationName = "Personal Menu",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.editConfigurationUsersPersonalMenuPersonalApplicationLookAndFeel(selectOption = "Current Site");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextNotPresent(value1 = "My Dashboard");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Users",
+			configurationName = "Personal Menu",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.editConfigurationUsersPersonalMenuPersonalApplicationLookAndFeel(selectOption = "My Dashboard");
+
+		UserBar.gotoDropdownItem(dropdownItem = "Notifications");
+
+		AssertTextPresent(value1 = "My Dashboard");
+	}
+
+	@priority = "4"
+	test ConfigureShowInControlMenu {
+		AssertElementNotPresent.assertElementNotPresent(locator1 = "UserBar#USER_AVATAR_IN_CONTROL_MENU");
+
+		AssertElementPresent.assertElementPresent(locator1 = "UserBar#USER_AVATAR_IN_NAVIGATION_USER_PERSONAL_BAR_PORTLET");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Users",
+			configurationName = "Personal Menu",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.editConfigurationUsersPersonalMenuShowInControlMenu(toggleSwitchLabel = "Show in Control Menu");
+
+		Navigator.openURL();
+
+		AssertElementPresent.assertElementPresent(locator1 = "UserBar#USER_AVATAR_IN_CONTROL_MENU");
+
+		AssertElementPresent.assertElementPresent(locator1 = "UserBar#USER_AVATAR_IN_NAVIGATION_USER_PERSONAL_BAR_PORTLET");
+	}
+
+	@priority = "4"
+	test EnableStaging {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			panel = "Site Administration",
+			portlet = "Staging");
+
+		Staging.activateStagingCP(siteName = "${siteName}");
+
+		Navigator.gotoStagedSitePage(
+			pageName = "Home",
+			siteName = "${siteName}");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Portlet.viewTitle(portletName = "My Workflow Tasks");
+
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Organizations");
+
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "My Organizations");
+
+		AssertElementPresent.assertElementPresent(locator1 = "UsersAndOrganizations#MY_ORGANIZATION_PORTLET");
+	}
+
+	@priority = "4"
+	test NavigateToMySites {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		ProductMenu.gotoSiteViaLink();
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Sites");
+
+		Site.viewSelectSiteViaPersonalMenuMySites(siteName = "${siteName}");
+	}
+
+}

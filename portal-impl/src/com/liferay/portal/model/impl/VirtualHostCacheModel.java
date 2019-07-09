@@ -14,30 +14,29 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.VirtualHost;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing VirtualHost in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see VirtualHost
  * @generated
  */
 @ProviderType
-public class VirtualHostCacheModel implements CacheModel<VirtualHost>,
-	Externalizable, MVCCModel {
+public class VirtualHostCacheModel
+	implements CacheModel<VirtualHost>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -48,10 +47,12 @@ public class VirtualHostCacheModel implements CacheModel<VirtualHost>,
 			return false;
 		}
 
-		VirtualHostCacheModel virtualHostCacheModel = (VirtualHostCacheModel)obj;
+		VirtualHostCacheModel virtualHostCacheModel =
+			(VirtualHostCacheModel)obj;
 
 		if ((virtualHostId == virtualHostCacheModel.virtualHostId) &&
-				(mvccVersion == virtualHostCacheModel.mvccVersion)) {
+			(mvccVersion == virtualHostCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -104,7 +105,7 @@ public class VirtualHostCacheModel implements CacheModel<VirtualHost>,
 		virtualHostImpl.setLayoutSetId(layoutSetId);
 
 		if (hostname == null) {
-			virtualHostImpl.setHostname(StringPool.BLANK);
+			virtualHostImpl.setHostname("");
 		}
 		else {
 			virtualHostImpl.setHostname(hostname);
@@ -128,8 +129,7 @@ public class VirtualHostCacheModel implements CacheModel<VirtualHost>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(virtualHostId);
@@ -139,7 +139,7 @@ public class VirtualHostCacheModel implements CacheModel<VirtualHost>,
 		objectOutput.writeLong(layoutSetId);
 
 		if (hostname == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(hostname);
@@ -151,4 +151,5 @@ public class VirtualHostCacheModel implements CacheModel<VirtualHost>,
 	public long companyId;
 	public long layoutSetId;
 	public String hostname;
+
 }

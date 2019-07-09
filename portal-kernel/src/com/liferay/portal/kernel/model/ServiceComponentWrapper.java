@@ -14,17 +14,12 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -36,20 +31,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class ServiceComponentWrapper implements ServiceComponent,
-	ModelWrapper<ServiceComponent> {
+public class ServiceComponentWrapper
+	extends BaseModelWrapper<ServiceComponent>
+	implements ServiceComponent, ModelWrapper<ServiceComponent> {
+
 	public ServiceComponentWrapper(ServiceComponent serviceComponent) {
-		_serviceComponent = serviceComponent;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return ServiceComponent.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return ServiceComponent.class.getName();
+		super(serviceComponent);
 	}
 
 	@Override
@@ -105,300 +92,169 @@ public class ServiceComponentWrapper implements ServiceComponent,
 		}
 	}
 
-	@Override
-	public CacheModel<ServiceComponent> toCacheModel() {
-		return _serviceComponent.toCacheModel();
-	}
-
-	@Override
-	public ServiceComponent toEscapedModel() {
-		return new ServiceComponentWrapper(_serviceComponent.toEscapedModel());
-	}
-
-	@Override
-	public ServiceComponent toUnescapedModel() {
-		return new ServiceComponentWrapper(_serviceComponent.toUnescapedModel());
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _serviceComponent.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _serviceComponent.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _serviceComponent.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _serviceComponent.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(ServiceComponent serviceComponent) {
-		return _serviceComponent.compareTo(serviceComponent);
-	}
-
-	@Override
-	public int hashCode() {
-		return _serviceComponent.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _serviceComponent.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new ServiceComponentWrapper((ServiceComponent)_serviceComponent.clone());
-	}
-
 	/**
-	* Returns the build namespace of this service component.
-	*
-	* @return the build namespace of this service component
-	*/
-	@Override
-	public java.lang.String getBuildNamespace() {
-		return _serviceComponent.getBuildNamespace();
-	}
-
-	/**
-	* Returns the data of this service component.
-	*
-	* @return the data of this service component
-	*/
-	@Override
-	public java.lang.String getData() {
-		return _serviceComponent.getData();
-	}
-
-	@Override
-	public java.lang.String getIndexesSQL() {
-		return _serviceComponent.getIndexesSQL();
-	}
-
-	@Override
-	public java.lang.String getSequencesSQL() {
-		return _serviceComponent.getSequencesSQL();
-	}
-
-	@Override
-	public java.lang.String getTablesSQL() {
-		return _serviceComponent.getTablesSQL();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _serviceComponent.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _serviceComponent.toXmlString();
-	}
-
-	/**
-	* Returns the build date of this service component.
-	*
-	* @return the build date of this service component
-	*/
+	 * Returns the build date of this service component.
+	 *
+	 * @return the build date of this service component
+	 */
 	@Override
 	public long getBuildDate() {
-		return _serviceComponent.getBuildDate();
+		return model.getBuildDate();
 	}
 
 	/**
-	* Returns the build number of this service component.
-	*
-	* @return the build number of this service component
-	*/
+	 * Returns the build namespace of this service component.
+	 *
+	 * @return the build namespace of this service component
+	 */
+	@Override
+	public String getBuildNamespace() {
+		return model.getBuildNamespace();
+	}
+
+	/**
+	 * Returns the build number of this service component.
+	 *
+	 * @return the build number of this service component
+	 */
 	@Override
 	public long getBuildNumber() {
-		return _serviceComponent.getBuildNumber();
+		return model.getBuildNumber();
 	}
 
 	/**
-	* Returns the mvcc version of this service component.
-	*
-	* @return the mvcc version of this service component
-	*/
+	 * Returns the data of this service component.
+	 *
+	 * @return the data of this service component
+	 */
+	@Override
+	public String getData() {
+		return model.getData();
+	}
+
+	@Override
+	public String getIndexesSQL() {
+		return model.getIndexesSQL();
+	}
+
+	/**
+	 * Returns the mvcc version of this service component.
+	 *
+	 * @return the mvcc version of this service component
+	 */
 	@Override
 	public long getMvccVersion() {
-		return _serviceComponent.getMvccVersion();
+		return model.getMvccVersion();
 	}
 
 	/**
-	* Returns the primary key of this service component.
-	*
-	* @return the primary key of this service component
-	*/
+	 * Returns the primary key of this service component.
+	 *
+	 * @return the primary key of this service component
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _serviceComponent.getPrimaryKey();
+		return model.getPrimaryKey();
+	}
+
+	@Override
+	public String getSequencesSQL() {
+		return model.getSequencesSQL();
 	}
 
 	/**
-	* Returns the service component ID of this service component.
-	*
-	* @return the service component ID of this service component
-	*/
+	 * Returns the service component ID of this service component.
+	 *
+	 * @return the service component ID of this service component
+	 */
 	@Override
 	public long getServiceComponentId() {
-		return _serviceComponent.getServiceComponentId();
+		return model.getServiceComponentId();
+	}
+
+	@Override
+	public String getTablesSQL() {
+		return model.getTablesSQL();
 	}
 
 	@Override
 	public void persist() {
-		_serviceComponent.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets the build date of this service component.
-	*
-	* @param buildDate the build date of this service component
-	*/
+	 * Sets the build date of this service component.
+	 *
+	 * @param buildDate the build date of this service component
+	 */
 	@Override
 	public void setBuildDate(long buildDate) {
-		_serviceComponent.setBuildDate(buildDate);
+		model.setBuildDate(buildDate);
 	}
 
 	/**
-	* Sets the build namespace of this service component.
-	*
-	* @param buildNamespace the build namespace of this service component
-	*/
+	 * Sets the build namespace of this service component.
+	 *
+	 * @param buildNamespace the build namespace of this service component
+	 */
 	@Override
-	public void setBuildNamespace(java.lang.String buildNamespace) {
-		_serviceComponent.setBuildNamespace(buildNamespace);
+	public void setBuildNamespace(String buildNamespace) {
+		model.setBuildNamespace(buildNamespace);
 	}
 
 	/**
-	* Sets the build number of this service component.
-	*
-	* @param buildNumber the build number of this service component
-	*/
+	 * Sets the build number of this service component.
+	 *
+	 * @param buildNumber the build number of this service component
+	 */
 	@Override
 	public void setBuildNumber(long buildNumber) {
-		_serviceComponent.setBuildNumber(buildNumber);
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_serviceComponent.setCachedModel(cachedModel);
+		model.setBuildNumber(buildNumber);
 	}
 
 	/**
-	* Sets the data of this service component.
-	*
-	* @param data the data of this service component
-	*/
+	 * Sets the data of this service component.
+	 *
+	 * @param data the data of this service component
+	 */
 	@Override
-	public void setData(java.lang.String data) {
-		_serviceComponent.setData(data);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_serviceComponent.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_serviceComponent.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_serviceComponent.setExpandoBridgeAttributes(serviceContext);
+	public void setData(String data) {
+		model.setData(data);
 	}
 
 	/**
-	* Sets the mvcc version of this service component.
-	*
-	* @param mvccVersion the mvcc version of this service component
-	*/
+	 * Sets the mvcc version of this service component.
+	 *
+	 * @param mvccVersion the mvcc version of this service component
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_serviceComponent.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_serviceComponent.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the primary key of this service component.
-	*
-	* @param primaryKey the primary key of this service component
-	*/
+	 * Sets the primary key of this service component.
+	 *
+	 * @param primaryKey the primary key of this service component
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_serviceComponent.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_serviceComponent.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the service component ID of this service component.
-	*
-	* @param serviceComponentId the service component ID of this service component
-	*/
+	 * Sets the service component ID of this service component.
+	 *
+	 * @param serviceComponentId the service component ID of this service component
+	 */
 	@Override
 	public void setServiceComponentId(long serviceComponentId) {
-		_serviceComponent.setServiceComponentId(serviceComponentId);
+		model.setServiceComponentId(serviceComponentId);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof ServiceComponentWrapper)) {
-			return false;
-		}
-
-		ServiceComponentWrapper serviceComponentWrapper = (ServiceComponentWrapper)obj;
-
-		if (Objects.equals(_serviceComponent,
-					serviceComponentWrapper._serviceComponent)) {
-			return true;
-		}
-
-		return false;
+	protected ServiceComponentWrapper wrap(ServiceComponent serviceComponent) {
+		return new ServiceComponentWrapper(serviceComponent);
 	}
 
-	@Override
-	public ServiceComponent getWrappedModel() {
-		return _serviceComponent;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _serviceComponent.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _serviceComponent.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_serviceComponent.resetOriginalValues();
-	}
-
-	private final ServiceComponent _serviceComponent;
 }

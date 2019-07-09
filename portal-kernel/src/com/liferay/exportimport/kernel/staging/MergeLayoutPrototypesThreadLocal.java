@@ -14,8 +14,8 @@
 
 package com.liferay.exportimport.kernel.staging;
 
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
-import com.liferay.portal.kernel.util.HashUtil;
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.lang.HashUtil;
 
 import java.lang.reflect.Method;
 
@@ -24,10 +24,13 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Raymond Augé
  * @author Shuyang Zhou
  */
+@ProviderType
 public class MergeLayoutPrototypesThreadLocal {
 
 	public static void clearMergeComplete() {
@@ -38,36 +41,59 @@ public class MergeLayoutPrototypesThreadLocal {
 		return _inProgress.get();
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #isMergeComplete(String, Object...)}
+	 */
+	@Deprecated
 	public static boolean isMergeComplete(Method method, Object[] arguments) {
+		return isMergeComplete(method.getName(), arguments);
+	}
+
+	public static boolean isMergeComplete(
+		String methodName, Object... arguments) {
+
 		Set<MethodKey> methodKeys = _mergeComplete.get();
 
-		return methodKeys.contains(new MethodKey(method, arguments));
+		return methodKeys.contains(new MethodKey(methodName, arguments));
 	}
 
 	public static void setInProgress(boolean inProgress) {
 		_inProgress.set(inProgress);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #setMergeComplete(String, Object...)}
+	 */
+	@Deprecated
 	public static void setMergeComplete(Method method, Object[] arguments) {
+		setMergeComplete(method.getName(), arguments);
+	}
+
+	public static void setMergeComplete(
+		String methodName, Object... arguments) {
+
 		Set<MethodKey> methodKeys = _mergeComplete.get();
 
-		methodKeys.add(new MethodKey(method, arguments));
+		methodKeys.add(new MethodKey(methodName, arguments));
 
 		setInProgress(false);
 	}
 
 	private static final ThreadLocal<Boolean> _inProgress =
-		new AutoResetThreadLocal<>(
-			MergeLayoutPrototypesThreadLocal.class + "._inProgress", false);
+		new CentralizedThreadLocal<>(
+			MergeLayoutPrototypesThreadLocal.class + "._inProgress",
+			() -> Boolean.FALSE);
 	private static final ThreadLocal<Set<MethodKey>> _mergeComplete =
-		new AutoResetThreadLocal<Set<MethodKey>>(
+		new CentralizedThreadLocal<>(
 			MergeLayoutPrototypesThreadLocal.class + "._mergeComplete",
-			new HashSet<MethodKey>());
+			HashSet::new);
 
 	private static class MethodKey {
 
-		public MethodKey(Method method, Object[] arguments) {
-			_method = method;
+		public MethodKey(String methodName, Object[] arguments) {
+			_methodName = methodName;
 			_arguments = arguments;
 		}
 
@@ -75,7 +101,7 @@ public class MergeLayoutPrototypesThreadLocal {
 		public boolean equals(Object obj) {
 			MethodKey methodKey = (MethodKey)obj;
 
-			if (Objects.equals(_method, methodKey._method) &&
+			if (Objects.equals(_methodName, methodKey._methodName) &&
 				Arrays.equals(_arguments, methodKey._arguments)) {
 
 				return true;
@@ -86,7 +112,7 @@ public class MergeLayoutPrototypesThreadLocal {
 
 		@Override
 		public int hashCode() {
-			int hashCode = _method.hashCode();
+			int hashCode = _methodName.hashCode();
 
 			if (_arguments != null) {
 				for (Object obj : _arguments) {
@@ -103,7 +129,7 @@ public class MergeLayoutPrototypesThreadLocal {
 		}
 
 		private final Object[] _arguments;
-		private final Method _method;
+		private final String _methodName;
 
 	}
 

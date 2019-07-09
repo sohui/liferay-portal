@@ -23,13 +23,15 @@ import com.liferay.portal.util.PropsValues;
 import java.util.List;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Raymond Augé
- * @author Zsolt Berentey
+ * @author     Brian Wing Shun Chan
+ * @author     Raymond Augé
+ * @author     Zsolt Berentey
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class SecurityManagerUtil {
 
-	public static final boolean ENABLED = (System.getSecurityManager() != null);
+	public static final boolean ENABLED = System.getSecurityManager() != null;
 
 	public static void destroy() {
 		if (_portalSecurityManager == null) {

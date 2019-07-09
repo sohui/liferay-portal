@@ -1,0 +1,79 @@
+@component-name = "portal-frontend-infrastructure"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Theme";
+	property testray.main.component.name = "Theme";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "5"
+	test ConfigureLookAndFeelSettingsSinglePage {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Classic Theme Page");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Classic Theme Page");
+
+		Navigator.gotoNavTab(navTab = "Look and Feel");
+
+		Theme.configureLookAndFeelSpecificLook();
+
+		Theme.configureLookAndFeelShowHeaderSearch(showHeaderSearch = "false");
+
+		Theme.configureLookAndFeelShowMaxMinAppLinks(showMaxMinAppLinks = "true");
+
+		PortletEntry.save();
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Classic Theme Page");
+
+		Navigator.gotoNavTab(navTab = "Look and Feel");
+
+		Navigator.gotoPage(pageName = "Classic Theme Page");
+
+		SearchPortlets.viewSearchHidden();
+
+		Portlet.addPG(portletName = "Hello World");
+
+		Portlet.gotoPortletOptions(portletName = "Hello World");
+
+		Theme.viewMaxPortletOption();
+
+		Theme.viewMinPortlet();
+
+		AssertTextEquals(
+			locator1 = "HelloWorld#PORTLET_TITLE",
+			value1 = "Hello World");
+
+		AssertTextNotPresent(
+			locator1 = "HelloWorld#PORTLET_CONTENT",
+			value1 = "Welcome to Liferay");
+
+		Portlet.gotoPortletOptions(portletName = "Hello World");
+
+		Theme.viewRestorePortlet();
+
+		Smoke.viewWelcomePage();
+	}
+
+}

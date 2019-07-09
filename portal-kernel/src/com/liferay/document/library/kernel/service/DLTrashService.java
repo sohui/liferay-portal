@@ -14,8 +14,6 @@
 
 package com.liferay.document.library.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -28,6 +26,8 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for DLTrash. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -35,110 +35,115 @@ import com.liferay.portal.kernel.transaction.Transactional;
  *
  * @author Brian Wing Shun Chan
  * @see DLTrashServiceUtil
- * @see com.liferay.portlet.documentlibrary.service.base.DLTrashServiceBaseImpl
- * @see com.liferay.portlet.documentlibrary.service.impl.DLTrashServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface DLTrashService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link DLTrashServiceUtil} to access the d l trash remote service. Add custom service methods to {@link com.liferay.portlet.documentlibrary.service.impl.DLTrashServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link DLTrashServiceUtil} to access the dl trash remote service. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLTrashServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 
 	/**
-	* Moves the file entry from a trashed folder to the new folder.
-	*
-	* @param fileEntryId the primary key of the file entry
-	* @param newFolderId the primary key of the new folder
-	* @param serviceContext the service context to be applied
-	* @return the file entry
-	*/
-	public FileEntry moveFileEntryFromTrash(long fileEntryId, long newFolderId,
-		ServiceContext serviceContext) throws PortalException;
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
 
 	/**
-	* Moves the file entry with the primary key to the trash portlet.
-	*
-	* @param fileEntryId the primary key of the file entry
-	* @return the file entry
-	*/
+	 * Moves the file entry from a trashed folder to the new folder.
+	 *
+	 * @param fileEntryId the primary key of the file entry
+	 * @param newFolderId the primary key of the new folder
+	 * @param serviceContext the service context to be applied
+	 * @return the file entry
+	 */
+	public FileEntry moveFileEntryFromTrash(
+			long fileEntryId, long newFolderId, ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * Moves the file entry with the primary key to the trash portlet.
+	 *
+	 * @param fileEntryId the primary key of the file entry
+	 * @return the file entry
+	 */
 	public FileEntry moveFileEntryToTrash(long fileEntryId)
 		throws PortalException;
 
 	/**
-	* Moves the file shortcut from a trashed folder to the new folder.
-	*
-	* @param fileShortcutId the primary key of the file shortcut
-	* @param newFolderId the primary key of the new folder
-	* @param serviceContext the service context to be applied
-	* @return the file shortcut
-	*/
-	public FileShortcut moveFileShortcutFromTrash(long fileShortcutId,
-		long newFolderId, ServiceContext serviceContext)
+	 * Moves the file shortcut from a trashed folder to the new folder.
+	 *
+	 * @param fileShortcutId the primary key of the file shortcut
+	 * @param newFolderId the primary key of the new folder
+	 * @param serviceContext the service context to be applied
+	 * @return the file shortcut
+	 */
+	public FileShortcut moveFileShortcutFromTrash(
+			long fileShortcutId, long newFolderId,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
-	* Moves the file shortcut with the primary key to the trash portlet.
-	*
-	* @param fileShortcutId the primary key of the file shortcut
-	* @return the file shortcut
-	*/
+	 * Moves the file shortcut with the primary key to the trash portlet.
+	 *
+	 * @param fileShortcutId the primary key of the file shortcut
+	 * @return the file shortcut
+	 */
 	public FileShortcut moveFileShortcutToTrash(long fileShortcutId)
 		throws PortalException;
 
 	/**
-	* Moves the folder with the primary key from the trash portlet to the new
-	* parent folder with the primary key.
-	*
-	* @param folderId the primary key of the folder
-	* @param parentFolderId the primary key of the new parent folder
-	* @param serviceContext the service context to be applied
-	* @return the file entry
-	*/
-	public Folder moveFolderFromTrash(long folderId, long parentFolderId,
-		ServiceContext serviceContext) throws PortalException;
+	 * Moves the folder with the primary key from the trash portlet to the new
+	 * parent folder with the primary key.
+	 *
+	 * @param folderId the primary key of the folder
+	 * @param parentFolderId the primary key of the new parent folder
+	 * @param serviceContext the service context to be applied
+	 * @return the file entry
+	 */
+	public Folder moveFolderFromTrash(
+			long folderId, long parentFolderId, ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
-	* Moves the folder with the primary key to the trash portlet.
-	*
-	* @param folderId the primary key of the folder
-	* @return the file entry
-	*/
+	 * Moves the folder with the primary key to the trash portlet.
+	 *
+	 * @param folderId the primary key of the folder
+	 * @return the file entry
+	 */
 	public Folder moveFolderToTrash(long folderId) throws PortalException;
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
-
-	/**
-	* Restores the file entry with the primary key from the trash portlet.
-	*
-	* @param fileEntryId the primary key of the file entry
-	*/
+	 * Restores the file entry with the primary key from the trash portlet.
+	 *
+	 * @param fileEntryId the primary key of the file entry
+	 */
 	public void restoreFileEntryFromTrash(long fileEntryId)
 		throws PortalException;
 
 	/**
-	* Restores the file shortcut with the primary key from the trash portlet.
-	*
-	* @param fileShortcutId the primary key of the file shortcut
-	*/
+	 * Restores the file shortcut with the primary key from the trash portlet.
+	 *
+	 * @param fileShortcutId the primary key of the file shortcut
+	 */
 	public void restoreFileShortcutFromTrash(long fileShortcutId)
 		throws PortalException;
 
 	/**
-	* Restores the folder with the primary key from the trash portlet.
-	*
-	* @param folderId the primary key of the folder
-	*/
+	 * Restores the folder with the primary key from the trash portlet.
+	 *
+	 * @param folderId the primary key of the folder
+	 */
 	public void restoreFolderFromTrash(long folderId) throws PortalException;
+
 }

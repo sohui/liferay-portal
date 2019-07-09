@@ -22,20 +22,28 @@ String layoutTemplateIdPrefix = (String)request.getAttribute("liferay-ui:layout-
 List<LayoutTemplate> layoutTemplates = (List<LayoutTemplate>)request.getAttribute("liferay-ui:layout-templates-list:layoutTemplates");
 %>
 
-<div class="lfr-page-layouts row">
-	<ul class="list-unstyled">
+<div class="container-fluid lfr-page-layouts">
+	<ul class="list-unstyled row">
 
 		<%
 		layoutTemplates = PluginUtil.restrictPlugins(layoutTemplates, user);
 
 		for (int i = 0; i < layoutTemplates.size(); i++) {
 			LayoutTemplate layoutTemplate = layoutTemplates.get(i);
+
+			String templateId = layoutTemplate.getLayoutTemplateId();
+
+			// LPS-90259
+
+			if (templateId.equals("1_column_dynamic")) {
+				continue;
+			}
 		%>
 
 			<li class="col-lg-3 col-md-4 col-sm-6 lfr-layout-template">
 				<div class="checkbox-card">
 					<label for="<portlet:namespace /><%= layoutTemplateIdPrefix + "layoutTemplateId" + i %>">
-						<aui:input checked="<%= layoutTemplateId.equals(layoutTemplate.getLayoutTemplateId()) %>" cssClass="hide" id='<%= layoutTemplateIdPrefix + "layoutTemplateId" + i %>' label="" name="layoutTemplateId" type="radio" value="<%= layoutTemplate.getLayoutTemplateId() %>" wrappedField="<%= true %>" />
+						<aui:input checked="<%= layoutTemplateId.equals(layoutTemplate.getLayoutTemplateId()) %>" id='<%= layoutTemplateIdPrefix + "layoutTemplateId" + i %>' label="" name="layoutTemplateId" type="radio" value="<%= layoutTemplate.getLayoutTemplateId() %>" wrappedField="<%= true %>" />
 
 						<div class="card card-horizontal">
 							<div class="card-row card-row-padded">
@@ -45,7 +53,7 @@ List<LayoutTemplate> layoutTemplates = (List<LayoutTemplate>)request.getAttribut
 
 								<div class="card-col-content card-col-gutters clamp-horizontal">
 									<div class="clamp-container">
-										<span class="truncate-text" title=""><%= HtmlUtil.escape(layoutTemplate.getName(locale)) %></span>
+										<span class="truncate-text" title="<%= HtmlUtil.escape(layoutTemplate.getName(locale)) %>"><%= HtmlUtil.escape(layoutTemplate.getName(locale)) %></span>
 									</div>
 								</div>
 							</div>

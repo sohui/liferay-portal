@@ -14,6 +14,9 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.io.StreamUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.DummyWriter;
 import com.liferay.portal.kernel.log.Log;
@@ -27,11 +30,9 @@ import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -44,6 +45,8 @@ import com.liferay.portal.util.PropsValues;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -59,8 +62,13 @@ import javax.servlet.ServletContext;
  * @author Brian Wing Shun Chan
  * @author Raymond Augé
  */
+@Transactional(enabled = false)
 public class LayoutTemplateLocalServiceImpl
 	extends LayoutTemplateLocalServiceBaseImpl {
+
+	public static final Set<String> supportedLangTypes = new HashSet<>(
+		Arrays.asList(
+			TemplateConstants.LANG_TYPE_VM, TemplateConstants.LANG_TYPE_FTL));
 
 	@Override
 	public String getContent(
@@ -79,11 +87,15 @@ public class LayoutTemplateLocalServiceImpl
 				PropsValues.DEFAULT_LAYOUT_TEMPLATE_ID, standard, themeId);
 
 			if (layoutTemplate == null) {
-				_log.error(
-					"Layout template " + layoutTemplateId +
-						" and default layout template " +
-							PropsValues.DEFAULT_LAYOUT_TEMPLATE_ID +
-								" do not exist");
+				StringBundler sb = new StringBundler(5);
+
+				sb.append("Layout template ");
+				sb.append(layoutTemplateId);
+				sb.append(" and default layout template ");
+				sb.append(PropsValues.DEFAULT_LAYOUT_TEMPLATE_ID);
+				sb.append(" do not exist");
+
+				_log.error(sb.toString());
 
 				return StringPool.BLANK;
 			}
@@ -102,6 +114,20 @@ public class LayoutTemplateLocalServiceImpl
 	}
 
 	@Override
+	public String getLangType(
+		String layoutTemplateId, boolean standard, String themeId) {
+
+		LayoutTemplate layoutTemplate = getLayoutTemplate(
+			layoutTemplateId, standard, themeId);
+
+		if (layoutTemplate == null) {
+			return TemplateConstants.LANG_TYPE_VM;
+		}
+
+		return _getSupportedLangType(layoutTemplate);
+	}
+
+	@Override
 	public LayoutTemplate getLayoutTemplate(
 		String layoutTemplateId, boolean standard, String themeId) {
 
@@ -113,12 +139,16 @@ public class LayoutTemplateLocalServiceImpl
 
 		if (themeId != null) {
 			if (standard) {
-				layoutTemplate = _getThemesStandard(themeId).get(
-					layoutTemplateId);
+				Map<String, LayoutTemplate> themesStandard = _getThemesStandard(
+					themeId);
+
+				layoutTemplate = themesStandard.get(layoutTemplateId);
 			}
 			else {
-				layoutTemplate = _getThemesCustom(themeId).get(
-					layoutTemplateId);
+				Map<String, LayoutTemplate> themesCustom = _getThemesCustom(
+					themeId);
+
+				layoutTemplate = themesCustom.get(layoutTemplateId);
 			}
 
 			if (layoutTemplate != null) {
@@ -149,28 +179,25 @@ public class LayoutTemplateLocalServiceImpl
 		List<LayoutTemplate> customLayoutTemplates = new ArrayList<>(
 			_portalCustom.size() + _warCustom.size());
 
-		customLayoutTemplates.addAll(ListUtil.fromMapValues(_portalCustom));
-		customLayoutTemplates.addAll(ListUtil.fromMapValues(_warCustom));
+		customLayoutTemplates.addAll(_portalCustom.values());
+		customLayoutTemplates.addAll(_warCustom.values());
 
 		return customLayoutTemplates;
 	}
 
 	@Override
 	public List<LayoutTemplate> getLayoutTemplates(String themeId) {
-		Map<String, LayoutTemplate> _themesCustom = _getThemesCustom(themeId);
+		Map<String, LayoutTemplate> themesCustom = _getThemesCustom(themeId);
 
-		List<LayoutTemplate> customLayoutTemplates =
-			new ArrayList<LayoutTemplate>(
-				_portalCustom.size() + _warCustom.size() +
-					_themesCustom.size());
+		List<LayoutTemplate> customLayoutTemplates = new ArrayList<>(
+			_portalCustom.size() + _warCustom.size() + themesCustom.size());
 
 		for (Map.Entry<String, LayoutTemplate> entry :
 				_portalCustom.entrySet()) {
 
 			String layoutTemplateId = entry.getKey();
-			LayoutTemplate layoutTemplate = entry.getValue();
 
-			LayoutTemplate themeCustomLayoutTemplate = _themesCustom.get(
+			LayoutTemplate themeCustomLayoutTemplate = themesCustom.get(
 				layoutTemplateId);
 
 			if (themeCustomLayoutTemplate != null) {
@@ -184,7 +211,7 @@ public class LayoutTemplateLocalServiceImpl
 					customLayoutTemplates.add(warCustomLayoutTemplate);
 				}
 				else {
-					customLayoutTemplates.add(layoutTemplate);
+					customLayoutTemplates.add(entry.getValue());
 				}
 			}
 		}
@@ -193,21 +220,21 @@ public class LayoutTemplateLocalServiceImpl
 			String layoutTemplateId = entry.getKey();
 
 			if (!_portalCustom.containsKey(layoutTemplateId) &&
-				!_themesCustom.containsKey(layoutTemplateId)) {
+				!themesCustom.containsKey(layoutTemplateId)) {
 
 				customLayoutTemplates.add(_warCustom.get(layoutTemplateId));
 			}
 		}
 
 		for (Map.Entry<String, LayoutTemplate> entry :
-				_themesCustom.entrySet()) {
+				themesCustom.entrySet()) {
 
 			String layoutTemplateId = entry.getKey();
 
 			if (!_portalCustom.containsKey(layoutTemplateId) &&
 				!_warCustom.containsKey(layoutTemplateId)) {
 
-				customLayoutTemplates.add(_themesCustom.get(layoutTemplateId));
+				customLayoutTemplates.add(themesCustom.get(layoutTemplateId));
 			}
 		}
 
@@ -326,15 +353,16 @@ public class LayoutTemplateLocalServiceImpl
 			String content = null;
 
 			try {
-				content = HttpUtil.URLtoString(
-					servletContext.getResource(
+				content = StreamUtil.toString(
+					servletContext.getResourceAsStream(
 						layoutTemplateModel.getTemplatePath()));
 			}
 			catch (Exception e) {
 				_log.error(
-					"Unable to get content at template path " +
-						layoutTemplateModel.getTemplatePath() + ": " +
-							e.getMessage());
+					StringBundler.concat(
+						"Unable to get content at template path ",
+						layoutTemplateModel.getTemplatePath(), ": ",
+						e.getMessage()));
 			}
 
 			if (Validator.isNull(content)) {
@@ -360,7 +388,9 @@ public class LayoutTemplateLocalServiceImpl
 
 				layoutTemplateModel.setContent(content);
 				layoutTemplateModel.setColumns(
-					_getColumns(velocityTemplateId, content));
+					_getColumns(
+						velocityTemplateId, content,
+						_getSupportedLangType(layoutTemplateModel)));
 			}
 
 			Element rolesElement = layoutTemplateElement.element("roles");
@@ -388,6 +418,9 @@ public class LayoutTemplateLocalServiceImpl
 
 		String templateId = null;
 
+		LayoutTemplate layoutTemplate = getLayoutTemplate(
+			layoutTemplateId, standard, null);
+
 		try {
 			if (standard) {
 				templateId =
@@ -395,7 +428,7 @@ public class LayoutTemplateLocalServiceImpl
 						layoutTemplateId;
 
 				TemplateResourceLoaderUtil.clearCache(
-					TemplateConstants.LANG_TYPE_VM, templateId);
+					_getSupportedLangType(layoutTemplate), templateId);
 
 				_warStandard.remove(layoutTemplateId);
 			}
@@ -405,7 +438,7 @@ public class LayoutTemplateLocalServiceImpl
 						layoutTemplateId;
 
 				TemplateResourceLoaderUtil.clearCache(
-					TemplateConstants.LANG_TYPE_VM, templateId);
+					_getSupportedLangType(layoutTemplate), templateId);
 
 				_warCustom.remove(layoutTemplateId);
 			}
@@ -418,11 +451,11 @@ public class LayoutTemplateLocalServiceImpl
 
 	@Override
 	public void uninstallLayoutTemplates(String themeId) {
-		Map<String, LayoutTemplate> _themesStandard = _getThemesStandard(
+		Map<String, LayoutTemplate> themesStandard = _getThemesStandard(
 			themeId);
 
 		for (Map.Entry<String, LayoutTemplate> entry :
-				_themesStandard.entrySet()) {
+				themesStandard.entrySet()) {
 
 			LayoutTemplate layoutTemplate = entry.getValue();
 
@@ -432,7 +465,7 @@ public class LayoutTemplateLocalServiceImpl
 
 			try {
 				TemplateResourceLoaderUtil.clearCache(
-					TemplateConstants.LANG_TYPE_VM, templateId);
+					_getSupportedLangType(layoutTemplate), templateId);
 			}
 			catch (Exception e) {
 				_log.error(
@@ -442,12 +475,12 @@ public class LayoutTemplateLocalServiceImpl
 			}
 		}
 
-		_themesStandard.clear();
+		themesStandard.clear();
 
-		Map<String, LayoutTemplate> _themesCustom = _getThemesCustom(themeId);
+		Map<String, LayoutTemplate> themesCustom = _getThemesCustom(themeId);
 
 		for (Map.Entry<String, LayoutTemplate> entry :
-				_themesCustom.entrySet()) {
+				themesCustom.entrySet()) {
 
 			LayoutTemplate layoutTemplate = entry.getValue();
 
@@ -457,7 +490,7 @@ public class LayoutTemplateLocalServiceImpl
 
 			try {
 				TemplateResourceLoaderUtil.clearCache(
-					TemplateConstants.LANG_TYPE_VM, templateId);
+					_getSupportedLangType(layoutTemplate), templateId);
 			}
 			catch (Exception e) {
 				_log.error(
@@ -467,20 +500,18 @@ public class LayoutTemplateLocalServiceImpl
 			}
 		}
 
-		_themesCustom.clear();
+		themesCustom.clear();
 	}
 
 	private List<String> _getColumns(
-		String velocityTemplateId, String velocityTemplateContent) {
+		String templateId, String templateContent, String langType) {
 
 		try {
 			InitColumnProcessor processor = new InitColumnProcessor();
 
 			Template template = TemplateManagerUtil.getTemplate(
-				TemplateConstants.LANG_TYPE_VM,
-				new StringTemplateResource(
-					velocityTemplateId, velocityTemplateContent),
-				false);
+				langType,
+				new StringTemplateResource(templateId, templateContent), false);
 
 			template.put("processor", processor);
 
@@ -489,35 +520,49 @@ public class LayoutTemplateLocalServiceImpl
 			return ListUtil.sort(processor.getColumns());
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error("Unable to get layout template columns", e);
 
 			return new ArrayList<>();
 		}
 	}
 
-	private Map<String, LayoutTemplate> _getThemesCustom(String themeId) {
-		String key = themeId.concat(LayoutTemplateConstants.CUSTOM_SEPARATOR);
+	private String _getSupportedLangType(LayoutTemplate layoutTemplate) {
+		String templatePath = layoutTemplate.getTemplatePath();
 
-		Map<String, LayoutTemplate> layoutTemplates = _themes.get(key);
+		int index = templatePath.lastIndexOf(StringPool.PERIOD);
+
+		if (index != -1) {
+			String langType = templatePath.substring(index + 1);
+
+			if (supportedLangTypes.contains(langType)) {
+				return langType;
+			}
+		}
+
+		return TemplateConstants.LANG_TYPE_VM;
+	}
+
+	private Map<String, LayoutTemplate> _getThemesCustom(String themeId) {
+		Map<String, LayoutTemplate> layoutTemplates = _customThemes.get(
+			themeId);
 
 		if (layoutTemplates == null) {
 			layoutTemplates = new LinkedHashMap<>();
 
-			_themes.put(key, layoutTemplates);
+			_customThemes.put(themeId, layoutTemplates);
 		}
 
 		return layoutTemplates;
 	}
 
 	private Map<String, LayoutTemplate> _getThemesStandard(String themeId) {
-		String key = themeId + LayoutTemplateConstants.STANDARD_SEPARATOR;
-
-		Map<String, LayoutTemplate> layoutTemplates = _themes.get(key);
+		Map<String, LayoutTemplate> layoutTemplates = _standardThemes.get(
+			themeId);
 
 		if (layoutTemplates == null) {
 			layoutTemplates = new LinkedHashMap<>();
 
-			_themes.put(key, layoutTemplates);
+			_standardThemes.put(themeId, layoutTemplates);
 		}
 
 		return layoutTemplates;
@@ -560,15 +605,17 @@ public class LayoutTemplateLocalServiceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutTemplateLocalServiceImpl.class);
 
+	private static final Map<String, Map<String, LayoutTemplate>>
+		_customThemes = new HashMap<>();
 	private static final Map<String, LayoutTemplate> _portalCustom =
 		new LinkedHashMap<>();
 	private static final Map<String, LayoutTemplate> _portalStandard =
-		new LinkedHashMap<>();
-	private static final Map<String, Map<String, LayoutTemplate>> _themes =
-		new LinkedHashMap<>();
+		new HashMap<>();
+	private static final Map<String, Map<String, LayoutTemplate>>
+		_standardThemes = new HashMap<>();
 	private static final Map<String, LayoutTemplate> _warCustom =
 		new LinkedHashMap<>();
 	private static final Map<String, LayoutTemplate> _warStandard =
-		new LinkedHashMap<>();
+		new HashMap<>();
 
 }

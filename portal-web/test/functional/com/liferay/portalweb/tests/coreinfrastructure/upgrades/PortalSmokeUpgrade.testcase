@@ -1,0 +1,93 @@
+@component-name = "portal-upgrades"
+definition {
+
+	property app.server.types = "jboss,tomcat,weblogic,websphere,wildfly";
+	property database.types = "db2,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property ignore.errors = "Plugin security management is not enabled. Enable a security manager, then restart.";
+	property testray.main.component.name = "Upgrades Core Infrastructure";
+
+	setUp {
+		SignIn.signIn();
+
+		Smoke.viewWelcomePage();
+	}
+
+	@priority = "5"
+	test ViewPortalSmokeArchive625 {
+		property data.archive.type = "data-archive-portal";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.upgrades = "true";
+		property portal.version = "6.2.5";
+		property test.assert.warning.exceptions = "true";
+
+		Upgrade.viewUpgrade();
+
+		Upgrade.searchForAssetsAfterUpgrade();
+	}
+
+	@priority = "5"
+	test ViewPortalSmokeArchive704 {
+		property data.archive.type = "data-archive-portal";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.upgrades = "true";
+		property portal.version = "7.0.4";
+		property test.assert.warning.exceptions = "true";
+
+		Upgrade.viewUpgrade();
+
+		Upgrade.searchForAssetsAfterUpgrade();
+	}
+
+	@priority = "5"
+	test ViewPortalSmokeArchive7110 {
+		property data.archive.type = "data-archive-portal";
+		property portal.upgrades = "true";
+		property portal.version = "7.1.10";
+		property test.assert.warning.exceptions = "true";
+
+		Upgrade.viewUpgrade();
+
+		Upgrade.searchForAssetsAfterUpgrade();
+	}
+
+	@priority = "5"
+	test ViewPortalSmokeArchive70106 {
+		property data.archive.type = "data-archive-portal";
+		property portal.upgrades = "true";
+		property portal.version = "7.0.10.6";
+		property test.assert.warning.exceptions = "true";
+
+		Upgrade.viewUpgrade();
+
+		Upgrade.searchForAssetsAfterUpgrade();
+	}
+
+	@priority = "5"
+	test ViewPortalSmokeArchive621015 {
+		property data.archive.type = "data-archive-portal";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sqlserver";
+		property portal.upgrades = "true";
+		property portal.version = "6.2.10.15";
+		property test.assert.warning.exceptions = "true";
+
+		Upgrade.viewUpgrade();
+
+		Upgrade.searchForAssetsAfterUpgrade();
+	}
+
+	@priority = "5"
+	test ViewPortalSmokeArchive621021 {
+		property data.archive.type = "data-archive-portal";
+		property database.types = "db2,mariadb,mysql,oracle,postgresql,sqlserver";
+		property portal.upgrades = "true";
+		property portal.version = "6.2.10.21";
+		property test.assert.warning.exceptions = "true";
+
+		Upgrade.viewUpgrade();
+
+		Upgrade.searchForAssetsAfterUpgrade();
+	}
+
+}

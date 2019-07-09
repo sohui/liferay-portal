@@ -15,8 +15,7 @@
 package com.liferay.screens.service.impl;
 
 import com.liferay.dynamic.data.lists.model.DDLRecord;
-import com.liferay.dynamic.data.lists.service.permission.DDLRecordPermission;
-import com.liferay.dynamic.data.lists.service.permission.DDLRecordSetPermission;
+import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
@@ -25,7 +24,11 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
+import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.screens.service.base.ScreensDDLRecordServiceBaseImpl;
 
@@ -47,15 +50,16 @@ public class ScreensDDLRecordServiceImpl
 
 		DDLRecord ddlRecord = ddlRecordLocalService.getRecord(ddlRecordId);
 
-		DDLRecordPermission.check(
-			getPermissionChecker(), ddlRecord, ActionKeys.VIEW);
+		_ddlRecordSetModelResourcePermission.check(
+			getPermissionChecker(), ddlRecord.getRecordSetId(),
+			ActionKeys.VIEW);
 
 		DDMFormValues ddmFormValues = ddlRecord.getDDMFormValues();
 
 		Set<Locale> availableLocales = ddmFormValues.getAvailableLocales();
 
 		if ((locale == null) || !availableLocales.contains(locale)) {
-			locale = ddlRecord.getDDMFormValues().getDefaultLocale();
+			locale = ddmFormValues.getDefaultLocale();
 		}
 
 		return getDDLRecordJSONObject(ddlRecord, locale);
@@ -63,57 +67,57 @@ public class ScreensDDLRecordServiceImpl
 
 	@Override
 	public JSONArray getDDLRecords(
-			long ddlRecordSetId, Locale locale, int start, int end)
+			long ddlRecordSetId, Locale locale, int start, int end,
+			OrderByComparator<DDLRecord> obc)
 		throws PortalException {
 
-		DDLRecordSetPermission.check(
+		_ddlRecordSetModelResourcePermission.check(
 			getPermissionChecker(), ddlRecordSetId, ActionKeys.VIEW);
 
-		List<DDLRecord> ddlRecords = ddlRecordPersistence.findByRecordSetId(
-			ddlRecordSetId, start, end);
+		List<DDLRecord> ddlRecords = ddlRecordLocalService.getRecords(
+			ddlRecordSetId, start, end, obc);
 
 		return getDDLRecordsJSONArray(ddlRecords, locale);
 	}
 
 	@Override
 	public JSONArray getDDLRecords(
-			long ddlRecordSetId, long userId, Locale locale, int start, int end)
+			long ddlRecordSetId, long userId, Locale locale, int start, int end,
+			OrderByComparator<DDLRecord> obc)
 		throws PortalException {
 
-		DDLRecordSetPermission.check(
+		_ddlRecordSetModelResourcePermission.check(
 			getPermissionChecker(), ddlRecordSetId, ActionKeys.VIEW);
 
-		List<DDLRecord> ddlRecords = ddlRecordPersistence.findByR_U(
-			ddlRecordSetId, userId, start, end);
+		List<DDLRecord> ddlRecords = ddlRecordLocalService.getRecords(
+			ddlRecordSetId, userId, start, end, obc);
 
 		return getDDLRecordsJSONArray(ddlRecords, locale);
 	}
 
 	@Override
 	public int getDDLRecordsCount(long ddlRecordSetId) throws PortalException {
-		DDLRecordSetPermission.check(
+		_ddlRecordSetModelResourcePermission.check(
 			getPermissionChecker(), ddlRecordSetId, ActionKeys.VIEW);
 
-		return ddlRecordPersistence.countByRecordSetId(ddlRecordSetId);
+		return ddlRecordLocalService.getRecordsCount(ddlRecordSetId);
 	}
 
 	@Override
 	public int getDDLRecordsCount(long ddlRecordSetId, long userId)
 		throws PortalException {
 
-		DDLRecordSetPermission.check(
+		_ddlRecordSetModelResourcePermission.check(
 			getPermissionChecker(), ddlRecordSetId, ActionKeys.VIEW);
 
-		return ddlRecordPersistence.countByR_U(ddlRecordSetId, userId);
+		return ddlRecordLocalService.getRecordsCount(ddlRecordSetId, userId);
 	}
 
 	protected JSONObject getDDLRecordJSONObject(
 			DDLRecord ddlRecord, Locale locale)
 		throws PortalException {
 
-		JSONObject ddlRecordJSONObject = JSONFactoryUtil.createJSONObject();
-
-		ddlRecordJSONObject.put(
+		JSONObject ddlRecordJSONObject = JSONUtil.put(
 			"modelAttributes",
 			JSONFactoryUtil.createJSONObject(
 				JSONFactoryUtil.looseSerialize(
@@ -237,5 +241,11 @@ public class ScreensDDLRecordServiceImpl
 
 		return fieldValueString;
 	}
+
+	private static volatile ModelResourcePermission<DDLRecordSet>
+		_ddlRecordSetModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				ScreensDDLRecordServiceImpl.class,
+				"_ddlRecordSetModelResourcePermission", DDLRecordSet.class);
 
 }

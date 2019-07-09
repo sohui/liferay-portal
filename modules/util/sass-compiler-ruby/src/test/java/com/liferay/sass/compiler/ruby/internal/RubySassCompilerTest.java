@@ -53,21 +53,24 @@ public class RubySassCompilerTest {
 		for (File testDir : sassSpecDir.listFiles()) {
 			File inputFile = new File(testDir, "input.scss");
 
-			if (!inputFile.exists()) {
+			String dirName = testDir.getName();
+
+			if (!inputFile.exists() || dirName.endsWith("-4.0")) {
 				continue;
 			}
 
 			String actualOutput = sassCompiler.compileFile(
-				inputFile.getCanonicalPath(), "");
+				inputFile.getCanonicalPath(), "", false);
 
-			Assert.assertNotNull(actualOutput);
+			Assert.assertNotNull("Testing: " + dirName, actualOutput);
 
 			File expectedOutputFile = new File(testDir, "expected_output.css");
 
 			String expectedOutput = read(expectedOutputFile.toPath());
 
 			Assert.assertEquals(
-				stripNewLines(expectedOutput), stripNewLines(actualOutput));
+				"Testing: " + dirName, stripNewLines(expectedOutput),
+				stripNewLines(actualOutput));
 		}
 	}
 
@@ -116,6 +119,7 @@ public class RubySassCompilerTest {
 			sourceMapFile.getCanonicalPath());
 
 		Assert.assertNotNull(actualOutput);
+
 		Assert.assertTrue(sourceMapFile.exists());
 
 		File expectedOutputFile = new File(
@@ -188,6 +192,7 @@ public class RubySassCompilerTest {
 			input, inputFile.getCanonicalPath(), "", true);
 
 		Assert.assertNotNull(actualOutput);
+
 		Assert.assertTrue(sourceMapFile.exists());
 
 		File expectedOutputFile = new File(
@@ -229,7 +234,7 @@ public class RubySassCompilerTest {
 	protected String stripNewLines(String string) {
 		string = string.replaceAll("\\n|\\r", "");
 
-		return string.replaceAll("\\s+", " ");
+		return string.replaceAll("\\s+", "");
 	}
 
 }

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,9 +45,8 @@ public class InheritableMap<K, V> extends HashMap<K, V> {
 		if ((_parentMap != null) && _parentMap.containsKey(key)) {
 			return true;
 		}
-		else {
-			return super.containsKey(key);
-		}
+
+		return super.containsKey(key);
 	}
 
 	@Override
@@ -53,9 +54,8 @@ public class InheritableMap<K, V> extends HashMap<K, V> {
 		if ((_parentMap != null) && _parentMap.containsValue(value)) {
 			return true;
 		}
-		else {
-			return super.containsValue(value);
-		}
+
+		return super.containsValue(value);
 	}
 
 	@Override

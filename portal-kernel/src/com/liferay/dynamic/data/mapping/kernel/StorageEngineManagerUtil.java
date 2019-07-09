@@ -14,11 +14,11 @@
 
 package com.liferay.dynamic.data.mapping.kernel;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Rafael Praxedes
@@ -62,7 +62,9 @@ public class StorageEngineManagerUtil {
 		_storageEngineManager.update(classPK, ddmFormValues, serviceContext);
 	}
 
-	private static final StorageEngineManager _storageEngineManager =
-		ProxyFactory.newServiceTrackedInstance(StorageEngineManager.class);
+	private static volatile StorageEngineManager _storageEngineManager =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			StorageEngineManager.class, StorageEngineManagerUtil.class,
+			"_storageEngineManager", false);
 
 }

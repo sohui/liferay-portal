@@ -14,10 +14,10 @@
 
 package com.liferay.portlet.announcements.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.announcements.kernel.model.AnnouncementsDelivery;
 import com.liferay.announcements.kernel.service.AnnouncementsDeliveryLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the AnnouncementsDelivery service. Represents a row in the &quot;AnnouncementsDelivery&quot; database table, with each column mapped to a property of this class.
@@ -34,18 +34,22 @@ import com.liferay.announcements.kernel.service.AnnouncementsDeliveryLocalServic
 @ProviderType
 public abstract class AnnouncementsDeliveryBaseImpl
 	extends AnnouncementsDeliveryModelImpl implements AnnouncementsDelivery {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a announcements delivery model instance should use the {@link AnnouncementsDelivery} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a announcements delivery model instance should use the <code>AnnouncementsDelivery</code> interface instead.
 	 */
 	@Override
 	public void persist() {
 		if (this.isNew()) {
-			AnnouncementsDeliveryLocalServiceUtil.addAnnouncementsDelivery(this);
+			AnnouncementsDeliveryLocalServiceUtil.addAnnouncementsDelivery(
+				this);
 		}
 		else {
-			AnnouncementsDeliveryLocalServiceUtil.updateAnnouncementsDelivery(this);
+			AnnouncementsDeliveryLocalServiceUtil.updateAnnouncementsDelivery(
+				this);
 		}
 	}
+
 }

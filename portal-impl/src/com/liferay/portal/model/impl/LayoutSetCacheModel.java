@@ -14,14 +14,11 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,16 +27,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing LayoutSet in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see LayoutSet
  * @generated
  */
 @ProviderType
-public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
-	Externalizable, MVCCModel {
+public class LayoutSetCacheModel
+	implements CacheModel<LayoutSet>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -53,7 +52,8 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 		LayoutSetCacheModel layoutSetCacheModel = (LayoutSetCacheModel)obj;
 
 		if ((layoutSetId == layoutSetCacheModel.layoutSetId) &&
-				(mvccVersion == layoutSetCacheModel.mvccVersion)) {
+			(mvccVersion == layoutSetCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -79,10 +79,12 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(31);
+		StringBundler sb = new StringBundler(33);
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", headId=");
+		sb.append(headId);
 		sb.append(", layoutSetId=");
 		sb.append(layoutSetId);
 		sb.append(", groupId=");
@@ -121,6 +123,8 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 		LayoutSetImpl layoutSetImpl = new LayoutSetImpl();
 
 		layoutSetImpl.setMvccVersion(mvccVersion);
+		layoutSetImpl.setHeadId(headId);
+		layoutSetImpl.setHead(head);
 		layoutSetImpl.setLayoutSetId(layoutSetId);
 		layoutSetImpl.setGroupId(groupId);
 		layoutSetImpl.setCompanyId(companyId);
@@ -143,21 +147,21 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 		layoutSetImpl.setLogoId(logoId);
 
 		if (themeId == null) {
-			layoutSetImpl.setThemeId(StringPool.BLANK);
+			layoutSetImpl.setThemeId("");
 		}
 		else {
 			layoutSetImpl.setThemeId(themeId);
 		}
 
 		if (colorSchemeId == null) {
-			layoutSetImpl.setColorSchemeId(StringPool.BLANK);
+			layoutSetImpl.setColorSchemeId("");
 		}
 		else {
 			layoutSetImpl.setColorSchemeId(colorSchemeId);
 		}
 
 		if (css == null) {
-			layoutSetImpl.setCss(StringPool.BLANK);
+			layoutSetImpl.setCss("");
 		}
 		else {
 			layoutSetImpl.setCss(css);
@@ -166,24 +170,26 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 		layoutSetImpl.setPageCount(pageCount);
 
 		if (settings == null) {
-			layoutSetImpl.setSettings(StringPool.BLANK);
+			layoutSetImpl.setSettings("");
 		}
 		else {
 			layoutSetImpl.setSettings(settings);
 		}
 
 		if (layoutSetPrototypeUuid == null) {
-			layoutSetImpl.setLayoutSetPrototypeUuid(StringPool.BLANK);
+			layoutSetImpl.setLayoutSetPrototypeUuid("");
 		}
 		else {
 			layoutSetImpl.setLayoutSetPrototypeUuid(layoutSetPrototypeUuid);
 		}
 
-		layoutSetImpl.setLayoutSetPrototypeLinkEnabled(layoutSetPrototypeLinkEnabled);
+		layoutSetImpl.setLayoutSetPrototypeLinkEnabled(
+			layoutSetPrototypeLinkEnabled);
 
 		layoutSetImpl.resetOriginalValues();
 
-		layoutSetImpl.setCompanyFallbackVirtualHostname(_companyFallbackVirtualHostname);
+		layoutSetImpl.setCompanyFallbackVirtualHostname(
+			_companyFallbackVirtualHostname);
 
 		layoutSetImpl.setVirtualHostname(_virtualHostname);
 
@@ -193,7 +199,12 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 	@Override
 	public void readExternal(ObjectInput objectInput)
 		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
+
+		headId = objectInput.readLong();
+
+		head = objectInput.readBoolean();
 
 		layoutSetId = objectInput.readLong();
 
@@ -216,14 +227,17 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 
 		layoutSetPrototypeLinkEnabled = objectInput.readBoolean();
 
-		_companyFallbackVirtualHostname = (java.lang.String)objectInput.readObject();
-		_virtualHostname = (java.lang.String)objectInput.readObject();
+		_companyFallbackVirtualHostname = (String)objectInput.readObject();
+		_virtualHostname = (String)objectInput.readObject();
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
+
+		objectOutput.writeLong(headId);
+
+		objectOutput.writeBoolean(head);
 
 		objectOutput.writeLong(layoutSetId);
 
@@ -238,21 +252,21 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 		objectOutput.writeLong(logoId);
 
 		if (themeId == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(themeId);
 		}
 
 		if (colorSchemeId == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(colorSchemeId);
 		}
 
 		if (css == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(css);
@@ -261,14 +275,14 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 		objectOutput.writeInt(pageCount);
 
 		if (settings == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(settings);
 		}
 
 		if (layoutSetPrototypeUuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(layoutSetPrototypeUuid);
@@ -281,6 +295,8 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 	}
 
 	public long mvccVersion;
+	public long headId;
+	public boolean head;
 	public long layoutSetId;
 	public long groupId;
 	public long companyId;
@@ -295,6 +311,7 @@ public class LayoutSetCacheModel implements CacheModel<LayoutSet>,
 	public String settings;
 	public String layoutSetPrototypeUuid;
 	public boolean layoutSetPrototypeLinkEnabled;
-	public java.lang.String _companyFallbackVirtualHostname;
-	public java.lang.String _virtualHostname;
+	public String _companyFallbackVirtualHostname;
+	public String _virtualHostname;
+
 }

@@ -17,109 +17,122 @@
 <%@ include file="/display/init.jsp" %>
 
 <%
-String tabs2 = ParamUtil.getString(request, "tabs2", Objects.equals(portletResource, KBPortletKeys.KNOWLEDGE_BASE_ARTICLE_DEFAULT_INSTANCE) ? "display-settings" : "general");
+String tabsNames = "general,display-settings";
 
-String tabs2Names = Objects.equals(portletResource, KBPortletKeys.KNOWLEDGE_BASE_ARTICLE_DEFAULT_INSTANCE) ? "display-settings" : "general,display-settings";
+kbDisplayPortletInstanceConfiguration = ParameterMapUtil.setParameterMap(KBDisplayPortletInstanceConfiguration.class, kbDisplayPortletInstanceConfiguration, request.getParameterMap(), "preferences--", "--");
 %>
 
 <liferay-portlet:actionURL portletConfiguration="<%= true %>" var="configurationActionURL" />
 
-<liferay-portlet:renderURL portletConfiguration="<%= true %>" var="configurationRenderURL">
-	<portlet:param name="tabs2" value="<%= tabs2 %>" />
-</liferay-portlet:renderURL>
-
-<liferay-ui:tabs
-	names="<%= tabs2Names %>"
-	param="tabs2"
-	url="<%= configurationRenderURL %>"
-/>
-
-<aui:form action="<%= configurationActionURL %>" method="post" name="fm">
+<liferay-frontend:edit-form
+	action="<%= configurationActionURL %>"
+	method="post"
+	name="fm"
+>
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
-	<aui:input name="tabs2" type="hidden" value="<%= tabs2 %>" />
+
+	<%
+	resourceClassNameId = kbDisplayPortletInstanceConfiguration.resourceClassNameId();
+
+	if (resourceClassNameId == 0) {
+		resourceClassNameId = kbFolderClassNameId;
+	}
+	%>
+
 	<aui:input name="preferences--resourceClassNameId--" type="hidden" value="<%= resourceClassNameId %>" />
-	<aui:input name="preferences--resourcePrimKey--" type="hidden" value="<%= resourcePrimKey %>" />
+	<aui:input name="preferences--resourcePrimKey--" type="hidden" value="<%= kbDisplayPortletInstanceConfiguration.resourcePrimKey() %>" />
 
-	<aui:fieldset>
-		<c:choose>
-			<c:when test='<%= tabs2.equals("general") %>'>
-				<div class="input-append kb-field-wrapper">
-					<aui:field-wrapper label="article-or-folder">
+	<liferay-frontend:edit-form-body>
+		<liferay-ui:tabs
+			names="<%= tabsNames %>"
+			refresh="<%= false %>"
+		>
+			<liferay-ui:section>
+				<liferay-frontend:fieldset-group>
+					<liferay-frontend:fieldset>
+						<div class="form-group">
 
-						<%
-						String title = StringPool.BLANK;
+							<%
+							String title = StringPool.BLANK;
 
-						if (resourceClassNameId != kbFolderClassNameId) {
-							KBArticle kbArticle = KBArticleLocalServiceUtil.fetchLatestKBArticle(resourcePrimKey, WorkflowConstants.STATUS_APPROVED);
+							if (resourceClassNameId != kbFolderClassNameId) {
+								KBArticle kbArticle = KBArticleServiceUtil.fetchLatestKBArticle(kbDisplayPortletInstanceConfiguration.resourcePrimKey(), WorkflowConstants.STATUS_APPROVED);
 
-							if (kbArticle != null) {
-								title = kbArticle.getTitle();
+								if (kbArticle != null) {
+									title = kbArticle.getTitle();
+								}
 							}
-						}
-						else {
-							KBFolder kbFolder = KBFolderLocalServiceUtil.fetchKBFolder(resourcePrimKey);
-
-							if (kbFolder != null) {
-								title = kbFolder.getName();
+							else if (kbDisplayPortletInstanceConfiguration.resourcePrimKey() == KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+								title = LanguageUtil.get(resourceBundle, "home");
 							}
-						}
-						%>
+							else {
+								KBFolder kbFolder = KBFolderServiceUtil.fetchKBFolder(kbDisplayPortletInstanceConfiguration.resourcePrimKey());
 
-						<liferay-ui:input-resource id="configurationKBObject" url="<%= title %>" />
+								if (kbFolder != null) {
+									title = kbFolder.getName();
+								}
+							}
+							%>
 
-						<aui:button name="selectKBObjectButton" value="select" />
-					</aui:field-wrapper>
-				</div>
-			</c:when>
-			<c:when test='<%= tabs2.equals("display-settings") %>'>
-				<aui:field-wrapper cssClass="kb-field-wrapper">
-					<aui:input label="enable-description" name="preferences--enableKBArticleDescription--" type="checkbox" value="<%= enableKBArticleDescription %>" />
+							<aui:input label="article-or-folder" name="configurationKBObject" type="resource" value="<%= title %>" />
 
-					<aui:input label="enable-ratings" name="preferences--enableKBArticleRatings--" type="checkbox" value="<%= enableKBArticleRatings %>" />
+							<aui:button name="selectKBObjectButton" value="select" />
+						</div>
+					</liferay-frontend:fieldset>
+				</liferay-frontend:fieldset-group>
+			</liferay-ui:section>
 
-					<aui:input label="show-asset-entries" name="preferences--showKBArticleAssetEntries--" type="checkbox" value="<%= showKBArticleAssetEntries %>" />
+			<liferay-ui:section>
+				<liferay-frontend:fieldset-group>
+					<liferay-frontend:fieldset>
+						<aui:input label="enable-description" name="preferences--enableKBArticleDescription--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.enableKBArticleDescription() %>" />
 
-					<aui:input label="show-attachments" name="preferences--showKBArticleAttachments--" type="checkbox" value="<%= showKBArticleAttachments %>" />
+						<aui:input label="enable-ratings" name="preferences--enableKBArticleRatings--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.enableKBArticleRatings() %>" />
 
-					<aui:input label="enable-related-assets" name="preferences--enableKBArticleAssetLinks--" type="checkbox" value="<%= enableKBArticleAssetLinks %>" />
+						<aui:input label="show-asset-entries" name="preferences--showKBArticleAssetEntries--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.showKBArticleAssetEntries() %>" />
 
-					<aui:input label="enable-view-count-increment" name="preferences--enableKBArticleViewCountIncrement--" type="checkbox" value="<%= enableKBArticleViewCountIncrement %>" />
+						<aui:input label="show-attachments" name="preferences--showKBArticleAttachments--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.showKBArticleAttachments() %>" />
 
-					<aui:input label="enable-subscriptions" name="preferences--enableKBArticleSubscriptions--" type="checkbox" value="<%= enableKBArticleSubscriptions %>" />
+						<aui:input label="enable-related-assets" name="preferences--enableKBArticleAssetLinks--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.enableKBArticleAssetLinks() %>" />
 
-					<aui:input label="enable-history" name="preferences--enableKBArticleHistory--" type="checkbox" value="<%= enableKBArticleHistory %>" />
+						<aui:input label="enable-view-count-increment" name="preferences--enableKBArticleViewCountIncrement--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.enableKBArticleViewCountIncrement() %>" />
 
-					<aui:input label="enable-print" name="preferences--enableKBArticlePrint--" type="checkbox" value="<%= enableKBArticlePrint %>" />
+						<aui:input label="enable-subscriptions" name="preferences--enableKBArticleSubscriptions--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.enableKBArticleSubscriptions() %>" />
 
-					<liferay-ui:social-bookmarks-settings
-						displayPosition="<%= socialBookmarksDisplayPosition %>"
-						displayStyle="<%= socialBookmarksDisplayStyle %>"
-						enabled="<%= enableSocialBookmarks %>"
-						types="<%= socialBookmarksTypes %>"
-					/>
-				</aui:field-wrapper>
+						<aui:input label="enable-history" name="preferences--enableKBArticleHistory--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.enableKBArticleHistory() %>" />
 
-				<aui:field-wrapper>
-					<aui:input label="content-root-prefix" name="preferences--contentRootPrefix--" type="input" value="<%= contentRootPrefix %>" />
-				</aui:field-wrapper>
-			</c:when>
-		</c:choose>
+						<aui:input label="enable-print" name="preferences--enableKBArticlePrint--" type="checkbox" value="<%= kbDisplayPortletInstanceConfiguration.enableKBArticlePrint() %>" />
 
-		<aui:button-row cssClass="kb-submit-buttons">
-			<aui:button type="submit" />
-		</aui:button-row>
-	</aui:fieldset>
-</aui:form>
+						<h4 class="section-header">
+							<liferay-ui:message key="social-bookmarks" />
+						</h4>
 
-<c:if test='<%= tabs2.equals("general") %>'>
-	<aui:script use="aui-base">
-		<liferay-portlet:renderURL portletName="<%= portletResource %>" var="selectConfigurationKBObjectURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-			<portlet:param name="mvcPath" value="/display/select_configuration_object.jsp" />
-			<portlet:param name="parentResourceClassNameId" value="<%= String.valueOf(kbFolderClassNameId) %>" />
-			<portlet:param name="parentResourcePrimKey" value="<%= String.valueOf(KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) %>" />
-		</liferay-portlet:renderURL>
+						<liferay-social-bookmarks:bookmarks-settings
+							displayStyle="<%= kbDisplayPortletInstanceConfiguration.socialBookmarksDisplayStyle() %>"
+							types="<%= SocialBookmarksUtil.getSocialBookmarksTypes(kbDisplayPortletInstanceConfiguration.socialBookmarksTypes()) %>"
+						/>
 
-		A.one('#<portlet:namespace />selectKBObjectButton').on(
+						<aui:input label="content-root-prefix" name="preferences--contentRootPrefix--" type="input" value="<%= kbDisplayPortletInstanceConfiguration.contentRootPrefix() %>" />
+
+						<aui:input label="maximum-nesting-level" name="preferences--maxNestingLevel--" type="input" value="<%= kbDisplayPortletInstanceConfiguration.maxNestingLevel() %>" />
+					</liferay-frontend:fieldset>
+				</liferay-frontend:fieldset-group>
+			</liferay-ui:section>
+		</liferay-ui:tabs>
+	</liferay-frontend:edit-form-body>
+
+	<liferay-frontend:edit-form-footer>
+		<aui:button type="submit" />
+
+		<aui:button type="cancel" />
+	</liferay-frontend:edit-form-footer>
+</liferay-frontend:edit-form>
+
+<aui:script>
+	var <portlet:namespace />form = document.getElementById('<portlet:namespace />fm');
+
+	if (<portlet:namespace />form) {
+		document.getElementById('<portlet:namespace />selectKBObjectButton').addEventListener(
 			'click',
 			function(event) {
 				Liferay.Util.selectEntity(
@@ -127,19 +140,36 @@ String tabs2Names = Objects.equals(portletResource, KBPortletKeys.KNOWLEDGE_BASE
 						dialog: {
 							constrain: true,
 							destroyOnHide: true,
-							modal: true
+							modal: true,
+							width: 600
 						},
-						id: '<portlet:namespace />selectConfigurationKBObject',
-						title: '<liferay-ui:message key="select-parent" />',
-						uri: '<%= selectConfigurationKBObjectURL %>'
+						id: '<portlet:namespace />selectKBObject',
+						title: '<liferay-ui:message key="select-entry" />',
+
+						<liferay-portlet:renderURL portletName="<%= portletResource %>" var="selectKBObjectURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+							<portlet:param name="mvcPath" value="/display/select_parent.jsp" />
+							<portlet:param name="parentResourceClassNameId" value="<%= String.valueOf(resourceClassNameId) %>" />
+							<portlet:param name="parentResourcePrimKey" value="<%= String.valueOf(kbDisplayPortletInstanceConfiguration.resourcePrimKey()) %>" />
+							<portlet:param name="originalParentResourcePrimKey" value="<%= String.valueOf(kbDisplayPortletInstanceConfiguration.resourcePrimKey()) %>" />
+							<portlet:param name="eventName" value='<%= liferayPortletResponse.getNamespace() + "selectKBObject" %>' />
+						</liferay-portlet:renderURL>
+
+						uri: '<%= HtmlUtil.escapeJS(selectKBObjectURL) %>'
 					},
 					function(event) {
-						document.<portlet:namespace />fm.<portlet:namespace />resourceClassNameId.value = event.resourceclassnameid;
-						document.<portlet:namespace />fm.<portlet:namespace />resourcePrimKey.value = event.resourceprimkey;
-						document.getElementById('<portlet:namespace />configurationKBObject').value = event.title;
+						document.getElementById('<portlet:namespace />resourceClassNameId').value = event.resourceclassnameid;
+
+						var kbObjectData = {
+							idString: 'resourcePrimKey',
+							idValue: event.resourceprimkey,
+							nameString: 'configurationKBObject',
+							nameValue: event.title
+						};
+
+						Liferay.Util.selectFolder(kbObjectData, '<portlet:namespace />');
 					}
 				);
 			}
 		);
-	</aui:script>
-</c:if>
+	}
+</aui:script>

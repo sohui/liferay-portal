@@ -14,6 +14,7 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -31,7 +32,6 @@ import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalServiceUtil;
 import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
 import com.liferay.portal.kernel.service.VirtualHostLocalServiceUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PrefsPropsUtil;
@@ -78,8 +78,7 @@ public class LayoutSetImpl extends LayoutSetBaseImpl {
 
 		_companyFallbackVirtualHostname = StringPool.BLANK;
 
-		if (Validator.isNotNull(
-				PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME) &&
+		if (Validator.isNotNull(PropsValues.VIRTUAL_HOSTS_DEFAULT_SITE_NAME) &&
 			!isPrivateLayout()) {
 
 			Group group = GroupLocalServiceUtil.fetchGroup(
@@ -181,9 +180,8 @@ public class LayoutSetImpl extends LayoutSetBaseImpl {
 		if (_settingsProperties == null) {
 			return super.getSettings();
 		}
-		else {
-			return _settingsProperties.toString();
-		}
+
+		return _settingsProperties.toString();
 	}
 
 	@Override
@@ -216,20 +214,22 @@ public class LayoutSetImpl extends LayoutSetBaseImpl {
 
 	@Override
 	public String getThemeSetting(String key, String device) {
-		UnicodeProperties settingsProperties = getSettingsProperties();
+		String settings = super.getSettings();
 
-		String value = settingsProperties.getProperty(
-			ThemeSettingImpl.namespaceProperty(device, key));
+		if (!Validator.isBlank(settings)) {
+			UnicodeProperties settingsProperties = getSettingsProperties();
 
-		if (value != null) {
-			return value;
+			String value = settingsProperties.getProperty(
+				ThemeSettingImpl.namespaceProperty(device, key));
+
+			if (value != null) {
+				return value;
+			}
 		}
 
 		Theme theme = getTheme(device);
 
-		value = theme.getSetting(key);
-
-		return value;
+		return theme.getSetting(key);
 	}
 
 	/**
@@ -333,9 +333,8 @@ public class LayoutSetImpl extends LayoutSetBaseImpl {
 
 			return ThemeLocalServiceUtil.getTheme(getCompanyId(), themeId);
 		}
-		else {
-			return getTheme();
-		}
+
+		return getTheme();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(LayoutSetImpl.class);

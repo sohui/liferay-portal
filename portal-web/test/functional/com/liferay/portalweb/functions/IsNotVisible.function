@@ -1,9 +1,12 @@
-<definition default="isNotVisible">
-	<command name="isNotVisible">
-		<execute function="WaitForSPARefresh" />
+@default = "isNotVisible"
+definition {
 
-		<execute selenium="waitForElementPresent" />
+	function isNotVisible {
+		WaitForSPARefresh();
 
-		<execute selenium="isNotVisible" />
-	</command>
-</definition>
+		selenium.waitForElementPresent();
+
+		selenium.isNotVisible();
+	}
+
+}

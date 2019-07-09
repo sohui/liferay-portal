@@ -14,7 +14,8 @@
 
 package com.liferay.portlet.usersadmin.util;
 
-import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -29,18 +30,20 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.IndexWriterHelperUtil;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Summary;
+import com.liferay.portal.kernel.search.TermQuery;
 import com.liferay.portal.kernel.search.WildcardQuery;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
+import com.liferay.portal.kernel.search.generic.TermQueryImpl;
 import com.liferay.portal.kernel.search.generic.WildcardQueryImpl;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -49,11 +52,13 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 /**
- * @author Raymond Augé
- * @author Zsigmond Rab
- * @author Hugo Huijser
+ * @author     Raymond Augé
+ * @author     Zsigmond Rab
+ * @author     Hugo Huijser
+ * @author     Marco Leo
+ * @deprecated As of Judson (7.1.x), since 7.1.0
  */
-@OSGiBeanProperties
+@Deprecated
 public class OrganizationIndexer extends BaseIndexer<Organization> {
 
 	public static final String CLASS_NAME = Organization.class.getName();
@@ -90,8 +95,7 @@ public class OrganizationIndexer extends BaseIndexer<Organization> {
 
 			termsFilter.addValues(
 				ArrayUtil.toStringArray(
-					excludedOrganizationIds.toArray(
-						new Long[excludedOrganizationIds.size()])));
+					excludedOrganizationIds.toArray(new Long[0])));
 
 			contextBooleanFilter.add(termsFilter, BooleanClauseOccur.MUST_NOT);
 		}
@@ -99,8 +103,15 @@ public class OrganizationIndexer extends BaseIndexer<Organization> {
 		List<Organization> organizationsTree = (List<Organization>)params.get(
 			"organizationsTree");
 
-		if (ListUtil.isNotEmpty(organizationsTree)) {
+		if (organizationsTree != null) {
 			BooleanFilter booleanFilter = new BooleanFilter();
+
+			if (organizationsTree.isEmpty()) {
+				TermQuery termQuery = new TermQueryImpl(
+					Field.TREE_PATH, StringPool.BLANK);
+
+				booleanFilter.add(new QueryFilter(termQuery));
+			}
 
 			for (Organization organization : organizationsTree) {
 				String treePath = organization.buildTreePath();
@@ -152,6 +163,38 @@ public class OrganizationIndexer extends BaseIndexer<Organization> {
 		}
 	}
 
+	protected String buildNameTreePath(Organization organization)
+		throws PortalException {
+
+		List<Organization> organizations = new ArrayList<>();
+
+		while (organization != null) {
+			organizations.add(organization);
+
+			organization = OrganizationLocalServiceUtil.fetchOrganization(
+				organization.getParentOrganizationId());
+		}
+
+		int size = organizations.size();
+
+		StringBundler sb = new StringBundler(((size - 1) * 4) + 1);
+
+		organization = organizations.get(size - 1);
+
+		sb.append(organization.getName());
+
+		for (int i = size - 2; i >= 0; i--) {
+			organization = organizations.get(i);
+
+			sb.append(StringPool.SPACE);
+			sb.append(StringPool.GREATER_THAN);
+			sb.append(StringPool.SPACE);
+			sb.append(organization.getName());
+		}
+
+		return sb.toString();
+	}
+
 	@Override
 	protected void doDelete(Organization organization) throws Exception {
 		deleteDocument(
@@ -170,7 +213,8 @@ public class OrganizationIndexer extends BaseIndexer<Organization> {
 			Field.ORGANIZATION_ID, organization.getOrganizationId());
 		document.addKeyword(Field.TREE_PATH, organization.buildTreePath());
 		document.addKeyword(Field.TYPE, organization.getType());
-
+		document.addTextSortable(
+			"nameTreePath", buildNameTreePath(organization));
 		document.addKeyword(
 			"parentOrganizationId", organization.getParentOrganizationId());
 
@@ -189,9 +233,8 @@ public class OrganizationIndexer extends BaseIndexer<Organization> {
 		else if (orderByCol.equals("type")) {
 			return "type";
 		}
-		else {
-			return orderByCol;
-		}
+
+		return orderByCol;
 	}
 
 	@Override
@@ -236,25 +279,20 @@ public class OrganizationIndexer extends BaseIndexer<Organization> {
 
 		indexableActionableDynamicQuery.setCompanyId(companyId);
 		indexableActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<Organization>() {
+			(Organization organization) -> {
+				try {
+					Document document = getDocument(organization);
 
-				@Override
-				public void performAction(Organization organization) {
-					try {
-						Document document = getDocument(organization);
-
-						indexableActionableDynamicQuery.addDocuments(document);
-					}
-					catch (PortalException pe) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(
-								"Unable to index organization " +
-									organization.getOrganizationId(),
-								pe);
-						}
+					indexableActionableDynamicQuery.addDocuments(document);
+				}
+				catch (PortalException pe) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Unable to index organization " +
+								organization.getOrganizationId(),
+							pe);
 					}
 				}
-
 			});
 		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 

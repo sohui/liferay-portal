@@ -16,8 +16,13 @@ package com.liferay.taglib.portlet;
 
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.SearchContainerReference;
-import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.util.ProxyUtil;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+
+import java.util.Map;
+import java.util.function.Function;
 
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletPreferences;
@@ -35,14 +40,15 @@ public class DefineObjectsTag extends TagSupport {
 
 	@Override
 	public int doStartTag() {
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
 
-		String lifecycle = (String)request.getAttribute(
+		String lifecycle = (String)httpServletRequest.getAttribute(
 			PortletRequest.LIFECYCLE_PHASE);
 
-		PortletConfig portletConfig = (PortletConfig)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_CONFIG);
+		PortletConfig portletConfig =
+			(PortletConfig)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_CONFIG);
 
 		if (portletConfig != null) {
 			pageContext.setAttribute("portletConfig", portletConfig);
@@ -50,37 +56,47 @@ public class DefineObjectsTag extends TagSupport {
 				"portletName", portletConfig.getPortletName());
 		}
 
-		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_REQUEST);
+		PortletRequest portletRequest =
+			(PortletRequest)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_REQUEST);
 
 		if (portletRequest != null) {
 			pageContext.setAttribute(
 				"liferayPortletRequest",
 				PortalUtil.getLiferayPortletRequest(portletRequest));
 
-			String portletRequestAttrName = null;
+			if (lifecycle != null) {
+				String portletRequestAttrName = null;
 
-			if (lifecycle.equals(PortletRequest.ACTION_PHASE)) {
-				portletRequestAttrName = "actionRequest";
-			}
-			else if (lifecycle.equals(PortletRequest.EVENT_PHASE)) {
-				portletRequestAttrName = "eventRequest";
-			}
-			else if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
-				portletRequestAttrName = "renderRequest";
-			}
-			else if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
-				portletRequestAttrName = "resourceRequest";
-			}
+				if (lifecycle.equals(PortletRequest.ACTION_PHASE)) {
+					portletRequestAttrName = "actionRequest";
+				}
+				else if (lifecycle.equals(PortletRequest.EVENT_PHASE)) {
+					portletRequestAttrName = "eventRequest";
+				}
+				else if (lifecycle.equals(PortletRequest.HEADER_PHASE)) {
+					portletRequestAttrName = "headerRequest";
+				}
+				else if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
+					portletRequestAttrName = "renderRequest";
+				}
+				else if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+					portletRequestAttrName = "resourceRequest";
+				}
 
-			pageContext.setAttribute(portletRequestAttrName, portletRequest);
+				pageContext.setAttribute(
+					portletRequestAttrName, portletRequest);
+			}
 
 			PortletPreferences portletPreferences =
 				portletRequest.getPreferences();
 
 			pageContext.setAttribute("portletPreferences", portletPreferences);
 			pageContext.setAttribute(
-				"portletPreferencesValues", portletPreferences.getMap());
+				"portletPreferencesValues",
+				_mapProxyProviderFunction.apply(
+					new PortletPreferencesValuesInvocationHandler(
+						portletPreferences)));
 
 			PortletSession portletSession = portletRequest.getPortletSession();
 
@@ -94,8 +110,9 @@ public class DefineObjectsTag extends TagSupport {
 			}
 		}
 
-		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_RESPONSE);
+		PortletResponse portletResponse =
+			(PortletResponse)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_RESPONSE);
 
 		if (portletResponse == null) {
 			return SKIP_BODY;
@@ -105,36 +122,58 @@ public class DefineObjectsTag extends TagSupport {
 			"liferayPortletResponse",
 			PortalUtil.getLiferayPortletResponse(portletResponse));
 
-		String portletResponseAttrName = null;
+		if (lifecycle != null) {
+			String portletResponseAttrName = null;
 
-		if (lifecycle.equals(PortletRequest.ACTION_PHASE)) {
-			portletResponseAttrName = "actionResponse";
-		}
-		else if (lifecycle.equals(PortletRequest.EVENT_PHASE)) {
-			portletResponseAttrName = "eventResponse";
-		}
-		else if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
-			portletResponseAttrName = "renderResponse";
-		}
-		else if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
-			portletResponseAttrName = "resourceResponse";
-		}
+			if (lifecycle.equals(PortletRequest.ACTION_PHASE)) {
+				portletResponseAttrName = "actionResponse";
+			}
+			else if (lifecycle.equals(PortletRequest.EVENT_PHASE)) {
+				portletResponseAttrName = "eventResponse";
+			}
+			else if (lifecycle.equals(PortletRequest.HEADER_PHASE)) {
+				portletResponseAttrName = "headerResponse";
+			}
+			else if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
+				portletResponseAttrName = "renderResponse";
+			}
+			else if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+				portletResponseAttrName = "resourceResponse";
+			}
 
-		pageContext.setAttribute(portletResponseAttrName, portletResponse);
-
-		SearchContainerReference searchContainerReference =
-			(SearchContainerReference)request.getAttribute(
-				WebKeys.SEARCH_CONTAINER_REFERENCE);
-
-		if (searchContainerReference == null) {
-			searchContainerReference = new SearchContainerReference(
-				request, portletResponse.getNamespace());
+			pageContext.setAttribute(portletResponseAttrName, portletResponse);
 		}
-
-		pageContext.setAttribute(
-			"searchContainerReference", searchContainerReference);
 
 		return SKIP_BODY;
+	}
+
+	private static final Function<InvocationHandler, Map<?, ?>>
+		_mapProxyProviderFunction = ProxyUtil.getProxyProviderFunction(
+			Map.class);
+
+	private static class PortletPreferencesValuesInvocationHandler
+		implements InvocationHandler {
+
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args)
+			throws ReflectiveOperationException {
+
+			if (_map == null) {
+				_map = _portletPreferences.getMap();
+			}
+
+			return method.invoke(_map, args);
+		}
+
+		private PortletPreferencesValuesInvocationHandler(
+			PortletPreferences portletPreferences) {
+
+			_portletPreferences = portletPreferences;
+		}
+
+		private Map<String, String[]> _map;
+		private final PortletPreferences _portletPreferences;
+
 	}
 
 }

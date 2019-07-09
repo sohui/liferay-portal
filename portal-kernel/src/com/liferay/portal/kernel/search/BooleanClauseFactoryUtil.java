@@ -26,28 +26,6 @@ public class BooleanClauseFactoryUtil {
 		return getBooleanClauseFactory().create(query, occur);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link create(Query, String)}
-	 */
-	@Deprecated
-	public static BooleanClause<Query> create(
-		SearchContext searchContext, Query query, String occur) {
-
-		return getBooleanClauseFactory(searchContext).create(query, occur);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link create(String, String,
-	 *             String)}
-	 */
-	@Deprecated
-	public static BooleanClause<Query> create(
-		SearchContext searchContext, String field, String value, String occur) {
-
-		return getBooleanClauseFactory(searchContext).create(
-			field, value, occur);
-	}
-
 	public static BooleanClause<Query> create(
 		String field, String value, String occur) {
 
@@ -65,7 +43,7 @@ public class BooleanClauseFactoryUtil {
 		SearchContext searchContext, Filter filter,
 		BooleanClauseOccur booleanClauseOccur) {
 
-		return getBooleanClauseFactory(searchContext).createFilter(
+		return getBooleanClauseFactory().createFilter(
 			filter, booleanClauseOccur);
 	}
 
@@ -73,7 +51,7 @@ public class BooleanClauseFactoryUtil {
 		SearchContext searchContext, String field, String value,
 		BooleanClauseOccur booleanClauseOccur) {
 
-		return getBooleanClauseFactory(searchContext).createFilter(
+		return getBooleanClauseFactory().createFilter(
 			field, value, booleanClauseOccur);
 	}
 
@@ -85,16 +63,6 @@ public class BooleanClauseFactoryUtil {
 	}
 
 	public static BooleanClauseFactory getBooleanClauseFactory() {
-		return _booleanClauseFactory;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link getBooleanClauseFactory()}
-	 */
-	@Deprecated
-	public static BooleanClauseFactory getBooleanClauseFactory(
-		SearchContext searchContext) {
-
 		return _booleanClauseFactory;
 	}
 

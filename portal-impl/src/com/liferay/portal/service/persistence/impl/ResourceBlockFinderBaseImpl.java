@@ -21,9 +21,17 @@ import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 
 /**
  * @author Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  * @generated
  */
-public class ResourceBlockFinderBaseImpl extends BasePersistenceImpl<ResourceBlock> {
+@Deprecated
+public class ResourceBlockFinderBaseImpl
+	extends BasePersistenceImpl<ResourceBlock> {
+
+	public ResourceBlockFinderBaseImpl() {
+		setModelClass(ResourceBlock.class);
+	}
+
 	/**
 	 * Returns the resource block persistence.
 	 *
@@ -40,9 +48,11 @@ public class ResourceBlockFinderBaseImpl extends BasePersistenceImpl<ResourceBlo
 	 */
 	public void setResourceBlockPersistence(
 		ResourceBlockPersistence resourceBlockPersistence) {
+
 		this.resourceBlockPersistence = resourceBlockPersistence;
 	}
 
 	@BeanReference(type = ResourceBlockPersistence.class)
 	protected ResourceBlockPersistence resourceBlockPersistence;
+
 }

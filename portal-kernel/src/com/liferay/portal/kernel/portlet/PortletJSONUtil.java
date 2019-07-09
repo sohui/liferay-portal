@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -45,12 +45,13 @@ import javax.servlet.http.HttpServletResponse;
 public class PortletJSONUtil {
 
 	public static void populatePortletJSONObject(
-			HttpServletRequest request, String portletHTML, Portlet portlet,
-			JSONObject jsonObject)
+			HttpServletRequest httpServletRequest, String portletHTML,
+			Portlet portlet, JSONObject jsonObject)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		Set<String> footerCssSet = new LinkedHashSet<>();
 		Set<String> footerJavaScriptSet = new LinkedHashSet<>();
@@ -91,7 +92,8 @@ public class PortletJSONUtil {
 						PortalUtil.getPathContext() + footerPortalCss;
 
 					footerPortalCss = PortalUtil.getStaticResourceURL(
-						request, footerPortalCss, rootPortlet.getTimestamp());
+						httpServletRequest, footerPortalCss,
+						rootPortlet.getTimestamp());
 				}
 
 				footerCssSet.add(footerPortalCss);
@@ -105,7 +107,7 @@ public class PortletJSONUtil {
 						PortalUtil.getPathContext() + footerPortalJavaScript;
 
 					footerPortalJavaScript = PortalUtil.getStaticResourceURL(
-						request, footerPortalJavaScript,
+						httpServletRequest, footerPortalJavaScript,
 						rootPortlet.getTimestamp());
 				}
 
@@ -118,7 +120,8 @@ public class PortletJSONUtil {
 						portlet.getStaticResourcePath() + footerPortletCss;
 
 					footerPortletCss = PortalUtil.getStaticResourceURL(
-						request, footerPortletCss, rootPortlet.getTimestamp());
+						httpServletRequest, footerPortletCss,
+						rootPortlet.getTimestamp());
 				}
 
 				footerCssSet.add(footerPortletCss);
@@ -133,7 +136,7 @@ public class PortletJSONUtil {
 							footerPortletJavaScript;
 
 					footerPortletJavaScript = PortalUtil.getStaticResourceURL(
-						request, footerPortletJavaScript,
+						httpServletRequest, footerPortletJavaScript,
 						rootPortlet.getTimestamp());
 				}
 
@@ -146,7 +149,8 @@ public class PortletJSONUtil {
 						PortalUtil.getPathContext() + headerPortalCss;
 
 					headerPortalCss = PortalUtil.getStaticResourceURL(
-						request, headerPortalCss, rootPortlet.getTimestamp());
+						httpServletRequest, headerPortalCss,
+						rootPortlet.getTimestamp());
 				}
 
 				headerCssSet.add(headerPortalCss);
@@ -160,7 +164,7 @@ public class PortletJSONUtil {
 						PortalUtil.getPathContext() + headerPortalJavaScript;
 
 					headerPortalJavaScript = PortalUtil.getStaticResourceURL(
-						request, headerPortalJavaScript,
+						httpServletRequest, headerPortalJavaScript,
 						rootPortlet.getTimestamp());
 				}
 
@@ -173,7 +177,8 @@ public class PortletJSONUtil {
 						portlet.getStaticResourcePath() + headerPortletCss;
 
 					headerPortletCss = PortalUtil.getStaticResourceURL(
-						request, headerPortletCss, rootPortlet.getTimestamp());
+						httpServletRequest, headerPortletCss,
+						rootPortlet.getTimestamp());
 				}
 
 				headerCssSet.add(headerPortletCss);
@@ -188,7 +193,7 @@ public class PortletJSONUtil {
 							headerPortletJavaScript;
 
 					headerPortletJavaScript = PortalUtil.getStaticResourceURL(
-						request, headerPortletJavaScript,
+						httpServletRequest, headerPortletJavaScript,
 						rootPortlet.getTimestamp());
 				}
 
@@ -197,35 +202,34 @@ public class PortletJSONUtil {
 		}
 
 		String footerCssPaths = JSONFactoryUtil.serialize(
-			footerCssSet.toArray(new String[footerCssSet.size()]));
+			footerCssSet.toArray(new String[0]));
 
 		jsonObject.put(
 			"footerCssPaths", JSONFactoryUtil.createJSONArray(footerCssPaths));
 
 		String footerJavaScriptPaths = JSONFactoryUtil.serialize(
-			footerJavaScriptSet.toArray(
-				new String[footerJavaScriptSet.size()]));
+			footerJavaScriptSet.toArray(new String[0]));
 
 		jsonObject.put(
 			"footerJavaScriptPaths",
 			JSONFactoryUtil.createJSONArray(footerJavaScriptPaths));
 
 		String headerCssPaths = JSONFactoryUtil.serialize(
-			headerCssSet.toArray(new String[headerCssSet.size()]));
+			headerCssSet.toArray(new String[0]));
 
 		jsonObject.put(
 			"headerCssPaths", JSONFactoryUtil.createJSONArray(headerCssPaths));
 
 		String headerJavaScriptPaths = JSONFactoryUtil.serialize(
-			headerJavaScriptSet.toArray(
-				new String[headerJavaScriptSet.size()]));
+			headerJavaScriptSet.toArray(new String[0]));
 
 		jsonObject.put(
 			"headerJavaScriptPaths",
 			JSONFactoryUtil.createJSONArray(headerJavaScriptPaths));
 
-		List<String> markupHeadElements = (List<String>)request.getAttribute(
-			MimeResponse.MARKUP_HEAD_ELEMENT);
+		List<String> markupHeadElements =
+			(List<String>)httpServletRequest.getAttribute(
+				MimeResponse.MARKUP_HEAD_ELEMENT);
 
 		if (markupHeadElements != null) {
 			jsonObject.put(
@@ -233,25 +237,28 @@ public class PortletJSONUtil {
 				StringUtil.merge(markupHeadElements, StringPool.BLANK));
 		}
 
-		jsonObject.put("portletHTML", portletHTML);
-		jsonObject.put("refresh", !portlet.isAjaxable());
+		jsonObject.put(
+			"portletHTML", portletHTML
+		).put(
+			"refresh", !portlet.isAjaxable()
+		);
 	}
 
 	public static void writeFooterPaths(
-			HttpServletResponse response, JSONObject jsonObject)
+			HttpServletResponse httpServletResponse, JSONObject jsonObject)
 		throws IOException {
 
 		_writePaths(
-			response, jsonObject.getJSONArray("footerCssPaths"),
+			httpServletResponse, jsonObject.getJSONArray("footerCssPaths"),
 			jsonObject.getJSONArray("footerJavaScriptPaths"));
 	}
 
 	public static void writeHeaderPaths(
-			HttpServletResponse response, JSONObject jsonObject)
+			HttpServletResponse httpServletResponse, JSONObject jsonObject)
 		throws IOException {
 
 		_writePaths(
-			response, jsonObject.getJSONArray("headerCssPaths"),
+			httpServletResponse, jsonObject.getJSONArray("headerCssPaths"),
 			jsonObject.getJSONArray("headerJavaScriptPaths"));
 	}
 
@@ -266,8 +273,8 @@ public class PortletJSONUtil {
 	}
 
 	private static void _writePaths(
-			HttpServletResponse response, JSONArray cssPathsJSONArray,
-			JSONArray javaScriptPathsJSONArray)
+			HttpServletResponse httpServletResponse,
+			JSONArray cssPathsJSONArray, JSONArray javaScriptPathsJSONArray)
 		throws IOException {
 
 		if ((cssPathsJSONArray.length() == 0) &&
@@ -276,7 +283,7 @@ public class PortletJSONUtil {
 			return;
 		}
 
-		PrintWriter printWriter = response.getWriter();
+		PrintWriter printWriter = httpServletResponse.getWriter();
 
 		for (int i = 0; i < cssPathsJSONArray.length(); i++) {
 			String value = cssPathsJSONArray.getString(i);

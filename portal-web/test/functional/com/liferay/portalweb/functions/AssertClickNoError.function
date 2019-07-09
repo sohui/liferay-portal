@@ -1,53 +1,54 @@
-<definition default="assertClickNoError" summary="Click on '${locator1}' that should have a value of '${value1}'">
-	<command name="assertClickNoError">
-		<execute function="WaitForSPARefresh" />
+@default = "assertClickNoError"
+@summary = "Click on '${locator1}' that should have a value of '${value1}'"
+definition {
 
-		<if>
-			<contains string="${locator1}" substring="/input" />
-			<then>
-				<execute function="AssertClickNoError#assertValueClick" />
-			</then>
-			<else>
-				<execute function="AssertClickNoError#assertTextClick" />
-			</else>
-		</if>
-	</command>
+	function assertClickNoError {
+		WaitForSPARefresh();
 
-	<command name="assertPartialTextClickAt">
-		<execute function="WaitForSPARefresh" />
+		if (contains("${locator1}", "/input")) {
+			AssertClickNoError.assertValueClick();
+		}
+		else {
+			AssertClickNoError.assertTextClick();
+		}
+	}
 
-		<execute function="AssertTextEquals#assertPartialText" />
+	function assertPartialTextClickAt {
+		WaitForSPARefresh();
 
-		<execute selenium="mouseOver" />
+		AssertTextEquals.assertPartialText();
 
-		<execute selenium="clickAt" />
-	</command>
+		selenium.mouseOver();
 
-	<command name="assertTextClick">
-		<execute function="WaitForSPARefresh" />
+		selenium.clickAt();
+	}
 
-		<execute selenium="waitForVisible" />
+	function assertTextClick {
+		WaitForSPARefresh();
 
-		<execute selenium="waitForText" />
+		selenium.waitForVisible();
 
-		<execute selenium="assertText" />
+		selenium.waitForTextCaseInsensitive();
 
-		<execute selenium="mouseOver" />
+		selenium.assertTextCaseInsensitive();
 
-		<execute selenium="click" />
-	</command>
+		selenium.mouseOver();
 
-	<command name="assertValueClick">
-		<execute function="WaitForSPARefresh" />
+		selenium.click();
+	}
 
-		<execute selenium="waitForVisible" />
+	function assertValueClick {
+		WaitForSPARefresh();
 
-		<execute selenium="waitForValue" />
+		selenium.waitForVisible();
 
-		<execute selenium="assertValue" />
+		selenium.waitForValue();
 
-		<execute selenium="mouseOver" />
+		selenium.assertValue();
 
-		<execute selenium="click" />
-	</command>
-</definition>
+		selenium.mouseOver();
+
+		selenium.click();
+	}
+
+}

@@ -14,30 +14,33 @@
 
 package com.liferay.expando.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the ExpandoRow service. Represents a row in the &quot;ExpandoRow&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see ExpandoRowModel
- * @see com.liferay.portlet.expando.model.impl.ExpandoRowImpl
- * @see com.liferay.portlet.expando.model.impl.ExpandoRowModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.expando.model.impl.ExpandoRowImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.expando.model.impl.ExpandoRowImpl"
+)
 @ProviderType
 public interface ExpandoRow extends ExpandoRowModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.expando.model.impl.ExpandoRowImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.expando.model.impl.ExpandoRowImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<ExpandoRow, Long> ROW_ID_ACCESSOR = new Accessor<ExpandoRow, Long>() {
+	public static final Accessor<ExpandoRow, Long> ROW_ID_ACCESSOR =
+		new Accessor<ExpandoRow, Long>() {
+
 			@Override
 			public Long get(ExpandoRow expandoRow) {
 				return expandoRow.getRowId();
@@ -52,5 +55,7 @@ public interface ExpandoRow extends ExpandoRowModel, PersistedModel {
 			public Class<ExpandoRow> getTypeClass() {
 				return ExpandoRow.class;
 			}
+
 		};
+
 }

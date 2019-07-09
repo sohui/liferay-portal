@@ -14,12 +14,13 @@
 
 package com.liferay.portal.zip;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.zip.ZipReader;
+import com.liferay.portal.util.PropsValues;
 
 import de.schlichtherle.io.ArchiveBusyWarningException;
 import de.schlichtherle.io.ArchiveDetector;
@@ -75,13 +76,13 @@ public class ZipReaderImpl implements ZipReader {
 
 	@Override
 	public List<String> getEntries() {
-		List<String> folderEntries = new ArrayList<>();
-
 		File[] files = (File[])_zipFile.listFiles();
 
 		if (files == null) {
 			return null;
 		}
+
+		List<String> folderEntries = new ArrayList<>();
 
 		for (File file : files) {
 			if (!file.isDirectory()) {
@@ -206,7 +207,7 @@ public class ZipReaderImpl implements ZipReader {
 		File.setDefaultArchiveDetector(
 			new DefaultArchiveDetector(
 				ArchiveDetector.ALL, "lar|" + ArchiveDetector.ALL.getSuffixes(),
-				new ZipDriver()));
+				new ZipDriver(PropsValues.ZIP_FILE_NAME_ENCODING)));
 
 		TrueZIPHelperUtil.initialize();
 	}

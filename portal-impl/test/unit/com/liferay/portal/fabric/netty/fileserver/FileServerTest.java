@@ -14,13 +14,14 @@
 
 package com.liferay.portal.fabric.netty.fileserver;
 
+import com.liferay.petra.concurrent.AsyncBroker;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.fabric.netty.codec.serialization.AnnotatedObjectDecoder;
 import com.liferay.portal.fabric.netty.codec.serialization.AnnotatedObjectEncoder;
 import com.liferay.portal.fabric.netty.fileserver.handlers.FileRequestChannelHandler;
 import com.liferay.portal.fabric.netty.fileserver.handlers.FileResponseChannelHandler;
 import com.liferay.portal.fabric.netty.fileserver.handlers.FileServerTestUtil;
-import com.liferay.portal.kernel.concurrent.AsyncBroker;
-import com.liferay.portal.kernel.util.NamedThreadFactory;
+import com.liferay.portal.fabric.netty.util.NamedThreadFactory;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -143,6 +144,7 @@ public class FileServerTest {
 		FileTime destFileTime = Files.getLastModifiedTime(_destFile);
 
 		Assert.assertEquals(sourceFileTime.toMillis(), destFileTime.toMillis());
+
 		Assert.assertArrayEquals(data, Files.readAllBytes(_destFile));
 	}
 
@@ -258,7 +260,8 @@ public class FileServerTest {
 				}
 
 				System.err.println(
-					"Unable to bind to " + (port++) + ", trying " + port);
+					StringBundler.concat(
+						"Unable to bind to ", port++, ", trying ", port));
 			}
 		}
 
@@ -287,15 +290,9 @@ public class FileServerTest {
 	private Path _destFile;
 	private final EventExecutorGroup _fileServerEventExecutorGroup =
 		new NioEventLoopGroup(
-			1,
-			new NamedThreadFactory(
-				"FileServer-EventLoop", Thread.MAX_PRIORITY,
-				FileServerTest.class.getClassLoader()));
+			1, new NamedThreadFactory("FileServer-EventLoop"));
 	private final EventLoopGroup _nioEventLoopGroup = new NioEventLoopGroup(
-		1,
-		new NamedThreadFactory(
-			"IO-EventLoop", Thread.MAX_PRIORITY,
-			FileServerTest.class.getClassLoader()));
+		1, new NamedThreadFactory("IO-EventLoop"));
 	private int _port;
 	private Channel _serverChannel;
 	private Path _sourceFilePath;

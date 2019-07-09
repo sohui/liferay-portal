@@ -14,11 +14,10 @@
 
 package com.liferay.document.library.kernel.util;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFileShortcut;
 import com.liferay.document.library.kernel.model.DLFileVersion;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
@@ -27,13 +26,14 @@ import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.portlet.PortletRequest;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Eudaldo Alonso
@@ -71,18 +71,43 @@ public interface DL {
 
 	public String getDividedPath(long id);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getFileEntryControlPanelLink(
+	 *             PortletRequest, long)}
+	 */
+	@Deprecated
 	public String getDLFileEntryControlPanelLink(
 			PortletRequest portletRequest, long fileEntryId)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getFolderControlPanelLink(
+	 *             PortletRequest, long)}
+	 */
+	@Deprecated
 	public String getDLFolderControlPanelLink(
 			PortletRequest portletRequest, long folderId)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getDownloadURL(
+	 *             FileEntry, FileVersion, ThemeDisplay, String)}
+	 */
+	@Deprecated
 	public String getDownloadURL(
 		FileEntry fileEntry, FileVersion fileVersion, ThemeDisplay themeDisplay,
 		String queryString);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getDownloadURL(
+	 *             FileEntry, FileVersion, ThemeDisplay, String, boolean,
+	 *             boolean)}
+	 */
+	@Deprecated
 	public String getDownloadURL(
 		FileEntry fileEntry, FileVersion fileVersion, ThemeDisplay themeDisplay,
 		String queryString, boolean appendVersion, boolean absoluteURL);
@@ -100,6 +125,10 @@ public interface DL {
 	public String getFileEntryImage(
 		FileEntry fileEntry, ThemeDisplay themeDisplay);
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public Set<Long> getFileEntryTypeSubscriptionClassPKs(long userId);
 
 	public String getFileIcon(String extension);
@@ -108,19 +137,57 @@ public interface DL {
 
 	public String getGenericName(String extension);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getImagePreviewURL(
+	 *             FileEntry, FileVersion, ThemeDisplay)}
+	 */
+	@Deprecated
 	public String getImagePreviewURL(
 			FileEntry fileEntry, FileVersion fileVersion,
 			ThemeDisplay themeDisplay)
 		throws Exception;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getImagePreviewURL(
+	 *             FileEntry, FileVersion, ThemeDisplay, String, boolean,
+	 *             boolean)}
+	 */
+	@Deprecated
+	public String getImagePreviewURL(
+			FileEntry fileEntry, FileVersion fileVersion,
+			ThemeDisplay themeDisplay, String queryString,
+			boolean appendVersion, boolean absoluteURL)
+		throws PortalException;
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getImagePreviewURL(
+	 *             FileEntry, FileVersion, ThemeDisplay)}
+	 */
+	@Deprecated
 	public String getImagePreviewURL(
 			FileEntry fileEntry, ThemeDisplay themeDisplay)
 		throws Exception;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getPreviewURL(
+	 *             FileEntry, FileVersion, ThemeDisplay, String)}
+	 */
+	@Deprecated
 	public String getPreviewURL(
 		FileEntry fileEntry, FileVersion fileVersion, ThemeDisplay themeDisplay,
 		String queryString);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getPreviewURL(
+	 *             FileEntry, FileVersion, ThemeDisplay, String, boolean,
+	 *             boolean)}
+	 */
+	@Deprecated
 	public String getPreviewURL(
 		FileEntry fileEntry, FileVersion fileVersion, ThemeDisplay themeDisplay,
 		String queryString, boolean appendVersion, boolean absoluteURL);
@@ -138,8 +205,8 @@ public interface DL {
 	public String getTempFileId(long id, String version, String languageId);
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getThumbnailSrc(FileEntry,
-	 *             ThemeDisplay)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getThumbnailSrc(FileEntry, ThemeDisplay)}
 	 */
 	@Deprecated
 	public String getThumbnailSrc(
@@ -148,8 +215,8 @@ public interface DL {
 		throws Exception;
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getThumbnailSrc(FileEntry,
-	 *             FileVersion, ThemeDisplay)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getThumbnailSrc(FileEntry, FileVersion, ThemeDisplay)}
 	 */
 	@Deprecated
 	public String getThumbnailSrc(
@@ -157,11 +224,23 @@ public interface DL {
 			DLFileShortcut dlFileShortcut, ThemeDisplay themeDisplay)
 		throws Exception;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getThumbnailSrc(
+	 *             FileEntry, FileVersion, ThemeDisplay)}
+	 */
+	@Deprecated
 	public String getThumbnailSrc(
 			FileEntry fileEntry, FileVersion fileVersion,
 			ThemeDisplay themeDisplay)
 		throws Exception;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getThumbnailSrc(
+	 *             FileEntry, ThemeDisplay)}
+	 */
+	@Deprecated
 	public String getThumbnailSrc(
 			FileEntry fileEntry, ThemeDisplay themeDisplay)
 		throws Exception;
@@ -180,15 +259,33 @@ public interface DL {
 	public String getUniqueFileName(
 		long groupId, long folderId, String fileName);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getWebDavURL(
+	 *             ThemeDisplay, Folder, FileEntry)}
+	 */
+	@Deprecated
 	public String getWebDavURL(
 			ThemeDisplay themeDisplay, Folder folder, FileEntry fileEntry)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getWebDavURL(
+	 *             ThemeDisplay, Folder, FileEntry, boolean)}
+	 */
+	@Deprecated
 	public String getWebDavURL(
 			ThemeDisplay themeDisplay, Folder folder, FileEntry fileEntry,
 			boolean manualCheckInRequired)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             com.liferay.document.library.util.DLURLHelper#FileEntryURLHelper#getWebDavURL(
+	 *             ThemeDisplay, Folder, FileEntry, boolean, boolean)}
+	 */
+	@Deprecated
 	public String getWebDavURL(
 			ThemeDisplay themeDisplay, Folder folder, FileEntry fileEntry,
 			boolean manualCheckInRequired, boolean officeExtensionRequired)
@@ -203,13 +300,34 @@ public interface DL {
 
 	public abstract boolean isOfficeExtension(String extension);
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.document.library.web.internal.util.
+	 *             DLSubscriptionUtil#isSubscribedToFileEntryType(long, long,
+	 *             long, long)}
+	 */
+	@Deprecated
 	public boolean isSubscribedToFileEntryType(
 		long companyId, long groupId, long userId, long fileEntryTypeId);
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.document.library.web.internal.util.
+	 *             DLSubscriptionUtil#isSubscribedToFolder(long, long, long,
+	 *             long)}
+	 */
+	@Deprecated
 	public boolean isSubscribedToFolder(
 			long companyId, long groupId, long userId, long folderId)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.document.library.web.internal.util.
+	 *             DLSubscriptionUtil#isSubscribedToFolder(long, long, long,
+	 *             long, boolean)}
+	 */
+	@Deprecated
 	public boolean isSubscribedToFolder(
 			long companyId, long groupId, long userId, long folderId,
 			boolean recursive)

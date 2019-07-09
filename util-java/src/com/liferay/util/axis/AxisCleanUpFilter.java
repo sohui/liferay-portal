@@ -14,11 +14,11 @@
 
 package com.liferay.util.axis;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.LoggedExceptionInInitializerError;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.BaseFilter;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
 
@@ -41,14 +41,14 @@ public class AxisCleanUpFilter extends BaseFilter {
 
 	@Override
 	protected void processFilter(
-			HttpServletRequest request, HttpServletResponse response,
-			FilterChain filterChain)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, FilterChain filterChain)
 		throws Exception {
 
 		try {
 			processFilter(
-				AxisCleanUpFilter.class.getName(), request, response,
-				filterChain);
+				AxisCleanUpFilter.class.getName(), httpServletRequest,
+				httpServletResponse, filterChain);
 		}
 		finally {
 			try {

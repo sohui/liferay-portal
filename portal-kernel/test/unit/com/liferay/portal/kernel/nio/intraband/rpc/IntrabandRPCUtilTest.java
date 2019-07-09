@@ -14,17 +14,16 @@
 
 package com.liferay.portal.kernel.nio.intraband.rpc;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
 import com.liferay.portal.kernel.io.Deserializer;
 import com.liferay.portal.kernel.io.Serializer;
 import com.liferay.portal.kernel.nio.intraband.Datagram;
 import com.liferay.portal.kernel.nio.intraband.SystemDataType;
-import com.liferay.portal.kernel.nio.intraband.rpc.IntrabandRPCUtil.FutureCompletionHandler;
 import com.liferay.portal.kernel.nio.intraband.test.MockIntraband;
 import com.liferay.portal.kernel.nio.intraband.test.MockRegistrationReference;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 
 import java.io.IOException;
@@ -157,8 +156,10 @@ public class IntrabandRPCUtilTest {
 		DefaultNoticeableFuture<String> defaultNoticeableFuture =
 			new DefaultNoticeableFuture<>();
 
-		FutureCompletionHandler<String> futureCompletionHandler =
-			new FutureCompletionHandler<>(defaultNoticeableFuture);
+		IntrabandRPCUtil.FutureCompletionHandler<String>
+			futureCompletionHandler =
+				new IntrabandRPCUtil.FutureCompletionHandler<>(
+					defaultNoticeableFuture);
 
 		futureCompletionHandler.delivered(null);
 		futureCompletionHandler.submitted(null);
@@ -180,8 +181,9 @@ public class IntrabandRPCUtilTest {
 
 		defaultNoticeableFuture = new DefaultNoticeableFuture<>();
 
-		futureCompletionHandler = new FutureCompletionHandler<>(
-			defaultNoticeableFuture);
+		futureCompletionHandler =
+			new IntrabandRPCUtil.FutureCompletionHandler<>(
+				defaultNoticeableFuture);
 
 		Serializer serializer = new Serializer();
 
@@ -212,8 +214,9 @@ public class IntrabandRPCUtilTest {
 
 		defaultNoticeableFuture = new DefaultNoticeableFuture<>();
 
-		futureCompletionHandler = new FutureCompletionHandler<>(
-			defaultNoticeableFuture);
+		futureCompletionHandler =
+			new IntrabandRPCUtil.FutureCompletionHandler<>(
+				defaultNoticeableFuture);
 
 		futureCompletionHandler.timedOut(null);
 

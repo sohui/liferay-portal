@@ -14,6 +14,10 @@
 
 package com.liferay.portal.fabric.netty.worker;
 
+import com.liferay.petra.concurrent.DefaultNoticeableFuture;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.process.ProcessCallable;
+import com.liferay.petra.process.ProcessException;
 import com.liferay.portal.fabric.local.worker.EmbeddedProcessChannel;
 import com.liferay.portal.fabric.local.worker.LocalFabricWorker;
 import com.liferay.portal.fabric.netty.NettyTestUtil;
@@ -21,10 +25,6 @@ import com.liferay.portal.fabric.netty.handlers.NettyChannelAttributes;
 import com.liferay.portal.fabric.netty.rpc.ChannelThreadLocal;
 import com.liferay.portal.fabric.netty.util.NettyUtilAdvice;
 import com.liferay.portal.fabric.worker.FabricWorker;
-import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
-import com.liferay.portal.kernel.process.ProcessCallable;
-import com.liferay.portal.kernel.process.ProcessException;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
@@ -52,7 +52,7 @@ public class NettyFabricWorkerBridgeRPCCallableTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
 
 	@Before
 	public void setUp() {
@@ -67,10 +67,9 @@ public class NettyFabricWorkerBridgeRPCCallableTest {
 	@AdviseWith(adviceClasses = NettyUtilAdvice.class)
 	@Test
 	public void testCall() throws Exception {
-		FabricWorker<Serializable> fabricWorker =
-			new LocalFabricWorker<Serializable>(
-				new EmbeddedProcessChannel<Serializable>(
-					new DefaultNoticeableFuture<Serializable>()));
+		FabricWorker<Serializable> fabricWorker = new LocalFabricWorker<>(
+			new EmbeddedProcessChannel<Serializable>(
+				new DefaultNoticeableFuture<Serializable>()));
 
 		NettyChannelAttributes.putFabricWorker(
 			_embeddedChannel, 0, fabricWorker);
@@ -104,8 +103,8 @@ public class NettyFabricWorkerBridgeRPCCallableTest {
 					new DefaultNoticeableFuture<Serializable>()) {
 
 					@Override
-					public <V extends Serializable> NoticeableFuture<V>
-						write(ProcessCallable<V> processCallable) {
+					public <V extends Serializable> NoticeableFuture<V> write(
+						ProcessCallable<V> processCallable) {
 
 						return new DefaultNoticeableFuture<>();
 					}

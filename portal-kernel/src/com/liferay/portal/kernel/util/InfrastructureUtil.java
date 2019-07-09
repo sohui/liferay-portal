@@ -15,10 +15,17 @@
 package com.liferay.portal.kernel.util;
 
 import com.liferay.portal.kernel.dao.jdbc.aop.DynamicDataSourceTargetSource;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+import com.liferay.portal.kernel.jndi.JNDIUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 
+import java.util.Properties;
+
 import javax.mail.Session;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
 
 import javax.sql.DataSource;
 
@@ -30,62 +37,72 @@ import javax.sql.DataSource;
 public class InfrastructureUtil {
 
 	public static DataSource getDataSource() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			InfrastructureUtil.class, "dataSource");
-
 		return _dataSource;
 	}
 
 	public static DynamicDataSourceTargetSource
 		getDynamicDataSourceTargetSource() {
 
-		PortalRuntimePermission.checkGetBeanProperty(
-			InfrastructureUtil.class, "dynamicDataSourceTargetSource");
-
 		return _dynamicDataSourceTargetSource;
 	}
 
 	public static Session getMailSession() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			InfrastructureUtil.class, "mailSession");
+		if (_mailSession == null) {
+			_mailSession = _createMailSession();
+		}
 
 		return _mailSession;
 	}
 
 	public static Object getTransactionManager() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			InfrastructureUtil.class, "transactionManager");
-
 		return _transactionManager;
 	}
 
 	public void setDataSource(DataSource dataSource) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass(), "dataSource");
-
 		_dataSource = dataSource;
 	}
 
 	public void setDynamicDataSourceTargetSource(
 		DynamicDataSourceTargetSource dynamicDataSourceTargetSource) {
 
-		PortalRuntimePermission.checkSetBeanProperty(
-			getClass(), "dynamicDataSourceTargetSource");
-
 		_dynamicDataSourceTargetSource = dynamicDataSourceTargetSource;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setMailSession(Session mailSession) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass(), "mailSession");
-
-		_mailSession = mailSession;
 	}
 
 	public void setTransactionManager(Object transactionManager) {
-		PortalRuntimePermission.checkSetBeanProperty(
-			getClass(), "transactionManager");
-
 		_transactionManager = transactionManager;
 	}
+
+	private static Session _createMailSession() {
+		Properties properties = PropsUtil.getProperties("mail.session.", true);
+
+		String jndiName = properties.getProperty("jndi.name");
+
+		if (Validator.isNotNull(jndiName)) {
+			try {
+				Properties jndiEnvironmentProperties = PropsUtil.getProperties(
+					PropsKeys.JNDI_ENVIRONMENT, true);
+
+				Context context = new InitialContext(jndiEnvironmentProperties);
+
+				return (Session)JNDIUtil.lookup(context, jndiName);
+			}
+			catch (Exception e) {
+				_log.error("Unable to lookup " + jndiName, e);
+			}
+		}
+
+		return Session.getInstance(properties);
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		InfrastructureUtil.class);
 
 	private static DataSource _dataSource;
 	private static DynamicDataSourceTargetSource _dynamicDataSourceTargetSource;

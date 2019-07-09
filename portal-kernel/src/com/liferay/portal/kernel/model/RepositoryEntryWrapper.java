@@ -14,20 +14,14 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -39,20 +33,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class RepositoryEntryWrapper implements RepositoryEntry,
-	ModelWrapper<RepositoryEntry> {
+public class RepositoryEntryWrapper
+	extends BaseModelWrapper<RepositoryEntry>
+	implements RepositoryEntry, ModelWrapper<RepositoryEntry> {
+
 	public RepositoryEntryWrapper(RepositoryEntry repositoryEntry) {
-		_repositoryEntry = repositoryEntry;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return RepositoryEntry.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return RepositoryEntry.class.getName();
+		super(repositoryEntry);
 	}
 
 	@Override
@@ -70,7 +56,7 @@ public class RepositoryEntryWrapper implements RepositoryEntry,
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("repositoryId", getRepositoryId());
 		attributes.put("mappedId", getMappedId());
-		attributes.put("manualCheckInRequired", getManualCheckInRequired());
+		attributes.put("manualCheckInRequired", isManualCheckInRequired());
 		attributes.put("lastPublishDate", getLastPublishDate());
 
 		return attributes;
@@ -145,7 +131,7 @@ public class RepositoryEntryWrapper implements RepositoryEntry,
 		}
 
 		Boolean manualCheckInRequired = (Boolean)attributes.get(
-				"manualCheckInRequired");
+			"manualCheckInRequired");
 
 		if (manualCheckInRequired != null) {
 			setManualCheckInRequired(manualCheckInRequired);
@@ -158,460 +144,329 @@ public class RepositoryEntryWrapper implements RepositoryEntry,
 		}
 	}
 
-	@Override
-	public CacheModel<RepositoryEntry> toCacheModel() {
-		return _repositoryEntry.toCacheModel();
-	}
-
-	@Override
-	public RepositoryEntry toEscapedModel() {
-		return new RepositoryEntryWrapper(_repositoryEntry.toEscapedModel());
-	}
-
-	@Override
-	public RepositoryEntry toUnescapedModel() {
-		return new RepositoryEntryWrapper(_repositoryEntry.toUnescapedModel());
-	}
-
 	/**
-	* Returns the manual check in required of this repository entry.
-	*
-	* @return the manual check in required of this repository entry
-	*/
-	@Override
-	public boolean getManualCheckInRequired() {
-		return _repositoryEntry.getManualCheckInRequired();
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _repositoryEntry.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _repositoryEntry.isEscapedModel();
-	}
-
-	/**
-	* Returns <code>true</code> if this repository entry is manual check in required.
-	*
-	* @return <code>true</code> if this repository entry is manual check in required; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isManualCheckInRequired() {
-		return _repositoryEntry.isManualCheckInRequired();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _repositoryEntry.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _repositoryEntry.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(RepositoryEntry repositoryEntry) {
-		return _repositoryEntry.compareTo(repositoryEntry);
-	}
-
-	@Override
-	public int hashCode() {
-		return _repositoryEntry.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _repositoryEntry.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new RepositoryEntryWrapper((RepositoryEntry)_repositoryEntry.clone());
-	}
-
-	/**
-	* Returns the mapped ID of this repository entry.
-	*
-	* @return the mapped ID of this repository entry
-	*/
-	@Override
-	public java.lang.String getMappedId() {
-		return _repositoryEntry.getMappedId();
-	}
-
-	/**
-	* Returns the user name of this repository entry.
-	*
-	* @return the user name of this repository entry
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _repositoryEntry.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this repository entry.
-	*
-	* @return the user uuid of this repository entry
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _repositoryEntry.getUserUuid();
-	}
-
-	/**
-	* Returns the uuid of this repository entry.
-	*
-	* @return the uuid of this repository entry
-	*/
-	@Override
-	public java.lang.String getUuid() {
-		return _repositoryEntry.getUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _repositoryEntry.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _repositoryEntry.toXmlString();
-	}
-
-	/**
-	* Returns the create date of this repository entry.
-	*
-	* @return the create date of this repository entry
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _repositoryEntry.getCreateDate();
-	}
-
-	/**
-	* Returns the last publish date of this repository entry.
-	*
-	* @return the last publish date of this repository entry
-	*/
-	@Override
-	public Date getLastPublishDate() {
-		return _repositoryEntry.getLastPublishDate();
-	}
-
-	/**
-	* Returns the modified date of this repository entry.
-	*
-	* @return the modified date of this repository entry
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _repositoryEntry.getModifiedDate();
-	}
-
-	/**
-	* Returns the company ID of this repository entry.
-	*
-	* @return the company ID of this repository entry
-	*/
+	 * Returns the company ID of this repository entry.
+	 *
+	 * @return the company ID of this repository entry
+	 */
 	@Override
 	public long getCompanyId() {
-		return _repositoryEntry.getCompanyId();
+		return model.getCompanyId();
 	}
 
 	/**
-	* Returns the group ID of this repository entry.
-	*
-	* @return the group ID of this repository entry
-	*/
+	 * Returns the create date of this repository entry.
+	 *
+	 * @return the create date of this repository entry
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the group ID of this repository entry.
+	 *
+	 * @return the group ID of this repository entry
+	 */
 	@Override
 	public long getGroupId() {
-		return _repositoryEntry.getGroupId();
+		return model.getGroupId();
 	}
 
 	/**
-	* Returns the mvcc version of this repository entry.
-	*
-	* @return the mvcc version of this repository entry
-	*/
+	 * Returns the last publish date of this repository entry.
+	 *
+	 * @return the last publish date of this repository entry
+	 */
+	@Override
+	public Date getLastPublishDate() {
+		return model.getLastPublishDate();
+	}
+
+	/**
+	 * Returns the manual check in required of this repository entry.
+	 *
+	 * @return the manual check in required of this repository entry
+	 */
+	@Override
+	public boolean getManualCheckInRequired() {
+		return model.getManualCheckInRequired();
+	}
+
+	/**
+	 * Returns the mapped ID of this repository entry.
+	 *
+	 * @return the mapped ID of this repository entry
+	 */
+	@Override
+	public String getMappedId() {
+		return model.getMappedId();
+	}
+
+	/**
+	 * Returns the modified date of this repository entry.
+	 *
+	 * @return the modified date of this repository entry
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this repository entry.
+	 *
+	 * @return the mvcc version of this repository entry
+	 */
 	@Override
 	public long getMvccVersion() {
-		return _repositoryEntry.getMvccVersion();
+		return model.getMvccVersion();
 	}
 
 	/**
-	* Returns the primary key of this repository entry.
-	*
-	* @return the primary key of this repository entry
-	*/
+	 * Returns the primary key of this repository entry.
+	 *
+	 * @return the primary key of this repository entry
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _repositoryEntry.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Returns the repository entry ID of this repository entry.
-	*
-	* @return the repository entry ID of this repository entry
-	*/
+	 * Returns the repository entry ID of this repository entry.
+	 *
+	 * @return the repository entry ID of this repository entry
+	 */
 	@Override
 	public long getRepositoryEntryId() {
-		return _repositoryEntry.getRepositoryEntryId();
+		return model.getRepositoryEntryId();
 	}
 
 	/**
-	* Returns the repository ID of this repository entry.
-	*
-	* @return the repository ID of this repository entry
-	*/
+	 * Returns the repository ID of this repository entry.
+	 *
+	 * @return the repository ID of this repository entry
+	 */
 	@Override
 	public long getRepositoryId() {
-		return _repositoryEntry.getRepositoryId();
+		return model.getRepositoryId();
 	}
 
 	/**
-	* Returns the user ID of this repository entry.
-	*
-	* @return the user ID of this repository entry
-	*/
+	 * Returns the user ID of this repository entry.
+	 *
+	 * @return the user ID of this repository entry
+	 */
 	@Override
 	public long getUserId() {
-		return _repositoryEntry.getUserId();
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user name of this repository entry.
+	 *
+	 * @return the user name of this repository entry
+	 */
+	@Override
+	public String getUserName() {
+		return model.getUserName();
+	}
+
+	/**
+	 * Returns the user uuid of this repository entry.
+	 *
+	 * @return the user uuid of this repository entry
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the uuid of this repository entry.
+	 *
+	 * @return the uuid of this repository entry
+	 */
+	@Override
+	public String getUuid() {
+		return model.getUuid();
+	}
+
+	/**
+	 * Returns <code>true</code> if this repository entry is manual check in required.
+	 *
+	 * @return <code>true</code> if this repository entry is manual check in required; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isManualCheckInRequired() {
+		return model.isManualCheckInRequired();
 	}
 
 	@Override
 	public void persist() {
-		_repositoryEntry.persist();
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_repositoryEntry.setCachedModel(cachedModel);
+		model.persist();
 	}
 
 	/**
-	* Sets the company ID of this repository entry.
-	*
-	* @param companyId the company ID of this repository entry
-	*/
+	 * Sets the company ID of this repository entry.
+	 *
+	 * @param companyId the company ID of this repository entry
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_repositoryEntry.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this repository entry.
-	*
-	* @param createDate the create date of this repository entry
-	*/
+	 * Sets the create date of this repository entry.
+	 *
+	 * @param createDate the create date of this repository entry
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_repositoryEntry.setCreateDate(createDate);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_repositoryEntry.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_repositoryEntry.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_repositoryEntry.setExpandoBridgeAttributes(serviceContext);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the group ID of this repository entry.
-	*
-	* @param groupId the group ID of this repository entry
-	*/
+	 * Sets the group ID of this repository entry.
+	 *
+	 * @param groupId the group ID of this repository entry
+	 */
 	@Override
 	public void setGroupId(long groupId) {
-		_repositoryEntry.setGroupId(groupId);
+		model.setGroupId(groupId);
 	}
 
 	/**
-	* Sets the last publish date of this repository entry.
-	*
-	* @param lastPublishDate the last publish date of this repository entry
-	*/
+	 * Sets the last publish date of this repository entry.
+	 *
+	 * @param lastPublishDate the last publish date of this repository entry
+	 */
 	@Override
 	public void setLastPublishDate(Date lastPublishDate) {
-		_repositoryEntry.setLastPublishDate(lastPublishDate);
+		model.setLastPublishDate(lastPublishDate);
 	}
 
 	/**
-	* Sets whether this repository entry is manual check in required.
-	*
-	* @param manualCheckInRequired the manual check in required of this repository entry
-	*/
+	 * Sets whether this repository entry is manual check in required.
+	 *
+	 * @param manualCheckInRequired the manual check in required of this repository entry
+	 */
 	@Override
 	public void setManualCheckInRequired(boolean manualCheckInRequired) {
-		_repositoryEntry.setManualCheckInRequired(manualCheckInRequired);
+		model.setManualCheckInRequired(manualCheckInRequired);
 	}
 
 	/**
-	* Sets the mapped ID of this repository entry.
-	*
-	* @param mappedId the mapped ID of this repository entry
-	*/
+	 * Sets the mapped ID of this repository entry.
+	 *
+	 * @param mappedId the mapped ID of this repository entry
+	 */
 	@Override
-	public void setMappedId(java.lang.String mappedId) {
-		_repositoryEntry.setMappedId(mappedId);
+	public void setMappedId(String mappedId) {
+		model.setMappedId(mappedId);
 	}
 
 	/**
-	* Sets the modified date of this repository entry.
-	*
-	* @param modifiedDate the modified date of this repository entry
-	*/
+	 * Sets the modified date of this repository entry.
+	 *
+	 * @param modifiedDate the modified date of this repository entry
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_repositoryEntry.setModifiedDate(modifiedDate);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the mvcc version of this repository entry.
-	*
-	* @param mvccVersion the mvcc version of this repository entry
-	*/
+	 * Sets the mvcc version of this repository entry.
+	 *
+	 * @param mvccVersion the mvcc version of this repository entry
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_repositoryEntry.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_repositoryEntry.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the primary key of this repository entry.
-	*
-	* @param primaryKey the primary key of this repository entry
-	*/
+	 * Sets the primary key of this repository entry.
+	 *
+	 * @param primaryKey the primary key of this repository entry
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_repositoryEntry.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_repositoryEntry.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the repository entry ID of this repository entry.
-	*
-	* @param repositoryEntryId the repository entry ID of this repository entry
-	*/
+	 * Sets the repository entry ID of this repository entry.
+	 *
+	 * @param repositoryEntryId the repository entry ID of this repository entry
+	 */
 	@Override
 	public void setRepositoryEntryId(long repositoryEntryId) {
-		_repositoryEntry.setRepositoryEntryId(repositoryEntryId);
+		model.setRepositoryEntryId(repositoryEntryId);
 	}
 
 	/**
-	* Sets the repository ID of this repository entry.
-	*
-	* @param repositoryId the repository ID of this repository entry
-	*/
+	 * Sets the repository ID of this repository entry.
+	 *
+	 * @param repositoryId the repository ID of this repository entry
+	 */
 	@Override
 	public void setRepositoryId(long repositoryId) {
-		_repositoryEntry.setRepositoryId(repositoryId);
+		model.setRepositoryId(repositoryId);
 	}
 
 	/**
-	* Sets the user ID of this repository entry.
-	*
-	* @param userId the user ID of this repository entry
-	*/
+	 * Sets the user ID of this repository entry.
+	 *
+	 * @param userId the user ID of this repository entry
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_repositoryEntry.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user name of this repository entry.
-	*
-	* @param userName the user name of this repository entry
-	*/
+	 * Sets the user name of this repository entry.
+	 *
+	 * @param userName the user name of this repository entry
+	 */
 	@Override
-	public void setUserName(java.lang.String userName) {
-		_repositoryEntry.setUserName(userName);
+	public void setUserName(String userName) {
+		model.setUserName(userName);
 	}
 
 	/**
-	* Sets the user uuid of this repository entry.
-	*
-	* @param userUuid the user uuid of this repository entry
-	*/
+	 * Sets the user uuid of this repository entry.
+	 *
+	 * @param userUuid the user uuid of this repository entry
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_repositoryEntry.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets the uuid of this repository entry.
-	*
-	* @param uuid the uuid of this repository entry
-	*/
+	 * Sets the uuid of this repository entry.
+	 *
+	 * @param uuid the uuid of this repository entry
+	 */
 	@Override
-	public void setUuid(java.lang.String uuid) {
-		_repositoryEntry.setUuid(uuid);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof RepositoryEntryWrapper)) {
-			return false;
-		}
-
-		RepositoryEntryWrapper repositoryEntryWrapper = (RepositoryEntryWrapper)obj;
-
-		if (Objects.equals(_repositoryEntry,
-					repositoryEntryWrapper._repositoryEntry)) {
-			return true;
-		}
-
-		return false;
+	public void setUuid(String uuid) {
+		model.setUuid(uuid);
 	}
 
 	@Override
 	public StagedModelType getStagedModelType() {
-		return _repositoryEntry.getStagedModelType();
+		return model.getStagedModelType();
 	}
 
 	@Override
-	public RepositoryEntry getWrappedModel() {
-		return _repositoryEntry;
+	protected RepositoryEntryWrapper wrap(RepositoryEntry repositoryEntry) {
+		return new RepositoryEntryWrapper(repositoryEntry);
 	}
 
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _repositoryEntry.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _repositoryEntry.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_repositoryEntry.resetOriginalValues();
-	}
-
-	private final RepositoryEntry _repositoryEntry;
 }

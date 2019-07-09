@@ -21,9 +21,12 @@ import java.io.InputStream;
 
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Iván Zaera
  */
+@ProviderType
 public interface TemporaryFileEntriesCapability extends Capability {
 
 	public FileEntry addTemporaryFileEntry(

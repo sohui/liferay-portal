@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.0.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_0_0.dtd">
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 7.2.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_7_2_0.dtd">
 
 <service-builder auto-namespace-tables="false" package-path="com.liferay.knowledge.base">
 	<namespace>KB</namespace>
@@ -56,9 +56,6 @@
 
 		<!-- Finder methods -->
 
-		<finder name="ResourcePrimKey" return-type="Collection">
-			<finder-column name="resourcePrimKey" />
-		</finder>
 		<finder name="R_G" return-type="Collection">
 			<finder-column name="resourcePrimKey" />
 			<finder-column name="groupId" />
@@ -155,6 +152,11 @@
 			<finder-column name="kbFolderId" />
 			<finder-column name="urlTitle" />
 		</finder>
+		<finder name="G_KBFI_L" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="kbFolderId" />
+			<finder-column name="latest" />
+		</finder>
 		<finder name="G_KBFI_S" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="kbFolderId" />
@@ -175,6 +177,12 @@
 			<finder-column arrayable-operator="OR" comparator="LIKE" name="sections" />
 			<finder-column name="status" />
 		</finder>
+		<finder name="G_P_L_S" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column arrayable-operator="OR" name="parentResourcePrimKey" />
+			<finder-column name="latest" />
+			<finder-column name="status" />
+		</finder>
 		<finder name="G_KBFI_UT_ST" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="kbFolderId" />
@@ -185,15 +193,11 @@
 		<!-- References -->
 
 		<reference entity="ClassName" package-path="com.liferay.portal" />
-		<reference entity="Company" package-path="com.liferay.portal" />
 		<reference entity="Group" package-path="com.liferay.portal" />
-		<reference entity="Layout" package-path="com.liferay.portal" />
-		<reference entity="PortletPreferences" package-path="com.liferay.portal" />
-		<reference entity="Subscription" package-path="com.liferay.portal" />
-		<reference entity="Ticket" package-path="com.liferay.portal" />
 		<reference entity="WorkflowInstanceLink" package-path="com.liferay.portal" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
 		<reference entity="AssetLink" package-path="com.liferay.portlet.asset" />
+		<reference entity="ExpandoRow" package-path="com.liferay.portlet.expando" />
 		<reference entity="RatingsStats" package-path="com.liferay.portlet.ratings" />
 		<reference entity="SocialActivity" package-path="com.liferay.portlet.social" />
 	</entity>
@@ -261,7 +265,6 @@
 		<!-- References -->
 
 		<reference entity="ClassName" package-path="com.liferay.portal" />
-		<reference entity="PortletPreferences" package-path="com.liferay.portal" />
 		<reference entity="RatingsEntry" package-path="com.liferay.portlet.ratings" />
 		<reference entity="SocialActivity" package-path="com.liferay.portlet.social" />
 	</entity>
@@ -311,6 +314,7 @@
 		<!-- References -->
 
 		<reference entity="ClassName" package-path="com.liferay.portal" />
+		<reference entity="ExpandoRow" package-path="com.liferay.portlet.expando" />
 	</entity>
 	<entity local-service="true" name="KBTemplate" remote-service="true" uuid="true">
 
@@ -350,7 +354,6 @@
 
 		<!-- References -->
 
-		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
 		<reference entity="SocialActivity" package-path="com.liferay.portlet.social" />
 	</entity>
 	<exceptions>
@@ -361,9 +364,11 @@
 		<exception>KBArticleParent</exception>
 		<exception>KBArticlePriority</exception>
 		<exception>KBArticleSourceURL</exception>
+		<exception>KBArticleStatus</exception>
 		<exception>KBArticleTitle</exception>
 		<exception>KBArticleUrlTitle</exception>
 		<exception>KBCommentContent</exception>
+		<exception>KBFolderParent</exception>
 		<exception>KBTemplateContent</exception>
 		<exception>KBTemplateTitle</exception>
 		<exception>NoSuchKBArticleSelector</exception>

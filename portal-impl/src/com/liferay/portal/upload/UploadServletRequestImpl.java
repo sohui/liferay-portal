@@ -14,21 +14,19 @@
 
 package com.liferay.portal.upload;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.io.ByteArrayFileInputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upload.FileItem;
 import com.liferay.portal.kernel.upload.UploadException;
 import com.liferay.portal.kernel.upload.UploadServletRequest;
+import com.liferay.portal.kernel.upload.UploadServletRequestConfigurationHelperUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.ProgressTracker;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.util.PrefsPropsUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,22 +61,22 @@ public class UploadServletRequestImpl
 	extends HttpServletRequestWrapper implements UploadServletRequest {
 
 	public static File getTempDir() {
-		if (_tempDir == null) {
-			_tempDir = new File(
-				PrefsPropsUtil.getString(
-					PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_TEMP_DIR,
-					SystemProperties.get(SystemProperties.TMP_DIR)));
-		}
-
-		return _tempDir;
+		return _getTempDir(null);
 	}
 
 	public static void setTempDir(File tempDir) {
 		_tempDir = tempDir;
 	}
 
-	public UploadServletRequestImpl(HttpServletRequest request) {
-		super(request);
+	public UploadServletRequestImpl(HttpServletRequest httpServletRequest) {
+		this(httpServletRequest, 0, null, 0, 0);
+	}
+
+	public UploadServletRequestImpl(
+		HttpServletRequest httpServletRequest, int fileSizeThreshold,
+		String location, long maxRequestSize, long maxFileSize) {
+
+		super(httpServletRequest);
 
 		_fileParameters = new LinkedHashMap<>();
 		_regularParameters = new LinkedHashMap<>();
@@ -86,25 +84,43 @@ public class UploadServletRequestImpl
 		LiferayServletRequest liferayServletRequest = null;
 
 		try {
-			HttpSession session = request.getSession();
+			HttpSession session = httpServletRequest.getSession();
 
 			session.removeAttribute(ProgressTracker.PERCENT);
 
-			ServletFileUpload servletFileUpload = new ServletFileUpload(
-				new LiferayFileItemFactory(getTempDir()));
+			ServletFileUpload servletFileUpload;
 
-			liferayServletRequest = new LiferayServletRequest(request);
+			if (fileSizeThreshold > 0) {
+				servletFileUpload = new ServletFileUpload(
+					new LiferayFileItemFactory(
+						_getTempDir(location), fileSizeThreshold));
+			}
+			else {
+				servletFileUpload = new ServletFileUpload(
+					new LiferayFileItemFactory(getTempDir()));
+			}
+
+			if (maxRequestSize > 0) {
+				servletFileUpload.setSizeMax(maxRequestSize);
+			}
+
+			if (maxFileSize > 0) {
+				servletFileUpload.setFileSizeMax(maxFileSize);
+			}
+
+			liferayServletRequest = new LiferayServletRequest(
+				httpServletRequest);
 
 			List<org.apache.commons.fileupload.FileItem> fileItems =
 				servletFileUpload.parseRequest(liferayServletRequest);
 
 			liferayServletRequest.setFinishedReadingOriginalStream(true);
 
-			long uploadServletRequestImplMaxSize = PrefsPropsUtil.getLong(
-				PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE);
+			long uploadServletRequestImplMaxSize =
+				UploadServletRequestConfigurationHelperUtil.getMaxSize();
 			long uploadServletRequestImplSize = 0;
 
-			int contentLength = request.getContentLength();
+			int contentLength = httpServletRequest.getContentLength();
 
 			if ((uploadServletRequestImplMaxSize > 0) &&
 				((contentLength == -1) ||
@@ -117,7 +133,7 @@ public class UploadServletRequestImpl
 				LiferayFileItem liferayFileItem = (LiferayFileItem)fileItem;
 
 				if (uploadServletRequestImplMaxSize > 0) {
-					long itemSize = liferayFileItem.getItemSize();
+					long itemSize = liferayFileItem.getSize();
 
 					if ((uploadServletRequestImplSize + itemSize) >
 							uploadServletRequestImplMaxSize) {
@@ -134,7 +150,7 @@ public class UploadServletRequestImpl
 
 						uploadException.setExceededUploadRequestSizeLimit(true);
 
-						request.setAttribute(
+						httpServletRequest.setAttribute(
 							WebKeys.UPLOAD_EXCEPTION, uploadException);
 
 						continue;
@@ -144,7 +160,8 @@ public class UploadServletRequestImpl
 				}
 
 				if (liferayFileItem.isFormField()) {
-					liferayFileItem.setString(request.getCharacterEncoding());
+					liferayFileItem.setString(
+						httpServletRequest.getCharacterEncoding());
 
 					String fieldName = liferayFileItem.getFieldName();
 
@@ -172,7 +189,7 @@ public class UploadServletRequestImpl
 						uploadException.setExceededLiferayFileItemSizeLimit(
 							true);
 
-						request.setAttribute(
+						httpServletRequest.setAttribute(
 							WebKeys.UPLOAD_EXCEPTION, uploadException);
 					}
 
@@ -215,10 +232,14 @@ public class UploadServletRequestImpl
 				uploadException.setExceededUploadRequestSizeLimit(true);
 			}
 
-			request.setAttribute(WebKeys.UPLOAD_EXCEPTION, uploadException);
+			httpServletRequest.setAttribute(
+				WebKeys.UPLOAD_EXCEPTION, uploadException);
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(e, e);
+			}
+			else if (_log.isWarnEnabled()) {
+				_log.warn("Unable to parse upload request: " + e.getMessage());
 			}
 		}
 
@@ -226,10 +247,11 @@ public class UploadServletRequestImpl
 	}
 
 	public UploadServletRequestImpl(
-		HttpServletRequest request, Map<String, FileItem[]> fileParameters,
+		HttpServletRequest httpServletRequest,
+		Map<String, FileItem[]> fileParameters,
 		Map<String, List<String>> regularParameters) {
 
-		super(request);
+		super(httpServletRequest);
 
 		_fileParameters = new LinkedHashMap<>();
 		_regularParameters = new LinkedHashMap<>();
@@ -517,7 +539,7 @@ public class UploadServletRequestImpl
 		List<String> values = _regularParameters.get(name);
 
 		if (values != null) {
-			parameterValues = values.toArray(new String[values.size()]);
+			parameterValues = values.toArray(new String[0]);
 		}
 
 		String[] parentParameterValues = super.getParameterValues(name);
@@ -612,6 +634,19 @@ public class UploadServletRequestImpl
 		}
 
 		return sortedFileItems;
+	}
+
+	private static File _getTempDir(String configuredTempDir) {
+		if (Validator.isNotNull(configuredTempDir)) {
+			return new File(configuredTempDir);
+		}
+
+		if (_tempDir == null) {
+			_tempDir = new File(
+				UploadServletRequestConfigurationHelperUtil.getTempDir());
+		}
+
+		return _tempDir;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -1,31 +1,133 @@
-import com.liferay.gradle.util.FileUtil
+import aQute.bnd.osgi.Constants
+
+import com.liferay.gradle.plugins.defaults.tasks.CopyIvyDependenciesTask
+import com.liferay.gradle.plugins.node.internal.util.FileUtil
+import com.liferay.gradle.plugins.node.tasks.ExecuteNpmTask
+import com.liferay.gradle.plugins.source.formatter.FormatSourceTask
+import com.liferay.gradle.plugins.util.PortalTools
+import com.liferay.gradle.util.OSDetector
 import com.liferay.gradle.util.StringUtil
-import com.liferay.gradle.util.copy.RenameDependencyClosure
+
+import groovy.io.FileType
+import groovy.io.FileVisitResult
+
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+
+import java.util.regex.Matcher
+
+import org.gradle.util.GUtil
 
 buildscript {
 	apply from: file("build-buildscript.gradle"), to: buildscript
 }
 
-task cleanReleng
+apply plugin: "com.liferay.node"
+apply plugin: "com.liferay.node.defaults"
+apply plugin: "com.liferay.source.formatter"
+apply plugin: "com.liferay.source.formatter.defaults"
+
+buildDir = new File(rootDir.parentFile, "build")
+
+task appendHotfixQualifier
+task formatSourceCurrentBranch(type: FormatSourceTask)
+task formatSourceLatestAuthor(type: FormatSourceTask)
+task formatSourceLocalChanges(type: FormatSourceTask)
+task printDependencyPath
+task removeHotfixQualifier
+task setUpLibs
 task setUpPortalTools
+task setUpYarn
 task wrapper(type: Wrapper)
+task wrapperSubrepo(type: Wrapper)
+task yarnCheckFormat
+task yarnFormat
+task yarnLock
 
-cleanReleng << {
-	File relengRootDir = file(".releng")
+FileTree libDependenciesFileTree = fileTree(dir: "../lib", include: "*/dependencies.properties")
 
-	FileTree relengFileTree = fileTree(dir: relengRootDir, include: "**/artifact.properties")
+Map<File, Properties> libDependenciesMap = libDependenciesFileTree.collectEntries {
+	Properties properties = GUtil.loadProperties(it)
 
-	relengFileTree.each {
-		File relengFile ->
+	[it.parentFile, properties]
+}
 
-		File relengDir = relengFile.parentFile
+appendHotfixQualifier {
+	doLast {
+		String dirNamesString = System.getProperty("patcher.hotfix.dirs")
+		String qualifier = System.getProperty("patcher.hotfix.qualifier")
 
-		File moduleDir = file(FileUtil.relativize(relengDir, relengRootDir))
+		for (String dirName : dirNamesString.split(",")) {
+			File bndBndFile = new File(new File(projectDir, dirName), "bnd.bnd")
 
-		if (!moduleDir.exists()) {
-			delete relengDir
+			if (bndBndFile.exists()) {
+				Properties properties = GUtil.loadProperties(bndBndFile)
 
-			println "Removed " + relativePath(relengDir)
+				String version = properties.getProperty(Constants.BUNDLE_VERSION)
+
+				if ((version != null) && (version.indexOf(qualifier) == -1)) {
+					String newLine = Constants.BUNDLE_VERSION + ": " + version + qualifier
+					String oldLine = bndBndFile.filterLine {
+						it =~ "^" + Constants.BUNDLE_VERSION + ".*"
+					}
+
+					bndBndFile.text = bndBndFile.text.replace(oldLine.trim(), newLine)
+
+					logger.lifecycle "Appended {}:{}", project.relativePath(bndBndFile), qualifier
+				}
+			}
+		}
+	}
+}
+
+formatSourceCurrentBranch {
+	description = "Runs Liferay Source Formatter to format the project files that are added or modified in the current Git branch."
+	formatCurrentBranch = true
+}
+
+formatSourceLatestAuthor {
+	description = "Runs Liferay Source Formatter to format the project files that are added or modified in the latest Git commits of the same author."
+	formatCurrentBranch = true
+}
+
+formatSourceLocalChanges {
+	description = "Runs Liferay Source Formatter to format the unstaged project files."
+	formatLocalChanges = true
+}
+
+printDependencyPath {
+	doLast {
+		assert project.properties["dependencyNotation"] : "Please provide a value for the '-PdependencyNotation' property"
+
+		Dependency dependency = dependencies.create dependencyNotation
+
+		Configuration configuration = configurations.detachedConfiguration dependency
+
+		configuration.transitive = false
+
+		logger.quiet configuration.singleFile.absolutePath
+	}
+}
+
+removeHotfixQualifier {
+	doLast {
+		String dirNamesString = System.getProperty("patcher.hotfix.dirs")
+		String qualifier = System.getProperty("patcher.hotfix.qualifier")
+
+		for (String dirName : dirNamesString.split(",")) {
+			File bndBndFile = new File(new File(projectDir, dirName), "bnd.bnd")
+
+			if (bndBndFile.exists()) {
+				Properties properties = GUtil.loadProperties(bndBndFile)
+
+				String version = properties.getProperty(Constants.BUNDLE_VERSION)
+
+				if ((version != null) && (version.indexOf(qualifier) != -1)) {
+					bndBndFile.text = bndBndFile.text.replace(version, version.minus(qualifier))
+
+					logger.lifecycle "Removed {}:{}", project.relativePath(bndBndFile), qualifier
+				}
+			}
 		}
 	}
 }
@@ -33,96 +135,140 @@ cleanReleng << {
 repositories {
 	mavenLocal()
 
+	File tmpMavenRepositoryDir = file("../.m2-tmp")
+
+	if (tmpMavenRepositoryDir.exists()) {
+		maven {
+			url tmpMavenRepositoryDir
+		}
+	}
+
 	maven {
-		url System.properties["repository.url"] ?: "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url System.properties["repository.url"] ?: "https://repository-cdn.liferay.com/nexus/content/groups/public"
+	}
+}
+
+setUpYarn {
+	String dirNamesString = System.getProperty("patcher.hotfix.dirs")
+	String qualifier = System.getProperty("patcher.hotfix.qualifier")
+
+	if (System.getenv("JENKINS_HOME") && dirNamesString?.trim() && qualifier?.trim()) {
+		dependsOn removeHotfixQualifier
+		finalizedBy appendHotfixQualifier
+	}
+
+	doFirst {
+		String buildBinariesCacheDir = project.findProperty("build.binaries.cache.dir")
+
+		if (buildBinariesCacheDir) {
+			File cacheDir = new File(rootDir.parentFile, buildBinariesCacheDir)
+
+			if (cacheDir.exists()) {
+				File fromDir = new File(cacheDir, ".yarn/offline-cache")
+				File intoDir = new File(rootDir, "node_modules_cache")
+
+				logger.lifecycle "Copying {} into {}", fromDir, intoDir
+
+				copy {
+					from fromDir
+					into intoDir
+				}
+			}
+		}
 	}
 }
 
 wrapper {
 	File wrapperDir = projectDir.parentFile
 
-	distributionUrl = "../../tools/gradle-${gradle.gradleVersion}.LIFERAY-PATCHED-4-bin.zip"
+	distributionUrl = "../../tools/gradle-${gradle.gradleVersion}.LIFERAY-PATCHED-3-bin.zip"
+	dependsOn wrapperSubrepo
 
 	doLast {
-		ant.replace(file: new File(wrapperDir, "gradlew")) {
-			replacefilter token: '# Split up the JVM_OPTS And GRADLE_OPTS values into an array, following the shell quoting and substitution rules', value: '''\
-# Split up the JVM_OPTS And GRADLE_OPTS values into an array, following the shell quoting and substitution rules
-DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS -Dgradle.user.home=$APP_HOME/.gradle"'''
+		File gradlewFile = new File(wrapperDir, "gradlew")
 
-			replacefilter token: 'org.gradle.wrapper.GradleWrapperMain "$@"', value: 'org.gradle.wrapper.GradleWrapperMain --init-script=$APP_HOME/modules/init.gradle "$@"'
-		}
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewFile,
+			token: '# Escape application args',
+			value: '''\
+# Escape application args
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS \\\"-Dgradle.user.home=$APP_HOME/.gradle\\\""'''
+		)
 
-		ant.replace(file: new File(wrapperDir, "gradlew.bat")) {
-			replacefilter token: '@rem Setup the command line', value: '''\
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewFile,
+			token: 'org.gradle.wrapper.GradleWrapperMain "$APP_ARGS"',
+			value: 'org.gradle.wrapper.GradleWrapperMain "--init-script=$APP_HOME/modules/init.gradle" "$APP_ARGS"'
+		)
+
+		File gradlewBatFile = new File(wrapperDir, "gradlew.bat")
+
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewBatFile,
+			token: '@rem Setup the command line',
+			value: '''\
 @rem Setup the command line
-set DEFAULT_JVM_OPTS=%DEFAULT_JVM_OPTS% -Dgradle.user.home=%APP_HOME%\\.gradle'''
+set DEFAULT_JVM_OPTS=%DEFAULT_JVM_OPTS% "-Dgradle.user.home=%APP_HOME%\\.gradle"'''
+		)
 
-			replacefilter token: 'org.gradle.wrapper.GradleWrapperMain %CMD_LINE_ARGS%', value: 'org.gradle.wrapper.GradleWrapperMain --init-script=%APP_HOME%\\modules\\init.gradle %CMD_LINE_ARGS%'
-		}
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewBatFile,
+			token: 'org.gradle.wrapper.GradleWrapperMain %CMD_LINE_ARGS%',
+			value: 'org.gradle.wrapper.GradleWrapperMain "--init-script=%APP_HOME%\\modules\\init.gradle" %CMD_LINE_ARGS%'
+		)
 	}
 
 	jarFile = new File(wrapperDir, "gradle/wrapper/gradle-wrapper.jar")
 	scriptFile = new File(wrapperDir, "gradlew")
 }
 
-_createSetUpTasks()
+wrapperSubrepo {
+	File wrapperDir = new File(projectDir.parentFile, "tools/subrepo")
 
-private void _createSetUpTasks() {
-	FileTree ivyXmlFileTree = fileTree(dir: "../tools/sdk", includes: ["ivy.xml", "dependencies/*/ivy.xml"])
+	doLast {
+		File gradlewFile = new File(wrapperDir, "gradlew")
 
-	Properties portalToolVersions = _getPortalToolVersions()
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewFile,
+			token: '# Escape application args',
+			value: '''\
+# Escape application args
+DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS \\\"-Dgradle.user.home=$APP_HOME/.gradle\\\""'''
+		)
 
-	XmlSlurper xmlSlurper = new XmlSlurper()
+		File gradlewBatFile = new File(wrapperDir, "gradlew.bat")
 
-	ivyXmlFileTree.each {
-		File ivyXmlFile ->
-
-		File portalToolDir = ivyXmlFile.parentFile
-
-		String portalToolName = portalToolDir.name
-
-		String portalToolSuffix = _getPortalToolSuffix(portalToolName)
-		String portalToolVersion = portalToolVersions[portalToolName]
-
-		Configuration portalToolConfiguration = configurations.create("portalTools" + portalToolSuffix)
-
-		portalToolConfiguration.exclude group: "com.liferay.portal"
-
-		if (portalToolVersion) {
-			dependencies.add portalToolConfiguration.name, "com.liferay:${portalToolName}:${portalToolVersion}"
-		}
-		else {
-			def ivyModuleNode = xmlSlurper.parse(ivyXmlFile)
-
-			def dependencyNodes = ivyModuleNode.dependencies.children()
-
-			dependencyNodes.each {
-				String conf = it.@conf
-
-				if (conf) {
-					return
-				}
-
-				dependencies.add portalToolConfiguration.name, "${it.@org}:${it.@name}:${it.@rev}"
-			}
-		}
-
-		Task portalToolTask = tasks.create(name: "setUp" + portalToolSuffix, type: Copy) {
-			doLast {
-				ant.checksum file: ivyXmlFile
-			}
-
-			from portalToolConfiguration
-			into new File(portalToolDir, "lib")
-			rename new RenameDependencyClosure(project, portalToolConfiguration.name)
-		}
-
-		setUpPortalTools.dependsOn portalToolTask
+		ant.replace(
+			failOnNoReplacements: true,
+			file: gradlewBatFile,
+			token: '@rem Setup the command line',
+			value: '''\
+@rem Setup the command line
+set DEFAULT_JVM_OPTS=%DEFAULT_JVM_OPTS% "-Dgradle.user.home=%APP_HOME%\\.gradle"'''
+		)
 	}
+
+	jarFile = new File(wrapperDir, "gradle/wrapper/gradle-wrapper.jar")
+	scriptFile = new File(wrapperDir, "gradlew")
 }
 
-private String _getPortalToolSuffix(String name) {
-	String suffix = name.replaceAll(/\.(\w)/) {
+tasks.withType(FormatSourceTask) {
+	baseDirName = "../"
+	group = "formatting"
+	showStatusUpdates = true
+}
+
+_createSetUpLibTasks(libDependenciesMap)
+_createSetUpPortalToolTasks()
+_createYarnTasks()
+
+private String _camelCase(String dirName) {
+	String suffix = dirName.replaceAll(/\.(\w)/) {
 		String s = it[1]
 
 		s.toUpperCase()
@@ -131,22 +277,143 @@ private String _getPortalToolSuffix(String name) {
 	return StringUtil.capitalize(suffix)
 }
 
-private Properties _getPortalToolVersions() {
-	Properties properties = new Properties()
+private void _createSetUpLibTasks(Map<File, Properties> libDependenciesMap) {
+	libDependenciesMap.each {
+		File dir, Properties properties ->
 
-	InputStream inputStream = buildscript.classLoader.getResourceAsStream("com/liferay/gradle/plugins/dependencies/portal-tools.properties")
+		String libSuffix = StringUtil.capitalize(dir.name)
 
-	inputStream.withCloseable {
-		properties.load it
+		Configuration libConfiguration = configurations.create("lib" + libSuffix)
+
+		libConfiguration.transitive = false
+
+		Task libTask = tasks.create(name: "setUpLib" + libSuffix, type: Copy) {
+			from libConfiguration
+			into dir
+		}
+
+		for (String fileTitle in properties.stringPropertyNames()) {
+			String dependencyNotation = properties.getProperty(fileTitle)
+
+			def dependency = dependencies.add(libConfiguration.name, dependencyNotation)
+
+			DependencyArtifact dependencyArtifact = dependency.artifacts.find()
+
+			if (dependencyArtifact) {
+				libTask.rename "${dependency.name}-${dependency.version}-${dependencyArtifact.classifier}.jar", "${fileTitle}.jar"
+			}
+			else {
+				libTask.rename "${dependency.name}-${dependency.version}.jar", "${fileTitle}.jar"
+			}
+		}
+
+		setUpLibs.dependsOn libTask
 	}
+}
 
-	for (String name in properties.stringPropertyNames()) {
-		String version = project.properties[name + ".version"]
+private void _createSetUpPortalToolTasks() {
+	FileTree ivyXmlFileTree = fileTree(dir: "../tools/sdk", includes: ["ivy.xml", "dependencies/*/ivy.xml"])
 
-		if (version) {
-			properties.setProperty name, version
+	XmlSlurper xmlSlurper = new XmlSlurper()
+
+	ivyXmlFileTree.each {
+		File ivyXmlFile ->
+
+		File portalToolDir = ivyXmlFile.parentFile
+
+		CopyIvyDependenciesTask copyIvyDependenciesTask = tasks.create(name: "setUp" + _camelCase(portalToolDir.name), type: CopyIvyDependenciesTask) {
+			configuration.exclude group: "com.liferay.portal"
+
+			dependencyTransformClosure = {
+				Map<String, Object> dependencyNotation ->
+
+				String version = PortalTools.getVersion(project, dependencyNotation["name"])
+
+				if (version) {
+					dependencyNotation["version"] = version
+				}
+
+				dependencyNotation
+			}
+
+			if (ivyXmlFile.parentFile.name != "sdk") {
+				doFirst {
+					delete destinationDir
+				}
+			}
+
+			inputFile = ivyXmlFile
+			into new File(portalToolDir, "lib")
+
+			outputs.upToDateWhen {
+				false
+			}
+		}
+
+		setUpPortalTools.dependsOn copyIvyDependenciesTask
+	}
+}
+
+private void _createYarnTasks() {
+	FileTree packageJSONFileTree = fileTree(dir: rootDir, includes: ["package.json", "private/package.json", "apps/*/package.json", "private/apps/*/package.json"])
+
+	packageJSONFileTree.each {
+		File packageJSONFile ->
+
+		if (packageJSONFile.text.contains("\"workspaces\":")) {
+			Task yarnTask = tasks.create(name: "setUpYarn" + _camelCase(packageJSONFile.parentFile.name), type: ExecuteNpmTask) {
+				args "install"
+				args "--frozen-lockfile"
+
+				scriptFile = new File(rootDir, "yarn-1.13.0.js")
+				workingDir = packageJSONFile.parentFile
+
+				doFirst {
+					String registry = project.findProperty("nodejs.npm.ci.registry")
+
+					if (registry) {
+						File yarnLockFile = new File(packageJSONFile.parentFile, "yarn.lock")
+
+						if (yarnLockFile.exists()) {
+							logger.lifecycle "Using registry {}", registry
+
+							yarnLockFile.text = yarnLockFile.text.replaceAll("https://registry.yarnpkg.com", registry)
+						}
+					}
+				}
+			}
+
+			appendHotfixQualifier.mustRunAfter yarnTask
+			setUpYarn.finalizedBy yarnTask
+
+			yarnTask = tasks.create(name: "yarnCheckFormat" + _camelCase(packageJSONFile.parentFile.name), type: ExecuteNpmTask) {
+				args "checkFormat"
+
+				group = "formatting"
+				scriptFile = new File(rootDir, "yarn-1.13.0.js")
+				workingDir = packageJSONFile.parentFile
+			}
+
+			yarnCheckFormat.finalizedBy yarnTask
+
+			yarnTask = tasks.create(name: "yarnFormat" + _camelCase(packageJSONFile.parentFile.name), type: ExecuteNpmTask) {
+				args "format"
+
+				group = "formatting"
+				scriptFile = new File(rootDir, "yarn-1.13.0.js")
+				workingDir = packageJSONFile.parentFile
+			}
+
+			yarnFormat.finalizedBy yarnTask
+
+			yarnTask = tasks.create(name: "yarnLock" + _camelCase(packageJSONFile.parentFile.name), type: ExecuteNpmTask) {
+				args "install"
+
+				scriptFile = new File(rootDir, "yarn-1.13.0.js")
+				workingDir = packageJSONFile.parentFile
+			}
+
+			yarnLock.finalizedBy yarnTask
 		}
 	}
-
-	return properties
 }

@@ -72,9 +72,13 @@ public class LayoutSetBranchImpl extends LayoutSetBranchBaseImpl {
 
 			return _layoutSet;
 		}
-		catch (SystemException se) {
-		}
-		catch (PortalException pe) {
+		catch (PortalException | SystemException e) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
 		}
 
 		return _layoutSet;
@@ -105,9 +109,8 @@ public class LayoutSetBranchImpl extends LayoutSetBranchBaseImpl {
 		if (_settingsProperties == null) {
 			return super.getSettings();
 		}
-		else {
-			return _settingsProperties.toString();
-		}
+
+		return _settingsProperties.toString();
 	}
 
 	@Override

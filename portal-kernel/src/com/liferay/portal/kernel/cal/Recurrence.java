@@ -12,22 +12,22 @@
  * details.
  */
 
-/*
+/**
  * Copyright (c) 2000, Columbia University.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *	  notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
- *	  notice, this list of conditions and the following disclaimer in the
- *	  documentation and/or other materials provided with the distribution.
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
  * 3. Neither the name of the University nor the names of its contributors
- *	  may be used to endorse or promote products derived from this software
- *	  without specific prior written permission.
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -44,10 +44,10 @@
 
 package com.liferay.portal.kernel.cal;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
 
 import java.io.Serializable;
@@ -110,7 +110,7 @@ public class Recurrence implements Serializable {
 		interval = 1;
 	}
 
-	/* Accessors */
+	// Accessors
 
 	/**
 	 * Method getByDay
@@ -124,7 +124,7 @@ public class Recurrence implements Serializable {
 
 		DayAndPosition[] b = new DayAndPosition[byDay.length];
 
-		/*
+		/**
 		 * System.arraycopy isn't good enough -- we want to clone each
 		 * individual element.
 		 */
@@ -210,11 +210,13 @@ public class Recurrence implements Serializable {
 	 * @return Calendar
 	 */
 	public Calendar getCandidateStartTime(Calendar current) {
-		if (dtStart.getTime().getTime() > current.getTime().getTime()) {
+		Date dtStartDate = dtStart.getTime();
+		Date currentDate = current.getTime();
+
+		if (dtStartDate.getTime() > currentDate.getTime()) {
 			throw new IllegalArgumentException("Current time before DtStart");
 		}
 
-		int minInterval = getMinimumInterval();
 		Calendar candidate = (Calendar)current.clone();
 
 		if (true) {
@@ -238,26 +240,17 @@ public class Recurrence implements Serializable {
 		reduce_constant_length_field(Calendar.MINUTE, dtStart, candidate);
 		reduce_constant_length_field(Calendar.HOUR_OF_DAY, dtStart, candidate);
 
-		switch (minInterval) {
+		int minInterval = getMinimumInterval();
 
-			case DAILY :
-
-				/* No more adjustments needed */
-
-				break;
-
-			case WEEKLY :
-				reduce_constant_length_field(
-					Calendar.DAY_OF_WEEK, dtStart, candidate);
-				break;
-
-			case MONTHLY :
-				reduce_day_of_month(dtStart, candidate);
-				break;
-
-			case YEARLY :
-				reduce_day_of_year(dtStart, candidate);
-				break;
+		if (minInterval == WEEKLY) {
+			reduce_constant_length_field(
+				Calendar.DAY_OF_WEEK, dtStart, candidate);
+		}
+		else if (minInterval == MONTHLY) {
+			reduce_day_of_month(dtStart, candidate);
+		}
+		else if (minInterval == YEARLY) {
+			reduce_day_of_year(dtStart, candidate);
 		}
 
 		return candidate;
@@ -270,14 +263,16 @@ public class Recurrence implements Serializable {
 	 */
 	public Calendar getDtEnd() {
 
-		/*
+		/**
 		 * Make dtEnd a cloned dtStart, so non-time fields of the Calendar
 		 * are accurate.
 		 */
 		Calendar tempEnd = (Calendar)dtStart.clone();
 
+		Date dtStartDate = dtStart.getTime();
+
 		tempEnd.setTime(
-			new Date(dtStart.getTime().getTime() + duration.getInterval()));
+			new Date(dtStartDate.getTime() + duration.getInterval()));
 
 		return tempEnd;
 	}
@@ -333,7 +328,11 @@ public class Recurrence implements Serializable {
 	 * @return Calendar
 	 */
 	public Calendar getUntil() {
-		return ((until != null) ? (Calendar)until.clone() : null);
+		if (until != null) {
+			return (Calendar)until.clone();
+		}
+
+		return null;
 	}
 
 	/**
@@ -375,7 +374,11 @@ public class Recurrence implements Serializable {
 		myCurrent.set(Calendar.SECOND, 0);
 		myCurrent.set(Calendar.MILLISECOND, 0);
 
-		if (myCurrent.getTime().getTime() < dtStart.getTime().getTime()) {
+		Date myCurrentDate = myCurrent.getTime();
+
+		Date dtStartDate = dtStart.getTime();
+
+		if (myCurrentDate.getTime() < dtStartDate.getTime()) {
 
 			// The current time is earlier than the start time.
 
@@ -388,22 +391,32 @@ public class Recurrence implements Serializable {
 
 		Calendar candidate = getCandidateStartTime(myCurrent);
 
-		/* Loop over ranges for the duration. */
+		// Loop over ranges for the duration.
 
-		while ((candidate.getTime().getTime() + duration.getInterval()) >
-					myCurrent.getTime().getTime()) {
+		while (true) {
+			Date candidateDate = candidate.getTime();
+			myCurrentDate = myCurrent.getTime();
+
+			if ((candidateDate.getTime() + duration.getInterval()) <=
+					myCurrentDate.getTime()) {
+
+				break;
+			}
 
 			if (candidateIsInRecurrence(candidate, debug)) {
 				return true;
 			}
 
-			/* Roll back to one second previous, and try again. */
+			// Roll back to one second previous, and try again.
 
 			candidate.add(Calendar.SECOND, -1);
 
-			/* Make sure we haven't rolled back to before dtStart. */
+			// Make sure we haven't rolled back to before dtStart.
 
-			if (candidate.getTime().getTime() < dtStart.getTime().getTime()) {
+			candidateDate = candidate.getTime();
+			dtStartDate = dtStart.getTime();
+
+			if (candidateDate.getTime() < dtStartDate.getTime()) {
 				if (debug) {
 					System.err.println("No candidates after dtStart");
 				}
@@ -433,7 +446,7 @@ public class Recurrence implements Serializable {
 
 		byDay = new DayAndPosition[b.length];
 
-		/*
+		/**
 		 * System.arraycopy isn't good enough -- we want to clone each
 		 * individual element.
 		 */
@@ -511,8 +524,12 @@ public class Recurrence implements Serializable {
 		tempEnd.clear(Calendar.ZONE_OFFSET);
 		tempEnd.clear(Calendar.DST_OFFSET);
 		tempEnd.setTimeZone(TimeZoneUtil.getTimeZone(StringPool.UTC));
-		duration.setInterval(
-			tempEnd.getTime().getTime() - dtStart.getTime().getTime());
+
+		Date tempEndDate = tempEnd.getTime();
+
+		Date dtStartDate = dtStart.getTime();
+
+		duration.setInterval(tempEndDate.getTime() - dtStartDate.getTime());
 	}
 
 	/**
@@ -573,7 +590,7 @@ public class Recurrence implements Serializable {
 	 * Method setInterval
 	 */
 	public void setInterval(int intr) {
-		interval = (intr > 0) ? intr : 1;
+		interval = intr;
 	}
 
 	/**
@@ -682,7 +699,9 @@ public class Recurrence implements Serializable {
 		tempCal.set(Calendar.MINUTE, 0);
 		tempCal.set(Calendar.HOUR_OF_DAY, 0);
 
-		return tempCal.getTime().getTime() / (24 * 60 * 60 * 1000);
+		Date tempCalDate = tempCal.getTime();
+
+		return tempCalDate.getTime() / (24 * 60 * 60 * 1000);
 	}
 
 	/**
@@ -692,7 +711,7 @@ public class Recurrence implements Serializable {
 	 */
 	protected static long getMonthNumber(Calendar cal) {
 		return ((cal.get(Calendar.YEAR) - 1970) * 12L) +
-			((cal.get(Calendar.MONTH) - Calendar.JANUARY));
+			(cal.get(Calendar.MONTH) - Calendar.JANUARY);
 	}
 
 	/**
@@ -728,8 +747,9 @@ public class Recurrence implements Serializable {
 			(tempCal.getFirstDayOfWeek() - Calendar.THURSDAY) * 24L * 60 * 60 *
 				1000;
 
-		return (tempCal.getTime().getTime() - weekEpoch) /
-			(7 * 24 * 60 * 60 * 1000);
+		Date tempCalDate = tempCal.getTime();
+
+		return (tempCalDate.getTime() - weekEpoch) / (7 * 24 * 60 * 60 * 1000);
 	}
 
 	/**
@@ -744,11 +764,12 @@ public class Recurrence implements Serializable {
 			throw new IllegalArgumentException("Not a constant length field");
 		}
 
-		int fieldLength =
-			(start.getMaximum(field) - start.getMinimum(field) + 1);
 		int delta = start.get(field) - candidate.get(field);
 
 		if (delta > 0) {
+			int fieldLength =
+				start.getMaximum(field) - start.getMinimum(field) + 1;
+
 			delta -= fieldLength;
 		}
 
@@ -775,6 +796,7 @@ public class Recurrence implements Serializable {
 
 		while (start.get(Calendar.DATE) != candidate.get(Calendar.DATE)) {
 			tempCal.add(Calendar.MONTH, -1);
+
 			candidate.add(
 				Calendar.DATE, -tempCal.getActualMaximum(Calendar.DATE));
 		}
@@ -793,7 +815,7 @@ public class Recurrence implements Serializable {
 			candidate.add(Calendar.YEAR, -1);
 		}
 
-		/* Set the candidate date to the start date. */
+		// Set the candidate date to the start date.
 
 		candidate.set(Calendar.MONTH, start.get(Calendar.MONTH));
 		candidate.set(Calendar.DATE, start.get(Calendar.DATE));
@@ -815,16 +837,20 @@ public class Recurrence implements Serializable {
 	protected boolean candidateIsInRecurrence(
 		Calendar candidate, boolean debug) {
 
-		if ((until != null) &&
-			(candidate.getTime().getTime() > until.getTime().getTime())) {
+		if (until != null) {
+			Date candidateDate = candidate.getTime();
+			Date untilDate = until.getTime();
 
-			// After "until"
+			if (candidateDate.getTime() > untilDate.getTime()) {
 
-			if (debug) {
-				System.err.println("after until");
+				// After "until"
+
+				if (debug) {
+					System.err.println("after until");
+				}
+
+				return false;
 			}
-
-			return false;
 		}
 
 		if ((getRecurrenceCount(candidate) % interval) != 0) {
@@ -847,10 +873,10 @@ public class Recurrence implements Serializable {
 			!matchesByYearDay(candidate) || !matchesByWeekNo(candidate) ||
 			!matchesByMonth(candidate)) {
 
-			// Doesn't match a by* rule
+			// Does not match a by* rule
 
 			if (debug) {
-				System.err.println("doesn't match a by*");
+				System.err.println("does not match a by*");
 			}
 
 			return false;
@@ -901,32 +927,27 @@ public class Recurrence implements Serializable {
 	 * @return int
 	 */
 	protected int getRecurrenceCount(Calendar candidate) {
-		switch (frequency) {
-
-			case NO_RECURRENCE :
-				return 0;
-
-			case DAILY :
-				return (int)(getDayNumber(candidate) - getDayNumber(dtStart));
-
-			case WEEKLY :
-				Calendar tempCand = (Calendar)candidate.clone();
-
-				tempCand.setFirstDayOfWeek(dtStart.getFirstDayOfWeek());
-
-				return (int)(getWeekNumber(tempCand) - getWeekNumber(dtStart));
-
-			case MONTHLY :
-				return
-					(int)(getMonthNumber(candidate) - getMonthNumber(dtStart));
-
-			case YEARLY :
-				return
-					candidate.get(Calendar.YEAR) - dtStart.get(Calendar.YEAR);
-
-			default :
-				throw new IllegalStateException("bad frequency internally...");
+		if (frequency == NO_RECURRENCE) {
+			return 0;
 		}
+		else if (frequency == DAILY) {
+			return (int)(getDayNumber(candidate) - getDayNumber(dtStart));
+		}
+		else if (frequency == WEEKLY) {
+			Calendar tempCand = (Calendar)candidate.clone();
+
+			tempCand.setFirstDayOfWeek(dtStart.getFirstDayOfWeek());
+
+			return (int)(getWeekNumber(tempCand) - getWeekNumber(dtStart));
+		}
+		else if (frequency == MONTHLY) {
+			return (int)(getMonthNumber(candidate) - getMonthNumber(dtStart));
+		}
+		else if (frequency == YEARLY) {
+			return candidate.get(Calendar.YEAR) - dtStart.get(Calendar.YEAR);
+		}
+
+		throw new IllegalStateException("bad frequency internally...");
 	}
 
 	/**
@@ -937,13 +958,13 @@ public class Recurrence implements Serializable {
 	protected boolean matchesByDay(Calendar candidate) {
 		if (ArrayUtil.isEmpty(byDay)) {
 
-			/* No byDay rules, so it matches trivially */
+			// No byDay rules, so it matches trivially
 
 			return true;
 		}
 
-		for (int i = 0; i < byDay.length; i++) {
-			if (matchesIndividualByDay(candidate, byDay[i])) {
+		for (DayAndPosition dayAndPosition : byDay) {
+			if (matchesIndividualByDay(candidate, dayAndPosition)) {
 				return true;
 			}
 		}
@@ -961,24 +982,24 @@ public class Recurrence implements Serializable {
 
 		if (ArrayUtil.isEmpty(array)) {
 
-			/* No rules, so it matches trivially */
+			// No rules, so it matches trivially
 
 			return true;
 		}
 
-		for (int i = 0; i < array.length; i++) {
+		for (int i : array) {
 			int val = 0;
 
-			if (allowNegative && (array[i] < 0)) {
+			if (allowNegative && (i < 0)) {
 
 				// byMonthDay = -1, in a 31-day month, means 31
 
 				int max = candidate.getActualMaximum(field);
 
-				val = (max + 1) + array[i];
+				val = (max + 1) + i;
 			}
 			else {
-				val = array[i];
+				val = i;
 			}
 
 			if (val == candidate.get(field)) {
@@ -1054,20 +1075,18 @@ public class Recurrence implements Serializable {
 
 			return false;
 		}
-		else {
 
-			/* position < 0 */
+		// position < 0
 
-			int negativeCandidatePosition =
-				((candidate.getActualMaximum(field) - candidate.get(field)) /
-					7) + 1;
+		int negativeCandidatePosition =
+			((candidate.getActualMaximum(field) - candidate.get(field)) / 7) +
+				1;
 
-			if (-position == negativeCandidatePosition) {
-				return true;
-			}
-
-			return false;
+		if (-position == negativeCandidatePosition) {
+			return true;
 		}
+
+		return false;
 	}
 
 	/**

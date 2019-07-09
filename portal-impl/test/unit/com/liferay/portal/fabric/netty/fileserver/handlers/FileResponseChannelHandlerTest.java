@@ -14,15 +14,15 @@
 
 package com.liferay.portal.fabric.netty.fileserver.handlers;
 
+import com.liferay.petra.concurrent.AsyncBroker;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.fabric.netty.codec.serialization.AnnotatedObjectDecoder;
 import com.liferay.portal.fabric.netty.fileserver.FileResponse;
 import com.liferay.portal.fabric.netty.util.NettyUtil;
-import com.liferay.portal.kernel.concurrent.AsyncBroker;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.Time;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -36,6 +36,7 @@ import java.nio.file.attribute.FileTime;
 
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -72,7 +73,7 @@ public class FileResponseChannelHandlerTest {
 		byte[] data = FileServerTestUtil.createRandomData(1024);
 
 		long lastModified = FileServerTestUtil.getFileSystemTime(
-			System.currentTimeMillis() - Time.DAY);
+			System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
 
 		FileResponse fileResponse = new FileResponse(
 			_path, data.length, lastModified, false);
@@ -97,6 +98,7 @@ public class FileResponseChannelHandlerTest {
 		channelHandler = _channelPipeline.first();
 
 		Assert.assertFalse(channelHandler instanceof FileUploadChannelHandler);
+
 		Assert.assertSame(fileResponse, fileUploadChannelHandler.fileResponse);
 		Assert.assertSame(fileResponse, noticeableFuture.get());
 
@@ -107,6 +109,7 @@ public class FileResponseChannelHandlerTest {
 		FileTime fileTime = Files.getLastModifiedTime(localFile);
 
 		Assert.assertEquals(lastModified, fileTime.toMillis());
+
 		Assert.assertArrayEquals(data, Files.readAllBytes(localFile));
 
 		Files.delete(localFile);
@@ -139,14 +142,15 @@ public class FileResponseChannelHandlerTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
 			Assert.assertEquals(
-				"Unable to place result " + fileResponse +
-					" because no future exists with ID " +
-						fileResponse.getPath(),
+				StringBundler.concat(
+					"Unable to place result ", fileResponse,
+					" because no future exists with ID ",
+					fileResponse.getPath()),
 				logRecord.getMessage());
 		}
 	}
@@ -178,14 +182,15 @@ public class FileResponseChannelHandlerTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
 			Assert.assertEquals(
-				"Unable to place result " + fileResponse +
-					" because no future exists with ID " +
-						fileResponse.getPath(),
+				StringBundler.concat(
+					"Unable to place result ", fileResponse,
+					" because no future exists with ID ",
+					fileResponse.getPath()),
 				logRecord.getMessage());
 		}
 	}

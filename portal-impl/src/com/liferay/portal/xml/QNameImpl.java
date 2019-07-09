@@ -36,7 +36,9 @@ public class QNameImpl implements QName {
 			return false;
 		}
 
-		org.dom4j.QName qName = ((QNameImpl)obj).getWrappedQName();
+		QNameImpl qNameImpl = (QNameImpl)obj;
+
+		org.dom4j.QName qName = qNameImpl.getWrappedQName();
 
 		return _qName.equals(qName);
 	}
@@ -58,9 +60,8 @@ public class QNameImpl implements QName {
 		if (namespace == null) {
 			return null;
 		}
-		else {
-			return new NamespaceImpl(namespace);
-		}
+
+		return new NamespaceImpl(namespace);
 	}
 
 	@Override

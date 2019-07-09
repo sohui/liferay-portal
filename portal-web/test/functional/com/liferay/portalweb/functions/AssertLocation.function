@@ -1,11 +1,24 @@
-<definition default="assertLocation">
-	<command name="assertLocation">
-		<execute function="WaitForSPARefresh" />
+@default = "assertLocation"
+definition {
 
-		<execute selenium="assertLocation" />
+	function assertLocation {
+		WaitForSPARefresh();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.assertLocation();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+	function assertPartialLocation {
+		WaitForSPARefresh();
+
+		selenium.assertPartialLocation();
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

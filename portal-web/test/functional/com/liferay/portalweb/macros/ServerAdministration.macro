@@ -1,181 +1,248 @@
-<definition>
-	<command name="addCategoryLogLevels">
-		<execute function="AssertClick" locator1="NavBar#LOG_LEVELS" value1="Log Levels" />
+definition {
 
-		<execute function="AssertClick" locator1="NavBar#ADD_CATEGORY" value1="Add Category" />
+	macro addCategoryLogLevels {
+		Navigator.gotoNavItem(navItem = "Log Levels");
 
-		<execute function="Type" locator1="ServerAdministrationLogLevels#ADD_CATEGORY_NAME_FIELD" value1="${catagoryName}" />
-		<execute function="Select" locator1="ServerAdministrationLogLevels#ADD_CATEGORY_PRIORITY_SELECT" value1="${categoryPriority}" />
-		<execute macro="PortletEntry#save" />
-	</command>
+		AssertClick(
+			locator1 = "NavBar#ADD_CATEGORY",
+			value1 = "Add Category");
 
-	<command name="configureExternalServices">
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="External Services" />
-		</execute>
+		Type(
+			locator1 = "ServerAdministrationLogLevels#ADD_CATEGORY_NAME_FIELD",
+			value1 = "${categoryName}");
 
-		<if>
-			<equals arg1="${enableOpenOfficeIntegration}" arg2="true" />
-			<then>
-				<execute function="Check" locator1="ServerAdministrationExternalServices#OPEN_OFFICE_ENABLED_CHECKBOX" />
-			</then>
-			<elseif>
-				<equals arg1="${enableOpenOfficeIntegration}" arg2="false" />
-				<then>
-					<execute function="Uncheck" locator1="ServerAdministrationExternalServices#OPEN_OFFICE_ENABLED_CHECKBOX" />
-				</then>
-			</elseif>
-		</if>
+		Select(
+			locator1 = "ServerAdministrationLogLevels#ADD_CATEGORY_PRIORITY_SELECT",
+			value1 = "${categoryPriority}");
 
-		<if>
-			<and>
-				<isset var="installXuggler" />
-				<condition function="IsElementNotPresent" locator1="ServerAdministrationExternalServices#XUGGLER_ENABLED_CHECKBOX" />
-			</and>
-			<then>
-				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Enabling Xuggler provides video conversion functionality." />
-				</execute>
+		PortletEntry.save();
+	}
 
-				<execute function="Select" locator1="ServerAdministrationExternalServices#XUGGLER_JAR_FILE_SELECT" value1="${xugglerJarFile}" />
+	macro configureExternalServices {
+		Navigator.gotoNavItem(navItem = "External Services");
 
-				<execute function="AssertClick" locator1="ServerAdministrationExternalServices#XUGGLER_INSTALL_BUTTON" value1="Install" />
+		if ("${enableOpenOfficeIntegration}" == "true") {
+			Check(locator1 = "ServerAdministrationExternalServices#OPEN_OFFICE_ENABLED_CHECKBOX");
+		}
+		else if ("${enableOpenOfficeIntegration}" == "false") {
+			Uncheck(locator1 = "ServerAdministrationExternalServices#OPEN_OFFICE_ENABLED_CHECKBOX");
+		}
 
-				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Enabling Xuggler provides video conversion functionality." />
-				</execute>
+		if ((isSet(installXuggler)) && (IsElementNotPresent(locator1 = "ServerAdministrationExternalServices#XUGGLER_ENABLED_CHECKBOX"))) {
+			Panel.expandPanel(panel = "Enabling Xuggler provides video conversion functionality.");
 
-				<execute function="AssertTextNotEquals" locator1="Message#INFO" value1="Xuggler requires the installation of native libraries that are distributed under the GPL license. If you are able to find your environment specified below, the server can automatically download and install the libraries for you. You will subsequently be required to restart the server. If your environment is not listed below, you will need to compile and install the libraries manually. Read more." />
+			AssertClick(
+				locator1 = "ServerAdministrationExternalServices#XUGGLER_INSTALL_BUTTON",
+				value1 = "Install");
 
-				<execute function="AssertTextEquals" locator1="Message#INFO" value1="Xuggler has been installed. You need to reboot your server to apply changes." />
+			Panel.expandPanel(panel = "Enabling Xuggler provides video conversion functionality.");
 
-				<execute function="AssertElementNotPresent" locator1="ServerAdministrationExternalServices#XUGGLER_JAR_FILE_SELECT" />
-			</then>
-		</if>
+			AssertTextNotEquals(
+				locator1 = "Message#INFO",
+				value1 = "Xuggler requires the installation of native libraries that are distributed under the GPL license. If you are able to find your environment specified below, the server can automatically download and install the libraries for you. You will subsequently be required to restart the server. If your environment is not listed below, you will need to compile and install the libraries manually. Read more.");
 
-		<if>
-			<equals arg1="${enableXuggler}" arg2="true" />
-			<then>
-				<execute function="AssertTextEquals" locator1="Message#INFO" value1="Xuggler appears to be installed correctly. Enable to allow audio and video preview generation." />
-				<execute function="Check" locator1="ServerAdministrationExternalServices#XUGGLER_ENABLED_CHECKBOX"  />
-			</then>
-		</if>
+			AssertTextEquals(
+				locator1 = "Message#INFO",
+				value1 = "Xuggler has been installed. You need to reboot your server to apply changes.");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+			AssertElementNotPresent(locator1 = "ServerAdministrationExternalServices#XUGGLER_JAR_FILE_SELECT");
+		}
 
-	<command name="configureFileUploadOverallMaximumFileSize">
-		<execute function="AssertClick" locator1="NavBar#FILE_UPLOADS" value1="File Uploads" />
-		<execute function="Type" locator1="CPServeradministrationFileuploads#FILE_UPLOADS_GENERAL_OVERALL_MAX_FILE_SIZE_FIELD" value1="${maxFileSize}" />
-		<execute function="AssertClick" locator1="CPServeradministrationFileuploads#SAVE_BUTTON" value1="Save" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="CPServeradministrationFileuploads#SUCCESS_MESSAGE" value1="Your request completed successfully." />
-	</command>
+		if ("${enableXuggler}" == "true") {
+			AssertTextEquals(
+				locator1 = "Message#INFO",
+				value1 = "Xuggler appears to be installed correctly. Enable to allow audio and video preview generation.");
 
-	<command name="configureMailServerSettings">
-		<execute function="AssertClick" locator1="NavBar#MAIL" value1="Mail" />
+			Check(locator1 = "ServerAdministrationExternalServices#XUGGLER_ENABLED_CHECKBOX");
+		}
 
-		<execute function="Type" locator1="ServerAdministrationMail#INCOMING_POP_SERVER" value1="pop.gmail.com" />
-		<execute function="Type" locator1="ServerAdministrationMail#INCOMING_PORT" value1="995" />
-		<execute function="Check" locator1="ServerAdministrationMail#INCOMING_SECURE_NETWORK_CONNECTION_CHECKBOX" />
+		PortletEntry.save();
+	}
 
-		<if>
-			<equals arg1="${needsReply}" arg2="true" />
-			<then>
-				<execute function="Type" locator1="ServerAdministrationMail#INCOMING_USER_NAME" value1="recent:${userName}" />
-			</then>
-			<else>
-				<execute function="Type" locator1="ServerAdministrationMail#INCOMING_USER_NAME" value1="${userName}" />
-			</else>
-		</if>
+	macro configureFileUploadOverallMaximumFileSize {
+		Type(
+			locator1 = "ServerAdministrationFileUploads#GENERAL_OVERALL_MAX_FILE_SIZE_FIELD",
+			value1 = "${maxFileSize}");
 
-		<execute function="Type" locator1="ServerAdministrationMail#INCOMING_PASSWORD" value1="${userPassword}" />
-		<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_SMTP_SERVER" value1="smtp.gmail.com" />
-		<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_PORT" value1="465" />
-		<execute function="Check" locator1="ServerAdministrationMail#OUTGOING_SECURE_CONNECTION_CHECKBOX" />
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
 
-		<if>
-			<equals arg1="${needsReply}" arg2="true" />
-			<then>
-				<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_USER_NAME" value1="recent:${userName}" />
-			</then>
-			<else>
-				<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_USER_NAME" value1="${userName}" />
-			</else>
-		</if>
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#SUCCESS",
+			value1 = "Your request completed successfully.");
+	}
 
-		<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_PASSWORD" value1="${userPassword}" />
-		<execute function="AssertClick" locator1="CPServeradministrationMail#SAVE_BUTTON" value1="Save" />
+	macro configureMailServerSettings {
+		Navigator.gotoNavItem(navItem = "Mail");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="CPServeradministrationMail#SUCCESS_MESSAGE" value1="Your request completed successfully." />
-	</command>
+		Type(
+			locator1 = "ServerAdministrationMail#INCOMING_POP_SERVER",
+			value1 = "pop.gmail.com");
 
-	<command name="executeServerResourcesActions">
-		<execute function="AssertClick" locator1="NavBar#RESOURCES" value1="Resources" />
+		Type(
+			locator1 = "ServerAdministrationMail#INCOMING_PORT",
+			value1 = "995");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Clean Up Actions" />
-		</execute>
+		Check(locator1 = "ServerAdministrationMail#INCOMING_SECURE_NETWORK_CONNECTION_CHECKBOX");
 
-		<var name="key_actionsDescription" value="${actionsDescription}" />
+		if ("${needsReply}" == "true") {
+			Type(
+				locator1 = "ServerAdministrationMail#INCOMING_USER_NAME",
+				value1 = "recent:${userName}");
+		}
+		else {
+			Type(
+				locator1 = "ServerAdministrationMail#INCOMING_USER_NAME",
+				value1 = "${userName}");
+		}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="ServerAdministrationResources#ACTIONS_TABLE_DESCRIPTION" value1="${actionsDescription}" />
-		<execute function="AssertClick" locator1="ServerAdministrationResources#ACTIONS_TABLE_EXECUTE" value1="Execute" />
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		Type(
+			locator1 = "ServerAdministrationMail#INCOMING_PASSWORD",
+			value1 = "${userPassword}");
 
-	<command name="searchPortalPropertiesCP">
-		<execute function="AssertClick" locator1="NavTab#PROPERTIES" value1="Properties" />
-		<execute function="AssertClick" locator1="NavTab#PORTAL_PROPERTIES" value1="Portal Properties" />
+		Type(
+			locator1 = "ServerAdministrationMail#OUTGOING_SMTP_SERVER",
+			value1 = "smtp.gmail.com");
 
-		<execute function="Type" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_SEARCH_FIELD" value1="${propertyName}" />
-		<execute function="AssertClick" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_SEARCH_BUTTON" value1="Search" />
+		Type(
+			locator1 = "ServerAdministrationMail#OUTGOING_PORT",
+			value1 = "465");
 
-		<var name="key_propertyName" value="${propertyName}" />
+		Check(locator1 = "ServerAdministrationMail#OUTGOING_SECURE_CONNECTION_CHECKBOX");
 
-		<execute function="AssertTextEquals" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_TABLE_PROPERTY" value1="${propertyName}" />
+		if ("${needsReply}" == "true") {
+			Type(
+				locator1 = "ServerAdministrationMail#OUTGOING_USER_NAME",
+				value1 = "recent:${userName}");
+		}
+		else {
+			Type(
+				locator1 = "ServerAdministrationMail#OUTGOING_USER_NAME",
+				value1 = "${userName}");
+		}
 
-		<if>
-			<isset var="propertyOveridden" />
-			<then>
-				<execute function="MouseOver" locator1="ServerAdministrationResources#SOURCE" />
-				<execute function="AssertTextEquals" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_TABLE_SOURCE" value1="The value of this property was overridden using the Control Panel and is stored in the database." />
-			</then>
-			<else>
-				<execute function="MouseOver" locator1="ServerAdministrationResources#SOURCE" />
-				<execute function="AssertTextEquals" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_TABLE_SOURCE" value1="The value of this property is read from a portal.properties file or one of its extension files." />
-			</else>
-		</if>
-	</command>
+		Type(
+			locator1 = "ServerAdministrationMail#OUTGOING_PASSWORD",
+			value1 = "${userPassword}");
 
-	<command name="tearDownDMFileUploadSettings">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Server Administration" />
-		</execute>
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
 
-		<execute function="AssertClick" locator1="NavBar#FILE_UPLOADS" value1="File Uploads" />
-		<execute function="Type" locator1="ServerAdministrationFileUploads#DOCS_AND_MEDIA_MAX_FILE_SIZE_FIELD" value1="" />
-		<execute function="AssertClick" locator1="CPServeradministrationFileuploads#SAVE_BUTTON" value1="Save" />
-	</command>
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#SUCCESS",
+			value1 = "Your request completed successfully.");
+	}
 
-	<command name="tearDownMailServerSettings">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Server Administration" />
-		</execute>
+	macro executeScript {
+		Navigator.gotoNavItem(navItem = "Script");
 
-		<execute function="AssertClick" locator1="NavBar#MAIL" value1="Mail" />
+		Select(
+			locator1 = "ServerAdministrationScript#LANGUAGE_SELECT",
+			value1 = "${language}");
 
-		<execute function="Type" locator1="ServerAdministrationMail#INCOMING_POP_SERVER" value1="localhost" />
-		<execute function="Type" locator1="ServerAdministrationMail#INCOMING_PORT" value1="110" />
-		<execute function="Uncheck" locator1="ServerAdministrationMail#INCOMING_SECURE_NETWORK_CONNECTION_CHECKBOX" />
-		<execute function="Type" locator1="ServerAdministrationMail#INCOMING_USER_NAME" value1="weblogic" />
-		<execute function="Type" locator1="ServerAdministrationMail#INCOMING_PASSWORD" value1="password" />
-		<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_SMTP_SERVER" value1="localhost" />
-		<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_PORT" value1="25" />
-		<execute function="Uncheck" locator1="ServerAdministrationMail#OUTGOING_SECURE_CONNECTION_CHECKBOX" />
-		<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_USER_NAME" value1="" />
-		<execute function="Type" locator1="ServerAdministrationMail#OUTGOING_PASSWORD" value1="" />
-		<execute function="AssertClick" locator1="CPServeradministrationMail#SAVE_BUTTON" value1="Save" />
+		Type(
+			locator1 = "ServerAdministrationScript#SCRIPT_TEXT",
+			value1 = "${script}");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="CPServeradministrationMail#SUCCESS_MESSAGE" value1="Your request completed successfully." />
-	</command>
-</definition>
+		AssertClick(
+			locator1 = "ServerAdministrationScript#EXECUTE_BUTTON",
+			value1 = "Execute");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro executeServerResourcesActions {
+		Navigator.gotoNavItem(navItem = "Resources");
+
+		Panel.expandPanel(panel = "Clean Up Actions");
+
+		var key_actionsDescription = "${actionsDescription}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "ServerAdministrationResources#ACTIONS_TABLE_DESCRIPTION",
+			value1 = "${actionsDescription}");
+
+		AssertClick(
+			locator1 = "ServerAdministrationResources#ACTIONS_TABLE_EXECUTE",
+			value1 = "Execute");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro openServerAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage?p_p_id=com_liferay_server_admin_web_portlet_ServerAdminPortlet");
+	}
+
+	macro tearDownDMFileUploadSettings {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Server Administration");
+
+		Navigator.gotoNavItem(navItem = "File Uploads");
+
+		Type(
+			locator1 = "ServerAdministrationFileUploads#DOCS_AND_MEDIA_MAX_FILE_SIZE_FIELD",
+			value1 = "");
+
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+	}
+
+	macro tearDownMailServerSettings {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Server Administration");
+
+		Navigator.gotoNavItem(navItem = "Mail");
+
+		Type(
+			locator1 = "ServerAdministrationMail#INCOMING_POP_SERVER",
+			value1 = "localhost");
+
+		Type(
+			locator1 = "ServerAdministrationMail#INCOMING_PORT",
+			value1 = "110");
+
+		Uncheck(locator1 = "ServerAdministrationMail#INCOMING_SECURE_NETWORK_CONNECTION_CHECKBOX");
+
+		Type(
+			locator1 = "ServerAdministrationMail#INCOMING_USER_NAME",
+			value1 = "weblogic");
+
+		Type(
+			locator1 = "ServerAdministrationMail#INCOMING_PASSWORD",
+			value1 = "password");
+
+		Type(
+			locator1 = "ServerAdministrationMail#OUTGOING_SMTP_SERVER",
+			value1 = "localhost");
+
+		Type(
+			locator1 = "ServerAdministrationMail#OUTGOING_PORT",
+			value1 = "25");
+
+		Uncheck(locator1 = "ServerAdministrationMail#OUTGOING_SECURE_CONNECTION_CHECKBOX");
+
+		Type(
+			locator1 = "ServerAdministrationMail#OUTGOING_USER_NAME",
+			value1 = "");
+
+		Type(
+			locator1 = "ServerAdministrationMail#OUTGOING_PASSWORD",
+			value1 = "");
+
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#SUCCESS",
+			value1 = "Your request completed successfully.");
+	}
+
+}

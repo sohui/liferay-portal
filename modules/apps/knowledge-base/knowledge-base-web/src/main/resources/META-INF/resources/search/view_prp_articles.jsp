@@ -68,7 +68,7 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 			property="title"
 		/>
 
-		<c:if test="<%= showKBArticleAuthorColumn %>">
+		<c:if test="<%= kbSearchPortletInstanceConfiguration.showKBArticleAuthorColumn() %>">
 			<liferay-ui:search-container-column-text
 				href="<%= rowURL %>"
 				name="author"
@@ -78,7 +78,7 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 			/>
 		</c:if>
 
-		<c:if test="<%= showKBArticleCreateDateColumn %>">
+		<c:if test="<%= kbSearchPortletInstanceConfiguration.showKBArticleCreateDateColumn() %>">
 			<liferay-ui:search-container-column-date
 				cssClass="kb-column-no-wrap"
 				href="<%= rowURL %>"
@@ -89,7 +89,7 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 			/>
 		</c:if>
 
-		<c:if test="<%= showKBArticleModifiedDateColumn %>">
+		<c:if test="<%= kbSearchPortletInstanceConfiguration.showKBArticleModifiedDateColumn() %>">
 			<liferay-ui:search-container-column-date
 				cssClass="kb-column-no-wrap"
 				href="<%= rowURL %>"
@@ -100,7 +100,7 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 			/>
 		</c:if>
 
-		<c:if test="<%= showKBArticleViewsColumn %>">
+		<c:if test="<%= kbSearchPortletInstanceConfiguration.showKBArticleViewsColumn() %>">
 			<liferay-ui:search-container-column-text
 				buffer="buffer"
 				cssClass="kb-column-no-wrap"
@@ -129,31 +129,27 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 					<%
 					AssetCategory assetCategory = AssetCategoryLocalServiceUtil.getAssetCategory(assetCategoryId);
 
-					assetCategory = assetCategory.toEscapedModel();
-
 					AssetVocabulary assetVocabulary = AssetVocabularyLocalServiceUtil.getAssetVocabulary(assetCategory.getVocabularyId());
-
-					assetVocabulary = assetVocabulary.toEscapedModel();
 					%>
 
 					<c:choose>
 						<c:when test="<%= Validator.isNotNull(assetTagName) %>">
 							<c:choose>
 								<c:when test="<%= total > 0 %>">
-									<%= LanguageUtil.format(request, "articles-with-x-x-and-tag-x", new String[] {assetVocabulary.getTitle(locale), assetCategory.getTitle(locale), assetTagName}, false) %>
+									<%= LanguageUtil.format(request, "articles-with-x-x-and-tag-x", new String[] {HtmlUtil.escape(assetVocabulary.getTitle(locale)), HtmlUtil.escape(assetCategory.getTitle(locale)), HtmlUtil.escape(assetTagName)}, false) %>
 								</c:when>
 								<c:otherwise>
-									<%= LanguageUtil.format(request, "there-are-no-articles-with-x-x-and-tag-x", new String[] {assetVocabulary.getTitle(locale), assetCategory.getTitle(locale), assetTagName}, false) %>
+									<%= LanguageUtil.format(request, "there-are-no-articles-with-x-x-and-tag-x", new String[] {HtmlUtil.escape(assetVocabulary.getTitle(locale)), HtmlUtil.escape(assetCategory.getTitle(locale)), HtmlUtil.escape(assetTagName)}, false) %>
 								</c:otherwise>
 							</c:choose>
 						</c:when>
 						<c:otherwise>
 							<c:choose>
 								<c:when test="<%= total > 0 %>">
-									<%= LanguageUtil.format(request, "articles-with-x-x", new String[] {assetVocabulary.getTitle(locale), assetCategory.getTitle(locale)}, false) %>
+									<%= LanguageUtil.format(request, "articles-with-x-x", new String[] {HtmlUtil.escape(assetVocabulary.getTitle(locale)), HtmlUtil.escape(assetCategory.getTitle(locale))}, false) %>
 								</c:when>
 								<c:otherwise>
-									<%= LanguageUtil.format(request, "there-are-no-articles-with-x-x", new String[] {assetVocabulary.getTitle(locale), assetCategory.getTitle(locale)}, false) %>
+									<%= LanguageUtil.format(request, "there-are-no-articles-with-x-x", new String[] {HtmlUtil.escape(assetVocabulary.getTitle(locale)), HtmlUtil.escape(assetCategory.getTitle(locale))}, false) %>
 								</c:otherwise>
 							</c:choose>
 						</c:otherwise>
@@ -162,10 +158,10 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 				<c:otherwise>
 					<c:choose>
 						<c:when test="<%= total > 0 %>">
-							<%= LanguageUtil.format(request, "articles-with-tag-x", assetTagName, false) %>
+							<%= LanguageUtil.format(request, "articles-with-tag-x", HtmlUtil.escape(assetTagName), false) %>
 						</c:when>
 						<c:otherwise>
-							<%= LanguageUtil.format(request, "there-are-no-articles-with-tag-x", assetTagName, false) %>
+							<%= LanguageUtil.format(request, "there-are-no-articles-with-tag-x", HtmlUtil.escape(assetTagName), false) %>
 						</c:otherwise>
 					</c:choose>
 				</c:otherwise>

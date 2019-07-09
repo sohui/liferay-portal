@@ -1,0 +1,332 @@
+definition {
+
+	/*
+		For searches that do not use the search portlet (e.g. searches within the product menu), use the macros within Search.macro instead.'Embedded' refers to the search bar in the page header whereas 'Widget' refers to the search bar within the page.
+	 */
+
+	macro addWidgets {
+		if (IsNotVisible(locator1 = "ControlMenuAddPanel#CLOSE_ADD_PANEL")) {
+			Click.clickAt(locator1 = "ControlMenu#ADD");
+		}
+
+		AssertElementPresent(locator1 = "ControlMenuAddPanel#APPLICATIONS_ACCORDION_PANEL_TITLE");
+
+		AssertVisible(
+			locator1 = "ControlMenuAddPanel#APPLICATIONS_ACCORDION_PANEL_TITLE",
+			value1 = "Widgets");
+
+		Pause(locator1 = "5000");
+
+		Panel.expandSidebarApplicationsPanel();
+
+		Type.sendKeysApplicationSearch(
+			locator1 = "NavBar#APPLICATION_SEARCH_FIELD",
+			value1 = "search");
+
+		for (var portletName : list "${searchPortletList}") {
+			Portlet._clickAddPortlet(portletName = "${portletName}");
+
+			var key_portletName = "${portletName}";
+
+			AssertElementPresent(locator1 = "Portlet#LOADED");
+
+			AssertElementPresent(locator1 = "Home#PORTLET");
+		}
+	}
+
+	macro chooseSortOption {
+		Click(locator1 = "Search#SORT_PORTLET_DROPDOWN");
+
+		Click(
+			locator1 = "Search#SORT_PORTLET_SORT_OPTION",
+			sortOption = "${sortOption}");
+	}
+
+	macro configureCustomFilter {
+		Portlet.gotoPortletOptions(
+			portletName = "Custom Filter",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		if (isSet(customParameterName)) {
+			Type(
+				key_fieldLabel = "Custom Parameter Name",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${customParameterName}");
+		}
+
+		if (isSet(federatedSearchKey)) {
+			Type(
+				key_fieldLabel = "Federated Search Key",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${federatedSearchKey}");
+		}
+
+		if (isSet(filterField)) {
+			Type(
+				key_fieldLabel = "Filter Field",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${filterField}");
+		}
+
+		if (isSet(filterQueryType)) {
+			Select(
+				key_fieldLabel = "Filter Query Type",
+				locator1 = "Select#GENERIC_SELECT_FIELD",
+				value1 = "${filterQueryType}");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	macro configureDestination {
+		SearchPortlets.gotoEmbeddedOptions(portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		if (isSet(destinationPage)) {
+			if (contains("${destinationPage}", " ")) {
+				var destinationPage = StringUtil.replace("${destinationPage}", " ", "-");
+			}
+
+			var destinationPage = StringUtil.toLowerCase("${destinationPage}");
+
+			Type(
+				locator1 = "SearchConfiguration#DESTINATION_PAGE",
+				value1 = "${destinationPage}");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	macro configureEmbeddedScope {
+		SearchPortlets.gotoEmbeddedOptions(portletOption = "Configuration");
+
+		if (("${searchScope}" == "Everything") || ("${searchScope}" == "Let the User Choose") || ("${searchScope}" == "This Site")) {
+			SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+			Select(
+				locator1 = "Select#SCOPE_CONFIGURATION",
+				value1 = "${searchScope}");
+		}
+		else {
+			fail("Invalid search scope. Must be (Everything|Let the User Choose|This Site).");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	macro configureLowLevelSearchOptions {
+		Portlet.gotoPortletOptions(
+			portletName = "Low Level Search Options",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		if (isSet(federatedSearchKey)) {
+			Type(
+				key_fieldLabel = "Federated Search Key",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${federatedSearchKey}");
+		}
+
+		if (isSet(indexes)) {
+			Type(
+				key_fieldLabel = "Indexes",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${indexes}");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	macro configureSearchOptions {
+		Portlet.gotoPortletOptions(
+			portletName = "Search Options",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		if ("${allowEmptySearches}" == "true") {
+			Check(
+				checkboxName = "Allow Empty Searches",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		if ("${basicFacetSelection}" == "true") {
+			Check(
+				checkboxName = "Basic Facet Selection",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	macro configureWidgetParameterNames {
+		SearchPortlets.gotoWidgetOptions(portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		if (isSet(keywordsParameterName)) {
+			Type(
+				locator1 = "SearchConfiguration#KEYWORDS_PARAMETER_NAME",
+				value1 = "${keywordsParameterName}");
+		}
+
+		if (isSet(scopeParameterName)) {
+			Type(
+				locator1 = "SearchConfiguration#SCOPE_PARAMETER_NAME",
+				value1 = "${scopeParameterName}");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	macro configureWidgetScope {
+		SearchPortlets.gotoWidgetOptions(portletOption = "Configuration");
+
+		if (("${searchScope}" == "Everything") || ("${searchScope}" == "Let the User Choose") || ("${searchScope}" == "This Site")) {
+			SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+			Select(
+				locator1 = "Select#SCOPE_CONFIGURATION",
+				value1 = "${searchScope}");
+		}
+		else {
+			fail("Invalid search scope. Must be (Everything|Let the User Choose|This Site).");
+		}
+
+		PortletEntry.save();
+
+		IFrame.closeFrame();
+	}
+
+	macro getSearchTermURL {
+		if (contains("${searchPage}", " ")) {
+			var searchPage = StringUtil.replace("${searchPage}", " ", "-");
+		}
+
+		var searchPage = StringUtil.toLowerCase("${searchPage}");
+		var portalURL = PropsUtil.get("portal.url");
+		var searchURL = "${portalURL}/web/guest/${searchPage}?q=";
+		var searchURL = "${searchURL}${searchTerm}";
+
+		return "${searchURL}";
+	}
+
+	macro gotoEmbeddedOptions {
+		MouseOver.mouseOverNotVisible(locator1 = "Search#EMBEDDED_SEARCH_BAR_ELLIPSIS_ICON");
+
+		Click(locator1 = "Search#EMBEDDED_SEARCH_BAR_ELLIPSIS_ICON");
+
+		if (isSet(portletOption)) {
+			var key_menuItem = "${portletOption}";
+
+			Click(locator1 = "MenuItem#ANY_MENU_ITEM");
+		}
+	}
+
+	macro gotoResultDetails {
+		var key_searchAssetTitle = "${searchAssetTitle}";
+
+		AssertClick(
+			locator1 = "SearchResults#ASSET_ENTRY_TABLE_TITLE",
+			value1 = "${searchAssetTitle}");
+	}
+
+	macro gotoWidgetOptions {
+		MouseOver.mouseOverNotVisible(locator1 = "Search#SEARCH_BAR_WIDGET_ELLIPSIS_ICON");
+
+		Click(locator1 = "Search#SEARCH_BAR_WIDGET_ELLIPSIS_ICON");
+
+		if (isSet(portletOption)) {
+			var key_menuItem = "${portletOption}";
+
+			Click(locator1 = "MenuItem#ANY_MENU_ITEM");
+		}
+	}
+
+	macro searchEmbedded {
+		AssertElementPresent(locator1 = "Search#EMBEDDED_SEARCH_BAR");
+
+		Type(
+			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			value1 = "${searchTerm}");
+
+		KeyPress(
+			locator1 = "Search#EMBEDDED_SEARCH_BAR",
+			value1 = "\RETURN");
+	}
+
+	macro searchWidget {
+		Type(
+			locator1 = "Search#SEARCH_BAR_WIDGET",
+			value1 = "${searchTerm}");
+
+		KeyPress(
+			locator1 = "Search#SEARCH_BAR_WIDGET",
+			value1 = "\RETURN");
+	}
+
+	macro selectEmbeddedScopeInput {
+		if (("${searchScope}" == "Everything") || ("${searchScope}" == "This Site")) {
+			Select(
+				locator1 = "Search#EMBEDDED_SEARCH_BAR_SCOPE_SELECT",
+				value1 = "${searchScope}");
+		}
+		else {
+			fail("Invalid search scope. Must be (Everything|This Site).");
+		}
+	}
+
+	macro selectWidgetScopeInput {
+		if (("${searchScope}" == "Everything") || ("${searchScope}" == "This Site")) {
+			Select(
+				locator1 = "Search#SEARCH_BAR_WIDGET_SCOPE_SELECT",
+				value1 = "${searchScope}");
+		}
+		else {
+			fail("Invalid search scope. Must be (Everything|This Site).");
+		}
+	}
+
+	macro viewResultDetails {
+		AssertTextEquals(
+			locator1 = "Portlet#H3_HEADER",
+			value1 = "${searchAssetTitle}");
+	}
+
+	macro viewSearchHidden {
+		AssertElementNotPresent(locator1 = "Search#EMBEDDED_SEARCH_BAR");
+	}
+
+	macro viewSearchResultWithNoPermissions {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No results were found that matched the keywords: ${searchTerm}.");
+	}
+
+	macro viewUserResultDetails {
+		AssertTextEquals(
+			locator1 = "Home#USER_NAME_HEADER",
+			value1 = "${userName}");
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE_1",
+			value1 = "${pageName}");
+	}
+
+}

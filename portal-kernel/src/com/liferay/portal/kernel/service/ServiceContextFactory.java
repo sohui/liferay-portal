@@ -17,17 +17,18 @@ package com.liferay.portal.kernel.service;
 import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
-import com.liferay.portal.kernel.model.PortletPreferencesIds;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.service.permission.ModelPermissionsFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -39,7 +40,6 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,61 +54,158 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class ServiceContextFactory {
 
-	public static ServiceContext getInstance(HttpServletRequest request)
+	public static ServiceContext getInstance(
+			HttpServletRequest httpServletRequest)
+		throws PortalException {
+
+		ServiceContext serviceContext = _getInstance(httpServletRequest);
+
+		_ensureValidModelPermissions(serviceContext);
+
+		return serviceContext;
+	}
+
+	public static ServiceContext getInstance(PortletRequest portletRequest)
+		throws PortalException {
+
+		ServiceContext serviceContext = _getInstance(portletRequest);
+
+		_ensureValidModelPermissions(serviceContext);
+
+		return serviceContext;
+	}
+
+	public static ServiceContext getInstance(
+			String className, HttpServletRequest httpServletRequest)
+		throws PortalException {
+
+		ServiceContext serviceContext = _getInstance(httpServletRequest);
+
+		// Permissions
+
+		if (serviceContext.getModelPermissions() == null) {
+			serviceContext.setModelPermissions(
+				ModelPermissionsFactory.create(httpServletRequest, className));
+		}
+
+		_ensureValidModelPermissions(serviceContext);
+
+		// Expando
+
+		Map<String, Serializable> expandoBridgeAttributes =
+			PortalUtil.getExpandoBridgeAttributes(
+				ExpandoBridgeFactoryUtil.getExpandoBridge(
+					serviceContext.getCompanyId(), className),
+				httpServletRequest);
+
+		serviceContext.setExpandoBridgeAttributes(expandoBridgeAttributes);
+
+		return serviceContext;
+	}
+
+	public static ServiceContext getInstance(
+			String className, PortletRequest portletRequest)
+		throws PortalException {
+
+		ServiceContext serviceContext = _getInstance(portletRequest);
+
+		// Permissions
+
+		if (serviceContext.getModelPermissions() == null) {
+			serviceContext.setModelPermissions(
+				ModelPermissionsFactory.create(portletRequest, className));
+		}
+
+		_ensureValidModelPermissions(serviceContext);
+
+		// Expando
+
+		Map<String, Serializable> expandoBridgeAttributes =
+			PortalUtil.getExpandoBridgeAttributes(
+				ExpandoBridgeFactoryUtil.getExpandoBridge(
+					serviceContext.getCompanyId(), className),
+				portletRequest);
+
+		serviceContext.setExpandoBridgeAttributes(expandoBridgeAttributes);
+
+		return serviceContext;
+	}
+
+	public static ServiceContext getInstance(
+			String className, UploadPortletRequest uploadPortletRequest)
+		throws PortalException {
+
+		return getInstance(className, (HttpServletRequest)uploadPortletRequest);
+	}
+
+	private static void _ensureValidModelPermissions(
+		ServiceContext serviceContext) {
+
+		if (serviceContext.getModelPermissions() == null) {
+			serviceContext.setModelPermissions(new ModelPermissions());
+		}
+	}
+
+	private static ServiceContext _getInstance(
+			HttpServletRequest httpServletRequest)
 		throws PortalException {
 
 		ServiceContext serviceContext = new ServiceContext();
 
 		// Theme display
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		if (themeDisplay != null) {
 			serviceContext.setCompanyId(themeDisplay.getCompanyId());
 			serviceContext.setLanguageId(themeDisplay.getLanguageId());
-			serviceContext.setLayoutFullURL(
-				PortalUtil.getCanonicalURL(
-					PortalUtil.getLayoutFullURL(themeDisplay), themeDisplay,
-					themeDisplay.getLayout(), true));
-			serviceContext.setLayoutURL(
-				PortalUtil.getCanonicalURL(
-					PortalUtil.getLayoutURL(themeDisplay), themeDisplay,
-					themeDisplay.getLayout(), true));
+
+			String layoutURL = PortalUtil.getLayoutURL(themeDisplay);
+
+			String canonicalURL = PortalUtil.getCanonicalURL(
+				layoutURL, themeDisplay, themeDisplay.getLayout(), true);
+
+			String fullCanonicalURL = canonicalURL;
+
+			if (!HttpUtil.hasProtocol(layoutURL)) {
+				fullCanonicalURL = PortalUtil.getCanonicalURL(
+					PortalUtil.getPortalURL(themeDisplay) + layoutURL,
+					themeDisplay, themeDisplay.getLayout(), true);
+			}
+
+			serviceContext.setLayoutFullURL(fullCanonicalURL);
+			serviceContext.setLayoutURL(canonicalURL);
 			serviceContext.setPlid(themeDisplay.getPlid());
 			serviceContext.setScopeGroupId(themeDisplay.getScopeGroupId());
 			serviceContext.setSignedIn(themeDisplay.isSignedIn());
 			serviceContext.setTimeZone(themeDisplay.getTimeZone());
-
-			User user = themeDisplay.getUser();
-
-			serviceContext.setUserDisplayURL(user.getDisplayURL(themeDisplay));
-			serviceContext.setUserId(user.getUserId());
+			serviceContext.setUserId(themeDisplay.getUserId());
 		}
 		else {
-			long companyId = PortalUtil.getCompanyId(request);
-
-			serviceContext.setCompanyId(companyId);
+			serviceContext.setCompanyId(
+				PortalUtil.getCompanyId(httpServletRequest));
 
 			Group guestGroup = GroupLocalServiceUtil.getGroup(
 				serviceContext.getCompanyId(), GroupConstants.GUEST);
 
 			serviceContext.setScopeGroupId(guestGroup.getGroupId());
 
-			long plid = LayoutLocalServiceUtil.getDefaultPlid(
-				serviceContext.getScopeGroupId(), false);
-
-			serviceContext.setPlid(plid);
-
 			User user = null;
 
 			try {
-				user = PortalUtil.getUser(request);
+				user = PortalUtil.getUser(httpServletRequest);
 			}
 			catch (NoSuchUserException nsue) {
 
 				// LPS-24160
 
+				// LPS-52675
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(nsue, nsue);
+				}
 			}
 
 			if (user != null) {
@@ -120,7 +217,8 @@ public class ServiceContextFactory {
 			}
 		}
 
-		serviceContext.setPortalURL(PortalUtil.getPortalURL(request));
+		serviceContext.setPortalURL(
+			PortalUtil.getPortalURL(httpServletRequest));
 		serviceContext.setPathMain(PortalUtil.getPathMain());
 		serviceContext.setPathFriendlyURLPrivateGroup(
 			PortalUtil.getPathFriendlyURLPrivateGroup());
@@ -133,7 +231,7 @@ public class ServiceContextFactory {
 
 		Map<String, Serializable> attributes = new HashMap<>();
 
-		Map<String, String[]> parameters = request.getParameterMap();
+		Map<String, String[]> parameters = httpServletRequest.getParameterMap();
 
 		for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
 			String name = entry.getKey();
@@ -153,83 +251,47 @@ public class ServiceContextFactory {
 
 		// Command
 
-		String cmd = ParamUtil.getString(request, Constants.CMD);
-
-		serviceContext.setCommand(cmd);
+		serviceContext.setCommand(
+			ParamUtil.getString(httpServletRequest, Constants.CMD));
 
 		// Current URL
 
-		String currentURL = PortalUtil.getCurrentURL(request);
-
-		serviceContext.setCurrentURL(currentURL);
+		serviceContext.setCurrentURL(
+			PortalUtil.getCurrentURL(httpServletRequest));
 
 		// Form date
 
-		long formDateLong = ParamUtil.getLong(request, "formDate");
+		long formDateLong = ParamUtil.getLong(httpServletRequest, "formDate");
 
 		if (formDateLong > 0) {
-			Date formDate = new Date(formDateLong);
-
-			serviceContext.setFormDate(formDate);
+			serviceContext.setFormDate(new Date(formDateLong));
 		}
 
 		// Permissions
 
-		ModelPermissions modelPermissions = ModelPermissionsFactory.create(
-			request);
-
-		if (!modelPermissions.isEmpty()) {
-			serviceContext.setModelPermissions(modelPermissions);
-		}
-		else {
-			boolean addGroupPermissions = ParamUtil.getBoolean(
-				request, "addGroupPermissions");
-			boolean addGuestPermissions = ParamUtil.getBoolean(
-				request, "addGuestPermissions");
-			String[] groupPermissions = PortalUtil.getGroupPermissions(request);
-			String[] guestPermissions = PortalUtil.getGuestPermissions(request);
-
-			serviceContext.setAddGroupPermissions(addGroupPermissions);
-			serviceContext.setAddGuestPermissions(addGuestPermissions);
-			serviceContext.setGroupPermissions(groupPermissions);
-			serviceContext.setGuestPermissions(guestPermissions);
-		}
+		serviceContext.setModelPermissions(
+			ModelPermissionsFactory.create(httpServletRequest));
 
 		// Portlet preferences ids
 
-		String portletId = PortalUtil.getPortletId(request);
+		String portletId = PortalUtil.getPortletId(httpServletRequest);
 
 		if (Validator.isNotNull(portletId)) {
-			PortletPreferencesIds portletPreferencesIds =
-				PortletPreferencesFactoryUtil.getPortletPreferencesIds(
-					request, portletId);
-
-			serviceContext.setPortletPreferencesIds(portletPreferencesIds);
+			serviceContext.setPortletId(portletId);
 		}
 
 		// Request
 
-		Map<String, String> headerMap = new HashMap<>();
-
-		Enumeration<String> enu = request.getHeaderNames();
-
-		while (enu.hasMoreElements()) {
-			String header = enu.nextElement();
-
-			String value = request.getHeader(header);
-
-			headerMap.put(header, value);
-		}
-
-		serviceContext.setHeaders(headerMap);
-
-		serviceContext.setRemoteAddr(request.getRemoteAddr());
-		serviceContext.setRemoteHost(request.getRemoteHost());
-		serviceContext.setRequest(request);
+		serviceContext.setRemoteAddr(httpServletRequest.getRemoteAddr());
+		serviceContext.setRemoteHost(httpServletRequest.getRemoteHost());
+		serviceContext.setRequest(httpServletRequest);
 
 		// Asset
 
-		Map<String, String[]> parameterMap = request.getParameterMap();
+		long[] assetCategoryIds = new long[0];
+
+		Map<String, String[]> parameterMap =
+			httpServletRequest.getParameterMap();
 
 		List<Long> assetCategoryIdsList = new ArrayList<>();
 
@@ -238,64 +300,58 @@ public class ServiceContextFactory {
 		for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
 			String name = entry.getKey();
 
-			if (name.startsWith("assetCategoryIds")) {
-				updateAssetCategoryIds = true;
+			if (!name.startsWith("assetCategoryIds")) {
+				continue;
+			}
 
-				long[] assetVocabularyAssetCategoryIds = StringUtil.split(
-					ParamUtil.getString(request, name), 0L);
+			updateAssetCategoryIds = true;
 
-				for (long assetCategoryId : assetVocabularyAssetCategoryIds) {
-					assetCategoryIdsList.add(assetCategoryId);
-				}
+			long[] assetVocabularyAssetCategoryIds = ParamUtil.getLongValues(
+				httpServletRequest, name);
+
+			for (long assetCategoryId : assetVocabularyAssetCategoryIds) {
+				assetCategoryIdsList.add(assetCategoryId);
 			}
 		}
 
 		if (updateAssetCategoryIds) {
-			long[] assetCategoryIds = ArrayUtil.toArray(
-				assetCategoryIdsList.toArray(
-					new Long[assetCategoryIdsList.size()]));
-
-			serviceContext.setAssetCategoryIds(assetCategoryIds);
+			assetCategoryIds = ArrayUtil.toArray(
+				assetCategoryIdsList.toArray(new Long[0]));
 		}
 
-		boolean assetEntryVisible = ParamUtil.getBoolean(
-			request, "assetEntryVisible", true);
+		serviceContext.setAssetCategoryIds(assetCategoryIds);
 
-		serviceContext.setAssetEntryVisible(assetEntryVisible);
+		serviceContext.setAssetEntryVisible(
+			ParamUtil.getBoolean(
+				httpServletRequest, "assetEntryVisible", true));
 
-		String assetLinkEntryIdsString = request.getParameter(
+		String assetLinkEntryIdsString = httpServletRequest.getParameter(
 			"assetLinksSearchContainerPrimaryKeys");
 
 		if (assetLinkEntryIdsString != null) {
-			long[] assetLinkEntryIds = StringUtil.split(
-				assetLinkEntryIdsString, 0L);
-
-			serviceContext.setAssetLinkEntryIds(assetLinkEntryIds);
+			serviceContext.setAssetLinkEntryIds(
+				StringUtil.split(assetLinkEntryIdsString, 0L));
 		}
 
-		Double assetPriority = ParamUtil.getDouble(request, "assetPriority");
+		serviceContext.setAssetPriority(
+			ParamUtil.getDouble(httpServletRequest, "assetPriority"));
 
-		serviceContext.setAssetPriority(assetPriority);
+		String[] assetTagNames = ParamUtil.getStringValues(
+			httpServletRequest, "assetTagNames");
 
-		String assetTagNamesString = request.getParameter("assetTagNames");
-
-		if (assetTagNamesString != null) {
-			String[] assetTagNames = StringUtil.split(assetTagNamesString);
-
-			serviceContext.setAssetTagNames(assetTagNames);
-		}
+		serviceContext.setAssetTagNames(assetTagNames);
 
 		// Workflow
 
-		int workflowAction = ParamUtil.getInteger(
-			request, "workflowAction", WorkflowConstants.ACTION_PUBLISH);
-
-		serviceContext.setWorkflowAction(workflowAction);
+		serviceContext.setWorkflowAction(
+			ParamUtil.getInteger(
+				httpServletRequest, "workflowAction",
+				WorkflowConstants.ACTION_PUBLISH));
 
 		return serviceContext;
 	}
 
-	public static ServiceContext getInstance(PortletRequest portletRequest)
+	private static ServiceContext _getInstance(PortletRequest portletRequest)
 		throws PortalException {
 
 		// Theme display
@@ -329,11 +385,7 @@ public class ServiceContextFactory {
 				PortalUtil.getPortalURL(portletRequest));
 			serviceContext.setSignedIn(themeDisplay.isSignedIn());
 			serviceContext.setTimeZone(themeDisplay.getTimeZone());
-
-			User user = themeDisplay.getUser();
-
-			serviceContext.setUserDisplayURL(user.getDisplayURL(themeDisplay));
-			serviceContext.setUserId(user.getUserId());
+			serviceContext.setUserId(themeDisplay.getUserId());
 		}
 
 		serviceContext.setScopeGroupId(themeDisplay.getScopeGroupId());
@@ -342,19 +394,18 @@ public class ServiceContextFactory {
 
 		Map<String, Serializable> attributes = new HashMap<>();
 
-		Enumeration<String> enu = portletRequest.getParameterNames();
+		Map<String, String[]> parameters = portletRequest.getParameterMap();
 
-		while (enu.hasMoreElements()) {
-			String param = enu.nextElement();
-
-			String[] values = portletRequest.getParameterValues(param);
+		for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+			String name = entry.getKey();
+			String[] values = entry.getValue();
 
 			if (ArrayUtil.isNotEmpty(values)) {
 				if (values.length == 1) {
-					attributes.put(param, values[0]);
+					attributes.put(name, values[0]);
 				}
 				else {
-					attributes.put(param, values);
+					attributes.put(name, values);
 				}
 			}
 		}
@@ -363,84 +414,46 @@ public class ServiceContextFactory {
 
 		// Command
 
-		String cmd = ParamUtil.getString(portletRequest, Constants.CMD);
-
-		serviceContext.setCommand(cmd);
+		serviceContext.setCommand(
+			ParamUtil.getString(portletRequest, Constants.CMD));
 
 		// Current URL
 
-		String currentURL = PortalUtil.getCurrentURL(portletRequest);
-
-		serviceContext.setCurrentURL(currentURL);
+		serviceContext.setCurrentURL(PortalUtil.getCurrentURL(portletRequest));
 
 		// Form date
 
 		long formDateLong = ParamUtil.getLong(portletRequest, "formDate");
 
 		if (formDateLong > 0) {
-			Date formDate = new Date(formDateLong);
-
-			serviceContext.setFormDate(formDate);
+			serviceContext.setFormDate(new Date(formDateLong));
 		}
 
 		// Permissions
 
-		ModelPermissions modelPermissions = ModelPermissionsFactory.create(
-			portletRequest);
-
-		if (!modelPermissions.isEmpty()) {
-			serviceContext.setModelPermissions(modelPermissions);
-		}
-		else {
-			boolean addGroupPermissions = ParamUtil.getBoolean(
-				portletRequest, "addGroupPermissions");
-			boolean addGuestPermissions = ParamUtil.getBoolean(
-				portletRequest, "addGuestPermissions");
-			String[] groupPermissions = PortalUtil.getGroupPermissions(
-				portletRequest);
-			String[] guestPermissions = PortalUtil.getGuestPermissions(
-				portletRequest);
-
-			serviceContext.setAddGroupPermissions(addGroupPermissions);
-			serviceContext.setAddGuestPermissions(addGuestPermissions);
-			serviceContext.setGroupPermissions(groupPermissions);
-			serviceContext.setGuestPermissions(guestPermissions);
-		}
+		serviceContext.setModelPermissions(
+			ModelPermissionsFactory.create(portletRequest));
 
 		// Portlet preferences ids
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			portletRequest);
+		HttpServletRequest httpServletRequest =
+			PortalUtil.getHttpServletRequest(portletRequest);
 
 		String portletId = PortalUtil.getPortletId(portletRequest);
 
-		PortletPreferencesIds portletPreferencesIds =
-			PortletPreferencesFactoryUtil.getPortletPreferencesIds(
-				request, portletId);
-
-		serviceContext.setPortletPreferencesIds(portletPreferencesIds);
+		if (Validator.isNotNull(portletId)) {
+			serviceContext.setPortletId(portletId);
+		}
 
 		// Request
 
-		Map<String, String> headerMap = new HashMap<>();
-
-		enu = request.getHeaderNames();
-
-		while (enu.hasMoreElements()) {
-			String header = enu.nextElement();
-
-			String value = request.getHeader(header);
-
-			headerMap.put(header, value);
-		}
-
-		serviceContext.setHeaders(headerMap);
-
-		serviceContext.setRemoteAddr(request.getRemoteAddr());
-		serviceContext.setRemoteHost(request.getRemoteHost());
-		serviceContext.setRequest(request);
+		serviceContext.setRemoteAddr(httpServletRequest.getRemoteAddr());
+		serviceContext.setRemoteHost(httpServletRequest.getRemoteHost());
+		serviceContext.setRequest(httpServletRequest);
 
 		// Asset
+
+		long[] assetCategoryIds = new long[0];
 
 		Map<String, String[]> parameterMap = portletRequest.getParameterMap();
 
@@ -451,163 +464,57 @@ public class ServiceContextFactory {
 		for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
 			String name = entry.getKey();
 
-			if (name.startsWith("assetCategoryIds")) {
-				updateAssetCategoryIds = true;
+			if (!name.startsWith("assetCategoryIds")) {
+				continue;
+			}
 
-				long[] assetVocabularyAssetCategoryIds = StringUtil.split(
-					ParamUtil.getString(portletRequest, name), 0L);
+			updateAssetCategoryIds = true;
 
-				for (long assetCategoryId : assetVocabularyAssetCategoryIds) {
-					assetCategoryIdsList.add(assetCategoryId);
-				}
+			long[] assetVocabularyAssetCategoryIds = ParamUtil.getLongValues(
+				portletRequest, name);
+
+			for (long assetCategoryId : assetVocabularyAssetCategoryIds) {
+				assetCategoryIdsList.add(assetCategoryId);
 			}
 		}
 
 		if (updateAssetCategoryIds) {
-			long[] assetCategoryIds = ArrayUtil.toArray(
-				assetCategoryIdsList.toArray(
-					new Long[assetCategoryIdsList.size()]));
-
-			serviceContext.setAssetCategoryIds(assetCategoryIds);
+			assetCategoryIds = ArrayUtil.toArray(
+				assetCategoryIdsList.toArray(new Long[0]));
 		}
 
-		boolean assetEntryVisible = ParamUtil.getBoolean(
-			portletRequest, "assetEntryVisible", true);
+		serviceContext.setAssetCategoryIds(assetCategoryIds);
 
-		serviceContext.setAssetEntryVisible(assetEntryVisible);
+		serviceContext.setAssetEntryVisible(
+			ParamUtil.getBoolean(portletRequest, "assetEntryVisible", true));
 
-		String assetLinkEntryIdsString = request.getParameter(
+		String assetLinkEntryIdsString = httpServletRequest.getParameter(
 			"assetLinksSearchContainerPrimaryKeys");
 
 		if (assetLinkEntryIdsString != null) {
-			long[] assetLinkEntryIds = StringUtil.split(
-				assetLinkEntryIdsString, 0L);
-
-			serviceContext.setAssetLinkEntryIds(assetLinkEntryIds);
+			serviceContext.setAssetLinkEntryIds(
+				StringUtil.split(assetLinkEntryIdsString, 0L));
 		}
 
-		Double assetPriority = ParamUtil.getDouble(request, "assetPriority");
+		serviceContext.setAssetPriority(
+			ParamUtil.getDouble(httpServletRequest, "assetPriority"));
 
-		serviceContext.setAssetPriority(assetPriority);
+		String[] assetTagNames = ParamUtil.getStringValues(
+			httpServletRequest, "assetTagNames");
 
-		String assetTagNamesString = request.getParameter("assetTagNames");
-
-		if (assetTagNamesString != null) {
-			String[] assetTagNames = StringUtil.split(assetTagNamesString);
-
-			serviceContext.setAssetTagNames(assetTagNames);
-		}
+		serviceContext.setAssetTagNames(assetTagNames);
 
 		// Workflow
 
-		int workflowAction = ParamUtil.getInteger(
-			portletRequest, "workflowAction", WorkflowConstants.ACTION_PUBLISH);
-
-		serviceContext.setWorkflowAction(workflowAction);
-
-		return serviceContext;
-	}
-
-	public static ServiceContext getInstance(
-			String className, HttpServletRequest request)
-		throws PortalException {
-
-		ServiceContext serviceContext = getInstance(request);
-
-		// Permissions
-
-		String[] groupPermissions = PortalUtil.getGroupPermissions(
-			request, className);
-		String[] guestPermissions = PortalUtil.getGuestPermissions(
-			request, className);
-
-		if (groupPermissions != null) {
-			serviceContext.setGroupPermissions(groupPermissions);
-		}
-
-		if (guestPermissions != null) {
-			serviceContext.setGuestPermissions(guestPermissions);
-		}
-
-		// Expando
-
-		Map<String, Serializable> expandoBridgeAttributes =
-			PortalUtil.getExpandoBridgeAttributes(
-				ExpandoBridgeFactoryUtil.getExpandoBridge(
-					serviceContext.getCompanyId(), className),
-				request);
-
-		serviceContext.setExpandoBridgeAttributes(expandoBridgeAttributes);
+		serviceContext.setWorkflowAction(
+			ParamUtil.getInteger(
+				portletRequest, "workflowAction",
+				WorkflowConstants.ACTION_PUBLISH));
 
 		return serviceContext;
 	}
 
-	public static ServiceContext getInstance(
-			String className, PortletRequest portletRequest)
-		throws PortalException {
-
-		ServiceContext serviceContext = getInstance(portletRequest);
-
-		// Permissions
-
-		String[] groupPermissions = PortalUtil.getGroupPermissions(
-			portletRequest, className);
-		String[] guestPermissions = PortalUtil.getGuestPermissions(
-			portletRequest, className);
-
-		if (groupPermissions != null) {
-			serviceContext.setGroupPermissions(groupPermissions);
-		}
-
-		if (guestPermissions != null) {
-			serviceContext.setGuestPermissions(guestPermissions);
-		}
-
-		// Expando
-
-		Map<String, Serializable> expandoBridgeAttributes =
-			PortalUtil.getExpandoBridgeAttributes(
-				ExpandoBridgeFactoryUtil.getExpandoBridge(
-					serviceContext.getCompanyId(), className),
-				portletRequest);
-
-		serviceContext.setExpandoBridgeAttributes(expandoBridgeAttributes);
-
-		return serviceContext;
-	}
-
-	public static ServiceContext getInstance(
-			String className, UploadPortletRequest uploadPortletRequest)
-		throws PortalException {
-
-		ServiceContext serviceContext = getInstance(uploadPortletRequest);
-
-		// Permissions
-
-		String[] groupPermissions = PortalUtil.getGroupPermissions(
-			uploadPortletRequest, className);
-		String[] guestPermissions = PortalUtil.getGuestPermissions(
-			uploadPortletRequest, className);
-
-		if (groupPermissions != null) {
-			serviceContext.setGroupPermissions(groupPermissions);
-		}
-
-		if (guestPermissions != null) {
-			serviceContext.setGuestPermissions(guestPermissions);
-		}
-
-		// Expando
-
-		Map<String, Serializable> expandoBridgeAttributes =
-			PortalUtil.getExpandoBridgeAttributes(
-				ExpandoBridgeFactoryUtil.getExpandoBridge(
-					serviceContext.getCompanyId(), className),
-				uploadPortletRequest);
-
-		serviceContext.setExpandoBridgeAttributes(expandoBridgeAttributes);
-
-		return serviceContext;
-	}
+	private static final Log _log = LogFactoryUtil.getLog(
+		ServiceContextFactory.class);
 
 }

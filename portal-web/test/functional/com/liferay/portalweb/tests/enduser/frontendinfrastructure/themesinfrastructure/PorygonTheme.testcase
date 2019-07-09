@@ -1,0 +1,51 @@
+@component-name = "portal-frontend-infrastructure"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Theme";
+	property testray.main.component.name = "Theme";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "5"
+	test AddThemeSite {
+		property osgi.app.includes = "frontend-theme-porygon";
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "PorygonTheme#AddThemeSite";
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addSiteTemplateCP(
+			siteName = "Porygon Theme Site",
+			siteTemplateName = "Porygon");
+
+		ProductMenu.gotoSite(site = "Porygon Theme Site");
+
+		AssertClick(
+			key_pageName = "Home",
+			locator1 = "Home#PAGE",
+			value1 = "HOME");
+
+		AssertTextEquals(
+			key_title = "Astronomy compels the soul to look upward",
+			locator1 = "Header#H2_TITLE",
+			value1 = "Astronomy compels the soul to look upward");
+	}
+
+}

@@ -32,11 +32,24 @@ import com.liferay.portal.repository.util.RepositoryWrapperAware;
 import java.util.concurrent.Callable;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.capabilities.LiferayProcessorCapability}
  */
+@Deprecated
 public class LiferayProcessorCapability
 	implements ProcessorCapability, RepositoryEventAware,
 			   RepositoryWrapperAware {
+
+	public LiferayProcessorCapability() {
+		this(ResourceGenerationStrategy.REUSE);
+	}
+
+	public LiferayProcessorCapability(
+		ResourceGenerationStrategy resourceGenerationStrategy) {
+
+		_resourceGenerationStrategy = resourceGenerationStrategy;
+	}
 
 	@Override
 	public void cleanUp(FileEntry fileEntry) {
@@ -50,7 +63,12 @@ public class LiferayProcessorCapability
 
 	@Override
 	public void copy(FileEntry fileEntry, FileVersion fileVersion) {
-		registerDLProcessorCallback(fileEntry, fileVersion);
+		if (_resourceGenerationStrategy == ResourceGenerationStrategy.REUSE) {
+			registerDLProcessorCallback(fileEntry, fileVersion);
+		}
+		else {
+			generateNew(fileEntry);
+		}
 	}
 
 	@Override
@@ -104,5 +122,7 @@ public class LiferayProcessorCapability
 
 			});
 	}
+
+	private final ResourceGenerationStrategy _resourceGenerationStrategy;
 
 }

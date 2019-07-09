@@ -14,89 +14,93 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the remote service utility for LayoutSetBranch. This utility wraps
- * {@link com.liferay.portal.service.impl.LayoutSetBranchServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portal.service.impl.LayoutSetBranchServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see LayoutSetBranchService
- * @see com.liferay.portal.service.base.LayoutSetBranchServiceBaseImpl
- * @see com.liferay.portal.service.impl.LayoutSetBranchServiceImpl
  * @generated
  */
 @ProviderType
 public class LayoutSetBranchServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portal.service.impl.LayoutSetBranchServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.LayoutSetBranchServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.portal.kernel.model.LayoutSetBranch addLayoutSetBranch(
-		long groupId, boolean privateLayout, java.lang.String name,
-		java.lang.String description, boolean master,
-		long copyLayoutSetBranchId, ServiceContext serviceContext)
+	public static com.liferay.portal.kernel.model.LayoutSetBranch
+			addLayoutSetBranch(
+				long groupId, boolean privateLayout, String name,
+				String description, boolean master, long copyLayoutSetBranchId,
+				ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .addLayoutSetBranch(groupId, privateLayout, name,
-			description, master, copyLayoutSetBranchId, serviceContext);
-	}
 
-	public static com.liferay.portal.kernel.model.LayoutSetBranch mergeLayoutSetBranch(
-		long layoutSetBranchId, long mergeLayoutSetBranchId,
-		ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .mergeLayoutSetBranch(layoutSetBranchId,
-			mergeLayoutSetBranchId, serviceContext);
-	}
-
-	public static com.liferay.portal.kernel.model.LayoutSetBranch updateLayoutSetBranch(
-		long groupId, long layoutSetBranchId, java.lang.String name,
-		java.lang.String description, ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .updateLayoutSetBranch(groupId, layoutSetBranchId, name,
-			description, serviceContext);
-	}
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
-		return getService().getOSGiServiceIdentifier();
-	}
-
-	public static java.util.List<com.liferay.portal.kernel.model.LayoutSetBranch> getLayoutSetBranches(
-		long groupId, boolean privateLayout) {
-		return getService().getLayoutSetBranches(groupId, privateLayout);
+		return getService().addLayoutSetBranch(
+			groupId, privateLayout, name, description, master,
+			copyLayoutSetBranchId, serviceContext);
 	}
 
 	public static void deleteLayoutSetBranch(long layoutSetBranchId)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		getService().deleteLayoutSetBranch(layoutSetBranchId);
+	}
+
+	public static java.util.List
+		<com.liferay.portal.kernel.model.LayoutSetBranch> getLayoutSetBranches(
+			long groupId, boolean privateLayout) {
+
+		return getService().getLayoutSetBranches(groupId, privateLayout);
+	}
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
+		return getService().getOSGiServiceIdentifier();
+	}
+
+	public static com.liferay.portal.kernel.model.LayoutSetBranch
+			mergeLayoutSetBranch(
+				long layoutSetBranchId, long mergeLayoutSetBranchId,
+				ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().mergeLayoutSetBranch(
+			layoutSetBranchId, mergeLayoutSetBranchId, serviceContext);
+	}
+
+	public static com.liferay.portal.kernel.model.LayoutSetBranch
+			updateLayoutSetBranch(
+				long groupId, long layoutSetBranchId, String name,
+				String description, ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateLayoutSetBranch(
+			groupId, layoutSetBranchId, name, description, serviceContext);
 	}
 
 	public static LayoutSetBranchService getService() {
 		if (_service == null) {
-			_service = (LayoutSetBranchService)PortalBeanLocatorUtil.locate(LayoutSetBranchService.class.getName());
-
-			ReferenceRegistry.registerReference(LayoutSetBranchServiceUtil.class,
-				"_service");
+			_service = (LayoutSetBranchService)PortalBeanLocatorUtil.locate(
+				LayoutSetBranchService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static LayoutSetBranchService _service;
+
 }

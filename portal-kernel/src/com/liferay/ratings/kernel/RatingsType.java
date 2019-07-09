@@ -14,22 +14,44 @@
 
 package com.liferay.ratings.kernel;
 
+import com.liferay.portal.kernel.util.Validator;
+
+import java.util.Objects;
+
 /**
  * @author Sergio Gonzalez
  * @author Roberto Díaz
  */
 public enum RatingsType {
 
-	LIKE("like"), STARS("stars"), THUMBS("thumbs");
+	LIKE("like"), STACKED_STARS("stacked-stars"), STARS("stars"),
+	THUMBS("thumbs");
+
+	public static boolean isValid(String value) {
+		if (Validator.isNull(value)) {
+			return false;
+		}
+
+		if (value.equals(LIKE.getValue()) || value.equals(STACKED_STARS) ||
+			value.equals(STARS.getValue()) || value.equals(THUMBS.getValue())) {
+
+			return true;
+		}
+
+		return false;
+	}
 
 	public static RatingsType parse(String value) {
-		if (LIKE.getValue().equals(value)) {
+		if (Objects.equals(LIKE.getValue(), value)) {
 			return LIKE;
 		}
-		else if (STARS.getValue().equals(value)) {
+		else if (Objects.equals(STACKED_STARS.getValue(), value)) {
+			return STACKED_STARS;
+		}
+		else if (Objects.equals(STARS.getValue(), value)) {
 			return STARS;
 		}
-		else if (THUMBS.getValue().equals(value)) {
+		else if (Objects.equals(THUMBS.getValue(), value)) {
 			return THUMBS;
 		}
 

@@ -14,12 +14,12 @@
 
 package com.liferay.portal.servlet;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.File;
@@ -54,27 +54,24 @@ public class JasperVersionDetector {
 	}
 
 	private void _initializeJasperVersion() {
-		try {
-			Class<?> clazz = getClass();
+		Class<?> clazz = getClass();
 
-			URL url = clazz.getResource(
-				"/org/apache/jasper/JasperException.class");
+		URL url = clazz.getResource("/org/apache/jasper/JasperException.class");
 
-			if (url == null) {
-				return;
-			}
+		if (url == null) {
+			return;
+		}
 
-			String path = url.getPath();
+		String path = url.getPath();
 
-			int pos = path.indexOf(CharPool.EXCLAMATION);
+		int pos = path.indexOf(CharPool.EXCLAMATION);
 
-			if (pos == -1) {
-				return;
-			}
+		if (pos == -1) {
+			return;
+		}
 
-			URI jarFileURI = new URI(path.substring(0, pos));
-
-			JarFile jarFile = new JarFile(new File(jarFileURI));
+		try (JarFile jarFile = new JarFile(
+				new File(new URI(path.substring(0, pos))))) {
 
 			Manifest manifest = jarFile.getManifest();
 
@@ -142,9 +139,8 @@ public class JasperVersionDetector {
 
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

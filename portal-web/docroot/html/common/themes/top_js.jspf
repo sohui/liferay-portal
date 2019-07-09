@@ -22,73 +22,95 @@
 			acceptsGzip: function() {
 				return <%= BrowserSnifferUtil.acceptsGzip(request) %>;
 			},
+
+			<%
+			String version = BrowserSnifferUtil.getVersion(request);
+
+			String majorVersion = version;
+
+			if (version.isEmpty()) {
+				majorVersion = "0";
+			}
+			%>
+
 			getMajorVersion: function() {
-				return <%= BrowserSnifferUtil.getMajorVersion(request) %>;
+				return <%= majorVersion %>;
 			},
+
 			getRevision: function() {
 				return '<%= BrowserSnifferUtil.getRevision(request) %>';
 			},
 			getVersion: function() {
-				return '<%= BrowserSnifferUtil.getVersion(request) %>';
+				return '<%= version %>';
 			},
+
+			<%
+			BrowserMetadata browserMetadata = BrowserSnifferUtil.getBrowserMetadata(request);
+			%>
+
 			isAir: function() {
-				return <%= BrowserSnifferUtil.isAir(request) %>;
+				return <%= browserMetadata.isAir() %>;
 			},
 			isChrome: function() {
-				return <%= BrowserSnifferUtil.isChrome(request) %>;
+				return <%= browserMetadata.isChrome() %>;
+			},
+			isEdge: function() {
+				return <%= BrowserSnifferUtil.isEdge(request) %>;
 			},
 			isFirefox: function() {
-				return <%= BrowserSnifferUtil.isFirefox(request) %>;
+				return <%= browserMetadata.isFirefox() %>;
 			},
 			isGecko: function() {
-				return <%= BrowserSnifferUtil.isGecko(request) %>;
+				return <%= browserMetadata.isGecko() %>;
 			},
 			isIe: function() {
-				return <%= BrowserSnifferUtil.isIe(request) %>;
+				return <%= browserMetadata.isIe() %>;
 			},
 			isIphone: function() {
-				return <%= BrowserSnifferUtil.isIphone(request) %>;
+				return <%= browserMetadata.isIphone() %>;
 			},
 			isLinux: function() {
-				return <%= BrowserSnifferUtil.isLinux(request) %>;
+				return <%= browserMetadata.isLinux() %>;
 			},
 			isMac: function() {
-				return <%= BrowserSnifferUtil.isMac(request) %>;
+				return <%= browserMetadata.isMac() %>;
 			},
 			isMobile: function() {
-				return <%= BrowserSnifferUtil.isMobile(request) %>;
+				return <%= browserMetadata.isMobile() %>;
 			},
 			isMozilla: function() {
-				return <%= BrowserSnifferUtil.isMozilla(request) %>;
+				return <%= browserMetadata.isMozilla() %>;
 			},
 			isOpera: function() {
-				return <%= BrowserSnifferUtil.isOpera(request) %>;
+				return <%= browserMetadata.isOpera() %>;
 			},
 			isRtf: function() {
-				return <%= BrowserSnifferUtil.isRtf(request) %>;
+				return <%= browserMetadata.isRtf(version) %>;
 			},
 			isSafari: function() {
-				return <%= BrowserSnifferUtil.isSafari(request) %>;
+				return <%= browserMetadata.isSafari() %>;
 			},
 			isSun: function() {
-				return <%= BrowserSnifferUtil.isSun(request) %>;
+				return <%= browserMetadata.isSun() %>;
 			},
 			isWebKit: function() {
-				return <%= BrowserSnifferUtil.isWebKit(request) %>;
+				return <%= browserMetadata.isWebKit() %>;
 			},
 			isWindows: function() {
-				return <%= BrowserSnifferUtil.isWindows(request) %>;
+				return <%= browserMetadata.isWindows() %>;
 			}
 		};
 
 		Liferay.Data = Liferay.Data || {};
+
+		Liferay.Data.ICONS_INLINE_SVG = true;
 
 		Liferay.Data.NAV_SELECTOR = '#navigation';
 
 		Liferay.Data.NAV_SELECTOR_MOBILE = '#navigationCollapse';
 
 		Liferay.Data.isCustomizationView = function() {
-			return <%= (layoutTypePortlet.isCustomizable() && LayoutPermissionUtil.contains(permissionChecker, layout, ActionKeys.CUSTOMIZE)) %>;
+			return <%= layoutTypePortlet.isCustomizable() && LayoutPermissionUtil.contains(permissionChecker, layout, ActionKeys.CUSTOMIZE) %>;
 		};
 
 		Liferay.Data.notices = [
@@ -104,7 +126,8 @@
 			<c:if test="<%= ShutdownUtil.isInProcess() %>">
 				, {
 					node: '#lfrShutdownMessage',
-					toggleText: false
+					toggleText: false,
+					type: 'warning'
 				}
 			</c:if>
 		];
@@ -118,14 +141,30 @@
 		Liferay.PropsValues = {
 			JAVASCRIPT_SINGLE_PAGE_APPLICATION_TIMEOUT: <%= PrefsPropsUtil.getInteger(themeDisplay.getCompanyId(), PropsKeys.JAVASCRIPT_SINGLE_PAGE_APPLICATION_TIMEOUT, PropsValues.JAVASCRIPT_SINGLE_PAGE_APPLICATION_TIMEOUT) %>,
 			NTLM_AUTH_ENABLED: <%= PrefsPropsUtil.getBoolean(themeDisplay.getCompanyId(), PropsKeys.NTLM_AUTH_ENABLED, PropsValues.NTLM_AUTH_ENABLED) %>,
-			UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE: <%= PrefsPropsUtil.getLong(PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE, PropsValues.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE) %>
+			UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE: <%= UploadServletRequestConfigurationHelperUtil.getMaxSize() %>
 		};
 
 		Liferay.ThemeDisplay = {
+
+			<%
+			Group scopeGroup = themeDisplay.getScopeGroup();
+
+			Group liveGroup = StagingUtil.getLiveGroup(scopeGroup);
+			%>
+
 			<c:if test="<%= layout != null %>">
 				getLayoutId: function() {
 					return '<%= layout.getLayoutId() %>';
 				},
+
+				<%
+				Layout controlPanelLayout = themeDisplay.getControlPanelLayout();
+				%>
+
+				getLayoutRelativeControlPanelURL: function() {
+					return '<%= PortalUtil.getLayoutRelativeURL(new VirtualLayout(controlPanelLayout, scopeGroup), themeDisplay) %>';
+				},
+
 				getLayoutRelativeURL: function() {
 					return '<%= PortalUtil.getLayoutRelativeURL(layout, themeDisplay) %>';
 				},
@@ -142,12 +181,20 @@
 					return '<%= layout.isPrivateLayout() %>';
 				},
 				isVirtualLayout: function() {
-					return <%= (layout instanceof VirtualLayout) %>;
+					return <%= layout instanceof VirtualLayout %>;
 				},
 			</c:if>
 
 			getBCP47LanguageId: function() {
 				return '<%= LanguageUtil.getBCP47LanguageId(request) %>';
+			},
+			getCanonicalURL: function() {
+
+				<%
+				String completeURL = PortalUtil.getCurrentCompleteURL(request);
+				%>
+
+				return '<%= PortalUtil.getCanonicalURL(completeURL, themeDisplay, layout, false, false) %>';
 			},
 			getCDNBaseURL: function() {
 				return '<%= themeDisplay.getCDNBaseURL() %>';
@@ -201,13 +248,16 @@
 				return '<%= themeDisplay.getPortalURL() %>';
 			},
 			getScopeGroupId: function() {
-				return '<%= themeDisplay.getScopeGroupId() %>';
+				return '<%= scopeGroup.getGroupId() %>';
 			},
 			getScopeGroupIdOrLiveGroupId: function() {
-				return '<%= themeDisplay.getSiteGroupIdOrLiveGroupId() %>';
+				return '<%= liveGroup.getGroupId() %>';
 			},
 			getSessionId: function() {
 				return '<%= PropsValues.SESSION_ENABLE_URL_WITH_SESSION_ID ? session.getId() : StringPool.BLANK %>';
+			},
+			getSiteAdminURL: function() {
+				return '<%= PortalUtil.getSiteAdminURL(themeDisplay, StringPool.BLANK, null) %>';
 			},
 			getSiteGroupId: function() {
 				return '<%= themeDisplay.getSiteGroupId() %>';
@@ -218,6 +268,9 @@
 			getURLHome: function() {
 				return '<%= HtmlUtil.escapeJS(themeDisplay.getURLHome()) %>';
 			},
+			getUserEmailAddress: function() {
+				return '<%= themeDisplay.isSignedIn() ? user.getEmailAddress() : StringPool.BLANK %>';
+			},
 			getUserId: function() {
 				return '<%= themeDisplay.getUserId() %>';
 			},
@@ -226,9 +279,6 @@
 			},
 			isAddSessionIdToURL: function() {
 				return <%= themeDisplay.isAddSessionIdToURL() %>;
-			},
-			isFreeformLayout: function() {
-				return <%= themeDisplay.isFreeformLayout() %>;
 			},
 			isImpersonated: function() {
 				return <%= themeDisplay.isImpersonated() %>;
@@ -256,7 +306,7 @@
 			%>
 
 			getAvailableLangPath: function() {
-				return '<%= PortalUtil.getStaticResourceURL(request, "available_languages.jsp", jsLastModified) %>';
+				return '<%= PortalUtil.getStaticResourceURL(request, "available_languages.jsp", LanguageUtil.getLastModified()) %>';
 			},
 			getCombine: function() {
 				return <%= themeDisplay.isThemeJsFastLoad() %>;
@@ -265,25 +315,7 @@
 				return '<%= PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathContext() + "/combo/", "minifierType=", jsLastModified) %>&';
 			},
 			getDateFormat: function() {
-
-				<%
-				String dateFormatPattern = "%m/%d/%Y";
-
-				DateFormat shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
-
-				SimpleDateFormat shortDateFormatSimpleDateFormat = (SimpleDateFormat)shortDateFormat;
-
-				String shortDateFormatSimpleDateFormatPattern = shortDateFormatSimpleDateFormat.toPattern();
-
-				if (shortDateFormatSimpleDateFormatPattern.indexOf("y") == 0) {
-					dateFormatPattern = "%Y/%m/%d";
-				}
-				else if (shortDateFormatSimpleDateFormatPattern.indexOf("d") == 0) {
-					dateFormatPattern = "%d/%m/%Y";
-				}
-				%>
-
-				return '<%= dateFormatPattern %>';
+				return '<%= _getDateFormatPattern(locale) %>';
 			},
 			getEditorCKEditorPath: function() {
 				return '<%= PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_EDITOR_CKEDITOR) %>';
@@ -337,55 +369,11 @@
 		%>
 
 		Liferay.currentURL = '<%= HtmlUtil.escapeJS(currentURL) %>';
-		Liferay.currentURLEncoded = '<%= HttpUtil.encodeURL(currentURL) %>';
+		Liferay.currentURLEncoded = '<%= HtmlUtil.escapeJS(URLCodec.encodeURL(currentURL)) %>';
 	// ]]>
 </script>
 
-<c:if test="<%= PortalWebResourcesUtil.getPortalWebResources(PortalWebResourceConstants.RESOURCE_TYPE_JS_LOADER_MODULES) != null %>">
-
-	<%
-	long jsLoaderModulesLastModified = PortalWebResourcesUtil.getLastModified(PortalWebResourceConstants.RESOURCE_TYPE_JS_LOADER_MODULES);
-	%>
-
-	<script src="<%= HtmlUtil.escape(themeDisplay.getCDNDynamicResourcesHost() + PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_JS_LOADER_MODULES) + "/js_loader_modules?t=" + jsLoaderModulesLastModified) %>" type="text/javascript"></script>
-</c:if>
-
-<c:choose>
-	<c:when test="<%= themeDisplay.isThemeJsFastLoad() %>">
-		<c:choose>
-			<c:when test="<%= themeDisplay.isThemeJsBarebone() %>">
-				<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathJavaScript() + "/barebone.jsp", "minifierBundleId=javascript.barebone.files", jsLastModified)) %>" type="text/javascript"></script>
-			</c:when>
-			<c:otherwise>
-				<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathJavaScript() + "/everything.jsp", "minifierBundleId=javascript.everything.files", jsLastModified)) %>" type="text/javascript"></script>
-			</c:otherwise>
-		</c:choose>
-	</c:when>
-	<c:otherwise>
-
-		<%
-		String path = themeDisplay.getCDNHost().concat(themeDisplay.getPathJavaScript());
-
-		String[] javaScriptFiles = null;
-
-		if (themeDisplay.isThemeJsBarebone()) {
-			javaScriptFiles = JavaScriptBundleUtil.getFileNames(PropsKeys.JAVASCRIPT_BAREBONE_FILES);
-		}
-		else {
-			javaScriptFiles = JavaScriptBundleUtil.getFileNames(PropsKeys.JAVASCRIPT_EVERYTHING_FILES);
-		}
-
-		for (String javaScriptFile : javaScriptFiles) {
-		%>
-
-			<script data-senna-track="permanent" src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, path + "/" + javaScriptFile, "minifierType=", jsLastModified)) %>" type="text/javascript"></script>
-
-		<%
-		}
-		%>
-
-	</c:otherwise>
-</c:choose>
+<liferay-util:dynamic-include key="/html/common/themes/top_js.jspf#resources" />
 
 <c:if test="<%= PortalWebResourcesUtil.getPortalWebResources(PortalWebResourceConstants.RESOURCE_TYPE_JS_BUNDLE_CONFIG) != null %>">
 
@@ -393,39 +381,18 @@
 	long jsBundleConfigLastModified = PortalWebResourcesUtil.getLastModified(PortalWebResourceConstants.RESOURCE_TYPE_JS_BUNDLE_CONFIG);
 	%>
 
-	<script src="<%= HtmlUtil.escape(themeDisplay.getCDNDynamicResourcesHost() + PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_JS_BUNDLE_CONFIG) + "/js_bundle_config?t=" + jsBundleConfigLastModified) %>" type="text/javascript"></script>
+	<script data-senna-track="temporary" src="<%= HtmlUtil.escape(themeDisplay.getCDNDynamicResourcesHost() + PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_JS_BUNDLE_CONFIG) + "/js_bundle_config?t=" + jsBundleConfigLastModified) %>" type="text/javascript"></script>
 </c:if>
 
 <script data-senna-track="temporary" type="text/javascript">
 	// <![CDATA[
 		<c:if test="<%= layoutTypePortlet != null %>">
-
-			<%
-			List<Portlet> allPortlets = layoutTypePortlet.getAllPortlets(true);
-
-			StringBundler sb = new StringBundler(allPortlets.size() * 2);
-
-			for (Portlet portlet : allPortlets) {
-				if (portlet.isActive() && portlet.isReady() && !portlet.isUndeployedPortlet()) {
-					sb.append(HtmlUtil.escapeJS(portlet.getPortletId()));
-					sb.append("', '");
-				}
-			}
-
-			if (sb.index() > 0) {
-				sb.setIndex(sb.index() - 1);
-			}
-			%>
-
 			<c:choose>
 				<c:when test="<%= layoutTypePortlet.hasStateMax() %>">
-					Liferay.Portlet.list = ['<%= HtmlUtil.escapeJS(layoutTypePortlet.getStateMaxPortletId()) %>'];
+					Liferay.Portlet.register('<%= HtmlUtil.escapeJS(layoutTypePortlet.getStateMaxPortletId()) %>');
 				</c:when>
 				<c:when test="<%= themeDisplay.isStatePopUp() %>">
-					Liferay.Portlet.list = ['<%= HtmlUtil.escapeJS(themeDisplay.getPpid()) %>'];
-				</c:when>
-				<c:when test="<%= (sb.index() > 0) && !layoutTypePortlet.hasStateMax() %>">
-					Liferay.Portlet.list = ['<%= sb.toString() %>'];
+					Liferay.Portlet.register('<%= HtmlUtil.escapeJS(themeDisplay.getPpid()) %>');
 				</c:when>
 			</c:choose>
 		</c:if>
@@ -452,6 +419,88 @@
 </script>
 
 <%-- Analytics --%>
+
+<%
+String liferayAnalyticsDataSourceId = PrefsPropsUtil.getString(company.getCompanyId(), "liferayAnalyticsDataSourceId");
+String liferayAnalyticsEndpointURL = PrefsPropsUtil.getString(company.getCompanyId(), "liferayAnalyticsEndpointURL");
+boolean liferayAnalyticsEnableAllGroupIds = PrefsPropsUtil.getBoolean(company.getCompanyId(), "liferayAnalyticsEnableAllGroupIds");
+String[] liferayAnalyticsGroupIds = PrefsPropsUtil.getStringArray(company.getCompanyId(), "liferayAnalyticsGroupIds", StringPool.COMMA);
+%>
+
+<c:if test="<%= _isAnalyticsTrackingEnabled(liferayAnalyticsDataSourceId, liferayAnalyticsEndpointURL, liferayAnalyticsEnableAllGroupIds, liferayAnalyticsGroupIds, group, layout.isTypeControlPanel(), request) %>">
+	<script data-senna-track="permanent" id="liferayAnalyticsScript" type="text/javascript">
+		(function(u, c, a, m, o, l) {
+			o = 'script';
+			l = document;
+			a = l.createElement(o);
+			m = l.getElementsByTagName(o)[0];
+			a.async = 1;
+			a.src = u;
+			a.onload = c;
+			m.parentNode.insertBefore(a, m);
+		})('https://analytics-js-cdn.liferay.com', function() {
+			var config = {
+				dataSourceId: '<%= HtmlUtil.escapeJS(liferayAnalyticsDataSourceId) %>',
+				endpointUrl: '<%= HtmlUtil.escapeJS(liferayAnalyticsEndpointURL) %>'
+			};
+
+			Analytics.create({...config});
+
+			Analytics.registerMiddleware(
+				function(request) {
+					request.context.canonicalUrl = themeDisplay.getCanonicalURL();
+					request.context.groupId = themeDisplay.getScopeGroupIdOrLiveGroupId();
+
+					return request;
+				}
+			);
+
+			if (themeDisplay.isSignedIn()) {
+				Analytics.setIdentity(
+					{
+						email: themeDisplay.getUserEmailAddress(),
+						name: themeDisplay.getUserName()
+					}
+				);
+			}
+
+			Analytics.send('pageViewed', 'Page');
+
+			<c:if test="<%= PropsValues.JAVASCRIPT_SINGLE_PAGE_APPLICATION_ENABLED %>">
+				Liferay.on(
+					'endNavigate',
+					function(event) {
+						Analytics.dispose();
+
+						if (!themeDisplay.isControlPanel()) {
+							Analytics.create({...config});
+
+							Analytics.registerMiddleware(
+								function(request) {
+									request.context.canonicalUrl = themeDisplay.getCanonicalURL();
+									request.context.groupId = themeDisplay.getScopeGroupIdOrLiveGroupId();
+
+									return request;
+								}
+							);
+
+							if (themeDisplay.isSignedIn()) {
+								Analytics.setIdentity(
+									{
+										email: themeDisplay.getUserEmailAddress(),
+										name: themeDisplay.getUserName()
+									}
+								);
+							}
+
+							Analytics.send('pageViewed', 'Page', {'page': event.path});
+						}
+					}
+				);
+			</c:if>
+		});
+	</script>
+</c:if>
 
 <%
 UnicodeProperties groupTypeSettings = group.getTypeSettingsProperties();
@@ -492,6 +541,16 @@ for (String analyticsType : analyticsTypes) {
 
 					ga('create', '<%= HtmlUtil.escapeJS(googleAnalyticsId) %>', 'auto');
 					ga('send', 'pageview');
+
+					<c:if test="<%= PropsValues.JAVASCRIPT_SINGLE_PAGE_APPLICATION_ENABLED %>">
+						Liferay.on(
+							'endNavigate',
+							function(event) {
+								ga('set', 'page', event.path);
+								ga('send', 'pageview');
+							}
+						);
+					</c:if>
 				</script>
 			</c:if>
 		</c:when>
@@ -509,4 +568,96 @@ for (String analyticsType : analyticsTypes) {
 
 <%
 }
+%>
+
+<%!
+private static String _getDateFormatPattern(Locale locale) {
+	String languageId = LocaleUtil.toLanguageId(locale);
+
+	String dateFormatPattern = _dateFormatPatterns.get(languageId);
+
+	if (dateFormatPattern == null) {
+		boolean endDelimiter = false;
+
+		String delimiterString = StringPool.FORWARD_SLASH;
+
+		SimpleDateFormat simpleDateFormat = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, locale);
+
+		dateFormatPattern = simpleDateFormat.toPattern();
+
+		for (char dateDelimiter : _DATE_DELIMITERS) {
+			if (dateFormatPattern.indexOf(dateDelimiter) != -1) {
+				delimiterString = String.valueOf(dateDelimiter);
+
+				endDelimiter = dateFormatPattern.endsWith(delimiterString);
+
+				break;
+			}
+		}
+
+		int dayOrder = dateFormatPattern.indexOf('d');
+		int monthOrder = dateFormatPattern.indexOf('M');
+		int yearOrder = dateFormatPattern.indexOf('y');
+
+		if ((yearOrder < dayOrder) && (yearOrder < monthOrder)) {
+			dateFormatPattern = StringBundler.concat("%Y", delimiterString, "%m", delimiterString, "%d");
+		}
+		else if (dayOrder < monthOrder) {
+			dateFormatPattern = StringBundler.concat("%d", delimiterString, "%m", delimiterString, "%Y");
+		}
+		else {
+			dateFormatPattern = StringBundler.concat("%m", delimiterString, "%d", delimiterString, "%Y");
+		}
+
+		if (endDelimiter) {
+			dateFormatPattern += delimiterString;
+		}
+
+		_dateFormatPatterns.put(languageId, dateFormatPattern);
+	}
+
+	return dateFormatPattern;
+}
+
+private static boolean _isAnalyticsTrackingEnabled(String liferayAnalyticsDataSourceId, String liferayAnalyticsEndpointURL, boolean liferayAnalyticsEnableAllGroupIds, String[] liferayAnalyticsGroupIds, Group group, boolean controlPanel, HttpServletRequest request) {
+	if (controlPanel) {
+		return false;
+	}
+
+	if (Validator.isNull(liferayAnalyticsDataSourceId)) {
+		return false;
+	}
+
+	if (Validator.isNull(liferayAnalyticsEndpointURL)) {
+		return false;
+	}
+
+	if (Objects.equals(request.getRequestURI(), "/c/portal/api/jsonws")) {
+		return false;
+	}
+
+	if (_isSharedFormEnabled(liferayAnalyticsGroupIds, group, request)) {
+		return true;
+	}
+
+	if (liferayAnalyticsEnableAllGroupIds || ArrayUtil.contains(liferayAnalyticsGroupIds, String.valueOf(group.getGroupId()))) {
+		return true;
+	}
+
+	return false;
+}
+
+private static boolean _isSharedFormEnabled(String[] liferayAnalyticsGroupIds, Group group, HttpServletRequest request) {
+	if (Objects.equals(group.getGroupKey(), "Forms")) {
+		return ArrayUtil.contains(liferayAnalyticsGroupIds, String.valueOf(request.getAttribute("refererGroupId")));
+	}
+
+	return false;
+}
+
+private static final char[] _DATE_DELIMITERS = {
+	CharPool.DASH, CharPool.FORWARD_SLASH, CharPool.PERIOD
+};
+
+private static final Map<String, String> _dateFormatPatterns = new ConcurrentHashMap<>();
 %>

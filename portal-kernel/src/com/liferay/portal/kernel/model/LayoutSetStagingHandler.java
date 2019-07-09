@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.io.Serializable;
 
@@ -31,6 +30,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -67,11 +67,19 @@ public class LayoutSetStagingHandler
 		throws Throwable {
 
 		try {
+			String methodName = method.getName();
+
+			if (methodName.equals("getWrappedModel")) {
+				return _layoutSet;
+			}
+
 			if (_layoutSetBranch == null) {
 				return method.invoke(_layoutSet, arguments);
 			}
 
-			String methodName = method.getName();
+			if (methodName.equals("clone")) {
+				return _clone();
+			}
 
 			if (methodName.equals("toEscapedModel")) {
 				if (_layoutSet.isEscapedModel()) {
@@ -81,10 +89,6 @@ public class LayoutSetStagingHandler
 				return _toEscapedModel();
 			}
 
-			if (methodName.equals("clone")) {
-				return _clone();
-			}
-
 			Object bean = _layoutSet;
 
 			if (_layoutSetBranchMethodNames.contains(methodName)) {
@@ -92,8 +96,7 @@ public class LayoutSetStagingHandler
 					Class<?> layoutSetBranchClass = _layoutSetBranch.getClass();
 
 					method = layoutSetBranchClass.getMethod(
-						methodName,
-						ReflectionUtil.getParameterTypes(arguments));
+						methodName, method.getParameterTypes());
 
 					bean = _layoutSetBranch;
 				}
@@ -115,8 +118,9 @@ public class LayoutSetStagingHandler
 
 	private Object _clone() {
 		return ProxyUtil.newProxyInstance(
-			PortalClassLoaderUtil.getClassLoader(), new Class[] {Layout.class},
-			new LayoutSetStagingHandler(_layoutSet));
+			PortalClassLoaderUtil.getClassLoader(),
+			new Class<?>[] {LayoutSet.class, ModelWrapper.class},
+			new LayoutSetStagingHandler((LayoutSet)_layoutSet.clone()));
 	}
 
 	private LayoutSetBranch _getLayoutSetBranch(LayoutSet layoutSet)
@@ -150,7 +154,8 @@ public class LayoutSetStagingHandler
 
 	private Object _toEscapedModel() {
 		return ProxyUtil.newProxyInstance(
-			PortalClassLoaderUtil.getClassLoader(), new Class[] {Layout.class},
+			PortalClassLoaderUtil.getClassLoader(),
+			new Class<?>[] {LayoutSet.class, ModelWrapper.class},
 			new LayoutSetStagingHandler(_layoutSet.toEscapedModel()));
 	}
 
@@ -158,38 +163,17 @@ public class LayoutSetStagingHandler
 		LayoutSetStagingHandler.class);
 
 	private static final Set<String> _layoutSetBranchMethodNames =
-		new HashSet<>();
-
-	static {
-		_layoutSetBranchMethodNames.add("getColorScheme");
-		_layoutSetBranchMethodNames.add("getColorSchemeId");
-		_layoutSetBranchMethodNames.add("getCss");
-		_layoutSetBranchMethodNames.add("getLayoutSetPrototypeLinkEnabled");
-		_layoutSetBranchMethodNames.add("getLayoutSetPrototypeUuid");
-		_layoutSetBranchMethodNames.add("getLogo");
-		_layoutSetBranchMethodNames.add("getLogoId");
-		_layoutSetBranchMethodNames.add("getSettings");
-		_layoutSetBranchMethodNames.add("getTheme");
-		_layoutSetBranchMethodNames.add("getThemeId");
-		_layoutSetBranchMethodNames.add("getSettingsProperties");
-		_layoutSetBranchMethodNames.add("getSettings");
-		_layoutSetBranchMethodNames.add("getStagingLogoId");
-		_layoutSetBranchMethodNames.add("getThemeSetting");
-		_layoutSetBranchMethodNames.add("getSettingsProperty");
-		_layoutSetBranchMethodNames.add("isLayoutSetPrototypeLinkActive");
-		_layoutSetBranchMethodNames.add("isEscapedModel");
-		_layoutSetBranchMethodNames.add("isLogo");
-		_layoutSetBranchMethodNames.add("setColorSchemeId");
-		_layoutSetBranchMethodNames.add("setCss");
-		_layoutSetBranchMethodNames.add("setLayoutSetPrototypeLinkEnabled");
-		_layoutSetBranchMethodNames.add("setLayoutSetPrototypeUuid");
-		_layoutSetBranchMethodNames.add("setEscapedModel");
-		_layoutSetBranchMethodNames.add("setLogo");
-		_layoutSetBranchMethodNames.add("setLogoId");
-		_layoutSetBranchMethodNames.add("setSettings");
-		_layoutSetBranchMethodNames.add("setSettingsProperties");
-		_layoutSetBranchMethodNames.add("setThemeId");
-	}
+		new HashSet<>(
+			Arrays.asList(
+				"getColorScheme", "getColorSchemeId", "getCss",
+				"getLayoutSetPrototypeLinkEnabled", "getLayoutSetPrototypeUuid",
+				"getLogo", "getLogoId", "getSettings", "getSettingsProperties",
+				"getSettingsProperty", "getTheme", "getThemeId",
+				"getThemeSetting", "isEscapedModel",
+				"isLayoutSetPrototypeLinkActive", "isLogo", "setColorSchemeId",
+				"setCss", "setLayoutSetPrototypeLinkEnabled",
+				"setLayoutSetPrototypeUuid", "setLogoId", "setSettings",
+				"setSettingsProperties", "setThemeId"));
 
 	private final LayoutSet _layoutSet;
 	private LayoutSetBranch _layoutSetBranch;

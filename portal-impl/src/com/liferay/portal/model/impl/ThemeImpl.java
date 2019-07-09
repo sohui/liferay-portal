@@ -14,6 +14,9 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ColorScheme;
@@ -22,18 +25,20 @@ import com.liferay.portal.kernel.model.PortletDecorator;
 import com.liferay.portal.kernel.model.SpriteImage;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.model.ThemeSetting;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.template.TemplateConstants;
+import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
+import com.liferay.portal.kernel.theme.PortletDecoratorFactoryUtil;
 import com.liferay.portal.kernel.theme.ThemeCompanyId;
 import com.liferay.portal.kernel.theme.ThemeCompanyLimit;
 import com.liferay.portal.kernel.theme.ThemeGroupLimit;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.ThemeHelper;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
 
@@ -41,6 +46,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -99,9 +105,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		if (getThemeId().equals(themeId)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -162,6 +167,29 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		return _cssPath;
 	}
 
+	public PortletDecorator getDefaultPortletDecorator() {
+		if (_defaultPortletDecorator == null) {
+			List<PortletDecorator> portletDecorators = getPortletDecorators();
+
+			for (int i = portletDecorators.size() - 1; i >= 0; i--) {
+				PortletDecorator portletDecorator = portletDecorators.get(i);
+
+				if (portletDecorator.isDefaultPortletDecorator()) {
+					_defaultPortletDecorator = portletDecorator;
+
+					break;
+				}
+			}
+
+			if (_defaultPortletDecorator == null) {
+				_defaultPortletDecorator =
+					PortletDecoratorFactoryUtil.getDefaultPortletDecorator();
+			}
+		}
+
+		return _defaultPortletDecorator;
+	}
+
 	@Override
 	public String getDevice() {
 		return "regular";
@@ -172,9 +200,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		if (_loadFromServletContext) {
 			return TemplateConstants.SERVLET_SEPARATOR;
 		}
-		else {
-			return TemplateConstants.THEME_LOADER_SEPARATOR;
-		}
+
+		return TemplateConstants.THEME_LOADER_SEPARATOR;
 	}
 
 	@Override
@@ -225,14 +252,17 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		ServletContext servletContext, String portletId, String path) {
 
 		if (!PropsValues.LAYOUT_TEMPLATE_CACHE_ENABLED) {
-			return ThemeHelper.getResourcePath(
-				servletContext, this, portletId, path);
+			return _getResourcePath(servletContext, portletId, path);
 		}
 
 		String key = path;
 
 		if (Validator.isNotNull(portletId)) {
-			key = path.concat(StringPool.POUND).concat(portletId);
+			key = path.concat(
+				StringPool.POUND
+			).concat(
+				portletId
+			);
 		}
 
 		String resourcePath = _resourcePathsMap.get(key);
@@ -241,8 +271,7 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 			return resourcePath;
 		}
 
-		resourcePath = ThemeHelper.getResourcePath(
-			servletContext, this, portletId, path);
+		resourcePath = _getResourcePath(servletContext, portletId, path);
 
 		_resourcePathsMap.put(key, resourcePath);
 
@@ -379,9 +408,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		if (_loadFromServletContext) {
 			return TemplateConstants.SERVLET_SEPARATOR;
 		}
-		else {
-			return TemplateConstants.THEME_LOADER_SEPARATOR;
-		}
+
+		return TemplateConstants.THEME_LOADER_SEPARATOR;
 	}
 
 	@Override
@@ -399,9 +427,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		if (!_colorSchemesMap.isEmpty()) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -445,8 +472,7 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		throws Exception {
 
 		if (!PropsValues.LAYOUT_TEMPLATE_CACHE_ENABLED) {
-			return ThemeHelper.resourceExists(
-				servletContext, this, portletId, path);
+			return _resourceExists(servletContext, portletId, path);
 		}
 
 		if (Validator.isNull(path)) {
@@ -456,7 +482,11 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		String key = path;
 
 		if (Validator.isNotNull(portletId)) {
-			key = path.concat(StringPool.POUND).concat(portletId);
+			key = path.concat(
+				StringPool.POUND
+			).concat(
+				portletId
+			);
 		}
 
 		Boolean resourceExists = _resourceExistsMap.get(key);
@@ -465,8 +495,7 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 			return resourceExists;
 		}
 
-		resourceExists = ThemeHelper.resourceExists(
-			servletContext, this, portletId, path);
+		resourceExists = _resourceExists(servletContext, portletId, path);
 
 		_resourceExistsMap.put(key, resourceExists);
 
@@ -543,6 +572,7 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 
 		for (Map.Entry<Object, Object> entry : spriteProperties.entrySet()) {
 			String key = (String)entry.getKey();
+
 			String value = (String)entry.getValue();
 
 			int[] values = StringUtil.split(value, 0);
@@ -597,7 +627,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Check if theme " + getThemeId() + " is available for " + id);
+				StringBundler.concat(
+					"Check if theme ", getThemeId(), " is available for ", id));
 		}
 
 		if (limit != null) {
@@ -656,11 +687,107 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Theme " + getThemeId() + " is " + (!available ? "NOT " : "") +
-					"available for " + id);
+				StringBundler.concat(
+					"Theme ", getThemeId(), " is ", !available ? "NOT " : "",
+					"available for ", id));
 		}
 
 		return available;
+	}
+
+	private String _getResourcePath(
+		ServletContext servletContext, String portletId, String path) {
+
+		StringBundler sb = new StringBundler(11);
+
+		String themeContextName = GetterUtil.getString(getServletContextName());
+
+		sb.append(themeContextName);
+
+		String servletContextName = StringPool.BLANK;
+
+		String contextPath = servletContext.getContextPath();
+
+		if (!Objects.equals(
+				PortalUtil.getPathContext(contextPath),
+				PortalUtil.getPathContext())) {
+
+			servletContextName = GetterUtil.getString(
+				servletContext.getServletContextName());
+		}
+
+		sb.append(getFreeMarkerTemplateLoader());
+		sb.append(getTemplatesPath());
+
+		if (Validator.isNotNull(servletContextName) &&
+			!path.startsWith(StringPool.SLASH.concat(servletContextName))) {
+
+			sb.append(StringPool.SLASH);
+			sb.append(servletContextName);
+		}
+
+		sb.append(StringPool.SLASH);
+
+		int start = 0;
+
+		if (path.startsWith(StringPool.SLASH)) {
+			start = 1;
+		}
+
+		int end = path.lastIndexOf(CharPool.PERIOD);
+
+		sb.append(path.substring(start, end));
+
+		sb.append(StringPool.PERIOD);
+
+		if (Validator.isNotNull(portletId)) {
+			sb.append(portletId);
+			sb.append(StringPool.PERIOD);
+		}
+
+		sb.append(TemplateConstants.LANG_TYPE_FTL);
+
+		return sb.toString();
+	}
+
+	private boolean _resourceExists(
+			ServletContext servletContext, String portletId, String path)
+		throws Exception {
+
+		if (Validator.isNull(path)) {
+			return false;
+		}
+
+		Boolean exists = null;
+
+		if (Validator.isNotNull(portletId)) {
+			exists = TemplateResourceLoaderUtil.hasTemplateResource(
+				TemplateConstants.LANG_TYPE_FTL,
+				getResourcePath(servletContext, portletId, path));
+
+			if (!exists && PortletIdCodec.hasInstanceId(portletId)) {
+				String rootPortletId = PortletIdCodec.decodePortletName(
+					portletId);
+
+				exists = TemplateResourceLoaderUtil.hasTemplateResource(
+					TemplateConstants.LANG_TYPE_FTL,
+					getResourcePath(servletContext, rootPortletId, path));
+			}
+
+			if (!exists) {
+				exists = TemplateResourceLoaderUtil.hasTemplateResource(
+					TemplateConstants.LANG_TYPE_FTL,
+					getResourcePath(servletContext, null, path));
+			}
+		}
+
+		if (exists == null) {
+			exists = TemplateResourceLoaderUtil.hasTemplateResource(
+				TemplateConstants.LANG_TYPE_FTL,
+				getResourcePath(servletContext, portletId, path));
+		}
+
+		return exists;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(ThemeImpl.class);
@@ -668,6 +795,7 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 	private final Map<String, ColorScheme> _colorSchemesMap = new HashMap<>();
 	private boolean _controlPanelTheme;
 	private String _cssPath = "${root-path}/css";
+	private PortletDecorator _defaultPortletDecorator;
 	private String _imagesPath = "${root-path}/images";
 	private String _javaScriptPath = "${root-path}/js";
 	private boolean _loadFromServletContext;

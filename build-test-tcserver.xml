@@ -4,6 +4,8 @@
 	<import file="build-test.xml" />
 
 	<target name="run-selenium-tcserver">
+		<lstopwatch action="start" name="run.selenium.tcserver" />
+
 		<app-server-properties-update>
 			app.server.type=tcserver
 		</app-server-properties-update>
@@ -24,8 +26,9 @@
 
 			set JAVA_OPTS=
 
-			call tcruntime-ctl stop
-			call tcruntime-ctl uninstall
+			call ${app.server.tcserver.developer.dir}/tcserver stop liferay
+
+			call ${app.server.tcserver.developer.dir}/tcserver uninstall liferay
 
 			set JAVA_OPTS=%JAVA_OPTS_TEMP%
 
@@ -33,7 +36,7 @@
 		</echo>
 
 		<echo file="${app.server.tcserver.bin.dir}/shutdown.sh">
-			./tcruntime-ctl.sh stop
+			${app.server.tcserver.developer.dir}/./tcserver.sh stop liferay
 		</echo>
 
 		<echo file="${app.server.tcserver.bin.dir}/startup.bat">
@@ -43,8 +46,9 @@
 
 			set JAVA_OPTS=
 
-			call tcruntime-ctl install
-			call tcruntime-ctl run
+			call ${app.server.tcserver.developer.dir}/tcserver install liferay
+
+			call ${app.server.tcserver.developer.dir}/tcserver run liferay
 
 			set JAVA_OPTS=%JAVA_OPTS_TEMP%
 
@@ -52,16 +56,18 @@
 		</echo>
 
 		<echo file="${app.server.tcserver.bin.dir}/startup.sh">
-			./tcruntime-ctl.sh run
+			${app.server.tcserver.developer.dir}/./tcserver.sh run liferay
 		</echo>
 
-		<chmod perm="a+x">
-			<fileset dir="${app.server.tcserver.dir}">
+		<chmod
+			perm="a+x"
+		>
+			<fileset
+				dir="${app.server.tcserver.dir}"
+			>
 				<include name="**/*.sh" />
 			</fileset>
 		</chmod>
-
-		<antcall target="revert-test-properties" />
 
 		<antcall target="record-test-generated-properties" />
 
@@ -81,9 +87,15 @@
 		<antcall inheritAll="false" target="run-tcserver">
 			<param name="test.class" value="${test.class}" />
 		</antcall>
+
+		<lstopwatch action="total" name="run.selenium.tcserver" />
 	</target>
 
 	<target name="run-tcserver">
+		<lstopwatch action="start" name="run.tcserver" />
+
 		<antcall target="run-simple-server" />
+
+		<lstopwatch action="total" name="run.tcserver" />
 	</target>
 </project>

@@ -1,53 +1,49 @@
-<definition component-name="portal-plugins-deployment">
-	<property name="testray.main.component.name" value="Plugin Installer" />
+@component-name = "portal-plugins-deployment"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
+	property testray.main.component.name = "Plugin Installer";
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Test Page" />
-		</execute>
-	</set-up>
+	setUp {
+		User.firstLoginPG();
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-	<command name="WikiNavigationPortletSmoke" priority="4">
-		<property name="portlet.plugins.includes" value="wiki-navigation-portlet" />
+		SitePages.addPublicPage(pageName = "Test Page");
+	}
 
-		<var name="appName" value="Wiki Navigation" />
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Page" />
-		</execute>
+	@priority = "4"
+	test WikiNavigationPortletSmoke {
+		property portlet.plugins.includes = "wiki-navigation-portlet";
+		var appName = "Wiki Navigation";
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Page Menu" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Page" />
-		</execute>
+		Portlet.addPG(portletName = "Page Menu");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Tree Menu" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Page");
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="App Manager" />
-		</execute>
+		Portlet.addPG(portletName = "Tree Menu");
 
-		<execute macro="AppManager#uninstallAppCP">
-			<var name="appName" value="${appName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "App Manager");
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="App Manager" />
-		</execute>
+		AppManager.uninstallAppCP(appName = "${appName}");
 
-		<execute macro="AppManager#viewUninstallAppCP">
-			<var name="appName" value="${appName}" />
-		</execute>
-	</command>
-</definition>
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "App Manager");
+
+		AppManager.viewUninstallAppCP(appName = "${appName}");
+	}
+
+}

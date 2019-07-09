@@ -21,8 +21,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class CoalescedPipe<E> {
 
 	public CoalescedPipe() {
@@ -31,9 +33,11 @@ public class CoalescedPipe<E> {
 
 	public CoalescedPipe(Comparator<E> comparator) {
 		_comparator = comparator;
+
 		_notEmptyCondition = _takeLock.newCondition();
 
 		_headElementLink = new ElementLink<>(null);
+
 		_lastElementLink = _headElementLink;
 	}
 
@@ -148,9 +152,10 @@ public class CoalescedPipe<E> {
 
 				if (_comparator != null) {
 					while (currentElementLink != null) {
-						if (_comparator.compare(
-								currentElementLink._element, e) == 0) {
+						int compare = _comparator.compare(
+							currentElementLink._element, e);
 
+						if (compare == 0) {
 							_coalescedCount.incrementAndGet();
 
 							return true;

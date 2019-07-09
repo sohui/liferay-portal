@@ -26,6 +26,8 @@ import com.liferay.portal.xml.DocumentImpl;
 import com.liferay.util.xml.XMLMerger;
 import com.liferay.util.xml.descriptor.WebXML23Descriptor;
 import com.liferay.util.xml.descriptor.WebXML24Descriptor;
+import com.liferay.util.xml.descriptor.WebXML30Descriptor;
+import com.liferay.util.xml.descriptor.XMLDescriptor;
 
 import java.io.IOException;
 
@@ -41,46 +43,14 @@ public class WebXMLBuilder {
 		ToolDependencies.wireBasic();
 
 		if (args.length == 3) {
-			new WebXMLBuilder(args[0], args[1], args[2]);
+			mergeWebXML(args[0], args[1], args[2]);
 		}
 		else {
 			throw new IllegalArgumentException();
 		}
 	}
 
-	public static String organizeWebXML(String webXML)
-		throws DocumentException, IOException {
-
-		webXML = HtmlUtil.stripComments(webXML);
-
-		Document document = UnsecureSAXReaderUtil.read(webXML);
-
-		Element rootElement = document.getRootElement();
-
-		double version = 2.3;
-
-		version = GetterUtil.getDouble(
-			rootElement.attributeValue("version"), version);
-
-		XMLMerger xmlMerger = null;
-
-		if (version == 2.3) {
-			xmlMerger = new XMLMerger(new WebXML23Descriptor());
-		}
-		else {
-			xmlMerger = new XMLMerger(new WebXML24Descriptor());
-		}
-
-		DocumentImpl documentImpl = (DocumentImpl)document;
-
-		xmlMerger.organizeXML(documentImpl.getWrappedDocument());
-
-		webXML = document.formattedString();
-
-		return webXML;
-	}
-
-	public WebXMLBuilder(
+	public static void mergeWebXML(
 		String originalWebXML, String customWebXML, String mergedWebXML) {
 
 		try {
@@ -123,7 +93,46 @@ public class WebXMLBuilder {
 		}
 	}
 
-	protected String getCustomContent(String customWebXML) throws IOException {
+	public static String organizeWebXML(String webXML)
+		throws DocumentException, IOException {
+
+		webXML = HtmlUtil.stripComments(webXML);
+
+		Document document = UnsecureSAXReaderUtil.read(webXML);
+
+		Element rootElement = document.getRootElement();
+
+		double version = 2.3;
+
+		version = GetterUtil.getDouble(
+			rootElement.attributeValue("version"), version);
+
+		XMLDescriptor xmlDescriptor = null;
+
+		if (version == 2.3) {
+			xmlDescriptor = new WebXML23Descriptor();
+		}
+		else if (version == 2.4) {
+			xmlDescriptor = new WebXML24Descriptor();
+		}
+		else {
+			xmlDescriptor = new WebXML30Descriptor();
+		}
+
+		XMLMerger xmlMerger = new XMLMerger(xmlDescriptor);
+
+		DocumentImpl documentImpl = (DocumentImpl)document;
+
+		xmlMerger.organizeXML(documentImpl.getWrappedDocument());
+
+		webXML = document.formattedString();
+
+		return webXML;
+	}
+
+	protected static String getCustomContent(String customWebXML)
+		throws IOException {
+
 		String customContent = FileUtil.read(customWebXML);
 
 		int x = customContent.indexOf("<web-app");
@@ -135,7 +144,7 @@ public class WebXMLBuilder {
 		return customContent.substring(x, y);
 	}
 
-	protected int getMergedContentIndex(String content) {
+	protected static int getMergedContentIndex(String content) {
 		int x = content.indexOf("<web-app");
 
 		x = content.indexOf(">", x) + 1;
@@ -143,7 +152,7 @@ public class WebXMLBuilder {
 		return x;
 	}
 
-	protected int getOriginalContentIndex(String content) {
+	protected static int getOriginalContentIndex(String content) {
 		int x = content.indexOf(AbsoluteRedirectsFilter.class.getName());
 
 		if (x == -1) {
@@ -163,6 +172,7 @@ public class WebXMLBuilder {
 		x = content.lastIndexOf(filterName);
 
 		y = content.indexOf("</filter-mapping>", x);
+
 		y = content.indexOf(">", y) + 1;
 
 		return y;

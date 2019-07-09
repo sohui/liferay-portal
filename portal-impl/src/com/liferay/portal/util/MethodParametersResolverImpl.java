@@ -14,8 +14,8 @@
 
 package com.liferay.portal.util;
 
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceKeyHashMap;
-import com.liferay.portal.kernel.memory.FinalizeManager;
+import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
+import com.liferay.petra.memory.FinalizeManager;
 import com.liferay.portal.kernel.util.MethodParameter;
 import com.liferay.portal.kernel.util.MethodParametersResolver;
 
@@ -39,6 +39,10 @@ public class MethodParametersResolverImpl implements MethodParametersResolver {
 			return methodParameters;
 		}
 
+		Class<?> clazz = method.getDeclaringClass();
+
+		ClassLoader classLoader = clazz.getClassLoader();
+
 		Class<?>[] methodParameterTypes = method.getParameterTypes();
 
 		jodd.paramo.MethodParameter[] joddMethodParameters =
@@ -48,7 +52,7 @@ public class MethodParametersResolverImpl implements MethodParametersResolver {
 
 		for (int i = 0; i < joddMethodParameters.length; i++) {
 			methodParameters[i] = new MethodParameter(
-				joddMethodParameters[i].getName(),
+				classLoader, joddMethodParameters[i].getName(),
 				joddMethodParameters[i].getSignature(),
 				methodParameterTypes[i]);
 		}
@@ -58,9 +62,8 @@ public class MethodParametersResolverImpl implements MethodParametersResolver {
 		return methodParameters;
 	}
 
-	private static final ConcurrentMap
-		<AccessibleObject, MethodParameter[]> _methodParameters =
-			new ConcurrentReferenceKeyHashMap<>(
-				FinalizeManager.WEAK_REFERENCE_FACTORY);
+	private static final ConcurrentMap<AccessibleObject, MethodParameter[]>
+		_methodParameters = new ConcurrentReferenceKeyHashMap<>(
+			FinalizeManager.WEAK_REFERENCE_FACTORY);
 
 }

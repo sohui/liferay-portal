@@ -75,38 +75,39 @@ public class LayoutSetServiceImpl extends LayoutSetServiceBaseImpl {
 
 	@Override
 	public void updateLogo(
-			long groupId, boolean privateLayout, boolean logo, byte[] bytes)
+			long groupId, boolean privateLayout, boolean hasLogo, byte[] bytes)
 		throws PortalException {
 
 		GroupPermissionUtil.check(
 			getPermissionChecker(), groupId, ActionKeys.MANAGE_LAYOUTS);
 
-		layoutSetLocalService.updateLogo(groupId, privateLayout, logo, bytes);
+		layoutSetLocalService.updateLogo(
+			groupId, privateLayout, hasLogo, bytes);
 	}
 
 	@Override
 	public void updateLogo(
-			long groupId, boolean privateLayout, boolean logo, File file)
+			long groupId, boolean privateLayout, boolean hasLogo, File file)
 		throws PortalException {
 
 		GroupPermissionUtil.check(
 			getPermissionChecker(), groupId, ActionKeys.MANAGE_LAYOUTS);
 
-		layoutSetLocalService.updateLogo(groupId, privateLayout, logo, file);
+		layoutSetLocalService.updateLogo(groupId, privateLayout, hasLogo, file);
 	}
 
 	@Override
 	public void updateLogo(
-			long groupId, boolean privateLayout, boolean logo,
+			long groupId, boolean privateLayout, boolean hasLogo,
 			InputStream inputStream)
 		throws PortalException {
 
-		updateLogo(groupId, privateLayout, logo, inputStream, true);
+		updateLogo(groupId, privateLayout, hasLogo, inputStream, true);
 	}
 
 	@Override
 	public void updateLogo(
-			long groupId, boolean privateLayout, boolean logo,
+			long groupId, boolean privateLayout, boolean hasLogo,
 			InputStream inputStream, boolean cleanUpStream)
 		throws PortalException {
 
@@ -114,7 +115,7 @@ public class LayoutSetServiceImpl extends LayoutSetServiceBaseImpl {
 			getPermissionChecker(), groupId, ActionKeys.MANAGE_LAYOUTS);
 
 		layoutSetLocalService.updateLogo(
-			groupId, privateLayout, logo, inputStream, cleanUpStream);
+			groupId, privateLayout, hasLogo, inputStream, cleanUpStream);
 	}
 
 	@Override

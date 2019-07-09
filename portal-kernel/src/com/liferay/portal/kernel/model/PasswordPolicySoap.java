@@ -14,23 +14,23 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.PasswordPolicyServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portal.service.http.PasswordPolicyServiceSoap
  * @generated
  */
 @ProviderType
 public class PasswordPolicySoap implements Serializable {
+
 	public static PasswordPolicySoap toSoapModel(PasswordPolicy model) {
 		PasswordPolicySoap soapModel = new PasswordPolicySoap();
 
@@ -42,14 +42,14 @@ public class PasswordPolicySoap implements Serializable {
 		soapModel.setUserName(model.getUserName());
 		soapModel.setCreateDate(model.getCreateDate());
 		soapModel.setModifiedDate(model.getModifiedDate());
-		soapModel.setDefaultPolicy(model.getDefaultPolicy());
+		soapModel.setDefaultPolicy(model.isDefaultPolicy());
 		soapModel.setName(model.getName());
 		soapModel.setDescription(model.getDescription());
-		soapModel.setChangeable(model.getChangeable());
-		soapModel.setChangeRequired(model.getChangeRequired());
+		soapModel.setChangeable(model.isChangeable());
+		soapModel.setChangeRequired(model.isChangeRequired());
 		soapModel.setMinAge(model.getMinAge());
-		soapModel.setCheckSyntax(model.getCheckSyntax());
-		soapModel.setAllowDictionaryWords(model.getAllowDictionaryWords());
+		soapModel.setCheckSyntax(model.isCheckSyntax());
+		soapModel.setAllowDictionaryWords(model.isAllowDictionaryWords());
 		soapModel.setMinAlphanumeric(model.getMinAlphanumeric());
 		soapModel.setMinLength(model.getMinLength());
 		soapModel.setMinLowerCase(model.getMinLowerCase());
@@ -57,16 +57,16 @@ public class PasswordPolicySoap implements Serializable {
 		soapModel.setMinSymbols(model.getMinSymbols());
 		soapModel.setMinUpperCase(model.getMinUpperCase());
 		soapModel.setRegex(model.getRegex());
-		soapModel.setHistory(model.getHistory());
+		soapModel.setHistory(model.isHistory());
 		soapModel.setHistoryCount(model.getHistoryCount());
-		soapModel.setExpireable(model.getExpireable());
+		soapModel.setExpireable(model.isExpireable());
 		soapModel.setMaxAge(model.getMaxAge());
 		soapModel.setWarningTime(model.getWarningTime());
 		soapModel.setGraceLimit(model.getGraceLimit());
-		soapModel.setLockout(model.getLockout());
+		soapModel.setLockout(model.isLockout());
 		soapModel.setMaxFailure(model.getMaxFailure());
 		soapModel.setLockoutDuration(model.getLockoutDuration());
-		soapModel.setRequireUnlock(model.getRequireUnlock());
+		soapModel.setRequireUnlock(model.isRequireUnlock());
 		soapModel.setResetFailureCount(model.getResetFailureCount());
 		soapModel.setResetTicketMaxAge(model.getResetTicketMaxAge());
 
@@ -83,11 +83,14 @@ public class PasswordPolicySoap implements Serializable {
 		return soapModels;
 	}
 
-	public static PasswordPolicySoap[][] toSoapModels(PasswordPolicy[][] models) {
+	public static PasswordPolicySoap[][] toSoapModels(
+		PasswordPolicy[][] models) {
+
 		PasswordPolicySoap[][] soapModels = null;
 
 		if (models.length > 0) {
-			soapModels = new PasswordPolicySoap[models.length][models[0].length];
+			soapModels =
+				new PasswordPolicySoap[models.length][models[0].length];
 		}
 		else {
 			soapModels = new PasswordPolicySoap[0][0];
@@ -100,8 +103,11 @@ public class PasswordPolicySoap implements Serializable {
 		return soapModels;
 	}
 
-	public static PasswordPolicySoap[] toSoapModels(List<PasswordPolicy> models) {
-		List<PasswordPolicySoap> soapModels = new ArrayList<PasswordPolicySoap>(models.size());
+	public static PasswordPolicySoap[] toSoapModels(
+		List<PasswordPolicy> models) {
+
+		List<PasswordPolicySoap> soapModels = new ArrayList<PasswordPolicySoap>(
+			models.size());
 
 		for (PasswordPolicy model : models) {
 			soapModels.add(toSoapModel(model));
@@ -472,4 +478,5 @@ public class PasswordPolicySoap implements Serializable {
 	private boolean _requireUnlock;
 	private long _resetFailureCount;
 	private long _resetTicketMaxAge;
+
 }

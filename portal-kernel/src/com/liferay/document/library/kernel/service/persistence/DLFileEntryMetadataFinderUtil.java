@@ -14,10 +14,9 @@
 
 package com.liferay.document.library.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -25,20 +24,25 @@ import com.liferay.portal.kernel.util.ReferenceRegistry;
  */
 @ProviderType
 public class DLFileEntryMetadataFinderUtil {
-	public static java.util.List<com.liferay.document.library.kernel.model.DLFileEntryMetadata> findByMismatchedCompanyId() {
+
+	public static java.util.List
+		<com.liferay.document.library.kernel.model.DLFileEntryMetadata>
+			findByMismatchedCompanyId() {
+
 		return getFinder().findByMismatchedCompanyId();
 	}
 
-	public static java.util.List<com.liferay.document.library.kernel.model.DLFileEntryMetadata> findByNoStructures() {
+	public static java.util.List
+		<com.liferay.document.library.kernel.model.DLFileEntryMetadata>
+			findByNoStructures() {
+
 		return getFinder().findByNoStructures();
 	}
 
 	public static DLFileEntryMetadataFinder getFinder() {
 		if (_finder == null) {
-			_finder = (DLFileEntryMetadataFinder)PortalBeanLocatorUtil.locate(DLFileEntryMetadataFinder.class.getName());
-
-			ReferenceRegistry.registerReference(DLFileEntryMetadataFinderUtil.class,
-				"_finder");
+			_finder = (DLFileEntryMetadataFinder)PortalBeanLocatorUtil.locate(
+				DLFileEntryMetadataFinder.class.getName());
 		}
 
 		return _finder;
@@ -46,10 +50,8 @@ public class DLFileEntryMetadataFinderUtil {
 
 	public void setFinder(DLFileEntryMetadataFinder finder) {
 		_finder = finder;
-
-		ReferenceRegistry.registerReference(DLFileEntryMetadataFinderUtil.class,
-			"_finder");
 	}
 
 	private static DLFileEntryMetadataFinder _finder;
+
 }

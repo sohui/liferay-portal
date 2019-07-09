@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.search.filter;
 
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,7 +39,7 @@ public class TermsFilter extends BaseFilter {
 	}
 
 	public void addValues(String... values) {
-		_values.addAll(Arrays.asList(values));
+		Collections.addAll(_values, values);
 	}
 
 	public String getField() {
@@ -52,7 +52,7 @@ public class TermsFilter extends BaseFilter {
 	}
 
 	public String[] getValues() {
-		return _values.toArray(new String[_values.size()]);
+		return _values.toArray(new String[0]);
 	}
 
 	public boolean isEmpty() {

@@ -16,9 +16,12 @@ package com.liferay.portal.kernel.service.configuration;
 
 import java.io.InputStream;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Miguel Pastor
  */
+@ProviderType
 public interface ServiceComponentConfiguration {
 
 	public InputStream getHibernateInputStream();
@@ -26,6 +29,8 @@ public interface ServiceComponentConfiguration {
 	public InputStream getModelHintsExtInputStream();
 
 	public InputStream getModelHintsInputStream();
+
+	public String getServletContextName();
 
 	public InputStream getSQLIndexesInputStream();
 

@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class HashCodeFactoryUtil {
 
 	public static HashCode getHashCode() {
@@ -33,14 +33,10 @@ public class HashCodeFactoryUtil {
 	}
 
 	public static HashCodeFactory getHashCodeFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(HashCodeFactoryUtil.class);
-
 		return _hashCodeFactory;
 	}
 
 	public void setHashCodeFactory(HashCodeFactory hashCodeFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_hashCodeFactory = hashCodeFactory;
 	}
 

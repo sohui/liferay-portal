@@ -1,0 +1,4 @@
+dependencies {
+	testIntegrationCompile project(":apps:document-library:document-library-content-api")
+	testIntegrationCompile project(":test:arquillian-extension-junit-bridge")
+}

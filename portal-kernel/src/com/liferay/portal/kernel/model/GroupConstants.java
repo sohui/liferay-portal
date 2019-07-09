@@ -52,6 +52,9 @@ public class GroupConstants {
 	public static final String TYPE_SETTINGS_KEY_INHERIT_LOCALES =
 		"inheritLocales";
 
+	public static final String TYPE_SETTINGS_KEY_LIFERAY_ANALYTICS_KEY =
+		"liferayAnalyticsKey";
+
 	public static final int TYPE_SITE_OPEN = 1;
 
 	public static final String TYPE_SITE_OPEN_LABEL = "open";
@@ -83,9 +86,8 @@ public class GroupConstants {
 		else if (type == TYPE_SITE_RESTRICTED) {
 			return TYPE_SITE_RESTRICTED_LABEL;
 		}
-		else {
-			return TYPE_SITE_SYSTEM_LABEL;
-		}
+
+		return TYPE_SITE_SYSTEM_LABEL;
 	}
 
 }

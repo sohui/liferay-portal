@@ -1,21 +1,25 @@
-<definition component-name="portal-plugins-osgi">
-	<property name="portal.release" value="true" />
-	<property name="plugins.deployment.type" value="osgi" />
-	<property name="testray.main.component.name" value="Localization Hooks" />
+@component-name = "portal-plugins-osgi"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	property portal.release = "false";
+	property portal.upstream = "true";
+	property plugins.deployment.type = "osgi";
+	property test.run.environment = "CE";
+	property testray.main.component.name = "Localization Hooks";
 
-	<command name="LocalizationJAHookSmoke" priority="4">
-		<property name="hook.plugins.includes" value="localization-ja-hook" />
+	setUp {
+		User.firstLoginPG(localization = "JA");
+	}
 
-		<var name="appName" value="Japanese Localization" />
-		<var name="portletName" value="localization-ja-hook" />
+	@priority = "4"
+	test LocalizationJAHookSmoke {
+		property hook.plugins.includes = "localization-ja-hook";
+		var appName = "Japanese Localization";
+		var portletName = "localization-ja-hook";
 
-		<execute macro="OSGiSmoke#Smoke">
-			<var name="appName" value="${portletName}" />
-			<var name="portletName" value="${portletName}" />
-		</execute>
-	</command>
-</definition>
+		OSGiSmoke.Smoke(
+			appName = "${portletName}",
+			portletName = "${portletName}");
+	}
+
+}

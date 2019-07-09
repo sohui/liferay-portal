@@ -24,9 +24,12 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public interface Sitemap {
 
 	public void addURLElement(
@@ -42,6 +45,11 @@ public interface Sitemap {
 
 	public String getSitemap(
 			long groupId, boolean privateLayout, ThemeDisplay themeDisplay)
+		throws PortalException;
+
+	public String getSitemap(
+			String layoutUuid, long groupId, boolean privateLayout,
+			ThemeDisplay themeDisplay)
 		throws PortalException;
 
 }

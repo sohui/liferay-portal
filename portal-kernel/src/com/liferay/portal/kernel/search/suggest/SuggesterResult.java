@@ -19,8 +19,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Mueller (7.2.x), moved to {@link
+ *             com.liferay.portal.search.engine.adapter.search.
+ *             SuggestSearchResult}
  */
+@Deprecated
 public class SuggesterResult {
 
 	public SuggesterResult(String name) {

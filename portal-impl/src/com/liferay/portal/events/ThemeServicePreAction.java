@@ -36,11 +36,13 @@ import javax.servlet.http.HttpServletResponse;
 public class ThemeServicePreAction extends Action {
 
 	@Override
-	public void run(HttpServletRequest request, HttpServletResponse response)
+	public void run(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws ActionException {
 
 		try {
-			servicePre(request, response);
+			servicePre(httpServletRequest, httpServletResponse);
 		}
 		catch (Exception e) {
 			throw new ActionException(e);
@@ -48,14 +50,15 @@ public class ThemeServicePreAction extends Action {
 	}
 
 	protected void servicePre(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		Theme theme = themeDisplay.getTheme();
-		ColorScheme colorScheme = themeDisplay.getColorScheme();
 
 		if (theme != null) {
 			if (_log.isInfoEnabled()) {
@@ -65,6 +68,7 @@ public class ThemeServicePreAction extends Action {
 			return;
 		}
 
+		ColorScheme colorScheme = themeDisplay.getColorScheme();
 		Layout layout = themeDisplay.getLayout();
 
 		if (layout != null) {
@@ -79,12 +83,13 @@ public class ThemeServicePreAction extends Action {
 
 			theme = ThemeLocalServiceUtil.getTheme(
 				themeDisplay.getCompanyId(), themeId);
+
 			colorScheme = ThemeLocalServiceUtil.getColorScheme(
 				themeDisplay.getCompanyId(), theme.getThemeId(), colorSchemeId);
 		}
 
-		request.setAttribute(WebKeys.THEME, theme);
-		request.setAttribute(WebKeys.COLOR_SCHEME, colorScheme);
+		httpServletRequest.setAttribute(WebKeys.COLOR_SCHEME, colorScheme);
+		httpServletRequest.setAttribute(WebKeys.THEME, theme);
 
 		themeDisplay.setLookAndFeel(theme, colorScheme);
 	}

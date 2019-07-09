@@ -95,6 +95,8 @@ public class SocialActivityInterpreterLocalServiceImpl
 
 	@Override
 	public void afterPropertiesSet() {
+		super.afterPropertiesSet();
+
 		Registry registry = RegistryUtil.getRegistry();
 
 		Filter filter = registry.getFilter(
@@ -160,14 +162,15 @@ public class SocialActivityInterpreterLocalServiceImpl
 		String selector, SocialActivity activity,
 		ServiceContext serviceContext) {
 
-		HttpServletRequest request = serviceContext.getRequest();
+		HttpServletRequest httpServletRequest = serviceContext.getRequest();
 
-		if (request == null) {
+		if (httpServletRequest == null) {
 			return null;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		try {
 			if (activity.getUserId() == themeDisplay.getDefaultUserId()) {
@@ -202,17 +205,19 @@ public class SocialActivityInterpreterLocalServiceImpl
 
 		String className = PortalUtil.getClassName(activity.getClassNameId());
 
-		for (int i = 0; i < activityInterpreters.size(); i++) {
-			SocialActivityInterpreterImpl activityInterpreter =
-				(SocialActivityInterpreterImpl)activityInterpreters.get(i);
+		for (SocialActivityInterpreter activityInterpreter :
+				activityInterpreters) {
 
-			if (activityInterpreter.hasClassName(className)) {
+			SocialActivityInterpreterImpl activityInterpreterImpl =
+				(SocialActivityInterpreterImpl)activityInterpreter;
+
+			if (activityInterpreterImpl.hasClassName(className)) {
 				SocialActivityFeedEntry activityFeedEntry =
-					activityInterpreter.interpret(activity, serviceContext);
+					activityInterpreterImpl.interpret(activity, serviceContext);
 
 				if (activityFeedEntry != null) {
 					activityFeedEntry.setPortletId(
-						activityInterpreter.getPortletId());
+						activityInterpreterImpl.getPortletId());
 
 					return activityFeedEntry;
 				}
@@ -227,14 +232,15 @@ public class SocialActivityInterpreterLocalServiceImpl
 		String selector, SocialActivitySet activitySet,
 		ServiceContext serviceContext) {
 
-		HttpServletRequest request = serviceContext.getRequest();
+		HttpServletRequest httpServletRequest = serviceContext.getRequest();
 
-		if (request == null) {
+		if (httpServletRequest == null) {
 			return null;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		try {
 			if (activitySet.getUserId() == themeDisplay.getDefaultUserId()) {
@@ -255,17 +261,20 @@ public class SocialActivityInterpreterLocalServiceImpl
 		String className = PortalUtil.getClassName(
 			activitySet.getClassNameId());
 
-		for (int i = 0; i < activityInterpreters.size(); i++) {
-			SocialActivityInterpreterImpl activityInterpreter =
-				(SocialActivityInterpreterImpl)activityInterpreters.get(i);
+		for (SocialActivityInterpreter activityInterpreter :
+				activityInterpreters) {
 
-			if (activityInterpreter.hasClassName(className)) {
+			SocialActivityInterpreterImpl activityInterpreterImpl =
+				(SocialActivityInterpreterImpl)activityInterpreter;
+
+			if (activityInterpreterImpl.hasClassName(className)) {
 				SocialActivityFeedEntry activityFeedEntry =
-					activityInterpreter.interpret(activitySet, serviceContext);
+					activityInterpreterImpl.interpret(
+						activitySet, serviceContext);
 
 				if (activityFeedEntry != null) {
 					activityFeedEntry.setPortletId(
-						activityInterpreter.getPortletId());
+						activityInterpreterImpl.getPortletId());
 
 					return activityFeedEntry;
 				}
@@ -294,12 +303,14 @@ public class SocialActivityInterpreterLocalServiceImpl
 			String className = PortalUtil.getClassName(
 				activity.getClassNameId());
 
-			for (int i = 0; i < activityInterpreters.size(); i++) {
-				SocialActivityInterpreterImpl activityInterpreter =
-					(SocialActivityInterpreterImpl)activityInterpreters.get(i);
+			for (SocialActivityInterpreter activityInterpreter :
+					activityInterpreters) {
 
-				if (activityInterpreter.hasClassName(className)) {
-					activityInterpreter.updateActivitySet(activityId);
+				SocialActivityInterpreterImpl activityInterpreterImpl =
+					(SocialActivityInterpreterImpl)activityInterpreter;
+
+				if (activityInterpreterImpl.hasClassName(className)) {
+					activityInterpreterImpl.updateActivitySet(activityId);
 
 					return;
 				}
@@ -330,11 +341,11 @@ public class SocialActivityInterpreterLocalServiceImpl
 			SocialActivityInterpreter activityInterpreter = registry.getService(
 				serviceReference);
 
-			String portletId = (String)serviceReference.getProperty(
-				"javax.portlet.name");
-
 			if (!(activityInterpreter instanceof
 					SocialRequestInterpreterImpl)) {
+
+				String portletId = (String)serviceReference.getProperty(
+					"javax.portlet.name");
 
 				activityInterpreter = new SocialActivityInterpreterImpl(
 					portletId, activityInterpreter);

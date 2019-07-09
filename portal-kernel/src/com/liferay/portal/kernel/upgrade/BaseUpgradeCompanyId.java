@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.upgrade;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.IOException;
 
@@ -79,7 +79,7 @@ public abstract class BaseUpgradeCompanyId extends UpgradeProcess {
 			_columnName = foreignColumnName;
 
 			_foreignNamesArray = new String[][] {
-				new String[] {foreignTableName, foreignColumnName}
+				{foreignTableName, foreignColumnName}
 			};
 		}
 
@@ -94,8 +94,7 @@ public abstract class BaseUpgradeCompanyId extends UpgradeProcess {
 		@Override
 		public final Void call() throws Exception {
 			try (LoggingTimer loggingTimer = new LoggingTimer(_tableName);
-				Connection connection =
-					DataAccess.getUpgradeOptimizedConnection()) {
+				Connection connection = DataAccess.getConnection()) {
 
 				if (_createCompanyIdColumn) {
 					if (_log.isInfoEnabled()) {
@@ -105,7 +104,7 @@ public abstract class BaseUpgradeCompanyId extends UpgradeProcess {
 
 					runSQL(
 						connection,
-						"alter table " + _tableName +" add companyId LONG");
+						"alter table " + _tableName + " add companyId LONG");
 				}
 				else {
 					if (_log.isInfoEnabled()) {

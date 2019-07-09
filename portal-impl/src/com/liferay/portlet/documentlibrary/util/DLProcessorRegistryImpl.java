@@ -18,13 +18,13 @@ import com.liferay.document.library.kernel.util.DLProcessor;
 import com.liferay.document.library.kernel.util.DLProcessorRegistry;
 import com.liferay.document.library.kernel.util.DLProcessorThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
-import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.InstanceFactory;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.xml.Element;
@@ -40,14 +40,20 @@ import com.liferay.registry.collections.ServiceTrackerMap;
 import com.liferay.registry.collections.StringServiceRegistrationMap;
 import com.liferay.registry.collections.StringServiceRegistrationMapImpl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * @author Mika Koivisto
+ * @author     Mika Koivisto
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.util.
+ *             DLProcessorRegistryImpl}
  */
-@DoPrivileged
+@Deprecated
 public class DLProcessorRegistryImpl implements DLProcessorRegistry {
 
 	public void afterPropertiesSet() throws Exception {
-		ClassLoader classLoader = ClassLoaderUtil.getPortalClassLoader();
+		ClassLoader classLoader = PortalClassLoaderUtil.getClassLoader();
 
 		for (String dlProcessorClassName : _DL_FILE_ENTRY_PROCESSORS) {
 			DLProcessor dlProcessor = (DLProcessor)InstanceFactory.newInstance(
@@ -56,6 +62,8 @@ public class DLProcessorRegistryImpl implements DLProcessorRegistry {
 			dlProcessor.afterPropertiesSet();
 
 			register(dlProcessor);
+
+			_dlProcessors.add(dlProcessor);
 		}
 	}
 
@@ -95,6 +103,11 @@ public class DLProcessorRegistryImpl implements DLProcessorRegistry {
 				dlProcessor.cleanUp(fileVersion);
 			}
 		}
+	}
+
+	public void destroy() throws Exception {
+		UnsafeConsumer.accept(
+			_dlProcessors, DLProcessor::destroy, Exception.class);
 	}
 
 	@Override
@@ -269,6 +282,8 @@ public class DLProcessorRegistryImpl implements DLProcessorRegistry {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLProcessorRegistryImpl.class);
+
+	private final List<DLProcessor> _dlProcessors = new ArrayList<>();
 
 	private final ServiceTrackerMap<String, DLProcessor>
 		_dlProcessorServiceTrackerMap =

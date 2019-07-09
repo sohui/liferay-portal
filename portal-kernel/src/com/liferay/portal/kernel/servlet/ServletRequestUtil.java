@@ -25,21 +25,24 @@ import javax.servlet.http.HttpServletRequestWrapper;
  */
 public class ServletRequestUtil {
 
-	public static void logRequestWrappers(HttpServletRequest request) {
-		HttpServletRequest tempRequest = request;
+	public static void logRequestWrappers(
+		HttpServletRequest httpServletRequest) {
+
+		HttpServletRequest tempHttpServletRequest = httpServletRequest;
 
 		while (true) {
 			if (_log.isInfoEnabled()) {
-				Class<?> clazz = tempRequest.getClass();
+				Class<?> clazz = tempHttpServletRequest.getClass();
 
 				_log.info("Request class " + clazz.getName());
 			}
 
-			if (tempRequest instanceof HttpServletRequestWrapper) {
+			if (tempHttpServletRequest instanceof HttpServletRequestWrapper) {
 				HttpServletRequestWrapper requestWrapper =
-					(HttpServletRequestWrapper)tempRequest;
+					(HttpServletRequestWrapper)tempHttpServletRequest;
 
-				tempRequest = (HttpServletRequest)requestWrapper.getRequest();
+				tempHttpServletRequest =
+					(HttpServletRequest)requestWrapper.getRequest();
 			}
 			else {
 				break;

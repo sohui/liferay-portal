@@ -21,8 +21,10 @@ import java.io.InputStream;
  * Skip the specified offset until it fails three times. This is used to prevent
  * reading an InputStream infinitely.
  *
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class LimitedInputStream extends InputStream {
 
 	public LimitedInputStream(InputStream inputStream, long offset, long length)
@@ -67,9 +69,8 @@ public class LimitedInputStream extends InputStream {
 		if (available > allowed) {
 			return allowed;
 		}
-		else {
-			return available;
-		}
+
+		return available;
 	}
 
 	@Override

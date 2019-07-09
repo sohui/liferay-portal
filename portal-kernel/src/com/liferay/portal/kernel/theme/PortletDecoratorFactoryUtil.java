@@ -15,10 +15,9 @@
 package com.liferay.portal.kernel.theme;
 
 import com.liferay.portal.kernel.model.PortletDecorator;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 public class PortletDecoratorFactoryUtil {
 
@@ -54,16 +53,11 @@ public class PortletDecoratorFactoryUtil {
 	}
 
 	public static PortletDecoratorFactory getPortletDecoratorFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PortletDecoratorFactoryUtil.class);
-
 		return _portletDecoratorFactory;
 	}
 
 	public void setPortletDecoratorFactory(
 		PortletDecoratorFactory portletDecoratorFactory) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_portletDecoratorFactory = portletDecoratorFactory;
 	}

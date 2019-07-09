@@ -24,6 +24,18 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class EmptyResultMessageTag extends IncludeTag {
 
+	public String getMessage() {
+		return _message;
+	}
+
+	public boolean isCompact() {
+		return _compact;
+	}
+
+	public boolean isSearch() {
+		return _search;
+	}
+
 	public void setCompact(boolean compact) {
 		_compact = compact;
 	}
@@ -42,6 +54,8 @@ public class EmptyResultMessageTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_compact = false;
 		_cssClass = null;
 		_message = null;
@@ -71,15 +85,15 @@ public class EmptyResultMessageTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
 			"liferay-ui:empty-result-message:compact",
 			String.valueOf(_compact));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:empty-result-message:cssClass", getCssClass());
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:empty-result-message:message", _message);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:empty-result-message:search", String.valueOf(_search));
 	}
 

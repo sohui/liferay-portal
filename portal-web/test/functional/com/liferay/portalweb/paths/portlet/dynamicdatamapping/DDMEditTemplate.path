@@ -9,28 +9,23 @@
 </thead>
 <tbody>
 <tr>
-	<td>PORTLET_TITLE</td>
-	<td>//span[@class='portlet-title-text']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>HEADER_TITLE</td>
-	<td>//h3[@class='header-title']/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SCRIPT_FIELDS_1</td>
-	<td>//div[contains(@id,'paletteData')]/div[2]/ul/li/span</td>
+	<td>SCRIPT_VARIABLE</td>
+	<td>//div[contains(@class,'palette-section') and contains(@id,'variable')]//ul/li/span[contains(@data-title,'${key_fieldName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SCRIPT_FIELD</td>
-	<td>//div[contains(@class,'palette-section') and contains(@id,'fields')]//ul/li/span[contains(.,'${key_fieldName}')]</td>
+	<td>//*[contains(@class,'palette-section') and contains(@id,'fields')]//ul/li/span[contains(@class,'palette-item') and contains(.,'${key_fieldName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SCRIPT_UTIL</td>
+	<td>//div[contains(@class,'palette-section') and contains(@id,'util')]//ul/li/span[contains(@data-title,'${key_fieldName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SCRIPT_CONTENT_FIELD</td>
-	<td>//div[contains(@class,'ace_text-layer')]</td>
+	<td>//div[contains(@id,'richEditor')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -44,18 +39,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DETAILS</td>
-	<td>//div[@id='templateDetailsSectionPanel']/div/div/a</td>
+	<td>CACHEABLE_CHECKBOX</td>
+	<td>//input[contains(@id,'JournalPortlet_cacheable')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SAVE_BUTTON</td>
-	<td>//button[contains(.,'Save') and contains(@onclick,'save')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CANCEL_BUTTON</td>
-	<td>//div[@class='button-holder ']/a[contains(.,' Cancel ')]</td>
+	<td>DETAILS_TOGGLE</td>
+	<td>//div[@id='templateDetailsSectionPanel']//a/span</td>
 	<td></td>
 </tr>
 <tr>
@@ -66,7 +56,22 @@
 <!--DETAILS-->
 <tr>
 	<td>DETAILS_SELECT_STRUCTURE</td>
-	<td>//a[contains(@href,'openDDMStructureSelector')]/span</td>
+	<td>//button[contains(@id,'selectDDMStructure')]/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAILS_SMALL_IMAGE</td>
+	<td>//label[contains(@for,'smallImage')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAILS_SMALL_IMAGE_URL</td>
+	<td>//label[contains(@class,'radio-inline')]/input[@type='radio']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DETAILS_SMALL_IMAGE_URL_INPUT</td>
+	<td>//div[contains(@class,'input-String-wrapper')]/input[contains(@id,'URL')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -80,13 +85,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DETAILS_DESCRIPTION_FIELD</td>
-	<td>//textarea[contains(@id,'description')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DETAILS_SMALL_IMAGE_CHECKBOX</td>
-	<td>//input[contains(@id,'smallImage')]</td>
+	<td>DETAILS_LANGUAGE</td>
+	<td>//div[@class='panel-body']/p[@class='article-structure']</td>
 	<td></td>
 </tr>
 <tr>
@@ -96,63 +96,8 @@
 </tr>
 <!--DATA_LIST_RECORD_FIELDS-->
 <tr>
-	<td>DATA_LIST_RECORD_FIELDS_BOOLEAN</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Boolean')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_DATE</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Date')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_DECIMAL</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Decimal')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_DOCUMENTS_AND_MEDIA</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Documents and Media')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_HTML</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'HTML')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_INTEGER</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Integer')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_LINK_TO_PAGE</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Link to Page')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_NUMBER</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Number')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_RADIO</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Radio')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_SELECT</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Select')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>DATA_LIST_RECORD_FIELDS_TEXT</td>
 	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Text')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DATA_LIST_RECORD_FIELDS_TEXT_BOX</td>
-	<td>//div[contains(@class,'palette-section') and contains(.,'Data List Record Fields')]/div[2]//span[contains(.,'Text Box')]</td>
 	<td></td>
 </tr>
 </tbody>

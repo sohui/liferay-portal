@@ -17,12 +17,12 @@ package com.liferay.portal.metadata;
 import com.liferay.document.library.kernel.util.AudioProcessorUtil;
 import com.liferay.document.library.kernel.util.VideoProcessorUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xuggler.XugglerUtil;
@@ -79,9 +79,10 @@ public class XugglerRawMetadataProcessor extends BaseRawMetadataProcessor {
 		try {
 			Metadata metadata = new Metadata();
 
-			if (container.open(
-					file.getCanonicalPath(), IContainer.Type.READ, null) < 0) {
+			int result = container.open(
+				file.getCanonicalPath(), IContainer.Type.READ, null);
 
+			if (result < 0) {
 				throw new IllegalArgumentException("Could not open stream");
 			}
 
@@ -107,40 +108,36 @@ public class XugglerRawMetadataProcessor extends BaseRawMetadataProcessor {
 	protected Metadata extractMetadata(
 		String extension, String mimeType, File file) {
 
-		Metadata metadata = null;
-
 		if (!isSupported(mimeType)) {
-			return metadata;
+			return null;
 		}
 
 		try {
-			metadata = extractMetadata(file);
+			return extractMetadata(file);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
 		}
 
-		return metadata;
+		return null;
 	}
 
 	@Override
 	protected Metadata extractMetadata(
 		String extension, String mimeType, InputStream inputStream) {
 
-		Metadata metadata = null;
+		if (!isSupported(mimeType)) {
+			return null;
+		}
 
 		File file = null;
-
-		if (!isSupported(mimeType)) {
-			return metadata;
-		}
 
 		try {
 			file = FileUtil.createTempFile(extension);
 
 			FileUtil.write(file, inputStream);
 
-			metadata = extractMetadata(file);
+			return extractMetadata(file);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -149,7 +146,7 @@ public class XugglerRawMetadataProcessor extends BaseRawMetadataProcessor {
 			FileUtil.delete(file);
 		}
 
-		return metadata;
+		return null;
 	}
 
 	protected boolean isSupported(String mimeType) {

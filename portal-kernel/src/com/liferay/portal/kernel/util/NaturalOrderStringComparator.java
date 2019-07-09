@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
+
 import java.io.Serializable;
 
 import java.util.Comparator;
@@ -83,11 +85,11 @@ public class NaturalOrderStringComparator
 			if (isCheckSpecialCharacters() && Validator.isAscii(c1) &&
 				Validator.isAscii(c2)) {
 
-				boolean isDigitOrLetter1 = _isDigitOrLetter(c1);
-				boolean isDigitOrLetter2 = _isDigitOrLetter(c2);
+				boolean digitOrLetter1 = _isDigitOrLetter(c1);
+				boolean digitOrLetter2 = _isDigitOrLetter(c2);
 
-				if (isDigitOrLetter1 ^ isDigitOrLetter2) {
-					if (isDigitOrLetter1) {
+				if (digitOrLetter1 ^ digitOrLetter2) {
+					if (digitOrLetter1) {
 						value = 1;
 					}
 					else {
@@ -110,21 +112,20 @@ public class NaturalOrderStringComparator
 
 				break;
 			}
-			else {
-				char c1UpperCase = Character.toUpperCase(c1);
-				char c2UpperCase = Character.toUpperCase(c2);
 
-				if (c1UpperCase == c2UpperCase) {
-					i1++;
-					i2++;
+			char c1UpperCase = Character.toUpperCase(c1);
+			char c2UpperCase = Character.toUpperCase(c2);
 
-					continue;
-				}
+			if (c1UpperCase == c2UpperCase) {
+				i1++;
+				i2++;
 
-				value = c1UpperCase - c2UpperCase;
-
-				break;
+				continue;
 			}
+
+			value = c1UpperCase - c2UpperCase;
+
+			break;
 		}
 
 		if ((value == 0) && (length1 != length2)) {
@@ -139,9 +140,8 @@ public class NaturalOrderStringComparator
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	protected boolean isCheckSpecialCharacters() {
@@ -152,9 +152,8 @@ public class NaturalOrderStringComparator
 		if (Validator.isChar(c) || Validator.isDigit(c)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private final boolean _ascending;

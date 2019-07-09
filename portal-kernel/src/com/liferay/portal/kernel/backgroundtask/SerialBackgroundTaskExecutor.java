@@ -18,8 +18,11 @@ import com.liferay.portal.kernel.lock.DuplicateLockException;
 import com.liferay.portal.kernel.lock.Lock;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Judson (7.1.x), moved to {@link
+ *             com.liferay.portal.background.task.internal.SerialBackgroundTaskExecutor}
  */
+@Deprecated
 public class SerialBackgroundTaskExecutor
 	extends DelegatingBackgroundTaskExecutor {
 
@@ -31,10 +34,7 @@ public class SerialBackgroundTaskExecutor
 
 	@Override
 	public BackgroundTaskExecutor clone() {
-		BackgroundTaskExecutor backgroundTaskExecutor =
-			new SerialBackgroundTaskExecutor(getBackgroundTaskExecutor());
-
-		return backgroundTaskExecutor;
+		return new SerialBackgroundTaskExecutor(getBackgroundTaskExecutor());
 	}
 
 	@Override

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.concurrent;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,8 +24,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class CoalescedPipeTest {
 
 	@Test
@@ -60,7 +63,7 @@ public class CoalescedPipeTest {
 	}
 
 	@Test
-	public void testNonBlockingTake() throws InterruptedException {
+	public void testNonblockingTake() throws InterruptedException {
 		CoalescedPipe<String> coalescedPipe = new CoalescedPipe<>();
 
 		coalescedPipe.put("test2");
@@ -171,20 +174,20 @@ public class CoalescedPipeTest {
 
 		Object[] snapShot = coalescedPipe.takeSnapshot();
 
-		Assert.assertEquals(0, snapShot.length);
+		Assert.assertEquals(Arrays.toString(snapShot), 0, snapShot.length);
 
 		coalescedPipe.put("test1");
 
 		snapShot = coalescedPipe.takeSnapshot();
 
-		Assert.assertEquals(1, snapShot.length);
+		Assert.assertEquals(Arrays.toString(snapShot), 1, snapShot.length);
 		Assert.assertEquals("test1", snapShot[0]);
 
 		coalescedPipe.put("test2");
 
 		snapShot = coalescedPipe.takeSnapshot();
 
-		Assert.assertEquals(2, snapShot.length);
+		Assert.assertEquals(Arrays.toString(snapShot), 2, snapShot.length);
 		Assert.assertEquals("test1", snapShot[0]);
 		Assert.assertEquals("test2", snapShot[1]);
 	}

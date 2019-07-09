@@ -69,7 +69,14 @@ if (hints != null) {
 			}
 			%>
 
-			<liferay-ui:input-checkbox cssClass="<%= cssClass %>" defaultValue="<%= value %>" disabled="<%= disabled %>" formName="<%= formName %>" id="<%= namespace + id %>" param="<%= fieldParam %>" />
+			<liferay-ui:input-checkbox
+				cssClass="<%= cssClass %>"
+				defaultValue="<%= value %>"
+				disabled="<%= disabled %>"
+				formName="<%= formName %>"
+				id="<%= namespace + id %>"
+				param="<%= fieldParam %>"
+			/>
 		</c:when>
 		<c:when test='<%= type.equals("Date") %>'>
 
@@ -201,8 +208,6 @@ if (hints != null) {
 				}
 			}
 
-			cssClass += " form-group form-group-inline";
-
 			boolean showTime = true;
 
 			if (hints != null) {
@@ -212,35 +217,39 @@ if (hints != null) {
 			String timeFormat = GetterUtil.getString((String)dynamicAttributes.get("timeFormat"));
 			%>
 
-			<div class="clearfix">
-				<liferay-ui:input-date
-					autoFocus="<%= autoFocus %>"
-					cssClass="<%= cssClass %>"
-					dayParam='<%= fieldParam + "Day" %>'
-					dayValue="<%= day %>"
-					disabled="<%= disabled %>"
-					firstDayOfWeek="<%= firstDayOfWeek %>"
-					formName="<%= formName %>"
-					monthParam='<%= fieldParam + "Month" %>'
-					monthValue="<%= month %>"
-					name="<%= fieldParam %>"
-					yearParam='<%= fieldParam + "Year" %>'
-					yearValue="<%= year %>"
-				/>
+			<div class="form-group-autofit">
+				<div class="form-group-item">
+					<liferay-ui:input-date
+						autoFocus="<%= autoFocus %>"
+						cssClass="<%= cssClass %>"
+						dayParam='<%= fieldParam + "Day" %>'
+						dayValue="<%= day %>"
+						disabled="<%= disabled %>"
+						firstDayOfWeek="<%= firstDayOfWeek %>"
+						formName="<%= formName %>"
+						monthParam='<%= fieldParam + "Month" %>'
+						monthValue="<%= month %>"
+						name="<%= fieldParam %>"
+						yearParam='<%= fieldParam + "Year" %>'
+						yearValue="<%= year %>"
+					/>
+				</div>
 
 				<c:if test="<%= showTime %>">
-					<liferay-ui:input-time
-						amPmParam='<%= fieldParam + "AmPm" %>'
-						amPmValue="<%= amPm %>"
-						cssClass="<%= cssClass %>"
-						disabled="<%= disabled %>"
-						hourParam='<%= fieldParam + "Hour" %>'
-						hourValue="<%= hour %>"
-						minuteParam='<%= fieldParam + "Minute" %>'
-						minuteValue="<%= minute %>"
-						name='<%= fieldParam + "Time" %>'
-						timeFormat="<%= timeFormat %>"
-					/>
+					<div class="form-group-item">
+						<liferay-ui:input-time
+							amPmParam='<%= fieldParam + "AmPm" %>'
+							amPmValue="<%= amPm %>"
+							cssClass="<%= cssClass %>"
+							disabled="<%= disabled %>"
+							hourParam='<%= fieldParam + "Hour" %>'
+							hourValue="<%= hour %>"
+							minuteParam='<%= fieldParam + "Minute" %>'
+							minuteValue="<%= minute %>"
+							name='<%= fieldParam + "Time" %>'
+							timeFormat="<%= timeFormat %>"
+						/>
+					</div>
 				</c:if>
 			</div>
 
@@ -254,36 +263,82 @@ if (hints != null) {
 					<aui:input id="<%= formName + fieldParam %>" label="<%= dateTogglerCheckboxLabel %>" name="<%= dateTogglerCheckboxName %>" type="checkbox" value="<%= disabled %>" />
 				</div>
 
-				<aui:script sandbox="<%= true %>">
-					var checkbox = $('#<portlet:namespace /><%= formName + fieldParam %>');
+				<aui:script use="event-base">
+					var checkbox = A.one('#<portlet:namespace /><%= formName + fieldParam %>');
 
-					checkbox.one(
-						'click mouseover',
-						function() {
-							Liferay.component('<portlet:namespace /><%= fieldParam %>DatePicker');
-						}
-					);
+					if (checkbox) {
+						checkbox.once(
+							'click',
+							function() {
+								Liferay.component('<portlet:namespace /><%= fieldParam %>DatePicker');
+							}
+						);
 
-					checkbox.on(
-						'click mouseover',
-						function(event) {
-							var checked = checkbox.prop('checked');
+						var form = document.<portlet:namespace /><%= formName %>;
 
-							var form = $(document.<portlet:namespace /><%= formName %>);
+						checkbox.on(
+							'click',
+							function(event) {
+								var checked = checkbox.get('checked');
 
-							form.fm('<%= fieldParam %>').prop('disabled', checked);
-							form.fm('<%= fieldParam %>Month').prop('disabled', checked);
-							form.fm('<%= fieldParam %>Day').prop('disabled', checked);
-							form.fm('<%= fieldParam %>Year').prop('disabled', checked);
+								var blankElement = Liferay.Util.getFormElement(form, '<%= fieldParam %>');
 
-							<c:if test="<%= showTime %>">
-								form.fm('<%= fieldParam %>Time').prop('disabled', checked);
-								form.fm('<%= fieldParam %>Hour').prop('disabled', checked);
-								form.fm('<%= fieldParam %>Minute').prop('disabled', checked);
-								form.fm('<%= fieldParam %>AmPm').prop('disabled', checked);
-							</c:if>
-						}
-					);
+								if (blankElement) {
+									blankElement.disabled = checked;
+								}
+
+								var dayElement = Liferay.Util.getFormElement(form, '<%= fieldParam %>Day');
+
+								if (dayElement) {
+									dayElement.disabled = checked;
+								}
+
+								var monthElement = Liferay.Util.getFormElement(form, '<%= fieldParam %>Month');
+
+								if (monthElement) {
+									monthElement.disabled = checked;
+								}
+
+								var yearElement = Liferay.Util.getFormElement(form, '<%= fieldParam %>Year');
+
+								if (yearElement) {
+									yearElement.disabled = checked;
+								}
+
+								var label = A.one('label[for="<portlet:namespace /><%= fieldParam %>"]');
+
+								if (label) {
+									label.toggleClass('disabled', checked);
+								}
+
+								<c:if test="<%= showTime %>">
+									var timeElement = Liferay.Util.getFormElement(form, '<%= fieldParam %>Time');
+
+									if (timeElement) {
+										timeElement.disabled = checked;
+									}
+
+									var hourElement = Liferay.Util.getFormElement(form, '<%= fieldParam %>Hour');
+
+									if (hourElement) {
+										hourElement.disabled = checked;
+									}
+
+									var minuteElement = Liferay.Util.getFormElement(form, '<%= fieldParam %>Minute');
+
+									if (minuteElement) {
+										minuteElement.disabled = checked;
+									}
+
+									var ampmElement = Liferay.Util.getFormElement(form, '<%= fieldParam %>AmPm');
+
+									if (ampmElement) {
+										ampmElement.disabled = checked;
+									}
+								</c:if>
+							}
+						);
+					}
 				</aui:script>
 			</c:if>
 		</c:when>
@@ -389,7 +444,7 @@ if (hints != null) {
 
 			if (localized) {
 				if (ModelHintsUtil.hasField(model, "groupId")) {
-					availableLocales = LanguageUtil.getAvailableLocales(themeDisplay.getSiteGroupId());
+					availableLocales = LanguageUtil.getAvailableLocales(BeanPropertiesUtil.getLongSilent(bean, "groupId", themeDisplay.getSiteGroupId()));
 				}
 				else {
 					availableLocales = LanguageUtil.getAvailableLocales();
@@ -418,7 +473,7 @@ if (hints != null) {
 								maxLength="<%= maxLength %>"
 								name="<%= fieldParam %>"
 								placeholder="<%= placeholder %>"
-								style='<%= (upperCase ? "text-transform: uppercase;" : "") %>'
+								style='<%= upperCase ? "text-transform: uppercase;" : "" %>'
 								type="editor"
 								xml="<%= xml %>"
 							/>
@@ -463,12 +518,12 @@ if (hints != null) {
 								maxLength="<%= maxLength %>"
 								name="<%= fieldParam %>"
 								placeholder="<%= placeholder %>"
-								style='<%= (upperCase ? "text-transform: uppercase;" : "") %>'
+								style='<%= upperCase ? "text-transform: uppercase;" : "" %>'
 								xml="<%= xml %>"
 							/>
 						</c:when>
 						<c:otherwise>
-							<input <%= !autoComplete ? "autocomplete=\"off\"" : StringPool.BLANK %>' class="<%= cssClass + " lfr-input-text" %>" <%= disabled ? "disabled=\"disabled\"" : StringPool.BLANK %> id="<%= namespace %><%= id %>" name="<%= namespace %><%= fieldParam %>" <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(resourceBundle, placeholder) + "\"" : StringPool.BLANK %> style="<%= upperCase ? "text-transform: uppercase;" : StringPool.BLANK %>" type="<%= secret ? "password" : "text" %>" value="<%= autoEscape ? HtmlUtil.escape(value) : value %>" />
+							<input <%= !autoComplete ? "autocomplete=\"off\"" : StringPool.BLANK %> class="<%= cssClass + " lfr-input-text" %>" <%= disabled ? "disabled=\"disabled\"" : StringPool.BLANK %> id="<%= namespace %><%= id %>" name="<%= namespace %><%= fieldParam %>" <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(resourceBundle, placeholder) + "\"" : StringPool.BLANK %> style="<%= upperCase ? "text-transform: uppercase;" : StringPool.BLANK %>" type="<%= secret ? "password" : "text" %>" value="<%= autoEscape ? HtmlUtil.escape(value) : value %>" />
 						</c:otherwise>
 					</c:choose>
 				</c:when>

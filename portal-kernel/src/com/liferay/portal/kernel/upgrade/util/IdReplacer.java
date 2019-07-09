@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.upgrade.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.StagnantRowException;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 /**
@@ -30,8 +30,8 @@ public class IdReplacer {
 			String s, String begin, ValueMapper valueMapper)
 		throws Exception {
 
-		if ((s == null) || (begin == null) ||
-			(valueMapper == null) || (valueMapper.size() == 0)) {
+		if ((s == null) || (begin == null) || (valueMapper == null) ||
+			(valueMapper.size() == 0)) {
 
 			return s;
 		}
@@ -44,6 +44,7 @@ public class IdReplacer {
 
 		while (true) {
 			int x = s.indexOf(begin, pos);
+
 			int y = _getEndPos(chars, x + begin.length());
 
 			if ((x == -1) || (y == -1)) {
@@ -51,34 +52,33 @@ public class IdReplacer {
 
 				break;
 			}
-			else {
-				sb.append(s.substring(pos, x + begin.length()));
 
-				String oldString = s.substring(x + begin.length(), y);
+			sb.append(s.substring(pos, x + begin.length()));
 
-				if (Validator.isNotNull(oldString)) {
-					Long oldValue = Long.valueOf(GetterUtil.getLong(oldString));
+			String oldString = s.substring(x + begin.length(), y);
 
-					Long newValue = null;
+			if (Validator.isNotNull(oldString)) {
+				Long oldValue = Long.valueOf(GetterUtil.getLong(oldString));
 
-					try {
-						newValue = (Long)valueMapper.getNewValue(oldValue);
+				Long newValue = null;
+
+				try {
+					newValue = (Long)valueMapper.getNewValue(oldValue);
+				}
+				catch (StagnantRowException sre) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(sre, sre);
 					}
-					catch (StagnantRowException sre) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(sre);
-						}
-					}
-
-					if (newValue == null) {
-						newValue = oldValue;
-					}
-
-					sb.append(newValue);
 				}
 
-				pos = y;
+				if (newValue == null) {
+					newValue = oldValue;
+				}
+
+				sb.append(newValue);
 			}
+
+			pos = y;
 		}
 
 		return sb.toString();
@@ -100,6 +100,7 @@ public class IdReplacer {
 
 		while (true) {
 			int x = s.indexOf(begin, pos);
+
 			int y = s.indexOf(end, x + begin.length());
 
 			if ((x == -1) || (y == -1)) {
@@ -107,31 +108,30 @@ public class IdReplacer {
 
 				break;
 			}
-			else {
-				sb.append(s.substring(pos, x + begin.length()));
 
-				Long oldValue = Long.valueOf(
-					GetterUtil.getLong(s.substring(x + begin.length(), y)));
+			sb.append(s.substring(pos, x + begin.length()));
 
-				Long newValue = null;
+			Long oldValue = Long.valueOf(
+				GetterUtil.getLong(s.substring(x + begin.length(), y)));
 
-				try {
-					newValue = (Long)valueMapper.getNewValue(oldValue);
-				}
-				catch (StagnantRowException sre) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(sre);
-					}
-				}
+			Long newValue = null;
 
-				if (newValue == null) {
-					newValue = oldValue;
-				}
-
-				sb.append(newValue);
-
-				pos = y;
+			try {
+				newValue = (Long)valueMapper.getNewValue(oldValue);
 			}
+			catch (StagnantRowException sre) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(sre, sre);
+				}
+			}
+
+			if (newValue == null) {
+				newValue = oldValue;
+			}
+
+			sb.append(newValue);
+
+			pos = y;
 		}
 
 		return sb.toString();

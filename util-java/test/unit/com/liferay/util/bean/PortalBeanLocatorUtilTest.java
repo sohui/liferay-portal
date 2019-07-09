@@ -62,7 +62,8 @@ public class PortalBeanLocatorUtilTest extends PowerMockito {
 
 				List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-				Assert.assertEquals(1, logRecords.size());
+				Assert.assertEquals(
+					logRecords.toString(), 1, logRecords.size());
 
 				LogRecord logRecord = logRecords.get(0);
 
@@ -91,7 +92,7 @@ public class PortalBeanLocatorUtilTest extends PowerMockito {
 	}
 
 	@Test
-	public void testLocateNonExistingBean() {
+	public void testLocateNonexistingBean() {
 		when(
 			_beanLocator.locate("nonExistingBean")
 		).thenReturn(

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<suppressions>
+	<checkstyle>
+		<suppress checks="PersistenceCallCheck" files="modules/apps/asset/asset-publisher-web/src/main/java/com/liferay/asset/publisher/web/internal/display/context/AssetPublisherDisplayContext\.java" />
+	</checkstyle>
+	<source-check>
+		<suppress checks="XMLServiceEntityNameCheck" files="modules/apps/asset/asset-category-property-service/service\.xml" />
+		<suppress checks="XMLServiceEntityNameCheck" files="modules/apps/asset/asset-tag-stats-service/service\.xml" />
+	</source-check>
+</suppressions>

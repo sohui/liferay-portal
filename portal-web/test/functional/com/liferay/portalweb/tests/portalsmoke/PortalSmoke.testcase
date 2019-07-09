@@ -1,36 +1,96 @@
-<definition component-name="portal-smoke">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Smoke" />
+@component-name = "portal-smoke"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property portal.release = "true";
+	property portal.smoke = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Smoke";
+	property test.assert.warning.exceptions = "true";
 
-		<execute macro="SignIn#signInTestSetup" />
-	</set-up>
+	setUp {
+		TestCase.setUpPortalInstance();
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		SignIn.signInTestSetup();
+	}
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="Page#tearDownPG" />
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-				<execute macro="WebContent#tearDownCP" />
-			</else>
-		</if>
-	</tear-down>
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			Page.tearDownCP();
 
-	<command description="Ensure that the super admin can add pages, add portlets, navigate to the product menu, use the WYSIWYG editor, and view alert messages." name="Smoke" priority="5">
-		<property name="portal.acceptance" value="true" />
-		<property name="portal.smoke" value="true" />
-		<property name="test.assert.warning.exceptions" value="true" />
+			Site.tearDownCP();
 
-		<execute macro="Smoke#viewWelcomePage" />
+			WebContent.tearDownCP();
+		}
+	}
 
-		<execute macro="Smoke#runSmoke" />
-	</command>
-</definition>
+	@description = "Ensure that LCS token is successfully deployed and LCS Client successfully connects to LCS server"
+	@priority = "5"
+	test LCSClientSmoke {
+		property deploy.lcs.token.file = "true";
+		property environment.acceptance = "true";
+		property portal.fixpack.release = "true";
+		property portal.smoke = "false";
+		property portal.upstream = "false";
+		property test.run.environment = "EE";
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Liferay Connected Services");
+
+		SiteAdmin.viewPortletTitle(portletTitle = "Liferay Connected Services");
+
+		Alert.viewSuccessMessageText(successMessage = "Connected");
+
+		AssertElementPresent(locator1 = "LCSClient#PROJECT_HOME_LINK");
+		AssertElementPresent(locator1 = "LCSClient#ENVIRONMENT_LINK");
+		AssertElementPresent(locator1 = "LCSClient#SERVER_DASHBOARD_LINK");
+	}
+
+	@description = "Ensure that the super admin can add pages, add portlets, navigate to the product menu, use the WYSIWYG editor, and view alert messages."
+	@priority = "5"
+	test Smoke {
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
+		property database.bare.enabled = "true";
+		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
+		property environment.acceptance = "true";
+		property testray.component.names = "Training";
+
+		Smoke.viewWelcomePage();
+
+		Smoke.runSmoke();
+
+		// Assert mismatching checksum for release bundles
+
+		AssertConsoleTextNotPresent(value1 = "Running validation because of mismatched checksum");
+	}
+
+	@priority = "5"
+	test SmokeWithDeveloperProperties {
+		property custom.properties = "include-and-override=portal-developer.properties";
+		property osgi.module.configuration.file.names = "com.liferay.document.library.document.conversion.configuration.OpenOfficeConfiguration";
+		property osgi.module.configurations = "cacheEnabled=&quot;false&quot;";
+		property portal.acceptance = "true";
+		property portal.smoke = "false";
+
+		Smoke.viewWelcomePage();
+
+		Smoke.runSmoke();
+	}
+
+	@priority = "5"
+	test SmokeWithSPADisabled {
+		property custom.properties = "javascript.single.page.application.enabled=false";
+		property portal.smoke = "false";
+
+		Smoke.viewWelcomePage();
+
+		Smoke.runSmoke();
+	}
+
+}

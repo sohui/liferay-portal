@@ -1,21 +1,23 @@
-<definition>
-	<command name="selectHeading">
-		<execute function="Click" locator1="CKEditor#TOOLBAR_FORMAT_BUTTON" />
+definition {
 
-		<execute function="SelectFrame" locator1="CKEditor#IFRAME" />
+	macro addContent {
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-		<var name="key_format" value="${format}" />
+		KeyPress(
+			locator1 = "CKEditor#BODY",
+			value1 = "${content}");
 
-		<execute function="Click" locator1="CKEditor#TOOLBAR_FORMAT_MENULIST" value1="${format}" />
+		SelectFrame(value1 = "relative=top");
+	}
 
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
+	macro assertEditorPresent {
+		AssertElementPresent(locator1 = "CKEditor#BODY_FIELD");
+	}
 
-	<command name="typeEnterKey">
-		<execute function="SelectFrame" locator1="CKEditor#BODY_FIELD_IFRAME" />
+	macro viewEntryContent {
+		AssertTextEquals(
+			locator1 = "CKEditor#BODY",
+			value1 = "${content}");
+	}
 
-		<execute function="KeyPress" locator1="CKEditor#BODY" value1="\RETURN" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-</definition>
+}

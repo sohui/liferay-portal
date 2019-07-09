@@ -14,17 +14,18 @@
 
 package com.liferay.portal.fabric.netty.repository;
 
+import com.liferay.petra.concurrent.AsyncBroker;
+import com.liferay.petra.concurrent.BaseFutureListener;
+import com.liferay.petra.concurrent.DefaultNoticeableFuture;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.concurrent.NoticeableFutureConverter;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.fabric.netty.fileserver.FileHelperUtil;
 import com.liferay.portal.fabric.netty.fileserver.FileRequest;
 import com.liferay.portal.fabric.netty.fileserver.FileResponse;
 import com.liferay.portal.fabric.netty.util.NettyUtil;
 import com.liferay.portal.fabric.repository.Repository;
 import com.liferay.portal.fabric.repository.RepositoryHelperUtil;
-import com.liferay.portal.kernel.concurrent.AsyncBroker;
-import com.liferay.portal.kernel.concurrent.BaseFutureListener;
-import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
-import com.liferay.portal.kernel.concurrent.NoticeableFutureConverter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -193,17 +194,14 @@ public class NettyRepository implements Repository<Channel> {
 
 		final Path cachedLocalFilePath = pathMap.get(remoteFilePath);
 
-		final DefaultNoticeableFuture<FileResponse> defaultNoticeableFuture =
-			new DefaultNoticeableFuture<>();
+		boolean[] newMarker = new boolean[1];
 
 		NoticeableFuture<FileResponse> noticeableFuture = asyncBroker.post(
-			remoteFilePath, defaultNoticeableFuture);
+			remoteFilePath, newMarker);
 
-		if (noticeableFuture == null) {
-			noticeableFuture = defaultNoticeableFuture;
-
+		if (newMarker[0]) {
 			NettyUtil.scheduleCancellation(
-				channel, defaultNoticeableFuture, getFileTimeout);
+				channel, noticeableFuture, getFileTimeout);
 
 			ChannelFuture channelFuture = channel.writeAndFlush(
 				new FileRequest(
@@ -220,7 +218,7 @@ public class NettyRepository implements Repository<Channel> {
 						}
 
 						if (channelFuture.isCancelled()) {
-							defaultNoticeableFuture.cancel(true);
+							noticeableFuture.cancel(true);
 
 							return;
 						}
@@ -261,9 +259,10 @@ public class NettyRepository implements Repository<Channel> {
 				if (fileResponse.isFileNotModified()) {
 					if (_log.isDebugEnabled()) {
 						_log.debug(
-							"Remote file " + remoteFilePath +
-								" is not modified, use cached local file " +
-									cachedLocalFilePath);
+							StringBundler.concat(
+								"Remote file ", remoteFilePath,
+								" is not modified, use cached local file ",
+								cachedLocalFilePath));
 					}
 
 					return cachedLocalFilePath;
@@ -301,8 +300,9 @@ public class NettyRepository implements Repository<Channel> {
 
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Fetched remote file " + remoteFilePath + " to " +
-							targetLocalFilePath);
+						StringBundler.concat(
+							"Fetched remote file ", remoteFilePath, " to ",
+							targetLocalFilePath));
 				}
 
 				return targetLocalFilePath;

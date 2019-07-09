@@ -14,8 +14,8 @@
 
 package com.liferay.portal.servlet.filters.etag;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.nio.ByteBuffer;
@@ -30,10 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 public class ETagUtil {
 
 	public static boolean processETag(
-		HttpServletRequest request, HttpServletResponse response,
-		ByteBuffer byteBuffer) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, ByteBuffer byteBuffer) {
 
-		if (response.isCommitted()) {
+		if (httpServletResponse.isCommitted()) {
 			return false;
 		}
 
@@ -41,21 +41,24 @@ public class ETagUtil {
 			byteBuffer.array(), byteBuffer.position(), byteBuffer.limit());
 
 		String eTag = StringPool.QUOTE.concat(
-			StringUtil.toHexString(hashCode)).concat(StringPool.QUOTE);
+			StringUtil.toHexString(hashCode)
+		).concat(
+			StringPool.QUOTE
+		);
 
-		response.setHeader(HttpHeaders.ETAG, eTag);
+		httpServletResponse.setHeader(HttpHeaders.ETAG, eTag);
 
-		String ifNoneMatch = request.getHeader(HttpHeaders.IF_NONE_MATCH);
+		String ifNoneMatch = httpServletRequest.getHeader(
+			HttpHeaders.IF_NONE_MATCH);
 
 		if (eTag.equals(ifNoneMatch)) {
-			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-			response.setContentLength(0);
+			httpServletResponse.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+			httpServletResponse.setContentLength(0);
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private static int _hashCode(byte[] data, int offset, int length) {

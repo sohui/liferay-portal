@@ -15,7 +15,6 @@
 package com.liferay.portal.model;
 
 import com.liferay.portal.kernel.model.ModelHintsCallback;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProvider;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
@@ -30,7 +29,6 @@ import org.dom4j.io.SAXReader;
 /**
  * @author Raymond Augé
  */
-@DoPrivileged
 public class DefaultModelHintsImpl extends BaseModelHintsImpl {
 
 	@Override
@@ -40,7 +38,7 @@ public class DefaultModelHintsImpl extends BaseModelHintsImpl {
 
 	@Override
 	public String[] getModelHintsConfigs() {
-		return _modelHintsConfigs;
+		return _MODEL_HINTS_CONFIGS;
 	}
 
 	@Override
@@ -64,9 +62,10 @@ public class DefaultModelHintsImpl extends BaseModelHintsImpl {
 
 	}
 
+	private static final String[] _MODEL_HINTS_CONFIGS = StringUtil.split(
+		PropsUtil.get(PropsKeys.MODEL_HINTS_CONFIGS));
+
 	private final ModelHintsCallback _modelHintsCallback =
 		new RuntimeModelHintsCallback();
-	private final String[] _modelHintsConfigs = StringUtil.split(
-		PropsUtil.get(PropsKeys.MODEL_HINTS_CONFIGS));
 
 }

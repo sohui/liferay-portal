@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
 
@@ -55,27 +54,31 @@ public class SitesUtil {
 	}
 
 	public static void addPortletBreadcrumbEntries(
-			Group group, HttpServletRequest request, PortletURL portletURL)
+			Group group, HttpServletRequest httpServletRequest,
+			PortletURL portletURL)
 		throws Exception {
 
-		getSites().addPortletBreadcrumbEntries(group, request, portletURL);
+		getSites().addPortletBreadcrumbEntries(
+			group, httpServletRequest, portletURL);
 	}
 
 	public static void addPortletBreadcrumbEntries(
-			Group group, HttpServletRequest request,
+			Group group, HttpServletRequest httpServletRequest,
 			RenderResponse renderResponse)
 		throws Exception {
 
-		getSites().addPortletBreadcrumbEntries(group, request, renderResponse);
+		getSites().addPortletBreadcrumbEntries(
+			group, httpServletRequest, renderResponse);
 	}
 
 	public static void addPortletBreadcrumbEntries(
 			Group group, String pagesName, PortletURL redirectURL,
-			HttpServletRequest request, RenderResponse renderResponse)
+			HttpServletRequest httpServletRequest,
+			RenderResponse renderResponse)
 		throws Exception {
 
 		getSites().addPortletBreadcrumbEntries(
-			group, pagesName, redirectURL, request, renderResponse);
+			group, pagesName, redirectURL, httpServletRequest, renderResponse);
 	}
 
 	public static void applyLayoutPrototype(
@@ -123,10 +126,11 @@ public class SitesUtil {
 	}
 
 	public static Object[] deleteLayout(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		return getSites().deleteLayout(request, response);
+		return getSites().deleteLayout(httpServletRequest, httpServletResponse);
 	}
 
 	public static Object[] deleteLayout(
@@ -192,8 +196,6 @@ public class SitesUtil {
 	}
 
 	public static Sites getSites() {
-		PortalRuntimePermission.checkGetBeanProperty(SitesUtil.class);
-
 		return _sites;
 	}
 
@@ -277,7 +279,9 @@ public class SitesUtil {
 		getSites().mergeLayoutSetPrototypeLayouts(group, layoutSet);
 	}
 
-	public static void removeMergeFailFriendlyURLLayouts(LayoutSet layoutSet) {
+	public static void removeMergeFailFriendlyURLLayouts(LayoutSet layoutSet)
+		throws PortalException {
+
 		getSites().removeMergeFailFriendlyURLLayouts(layoutSet);
 	}
 
@@ -331,8 +335,6 @@ public class SitesUtil {
 	}
 
 	public void setSites(Sites sites) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_sites = sites;
 	}
 

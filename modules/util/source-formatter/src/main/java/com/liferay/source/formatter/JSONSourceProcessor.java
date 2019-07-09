@@ -14,17 +14,9 @@
 
 package com.liferay.source.formatter;
 
-import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
-import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
-
-import java.io.File;
+import java.io.IOException;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Hugo Huijser
@@ -32,60 +24,15 @@ import java.util.regex.Pattern;
 public class JSONSourceProcessor extends BaseSourceProcessor {
 
 	@Override
-	public String[] getIncludes() {
-		return _INCLUDES;
-	}
-
-	@Override
-	protected String doFormat(
-			File file, String fileName, String absolutePath, String content)
-		throws Exception {
-
-		StringBundler sb = new StringBundler();
-
-		try (UnsyncBufferedReader unsyncBufferedReader =
-				new UnsyncBufferedReader(new UnsyncStringReader(content))) {
-
-			String line = null;
-
-			while ((line = unsyncBufferedReader.readLine()) != null) {
-				line = trimLine(line, true);
-
-				while (true) {
-					Matcher matcher = _leadingSpacesPattern.matcher(line);
-
-					if (!matcher.find()) {
-						break;
-					}
-
-					line = matcher.replaceAll("$1\t$3");
-				}
-
-				line = StringUtil.replace(
-					line, StringPool.DOUBLE_SPACE, StringPool.SPACE);
-
-				sb.append(line);
-				sb.append("\n");
-			}
-		}
-
-		content = sb.toString();
-
-		if (content.endsWith("\n")) {
-			content = content.substring(0, content.length() - 1);
-		}
-
-		return content;
-	}
-
-	@Override
-	protected List<String> doGetFileNames() throws Exception {
+	protected List<String> doGetFileNames() throws IOException {
 		return getFileNames(new String[0], getIncludes());
 	}
 
-	private static final String[] _INCLUDES = new String[] {"**/*.json"};
+	@Override
+	protected String[] doGetIncludes() {
+		return _INCLUDES;
+	}
 
-	private final Pattern _leadingSpacesPattern = Pattern.compile(
-		"(^[\t ]*)(  )([^ ])");
+	private static final String[] _INCLUDES = {"**/*.json", "**/.npmbridgerc"};
 
 }

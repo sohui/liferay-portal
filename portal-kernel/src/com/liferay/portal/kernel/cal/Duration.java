@@ -12,22 +12,22 @@
  * details.
  */
 
-/*
+/**
  * Copyright (c) 2000, Columbia University.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *	  notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
- *	  notice, this list of conditions and the following disclaimer in the
- *	  documentation and/or other materials provided with the distribution.
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
  * 3. Neither the name of the University nor the names of its contributors
- *	  may be used to endorse or promote products derived from this software
- *	  without specific prior written permission.
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -44,7 +44,7 @@
 
 package com.liferay.portal.kernel.cal;
 
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
 
 import java.io.Serializable;
 
@@ -342,7 +342,7 @@ public class Duration implements Cloneable, Serializable {
 	 * Field MILLIS_PER_DAY
 	 */
 	private static final long _MILLIS_PER_DAY =
-		Duration._HOURS_PER_DAY * Duration._MILLIS_PER_HOUR;
+		_HOURS_PER_DAY * Duration._MILLIS_PER_HOUR;
 
 	/**
 	 * Field MILLIS_PER_HOUR
@@ -365,7 +365,7 @@ public class Duration implements Cloneable, Serializable {
 	 * Field MILLIS_PER_WEEK
 	 */
 	private static final long _MILLIS_PER_WEEK =
-		Duration._DAYS_PER_WEEK * Duration._MILLIS_PER_DAY;
+		_DAYS_PER_WEEK * _MILLIS_PER_DAY;
 
 	/**
 	 * Field MINUTES_PER_HOUR

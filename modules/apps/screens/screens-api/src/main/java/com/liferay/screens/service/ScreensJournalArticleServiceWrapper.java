@@ -14,9 +14,9 @@
 
 package com.liferay.screens.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.service.ServiceWrapper;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides a wrapper for {@link ScreensJournalArticleService}.
@@ -28,43 +28,49 @@ import com.liferay.portal.kernel.service.ServiceWrapper;
 @ProviderType
 public class ScreensJournalArticleServiceWrapper
 	implements ScreensJournalArticleService,
-		ServiceWrapper<ScreensJournalArticleService> {
+			   ServiceWrapper<ScreensJournalArticleService> {
+
 	public ScreensJournalArticleServiceWrapper(
 		ScreensJournalArticleService screensJournalArticleService) {
+
 		_screensJournalArticleService = screensJournalArticleService;
 	}
 
 	@Override
-	public java.lang.String getJournalArticleContent(long classPK,
-		java.util.Locale locale)
+	public String getJournalArticleContent(
+			long classPK, java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _screensJournalArticleService.getJournalArticleContent(classPK,
-			locale);
+
+		return _screensJournalArticleService.getJournalArticleContent(
+			classPK, locale);
 	}
 
 	@Override
-	public java.lang.String getJournalArticleContent(long classPK,
-		long ddmTemplateId, java.util.Locale locale)
+	public String getJournalArticleContent(
+			long classPK, long ddmTemplateId, java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _screensJournalArticleService.getJournalArticleContent(classPK,
-			ddmTemplateId, locale);
+
+		return _screensJournalArticleService.getJournalArticleContent(
+			classPK, ddmTemplateId, locale);
 	}
 
 	@Override
-	public java.lang.String getJournalArticleContent(long groupId,
-		java.lang.String articleId, long ddmTemplateId, java.util.Locale locale)
+	public String getJournalArticleContent(
+			long groupId, String articleId, long ddmTemplateId,
+			java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _screensJournalArticleService.getJournalArticleContent(groupId,
-			articleId, ddmTemplateId, locale);
+
+		return _screensJournalArticleService.getJournalArticleContent(
+			groupId, articleId, ddmTemplateId, locale);
 	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
+	public String getOSGiServiceIdentifier() {
 		return _screensJournalArticleService.getOSGiServiceIdentifier();
 	}
 
@@ -76,8 +82,10 @@ public class ScreensJournalArticleServiceWrapper
 	@Override
 	public void setWrappedService(
 		ScreensJournalArticleService screensJournalArticleService) {
+
 		_screensJournalArticleService = screensJournalArticleService;
 	}
 
 	private ScreensJournalArticleService _screensJournalArticleService;
+
 }

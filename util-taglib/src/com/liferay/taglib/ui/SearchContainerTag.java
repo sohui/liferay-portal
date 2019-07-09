@@ -14,6 +14,7 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -21,8 +22,6 @@ import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.SearchContainerReference;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.ParamAndPropertyAncestorTagImpl;
@@ -66,6 +65,7 @@ public class SearchContainerTag<R> extends ParamAndPropertyAncestorTagImpl {
 		_rowChecker = null;
 		_searchContainer = null;
 		_searchTerms = null;
+		_summary = null;
 		_total = 0;
 		_totalVar = SearchContainer.DEFAULT_TOTAL_VAR;
 		_var = SearchContainer.DEFAULT_VAR;
@@ -76,20 +76,22 @@ public class SearchContainerTag<R> extends ParamAndPropertyAncestorTagImpl {
 	@Override
 	public int doStartTag() throws JspException {
 		try {
-			PortletRequest portletRequest =
-				(PortletRequest)request.getAttribute(
-					JavaConstants.JAVAX_PORTLET_REQUEST);
-			PortletResponse portletResponse =
-				(PortletResponse)request.getAttribute(
-					JavaConstants.JAVAX_PORTLET_RESPONSE);
-
 			if (_iteratorURL == null) {
-				_iteratorURL =
-					((MimeResponse)portletResponse).createRenderURL();
+				PortletResponse portletResponse =
+					(PortletResponse)request.getAttribute(
+						JavaConstants.JAVAX_PORTLET_RESPONSE);
+
+				MimeResponse mimeResponse = (MimeResponse)portletResponse;
+
+				_iteratorURL = mimeResponse.createRenderURL();
 			}
 
 			if (_searchContainer == null) {
-				_searchContainer = new SearchContainer<R>(
+				PortletRequest portletRequest =
+					(PortletRequest)request.getAttribute(
+						JavaConstants.JAVAX_PORTLET_REQUEST);
+
+				_searchContainer = new SearchContainer<>(
 					portletRequest, _displayTerms, _searchTerms, getCurParam(),
 					getDelta(), _iteratorURL, null, _emptyResultsMessage);
 			}
@@ -157,6 +159,10 @@ public class SearchContainerTag<R> extends ParamAndPropertyAncestorTagImpl {
 				_searchContainer.setRowChecker(_rowChecker);
 			}
 
+			if (Validator.isNotNull(_summary)) {
+				_searchContainer.setSummary(_summary);
+			}
+
 			if (_total != 0) {
 				_searchContainer.setTotal(_total);
 			}
@@ -168,16 +174,6 @@ public class SearchContainerTag<R> extends ParamAndPropertyAncestorTagImpl {
 			pageContext.setAttribute(
 				_searchContainer.getTotalVar(), _searchContainer.getTotal());
 			pageContext.setAttribute(_var, _searchContainer);
-
-			SearchContainerReference searchContainerReference =
-				(SearchContainerReference)pageContext.getAttribute(
-					"searchContainerReference");
-
-			if ((searchContainerReference != null) &&
-				!_var.equals(SearchContainer.DEFAULT_VAR)) {
-
-				searchContainerReference.register(_var, _searchContainer);
-			}
 
 			return EVAL_BODY_INCLUDE;
 		}
@@ -248,6 +244,10 @@ public class SearchContainerTag<R> extends ParamAndPropertyAncestorTagImpl {
 
 	public DisplayTerms getSearchTerms() {
 		return _searchTerms;
+	}
+
+	public String getSummary() {
+		return _summary;
 	}
 
 	public int getTotal() {
@@ -354,6 +354,10 @@ public class SearchContainerTag<R> extends ParamAndPropertyAncestorTagImpl {
 		_searchTerms = searchTerms;
 	}
 
+	public void setSummary(String summary) {
+		_summary = summary;
+	}
+
 	public void setTotal(int total) {
 		_total = total;
 	}
@@ -389,6 +393,7 @@ public class SearchContainerTag<R> extends ParamAndPropertyAncestorTagImpl {
 	private RowChecker _rowChecker;
 	private SearchContainer<R> _searchContainer;
 	private DisplayTerms _searchTerms;
+	private String _summary;
 	private int _total;
 	private String _totalVar = SearchContainer.DEFAULT_TOTAL_VAR;
 	private String _var = SearchContainer.DEFAULT_VAR;

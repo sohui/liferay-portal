@@ -14,11 +14,14 @@
 
 package com.liferay.portal.tools.deploy;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Plugin;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.tools.ToolDependencies;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +46,13 @@ public class HookDeployer extends BaseDeployer {
 			}
 		}
 
-		new HookDeployer(wars, jars);
+		try (HookDeployer hookDeployer = new HookDeployer(wars, jars)) {
+		}
+		catch (IOException ioe) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(ioe, ioe);
+			}
+		}
 	}
 
 	public HookDeployer() {
@@ -67,5 +76,7 @@ public class HookDeployer extends BaseDeployer {
 	public String getPluginType() {
 		return Plugin.TYPE_HOOK;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(HookDeployer.class);
 
 }

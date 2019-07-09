@@ -14,28 +14,29 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.OrganizationServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portal.service.http.OrganizationServiceSoap
  * @generated
  */
 @ProviderType
 public class OrganizationSoap implements Serializable {
+
 	public static OrganizationSoap toSoapModel(Organization model) {
 		OrganizationSoap soapModel = new OrganizationSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
+		soapModel.setExternalReferenceCode(model.getExternalReferenceCode());
 		soapModel.setOrganizationId(model.getOrganizationId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setUserId(model.getUserId());
@@ -46,7 +47,7 @@ public class OrganizationSoap implements Serializable {
 		soapModel.setTreePath(model.getTreePath());
 		soapModel.setName(model.getName());
 		soapModel.setType(model.getType());
-		soapModel.setRecursable(model.getRecursable());
+		soapModel.setRecursable(model.isRecursable());
 		soapModel.setRegionId(model.getRegionId());
 		soapModel.setCountryId(model.getCountryId());
 		soapModel.setStatusId(model.getStatusId());
@@ -84,7 +85,8 @@ public class OrganizationSoap implements Serializable {
 	}
 
 	public static OrganizationSoap[] toSoapModels(List<Organization> models) {
-		List<OrganizationSoap> soapModels = new ArrayList<OrganizationSoap>(models.size());
+		List<OrganizationSoap> soapModels = new ArrayList<OrganizationSoap>(
+			models.size());
 
 		for (Organization model : models) {
 			soapModels.add(toSoapModel(model));
@@ -118,6 +120,14 @@ public class OrganizationSoap implements Serializable {
 
 	public void setUuid(String uuid) {
 		_uuid = uuid;
+	}
+
+	public String getExternalReferenceCode() {
+		return _externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_externalReferenceCode = externalReferenceCode;
 	}
 
 	public long getOrganizationId() {
@@ -254,6 +264,7 @@ public class OrganizationSoap implements Serializable {
 
 	private long _mvccVersion;
 	private String _uuid;
+	private String _externalReferenceCode;
 	private long _organizationId;
 	private long _companyId;
 	private long _userId;
@@ -270,4 +281,5 @@ public class OrganizationSoap implements Serializable {
 	private long _statusId;
 	private String _comments;
 	private long _logoId;
+
 }

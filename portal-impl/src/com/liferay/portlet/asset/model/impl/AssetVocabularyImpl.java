@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.PredicateFilter;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.asset.util.AssetVocabularySettingsHelper;
@@ -79,13 +78,12 @@ public class AssetVocabularyImpl extends AssetVocabularyBaseImpl {
 		if (_vocabularySettingsHelper == null) {
 			return super.getSettings();
 		}
-		else {
-			return _vocabularySettingsHelper.toString();
-		}
+
+		return _vocabularySettingsHelper.toString();
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -134,21 +132,16 @@ public class AssetVocabularyImpl extends AssetVocabularyBaseImpl {
 
 		boolean hasAmbiguousTitle = ListUtil.exists(
 			vocabularies,
-			new PredicateFilter<AssetVocabulary>() {
+			vocabulary -> {
+				String title = vocabulary.getTitle(locale);
 
-				@Override
-				public boolean filter(AssetVocabulary vocabulary) {
-					String title = vocabulary.getTitle(locale);
+				if (title.equals(getTitle(locale)) &&
+					(vocabulary.getVocabularyId() != getVocabularyId())) {
 
-					if (title.equals(getTitle(locale)) &&
-						(vocabulary.getVocabularyId() != getVocabularyId())) {
-
-						return true;
-					}
-
-					return false;
+					return true;
 				}
 
+				return false;
 			});
 
 		if (hasAmbiguousTitle) {
@@ -162,18 +155,12 @@ public class AssetVocabularyImpl extends AssetVocabularyBaseImpl {
 
 	@Override
 	public boolean hasMoreThanOneCategorySelected(final long[] categoryIds) {
-		PredicateFilter<AssetCategory> predicateFilter =
-			new PredicateFilter<AssetCategory>() {
+		int count = ListUtil.count(
+			getCategories(),
+			assetCategory -> ArrayUtil.contains(
+				categoryIds, assetCategory.getCategoryId()));
 
-				@Override
-				public boolean filter(AssetCategory assetCategory) {
-					return ArrayUtil.contains(
-						categoryIds, assetCategory.getCategoryId());
-				}
-
-			};
-
-		if (ListUtil.count(getCategories(), predicateFilter) > 1) {
+		if (count > 1) {
 			return true;
 		}
 
@@ -205,18 +192,10 @@ public class AssetVocabularyImpl extends AssetVocabularyBaseImpl {
 			return false;
 		}
 
-		PredicateFilter<AssetCategory> predicateFilter =
-			new PredicateFilter<AssetCategory>() {
-
-				@Override
-				public boolean filter(AssetCategory assetCategory) {
-					return ArrayUtil.contains(
-						categoryIds, assetCategory.getCategoryId());
-				}
-
-			};
-
-		return !ListUtil.exists(getCategories(), predicateFilter);
+		return !ListUtil.exists(
+			getCategories(),
+			assetCategory -> ArrayUtil.contains(
+				categoryIds, assetCategory.getCategoryId()));
 	}
 
 	@Override
@@ -228,7 +207,8 @@ public class AssetVocabularyImpl extends AssetVocabularyBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #isRequired(long, long)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #isRequired(long, long)}
 	 */
 	@Deprecated
 	@Override
@@ -254,7 +234,7 @@ public class AssetVocabularyImpl extends AssetVocabularyBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override

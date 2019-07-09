@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.dao.db;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.IOException;
 
 import java.sql.Connection;
@@ -25,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.naming.NamingException;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -59,6 +59,12 @@ public interface DB {
 
 	public int getMinorVersion();
 
+	public default String getNewUuidFunctionName() {
+		return null;
+	}
+
+	public Integer getSQLType(String templateType);
+
 	public String getTemplateBlob();
 
 	public String getTemplateFalse();
@@ -79,6 +85,10 @@ public interface DB {
 
 	public boolean isSupportsInlineDistinct();
 
+	public default boolean isSupportsNewUuidFunction() {
+		return false;
+	}
+
 	public boolean isSupportsQueryingAfterException();
 
 	public boolean isSupportsScrollableResults();
@@ -87,11 +97,27 @@ public interface DB {
 
 	public boolean isSupportsUpdateWithInnerJoin();
 
+	public default void runSQL(Connection con, DBTypeToSQLMap dbTypeToSQLMap)
+		throws IOException, SQLException {
+
+		String sql = dbTypeToSQLMap.get(getDBType());
+
+		runSQL(con, new String[] {sql});
+	}
+
 	public void runSQL(Connection con, String sql)
 		throws IOException, SQLException;
 
 	public void runSQL(Connection con, String[] sqls)
 		throws IOException, SQLException;
+
+	public default void runSQL(DBTypeToSQLMap dbTypeToSQLMap)
+		throws IOException, SQLException {
+
+		String sql = dbTypeToSQLMap.get(getDBType());
+
+		runSQL(new String[] {sql});
+	}
 
 	public void runSQL(String sql) throws IOException, SQLException;
 

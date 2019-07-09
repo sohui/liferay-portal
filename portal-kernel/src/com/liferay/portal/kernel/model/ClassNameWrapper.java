@@ -14,17 +14,12 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -36,19 +31,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class ClassNameWrapper implements ClassName, ModelWrapper<ClassName> {
+public class ClassNameWrapper
+	extends BaseModelWrapper<ClassName>
+	implements ClassName, ModelWrapper<ClassName> {
+
 	public ClassNameWrapper(ClassName className) {
-		_className = className;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return ClassName.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return ClassName.class.getName();
+		super(className);
 	}
 
 	@Override
@@ -83,239 +71,109 @@ public class ClassNameWrapper implements ClassName, ModelWrapper<ClassName> {
 		}
 	}
 
+	/**
+	 * Returns the fully qualified class name of this class name.
+	 *
+	 * @return the fully qualified class name of this class name
+	 */
 	@Override
-	public CacheModel<ClassName> toCacheModel() {
-		return _className.toCacheModel();
-	}
-
-	@Override
-	public ClassName toEscapedModel() {
-		return new ClassNameWrapper(_className.toEscapedModel());
-	}
-
-	@Override
-	public ClassName toUnescapedModel() {
-		return new ClassNameWrapper(_className.toUnescapedModel());
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _className.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _className.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _className.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _className.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(ClassName className) {
-		return _className.compareTo(className);
-	}
-
-	@Override
-	public int hashCode() {
-		return _className.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _className.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new ClassNameWrapper((ClassName)_className.clone());
+	public String getClassName() {
+		return model.getClassName();
 	}
 
 	/**
-	* Returns the fully qualified class name of this class name.
-	*
-	* @return the fully qualified class name of this class name
-	*/
-	@Override
-	public java.lang.String getClassName() {
-		return _className.getClassName();
-	}
-
-	/**
-	* Returns the value of this class name.
-	*
-	* @return the value of this class name
-	*/
-	@Override
-	public java.lang.String getValue() {
-		return _className.getValue();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _className.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _className.toXmlString();
-	}
-
-	/**
-	* Returns the class name ID of this class name.
-	*
-	* @return the class name ID of this class name
-	*/
+	 * Returns the class name ID of this class name.
+	 *
+	 * @return the class name ID of this class name
+	 */
 	@Override
 	public long getClassNameId() {
-		return _className.getClassNameId();
+		return model.getClassNameId();
 	}
 
 	/**
-	* Returns the mvcc version of this class name.
-	*
-	* @return the mvcc version of this class name
-	*/
+	 * Returns the mvcc version of this class name.
+	 *
+	 * @return the mvcc version of this class name
+	 */
 	@Override
 	public long getMvccVersion() {
-		return _className.getMvccVersion();
+		return model.getMvccVersion();
 	}
 
 	/**
-	* Returns the primary key of this class name.
-	*
-	* @return the primary key of this class name
-	*/
+	 * Returns the primary key of this class name.
+	 *
+	 * @return the primary key of this class name
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _className.getPrimaryKey();
+		return model.getPrimaryKey();
+	}
+
+	/**
+	 * Returns the value of this class name.
+	 *
+	 * @return the value of this class name
+	 */
+	@Override
+	public String getValue() {
+		return model.getValue();
 	}
 
 	@Override
 	public void persist() {
-		_className.persist();
+		model.persist();
 	}
 
 	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_className.setCachedModel(cachedModel);
-	}
-
-	@Override
-	public void setClassName(java.lang.String className) {
-		_className.setClassName(className);
+	public void setClassName(String className) {
+		model.setClassName(className);
 	}
 
 	/**
-	* Sets the class name ID of this class name.
-	*
-	* @param classNameId the class name ID of this class name
-	*/
+	 * Sets the class name ID of this class name.
+	 *
+	 * @param classNameId the class name ID of this class name
+	 */
 	@Override
 	public void setClassNameId(long classNameId) {
-		_className.setClassNameId(classNameId);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_className.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_className.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_className.setExpandoBridgeAttributes(serviceContext);
+		model.setClassNameId(classNameId);
 	}
 
 	/**
-	* Sets the mvcc version of this class name.
-	*
-	* @param mvccVersion the mvcc version of this class name
-	*/
+	 * Sets the mvcc version of this class name.
+	 *
+	 * @param mvccVersion the mvcc version of this class name
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_className.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_className.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the primary key of this class name.
-	*
-	* @param primaryKey the primary key of this class name
-	*/
+	 * Sets the primary key of this class name.
+	 *
+	 * @param primaryKey the primary key of this class name
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_className.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_className.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the value of this class name.
-	*
-	* @param value the value of this class name
-	*/
+	 * Sets the value of this class name.
+	 *
+	 * @param value the value of this class name
+	 */
 	@Override
-	public void setValue(java.lang.String value) {
-		_className.setValue(value);
+	public void setValue(String value) {
+		model.setValue(value);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof ClassNameWrapper)) {
-			return false;
-		}
-
-		ClassNameWrapper classNameWrapper = (ClassNameWrapper)obj;
-
-		if (Objects.equals(_className, classNameWrapper._className)) {
-			return true;
-		}
-
-		return false;
+	protected ClassNameWrapper wrap(ClassName className) {
+		return new ClassNameWrapper(className);
 	}
 
-	@Override
-	public ClassName getWrappedModel() {
-		return _className;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _className.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _className.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_className.resetOriginalValues();
-	}
-
-	private final ClassName _className;
 }

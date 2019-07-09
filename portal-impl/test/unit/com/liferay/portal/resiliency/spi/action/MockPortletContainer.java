@@ -37,21 +37,24 @@ public class MockPortletContainer implements PortletContainer {
 		"MOCK_LAYOUT_TYPE_SETTINGS";
 
 	@Override
-	public void preparePortlet(HttpServletRequest request, Portlet portlet) {
+	public void preparePortlet(
+		HttpServletRequest httpServletRequest, Portlet portlet) {
+
 		prepared = true;
 	}
 
 	@Override
 	public ActionResult processAction(
-		HttpServletRequest request, HttpServletResponse response,
-		Portlet portlet) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, Portlet portlet) {
 
-		this.request = request;
-		this.response = response;
+		request = httpServletRequest;
+		response = httpServletResponse;
 		this.portlet = portlet;
 
 		if (modifyLayoutTypeSettings) {
-			Layout requestLayout = (Layout)request.getAttribute(WebKeys.LAYOUT);
+			Layout requestLayout = (Layout)httpServletRequest.getAttribute(
+				WebKeys.LAYOUT);
 
 			requestLayout.setTypeSettings(MOCK_LAYOUT_TYPE_SETTINGS);
 		}
@@ -63,17 +66,19 @@ public class MockPortletContainer implements PortletContainer {
 
 	@Override
 	public List<Event> processEvent(
-		HttpServletRequest request, HttpServletResponse response,
-		Portlet portlet, Layout layout, Event event) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, Portlet portlet, Layout layout,
+		Event event) {
 
-		this.request = request;
-		this.response = response;
+		request = httpServletRequest;
+		response = httpServletResponse;
 		this.portlet = portlet;
 		this.layout = layout;
 		this.event = event;
 
 		if (modifyLayoutTypeSettings) {
-			Layout requestLayout = (Layout)request.getAttribute(WebKeys.LAYOUT);
+			Layout requestLayout = (Layout)httpServletRequest.getAttribute(
+				WebKeys.LAYOUT);
 
 			requestLayout.setTypeSettings(MOCK_LAYOUT_TYPE_SETTINGS);
 		}
@@ -84,22 +89,42 @@ public class MockPortletContainer implements PortletContainer {
 	}
 
 	@Override
-	public void render(
-		HttpServletRequest request, HttpServletResponse response,
-		Portlet portlet) {
+	public void processPublicRenderParameters(
+		HttpServletRequest httpServletRequest, Layout layout) {
+	}
 
-		this.request = request;
-		this.response = response;
+	@Override
+	public void processPublicRenderParameters(
+		HttpServletRequest httpServletRequest, Layout layout, Portlet portlet) {
+	}
+
+	@Override
+	public void render(
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, Portlet portlet) {
+
+		request = httpServletRequest;
+		response = httpServletResponse;
+		this.portlet = portlet;
+	}
+
+	@Override
+	public void renderHeaders(
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, Portlet portlet) {
+
+		request = httpServletRequest;
+		response = httpServletResponse;
 		this.portlet = portlet;
 	}
 
 	@Override
 	public void serveResource(
-		HttpServletRequest request, HttpServletResponse response,
-		Portlet portlet) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, Portlet portlet) {
 
-		this.request = request;
-		this.response = response;
+		request = httpServletRequest;
+		response = httpServletResponse;
 		this.portlet = portlet;
 	}
 

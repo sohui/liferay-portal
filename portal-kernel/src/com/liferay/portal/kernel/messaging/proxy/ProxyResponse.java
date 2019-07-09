@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.messaging.proxy;
 
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
 
 import java.io.Serializable;
 
@@ -37,9 +37,8 @@ public class ProxyResponse implements Serializable {
 		if (_exception != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public void setException(Exception exception) {

@@ -1,11 +1,34 @@
-<definition>
-	<var name="formName" value="Created Form Name" />
+definition {
 
-	<command name="selectForm">
-		<var name="key_formName" value="${formName}" />
+	var formName = "Created Form Name";
 
-		<execute function="AssertClick" locator1="FormPortletConfiguration#FORMS_TABLE_NAME" value1="${formName}" />
+	macro configureScopePG {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
 
-		<execute function="AssertTextEquals" locator1="Message#INFO" value1="Displaying Form: ${formName} (Modified)" />
-	</command>
-</definition>
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		Navigator.gotoNavItem(navItem = "Scope");
+
+		Select(
+			locator1 = "Select#SCOPE",
+			value1 = "${scopeSelection}");
+
+		PortletEntry.save();
+	}
+
+	macro selectForm {
+		Navigator.gotoNavItem(navItem = "Setup");
+
+		AssertClick(
+			key_formName = "${formName}",
+			locator1 = "FormPortletConfiguration#FORMS_TABLE_NAME",
+			value1 = "${formName}");
+
+		AssertTextEquals(
+			locator1 = "Message#INFO",
+			value1 = "Displaying Form: ${formName} (Modified)");
+	}
+
+}

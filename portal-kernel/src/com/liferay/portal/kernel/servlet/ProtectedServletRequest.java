@@ -17,41 +17,40 @@ package com.liferay.portal.kernel.servlet;
 import java.security.Principal;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 
 /**
  * @author Brian Wing Shun Chan
  */
-public class ProtectedServletRequest extends HttpServletRequestWrapper {
+public class ProtectedServletRequest
+	extends PersistentHttpServletRequestWrapper {
 
 	public ProtectedServletRequest(
-		HttpServletRequest request, String remoteUser) {
+		HttpServletRequest httpServletRequest, String remoteUser) {
 
-		this(request, remoteUser, null);
+		this(httpServletRequest, remoteUser, null);
 	}
 
 	public ProtectedServletRequest(
-		HttpServletRequest request, String remoteUser, String authType) {
+		HttpServletRequest httpServletRequest, String remoteUser,
+		String authType) {
 
-		super(request);
+		super(httpServletRequest);
 
-		if (request instanceof ProtectedServletRequest) {
+		if (remoteUser == null) {
+			throw new NullPointerException("Remote user is null");
+		}
+
+		if (httpServletRequest instanceof ProtectedServletRequest) {
 			ProtectedServletRequest parentRequest =
-				(ProtectedServletRequest)request;
+				(ProtectedServletRequest)httpServletRequest;
 
 			setRequest(parentRequest.getRequest());
 		}
 
 		_remoteUser = remoteUser;
-
-		if (remoteUser != null) {
-			_userPrincipal = new ProtectedPrincipal(remoteUser);
-		}
-		else {
-			_userPrincipal = null;
-		}
-
 		_authType = authType;
+
+		_userPrincipal = new ProtectedPrincipal(remoteUser);
 	}
 
 	@Override
@@ -60,43 +59,20 @@ public class ProtectedServletRequest extends HttpServletRequestWrapper {
 			return super.getAuthType();
 		}
 
-		if (_authType.equals(HttpServletRequest.BASIC_AUTH)) {
-			return HttpServletRequest.BASIC_AUTH;
-		}
-		else if (_authType.equals(HttpServletRequest.CLIENT_CERT_AUTH)) {
-			return HttpServletRequest.CLIENT_CERT_AUTH;
-		}
-		else if (_authType.equals(HttpServletRequest.DIGEST_AUTH)) {
-			return HttpServletRequest.DIGEST_AUTH;
-		}
-		else if (_authType.equals(HttpServletRequest.FORM_AUTH)) {
-			return HttpServletRequest.FORM_AUTH;
-		}
-
 		return _authType;
 	}
 
 	@Override
 	public String getRemoteUser() {
-		if (_remoteUser != null) {
-			return _remoteUser;
-		}
-		else {
-			return super.getRemoteUser();
-		}
+		return _remoteUser;
 	}
 
 	@Override
 	public Principal getUserPrincipal() {
-		if (_userPrincipal != null) {
-			return _userPrincipal;
-		}
-		else {
-			return super.getUserPrincipal();
-		}
+		return _userPrincipal;
 	}
 
-	private String _authType;
+	private final String _authType;
 	private final String _remoteUser;
 	private final Principal _userPrincipal;
 

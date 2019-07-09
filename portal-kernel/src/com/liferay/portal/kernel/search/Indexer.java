@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 import java.util.Collection;
-import java.util.Locale;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -39,12 +38,6 @@ public interface Indexer<T> {
 
 	public String getClassName();
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSearchClassNames}
-	 */
-	@Deprecated
-	public String[] getClassNames();
-
 	public Document getDocument(T object) throws SearchException;
 
 	public BooleanFilter getFacetBooleanFilter(
@@ -56,27 +49,23 @@ public interface Indexer<T> {
 
 	public IndexerPostProcessor[] getIndexerPostProcessors();
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getClassName}
-	 */
-	@Deprecated
-	public String getPortletId();
-
 	public String[] getSearchClassNames();
 
 	public String getSearchEngineId();
 
-	public String getSortField(String orderByCol);
-
-	public String getSortField(String orderByCol, int sortType);
-
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSummary(Document, String,
-	 *             PortletRequest, PortletResponse)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.portal.sort.SortFieldBuilder}
 	 */
 	@Deprecated
-	public Summary getSummary(Document document, Locale locale, String snippet)
-		throws SearchException;
+	public String getSortField(String orderByCol);
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.portal.sort.SortFieldBuilder}
+	 */
+	@Deprecated
+	public String getSortField(String orderByCol, int sortType);
 
 	public Summary getSummary(
 			Document document, String snippet, PortletRequest portletRequest,
@@ -117,6 +106,15 @@ public interface Indexer<T> {
 
 	public boolean isVisible(long classPK, int status) throws Exception;
 
+	/**
+	 * @param      classPK
+	 * @param      status
+	 * @return
+	 * @throws     Exception
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             RelatedEntryIndexer.isVisibleRelatedEntry(long, int)}
+	 */
+	@Deprecated
 	public boolean isVisibleRelatedEntry(long classPK, int status)
 		throws Exception;
 
@@ -125,7 +123,7 @@ public interface Indexer<T> {
 		throws Exception;
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #postProcessContextBooleanFilter(BooleanFilter,
 	 *             SearchContext)}
 	 */
@@ -140,7 +138,7 @@ public interface Indexer<T> {
 		throws Exception;
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #postProcessSearchQuery(BooleanQuery, BooleanFilter,
 	 *             SearchContext)}
 	 */

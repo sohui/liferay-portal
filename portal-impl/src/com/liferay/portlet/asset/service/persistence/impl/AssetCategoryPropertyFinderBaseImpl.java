@@ -16,17 +16,34 @@ package com.liferay.portlet.asset.service.persistence.impl;
 
 import com.liferay.asset.kernel.model.AssetCategoryProperty;
 import com.liferay.asset.kernel.service.persistence.AssetCategoryPropertyPersistence;
-
 import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Brian Wing Shun Chan
+ * @deprecated
  * @generated
  */
-public class AssetCategoryPropertyFinderBaseImpl extends BasePersistenceImpl<AssetCategoryProperty> {
+@Deprecated
+public class AssetCategoryPropertyFinderBaseImpl
+	extends BasePersistenceImpl<AssetCategoryProperty> {
+
+	public AssetCategoryPropertyFinderBaseImpl() {
+		setModelClass(AssetCategoryProperty.class);
+
+		Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+		dbColumnNames.put("key", "key_");
+
+		setDBColumnNames(dbColumnNames);
+	}
+
 	@Override
 	public Set<String> getBadColumnNames() {
 		return getAssetCategoryPropertyPersistence().getBadColumnNames();
@@ -37,7 +54,9 @@ public class AssetCategoryPropertyFinderBaseImpl extends BasePersistenceImpl<Ass
 	 *
 	 * @return the asset category property persistence
 	 */
-	public AssetCategoryPropertyPersistence getAssetCategoryPropertyPersistence() {
+	public AssetCategoryPropertyPersistence
+		getAssetCategoryPropertyPersistence() {
+
 		return assetCategoryPropertyPersistence;
 	}
 
@@ -48,9 +67,15 @@ public class AssetCategoryPropertyFinderBaseImpl extends BasePersistenceImpl<Ass
 	 */
 	public void setAssetCategoryPropertyPersistence(
 		AssetCategoryPropertyPersistence assetCategoryPropertyPersistence) {
-		this.assetCategoryPropertyPersistence = assetCategoryPropertyPersistence;
+
+		this.assetCategoryPropertyPersistence =
+			assetCategoryPropertyPersistence;
 	}
 
 	@BeanReference(type = AssetCategoryPropertyPersistence.class)
 	protected AssetCategoryPropertyPersistence assetCategoryPropertyPersistence;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		AssetCategoryPropertyFinderBaseImpl.class);
+
 }

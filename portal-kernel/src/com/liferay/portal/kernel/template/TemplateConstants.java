@@ -14,21 +14,31 @@
 
 package com.liferay.portal.kernel.template;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 /**
  * @author Tina Tian
  */
 public interface TemplateConstants {
 
+	public static final String[] ALLOWED_LANG_TYPES = {
+		TemplateConstants.LANG_TYPE_CSS, TemplateConstants.LANG_TYPE_FTL,
+		TemplateConstants.LANG_TYPE_JSON, TemplateConstants.LANG_TYPE_SOY,
+		TemplateConstants.LANG_TYPE_TPL, TemplateConstants.LANG_TYPE_VM,
+		TemplateConstants.LANG_TYPE_XML, TemplateConstants.LANG_TYPE_XSL
+	};
+
 	public static final String BUNDLE_SEPARATOR = "_BUNDLE_CONTEXT_";
+
+	public static final String CLASS_LOADER_SEPARATOR =
+		"_CLASS_LOADER_CONTEXT_";
 
 	public static final String CLASS_NAME_ID = "class_name_id";
 
 	public static final String DEFAUT_ENCODING = StringPool.UTF8;
 
 	/**
-	 * @deprecated As of 6.2.0
+	 * @deprecated As of Newton (6.2.x)
 	 */
 	@Deprecated
 	public static final String JOURNAL_SEPARATOR = "_JOURNAL_CONTEXT_";
@@ -40,6 +50,8 @@ public interface TemplateConstants {
 	public static final String LANG_TYPE_JSON = "json";
 
 	public static final String LANG_TYPE_SOY = "soy";
+
+	public static final String LANG_TYPE_TPL = "tpl";
 
 	public static final String LANG_TYPE_VM = "vm";
 

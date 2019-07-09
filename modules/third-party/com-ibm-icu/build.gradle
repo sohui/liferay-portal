@@ -1,5 +1,4 @@
-task jar(type: Jar, overwrite: true)
-task deployJar(type: Copy)
+apply plugin: "nebula.optional-base"
 
 configurations {
 	jarjar
@@ -12,7 +11,7 @@ dependencies {
 }
 
 jar {
-	deleteAllActions()
+	setActions([])
 
 	doLast {
 		Set<File> jarFiles = configurations.compile.files {
@@ -25,25 +24,5 @@ jar {
 			rule pattern: "com.**", result: "com.liferay.@1"
 			zipfileset src: jarFiles.find()
 		}
-	}
-}
-
-deploy {
-	finalizedBy deployJar
-}
-
-deployJar {
-	ext {
-		autoClean = false
-	}
-
-	from {
-		jar.archivePath
-	}
-
-	into "../../../lib/portal"
-
-	rename {
-		"liferay-icu4j.jar"
 	}
 }

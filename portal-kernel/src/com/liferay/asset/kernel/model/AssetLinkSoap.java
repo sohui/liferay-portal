@@ -14,13 +14,13 @@
 
 package com.liferay.asset.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * This class is used by SOAP remote services.
@@ -30,6 +30,7 @@ import java.util.List;
  */
 @ProviderType
 public class AssetLinkSoap implements Serializable {
+
 	public static AssetLinkSoap toSoapModel(AssetLink model) {
 		AssetLinkSoap soapModel = new AssetLinkSoap();
 
@@ -74,7 +75,8 @@ public class AssetLinkSoap implements Serializable {
 	}
 
 	public static AssetLinkSoap[] toSoapModels(List<AssetLink> models) {
-		List<AssetLinkSoap> soapModels = new ArrayList<AssetLinkSoap>(models.size());
+		List<AssetLinkSoap> soapModels = new ArrayList<AssetLinkSoap>(
+			models.size());
 
 		for (AssetLink model : models) {
 			soapModels.add(toSoapModel(model));
@@ -175,4 +177,5 @@ public class AssetLinkSoap implements Serializable {
 	private long _entryId2;
 	private int _type;
 	private int _weight;
+
 }

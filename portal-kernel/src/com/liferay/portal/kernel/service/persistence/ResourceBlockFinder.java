@@ -14,14 +14,19 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public interface ResourceBlockFinder {
-	public com.liferay.portal.kernel.security.permission.ResourceBlockIdsBag findByC_G_N_R(
-		long companyId, long groupId, java.lang.String name, long[] roleIds);
+
+	public com.liferay.portal.kernel.security.permission.ResourceBlockIdsBag
+		findByC_G_N_R(
+			long companyId, long groupId, String name, long[] roleIds);
+
 }

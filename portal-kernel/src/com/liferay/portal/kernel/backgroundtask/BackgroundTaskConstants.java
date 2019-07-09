@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.backgroundtask;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 /**
  * @author Daniel Kocsis
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 public class BackgroundTaskConstants {
 
@@ -101,9 +101,8 @@ public class BackgroundTaskConstants {
 		else if (status == STATUS_SUCCESSFUL) {
 			return LABEL_SUCCESSFUL;
 		}
-		else {
-			return StringPool.BLANK;
-		}
+
+		return StringPool.BLANK;
 	}
 
 }

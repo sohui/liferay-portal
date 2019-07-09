@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.LayoutTemplate;
@@ -30,6 +28,8 @@ import java.util.Set;
 
 import javax.servlet.ServletContext;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the local service interface for LayoutTemplate. Methods of this
  * service will not have security checks based on the propagated JAAS
@@ -38,54 +38,61 @@ import javax.servlet.ServletContext;
  *
  * @author Brian Wing Shun Chan
  * @see LayoutTemplateLocalServiceUtil
- * @see com.liferay.portal.service.base.LayoutTemplateLocalServiceBaseImpl
- * @see com.liferay.portal.service.impl.LayoutTemplateLocalServiceImpl
  * @generated
  */
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface LayoutTemplateLocalService extends BaseLocalService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link LayoutTemplateLocalServiceUtil} to access the layout template local service. Add custom service methods to {@link com.liferay.portal.service.impl.LayoutTemplateLocalServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link LayoutTemplateLocalServiceUtil} to access the layout template local service. Add custom service methods to <code>com.liferay.portal.service.impl.LayoutTemplateLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public LayoutTemplate getLayoutTemplate(java.lang.String layoutTemplateId,
-		boolean standard, java.lang.String themeId);
+	public String getContent(
+		String layoutTemplateId, boolean standard, String themeId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public java.lang.String getContent(java.lang.String layoutTemplateId,
-		boolean standard, java.lang.String themeId);
+	public String getLangType(
+		String layoutTemplateId, boolean standard, String themeId);
 
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public LayoutTemplate getLayoutTemplate(
+		String layoutTemplateId, boolean standard, String themeId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<LayoutTemplate> getLayoutTemplates();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<LayoutTemplate> getLayoutTemplates(java.lang.String themeId);
+	public List<LayoutTemplate> getLayoutTemplates(String themeId);
 
-	public List<LayoutTemplate> init(java.lang.String servletContextName,
-		ServletContext servletContext, java.lang.String[] xmls,
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
+
+	public List<LayoutTemplate> init(
+		ServletContext servletContext, String[] xmls,
 		PluginPackage pluginPackage);
 
-	public List<LayoutTemplate> init(ServletContext servletContext,
-		java.lang.String[] xmls, PluginPackage pluginPackage);
-
-	public void readLayoutTemplate(java.lang.String servletContextName,
-		ServletContext servletContext, Set<LayoutTemplate> layoutTemplates,
-		Element element, boolean standard, java.lang.String themeId,
+	public List<LayoutTemplate> init(
+		String servletContextName, ServletContext servletContext, String[] xmls,
 		PluginPackage pluginPackage);
 
-	public void uninstallLayoutTemplate(java.lang.String layoutTemplateId,
-		boolean standard);
+	public void readLayoutTemplate(
+		String servletContextName, ServletContext servletContext,
+		Set<LayoutTemplate> layoutTemplates, Element element, boolean standard,
+		String themeId, PluginPackage pluginPackage);
 
-	public void uninstallLayoutTemplates(java.lang.String themeId);
+	public void uninstallLayoutTemplate(
+		String layoutTemplateId, boolean standard);
+
+	public void uninstallLayoutTemplates(String themeId);
+
 }

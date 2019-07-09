@@ -51,32 +51,34 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		GradleUtil.applyPlugin(project, NodePlugin.class);
 
+		final Task npmInstallTask = GradleUtil.getTask(
+			project, NodePlugin.NPM_INSTALL_TASK_NAME);
+
 		JSModuleConfigGeneratorExtension jsModuleConfigGeneratorExtension =
 			GradleUtil.addExtension(
 				project, EXTENSION_NAME,
 				JSModuleConfigGeneratorExtension.class);
 
 		final DownloadNodeModuleTask downloadLiferayModuleConfigGeneratorTask =
-			addTaskDownloadLiferayModuleConfigGenerator(
+			_addTaskDownloadLiferayModuleConfigGenerator(
 				project, jsModuleConfigGeneratorExtension);
 
-		addTaskConfigJSModules(project);
+		_addTaskConfigJSModules(project);
 
 		project.afterEvaluate(
 			new Action<Project>() {
 
 				@Override
 				public void execute(Project project) {
-					configureTasksConfigJSModules(
-						project, downloadLiferayModuleConfigGeneratorTask);
+					_configureTasksConfigJSModules(
+						project, downloadLiferayModuleConfigGeneratorTask,
+						npmInstallTask);
 				}
 
 			});
 	}
 
-	protected ConfigJSModulesTask addTaskConfigJSModules(
-		final Project project) {
-
+	private ConfigJSModulesTask _addTaskConfigJSModules(final Project project) {
 		final ConfigJSModulesTask configJSModulesTask = GradleUtil.addTask(
 			project, CONFIG_JS_MODULES_TASK_NAME, ConfigJSModulesTask.class);
 
@@ -93,8 +95,8 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 			});
 
 		configJSModulesTask.setDescription(
-			"Generates the config file needed to load AMD files via " +
-				"combo loader in Liferay.");
+			"Generates the config file needed to load AMD files via combo " +
+				"loader in Liferay.");
 		configJSModulesTask.setGroup(BasePlugin.BUILD_GROUP);
 		configJSModulesTask.setModuleConfigFile(project.file("package.json"));
 
@@ -106,7 +108,7 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(JavaPlugin javaPlugin) {
-					configureTaskConfigJSModulesForJavaPlugin(
+					_configureTaskConfigJSModulesForJavaPlugin(
 						configJSModulesTask);
 				}
 
@@ -115,11 +117,10 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 		return configJSModulesTask;
 	}
 
-	protected DownloadNodeModuleTask
-		addTaskDownloadLiferayModuleConfigGenerator(
-			Project project,
-			final JSModuleConfigGeneratorExtension
-				jsModuleConfigGeneratorExtension) {
+	private DownloadNodeModuleTask _addTaskDownloadLiferayModuleConfigGenerator(
+		Project project,
+		final JSModuleConfigGeneratorExtension
+			jsModuleConfigGeneratorExtension) {
 
 		DownloadNodeModuleTask downloadLiferayModuleConfigGeneratorTask =
 			GradleUtil.addTask(
@@ -142,20 +143,24 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 		return downloadLiferayModuleConfigGeneratorTask;
 	}
 
-	protected void configureTaskConfigJSModules(
+	private void _configureTaskConfigJSModules(
 		ConfigJSModulesTask configJSModulesTask,
-		final DownloadNodeModuleTask downloadLiferayModuleConfigGeneratorTask) {
+		final DownloadNodeModuleTask downloadLiferayModuleConfigGeneratorTask,
+		Task npmInstallTask) {
 
 		File file = configJSModulesTask.getModuleConfigFile();
 
-		if ((file == null) || !file.exists()) {
+		if (!configJSModulesTask.isEnabled() || (file == null) ||
+			!file.exists()) {
+
 			configJSModulesTask.setDependsOn(Collections.emptySet());
 			configJSModulesTask.setEnabled(false);
 
 			return;
 		}
 
-		configJSModulesTask.dependsOn(downloadLiferayModuleConfigGeneratorTask);
+		configJSModulesTask.dependsOn(
+			downloadLiferayModuleConfigGeneratorTask, npmInstallTask);
 
 		configJSModulesTask.setScriptFile(
 			new Callable<File>() {
@@ -170,7 +175,7 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 			});
 	}
 
-	protected void configureTaskConfigJSModulesForJavaPlugin(
+	private void _configureTaskConfigJSModulesForJavaPlugin(
 		ConfigJSModulesTask configJSModulesTask) {
 
 		configJSModulesTask.mustRunAfter(
@@ -213,9 +218,10 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 		classesTask.dependsOn(configJSModulesTask);
 	}
 
-	protected void configureTasksConfigJSModules(
+	private void _configureTasksConfigJSModules(
 		Project project,
-		final DownloadNodeModuleTask downloadLiferayModuleConfigGeneratorTask) {
+		final DownloadNodeModuleTask downloadLiferayModuleConfigGeneratorTask,
+		final Task npmInstallTask) {
 
 		TaskContainer taskContainer = project.getTasks();
 
@@ -225,9 +231,10 @@ public class JSModuleConfigGeneratorPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(ConfigJSModulesTask configJSModulesTask) {
-					configureTaskConfigJSModules(
+					_configureTaskConfigJSModules(
 						configJSModulesTask,
-						downloadLiferayModuleConfigGeneratorTask);
+						downloadLiferayModuleConfigGeneratorTask,
+						npmInstallTask);
 				}
 
 			});

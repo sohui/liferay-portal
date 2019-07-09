@@ -14,18 +14,13 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -37,19 +32,11 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class TicketWrapper implements Ticket, ModelWrapper<Ticket> {
+public class TicketWrapper
+	extends BaseModelWrapper<Ticket> implements Ticket, ModelWrapper<Ticket> {
+
 	public TicketWrapper(Ticket ticket) {
-		_ticket = ticket;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return Ticket.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return Ticket.class.getName();
+		super(ticket);
 	}
 
 	@Override
@@ -133,384 +120,254 @@ public class TicketWrapper implements Ticket, ModelWrapper<Ticket> {
 		}
 	}
 
+	/**
+	 * Returns the fully qualified class name of this ticket.
+	 *
+	 * @return the fully qualified class name of this ticket
+	 */
 	@Override
-	public CacheModel<Ticket> toCacheModel() {
-		return _ticket.toCacheModel();
+	public String getClassName() {
+		return model.getClassName();
 	}
 
+	/**
+	 * Returns the class name ID of this ticket.
+	 *
+	 * @return the class name ID of this ticket
+	 */
 	@Override
-	public Ticket toEscapedModel() {
-		return new TicketWrapper(_ticket.toEscapedModel());
+	public long getClassNameId() {
+		return model.getClassNameId();
 	}
 
+	/**
+	 * Returns the class pk of this ticket.
+	 *
+	 * @return the class pk of this ticket
+	 */
 	@Override
-	public Ticket toUnescapedModel() {
-		return new TicketWrapper(_ticket.toUnescapedModel());
+	public long getClassPK() {
+		return model.getClassPK();
 	}
 
+	/**
+	 * Returns the company ID of this ticket.
+	 *
+	 * @return the company ID of this ticket
+	 */
 	@Override
-	public boolean isCachedModel() {
-		return _ticket.isCachedModel();
+	public long getCompanyId() {
+		return model.getCompanyId();
 	}
 
+	/**
+	 * Returns the create date of this ticket.
+	 *
+	 * @return the create date of this ticket
+	 */
 	@Override
-	public boolean isEscapedModel() {
-		return _ticket.isEscapedModel();
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the expiration date of this ticket.
+	 *
+	 * @return the expiration date of this ticket
+	 */
+	@Override
+	public Date getExpirationDate() {
+		return model.getExpirationDate();
+	}
+
+	/**
+	 * Returns the extra info of this ticket.
+	 *
+	 * @return the extra info of this ticket
+	 */
+	@Override
+	public String getExtraInfo() {
+		return model.getExtraInfo();
+	}
+
+	/**
+	 * Returns the key of this ticket.
+	 *
+	 * @return the key of this ticket
+	 */
+	@Override
+	public String getKey() {
+		return model.getKey();
+	}
+
+	/**
+	 * Returns the mvcc version of this ticket.
+	 *
+	 * @return the mvcc version of this ticket
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
+	 * Returns the primary key of this ticket.
+	 *
+	 * @return the primary key of this ticket
+	 */
+	@Override
+	public long getPrimaryKey() {
+		return model.getPrimaryKey();
+	}
+
+	/**
+	 * Returns the ticket ID of this ticket.
+	 *
+	 * @return the ticket ID of this ticket
+	 */
+	@Override
+	public long getTicketId() {
+		return model.getTicketId();
+	}
+
+	/**
+	 * Returns the type of this ticket.
+	 *
+	 * @return the type of this ticket
+	 */
+	@Override
+	public int getType() {
+		return model.getType();
 	}
 
 	@Override
 	public boolean isExpired() {
-		return _ticket.isExpired();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _ticket.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _ticket.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(Ticket ticket) {
-		return _ticket.compareTo(ticket);
-	}
-
-	/**
-	* Returns the type of this ticket.
-	*
-	* @return the type of this ticket
-	*/
-	@Override
-	public int getType() {
-		return _ticket.getType();
-	}
-
-	@Override
-	public int hashCode() {
-		return _ticket.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _ticket.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new TicketWrapper((Ticket)_ticket.clone());
-	}
-
-	/**
-	* Returns the fully qualified class name of this ticket.
-	*
-	* @return the fully qualified class name of this ticket
-	*/
-	@Override
-	public java.lang.String getClassName() {
-		return _ticket.getClassName();
-	}
-
-	/**
-	* Returns the extra info of this ticket.
-	*
-	* @return the extra info of this ticket
-	*/
-	@Override
-	public java.lang.String getExtraInfo() {
-		return _ticket.getExtraInfo();
-	}
-
-	/**
-	* Returns the key of this ticket.
-	*
-	* @return the key of this ticket
-	*/
-	@Override
-	public java.lang.String getKey() {
-		return _ticket.getKey();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _ticket.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _ticket.toXmlString();
-	}
-
-	/**
-	* Returns the create date of this ticket.
-	*
-	* @return the create date of this ticket
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _ticket.getCreateDate();
-	}
-
-	/**
-	* Returns the expiration date of this ticket.
-	*
-	* @return the expiration date of this ticket
-	*/
-	@Override
-	public Date getExpirationDate() {
-		return _ticket.getExpirationDate();
-	}
-
-	/**
-	* Returns the class name ID of this ticket.
-	*
-	* @return the class name ID of this ticket
-	*/
-	@Override
-	public long getClassNameId() {
-		return _ticket.getClassNameId();
-	}
-
-	/**
-	* Returns the class p k of this ticket.
-	*
-	* @return the class p k of this ticket
-	*/
-	@Override
-	public long getClassPK() {
-		return _ticket.getClassPK();
-	}
-
-	/**
-	* Returns the company ID of this ticket.
-	*
-	* @return the company ID of this ticket
-	*/
-	@Override
-	public long getCompanyId() {
-		return _ticket.getCompanyId();
-	}
-
-	/**
-	* Returns the mvcc version of this ticket.
-	*
-	* @return the mvcc version of this ticket
-	*/
-	@Override
-	public long getMvccVersion() {
-		return _ticket.getMvccVersion();
-	}
-
-	/**
-	* Returns the primary key of this ticket.
-	*
-	* @return the primary key of this ticket
-	*/
-	@Override
-	public long getPrimaryKey() {
-		return _ticket.getPrimaryKey();
-	}
-
-	/**
-	* Returns the ticket ID of this ticket.
-	*
-	* @return the ticket ID of this ticket
-	*/
-	@Override
-	public long getTicketId() {
-		return _ticket.getTicketId();
+		return model.isExpired();
 	}
 
 	@Override
 	public void persist() {
-		_ticket.persist();
+		model.persist();
 	}
 
 	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_ticket.setCachedModel(cachedModel);
-	}
-
-	@Override
-	public void setClassName(java.lang.String className) {
-		_ticket.setClassName(className);
+	public void setClassName(String className) {
+		model.setClassName(className);
 	}
 
 	/**
-	* Sets the class name ID of this ticket.
-	*
-	* @param classNameId the class name ID of this ticket
-	*/
+	 * Sets the class name ID of this ticket.
+	 *
+	 * @param classNameId the class name ID of this ticket
+	 */
 	@Override
 	public void setClassNameId(long classNameId) {
-		_ticket.setClassNameId(classNameId);
+		model.setClassNameId(classNameId);
 	}
 
 	/**
-	* Sets the class p k of this ticket.
-	*
-	* @param classPK the class p k of this ticket
-	*/
+	 * Sets the class pk of this ticket.
+	 *
+	 * @param classPK the class pk of this ticket
+	 */
 	@Override
 	public void setClassPK(long classPK) {
-		_ticket.setClassPK(classPK);
+		model.setClassPK(classPK);
 	}
 
 	/**
-	* Sets the company ID of this ticket.
-	*
-	* @param companyId the company ID of this ticket
-	*/
+	 * Sets the company ID of this ticket.
+	 *
+	 * @param companyId the company ID of this ticket
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_ticket.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this ticket.
-	*
-	* @param createDate the create date of this ticket
-	*/
+	 * Sets the create date of this ticket.
+	 *
+	 * @param createDate the create date of this ticket
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_ticket.setCreateDate(createDate);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_ticket.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_ticket.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_ticket.setExpandoBridgeAttributes(serviceContext);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the expiration date of this ticket.
-	*
-	* @param expirationDate the expiration date of this ticket
-	*/
+	 * Sets the expiration date of this ticket.
+	 *
+	 * @param expirationDate the expiration date of this ticket
+	 */
 	@Override
 	public void setExpirationDate(Date expirationDate) {
-		_ticket.setExpirationDate(expirationDate);
+		model.setExpirationDate(expirationDate);
 	}
 
 	/**
-	* Sets the extra info of this ticket.
-	*
-	* @param extraInfo the extra info of this ticket
-	*/
+	 * Sets the extra info of this ticket.
+	 *
+	 * @param extraInfo the extra info of this ticket
+	 */
 	@Override
-	public void setExtraInfo(java.lang.String extraInfo) {
-		_ticket.setExtraInfo(extraInfo);
+	public void setExtraInfo(String extraInfo) {
+		model.setExtraInfo(extraInfo);
 	}
 
 	/**
-	* Sets the key of this ticket.
-	*
-	* @param key the key of this ticket
-	*/
+	 * Sets the key of this ticket.
+	 *
+	 * @param key the key of this ticket
+	 */
 	@Override
-	public void setKey(java.lang.String key) {
-		_ticket.setKey(key);
+	public void setKey(String key) {
+		model.setKey(key);
 	}
 
 	/**
-	* Sets the mvcc version of this ticket.
-	*
-	* @param mvccVersion the mvcc version of this ticket
-	*/
+	 * Sets the mvcc version of this ticket.
+	 *
+	 * @param mvccVersion the mvcc version of this ticket
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_ticket.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_ticket.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the primary key of this ticket.
-	*
-	* @param primaryKey the primary key of this ticket
-	*/
+	 * Sets the primary key of this ticket.
+	 *
+	 * @param primaryKey the primary key of this ticket
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_ticket.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_ticket.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the ticket ID of this ticket.
-	*
-	* @param ticketId the ticket ID of this ticket
-	*/
+	 * Sets the ticket ID of this ticket.
+	 *
+	 * @param ticketId the ticket ID of this ticket
+	 */
 	@Override
 	public void setTicketId(long ticketId) {
-		_ticket.setTicketId(ticketId);
+		model.setTicketId(ticketId);
 	}
 
 	/**
-	* Sets the type of this ticket.
-	*
-	* @param type the type of this ticket
-	*/
+	 * Sets the type of this ticket.
+	 *
+	 * @param type the type of this ticket
+	 */
 	@Override
 	public void setType(int type) {
-		_ticket.setType(type);
+		model.setType(type);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof TicketWrapper)) {
-			return false;
-		}
-
-		TicketWrapper ticketWrapper = (TicketWrapper)obj;
-
-		if (Objects.equals(_ticket, ticketWrapper._ticket)) {
-			return true;
-		}
-
-		return false;
+	protected TicketWrapper wrap(Ticket ticket) {
+		return new TicketWrapper(ticket);
 	}
 
-	@Override
-	public Ticket getWrappedModel() {
-		return _ticket;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _ticket.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _ticket.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_ticket.resetOriginalValues();
-	}
-
-	private final Ticket _ticket;
 }

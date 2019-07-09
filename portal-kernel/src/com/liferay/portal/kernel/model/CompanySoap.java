@@ -14,22 +14,22 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.CompanyServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portal.service.http.CompanyServiceSoap
  * @generated
  */
 @ProviderType
 public class CompanySoap implements Serializable {
+
 	public static CompanySoap toSoapModel(Company model) {
 		CompanySoap soapModel = new CompanySoap();
 
@@ -41,9 +41,9 @@ public class CompanySoap implements Serializable {
 		soapModel.setMx(model.getMx());
 		soapModel.setHomeURL(model.getHomeURL());
 		soapModel.setLogoId(model.getLogoId());
-		soapModel.setSystem(model.getSystem());
+		soapModel.setSystem(model.isSystem());
 		soapModel.setMaxUsers(model.getMaxUsers());
-		soapModel.setActive(model.getActive());
+		soapModel.setActive(model.isActive());
 
 		return soapModel;
 	}
@@ -76,7 +76,8 @@ public class CompanySoap implements Serializable {
 	}
 
 	public static CompanySoap[] toSoapModels(List<Company> models) {
-		List<CompanySoap> soapModels = new ArrayList<CompanySoap>(models.size());
+		List<CompanySoap> soapModels = new ArrayList<CompanySoap>(
+			models.size());
 
 		for (Company model : models) {
 			soapModels.add(toSoapModel(model));
@@ -203,4 +204,5 @@ public class CompanySoap implements Serializable {
 	private boolean _system;
 	private int _maxUsers;
 	private boolean _active;
+
 }

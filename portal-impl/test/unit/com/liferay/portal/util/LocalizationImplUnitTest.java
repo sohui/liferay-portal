@@ -35,12 +35,10 @@ import java.util.logging.LogRecord;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.powermock.api.mockito.PowerMockito;
-
 /**
  * @author Manuel de la Peña
  */
-public class LocalizationImplUnitTest extends PowerMockito {
+public class LocalizationImplUnitTest {
 
 	@Test
 	public void testGetDefaultImportLocaleUseCase1() {
@@ -67,7 +65,7 @@ public class LocalizationImplUnitTest extends PowerMockito {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 

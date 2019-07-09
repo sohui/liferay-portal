@@ -3,10 +3,26 @@ package ${packagePath}.service.persistence.impl;
 import ${apiPackagePath}.model.${entity.name};
 import ${apiPackagePath}.service.persistence.${entity.name}Persistence;
 
+<#if dependencyInjectorDS>
+	import ${packagePath}.service.persistence.impl.constants.${portletShortName}PersistenceConstants;
+</#if>
+
 import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.kernel.configuration.Configuration;
+import com.liferay.portal.kernel.dao.orm.SessionFactory;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 
+import java.lang.reflect.Field;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+
+import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author ${author}
@@ -20,17 +36,52 @@ import java.util.Set;
 	@Deprecated
 </#if>
 
-public class ${entity.name}FinderBaseImpl
+public <#if dependencyInjectorDS>abstract </#if>class ${entity.name}FinderBaseImpl
 	extends BasePersistenceImpl<${entity.name}> {
 
-	<#if entity.badNamedColumnsList?size != 0>
+	public ${entity.name}FinderBaseImpl() {
+		setModelClass(${entity.name}.class);
+
+		<#if entity.badEntityColumns?size != 0>
+			Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+			<#list entity.badEntityColumns as badEntityColumn>
+				dbColumnNames.put("${badEntityColumn.name}", "${badEntityColumn.DBName}");
+			</#list>
+
+			<#if serviceBuilder.isVersionLTE_7_1_0()>
+				try {
+					Field field = BasePersistenceImpl.class.getDeclaredField("_dbColumnNames");
+
+					field.setAccessible(true);
+
+					field.set(this, dbColumnNames);
+				}
+				catch (Exception e) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(e, e);
+					}
+				}
+			<#else>
+				setDBColumnNames(dbColumnNames);
+			</#if>
+		</#if>
+	}
+
+	<#if entity.badEntityColumns?size != 0>
 		@Override
 		public Set<String> getBadColumnNames() {
-			return get${entity.name}Persistence().getBadColumnNames();
+			<#if dependencyInjectorDS>
+				return ${entity.varName}Persistence.getBadColumnNames();
+			<#else>
+				return get${entity.name}Persistence().getBadColumnNames();
+			</#if>
 		}
 	</#if>
 
-	<#if entity.hasColumns() && (entity.name != "Counter")>
+	<#if dependencyInjectorDS>
+		<#include "persistence_references.ftl">
+	<#elseif entity.hasEntityColumns() && entity.hasPersistence()>
 		/**
 		 * Returns the ${entity.humanName} persistence.
 		 *
@@ -50,9 +101,18 @@ public class ${entity.name}FinderBaseImpl
 		}
 	</#if>
 
-	<#if entity.hasColumns() && (entity.name != "Counter")>
-		@BeanReference(type = ${entity.name}Persistence.class)
+	<#if entity.hasEntityColumns() && entity.hasPersistence()>
+		<#if dependencyInjectorDS>
+			@Reference
+		<#else>
+			@BeanReference(type = ${entity.name}Persistence.class)
+		</#if>
+
 		protected ${entity.name}Persistence ${entity.varName}Persistence;
+	</#if>
+
+	<#if entity.badEntityColumns?size != 0>
+		private static final Log _log = LogFactoryUtil.getLog(${entity.name}FinderBaseImpl.class);
 	</#if>
 
 }

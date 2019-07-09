@@ -14,10 +14,10 @@
 
 package com.liferay.portlet.asset.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the AssetTag service. Represents a row in the &quot;AssetTag&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class AssetTagBaseImpl extends AssetTagModelImpl
-	implements AssetTag {
+public abstract class AssetTagBaseImpl
+	extends AssetTagModelImpl implements AssetTag {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a asset tag model instance should use the {@link AssetTag} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a asset tag model instance should use the <code>AssetTag</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class AssetTagBaseImpl extends AssetTagModelImpl
 			AssetTagLocalServiceUtil.updateAssetTag(this);
 		}
 	}
+
 }

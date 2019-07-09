@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.deploy.auto.AutoDeployer;
 import com.liferay.portal.kernel.deploy.auto.BaseAutoDeployListener;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.Portal;
 
 import java.io.File;
 
@@ -78,9 +77,7 @@ public class PortletAutoDeployListener extends BaseAutoDeployListener {
 		PluginAutoDeployListenerHelper pluginAutoDeployListenerHelper =
 			new PluginAutoDeployListenerHelper(file);
 
-		if (pluginAutoDeployListenerHelper.isMatchingFile(
-				"WEB-INF/" + Portal.PORTLET_XML_FILE_NAME_STANDARD)) {
-
+		if (pluginAutoDeployListenerHelper.isPortletPlugin()) {
 			_portletDeployer = true;
 
 			return true;
@@ -92,13 +89,15 @@ public class PortletAutoDeployListener extends BaseAutoDeployListener {
 			return true;
 		}
 
+		String fileName = file.getName();
+
 		if (!pluginAutoDeployListenerHelper.isExtPlugin() &&
 			!pluginAutoDeployListenerHelper.isHookPlugin() &&
 			!pluginAutoDeployListenerHelper.isMatchingFile(
 				"WEB-INF/liferay-layout-templates.xml") &&
 			!pluginAutoDeployListenerHelper.isThemePlugin() &&
 			!pluginAutoDeployListenerHelper.isWebPlugin() &&
-			file.getName().endsWith(".war")) {
+			fileName.endsWith(".war")) {
 
 			_waiDeployer = true;
 

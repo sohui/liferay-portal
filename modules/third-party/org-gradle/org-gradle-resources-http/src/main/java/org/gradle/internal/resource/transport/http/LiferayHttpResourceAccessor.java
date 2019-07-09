@@ -16,6 +16,7 @@ package org.gradle.internal.resource.transport.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 
 import java.net.URI;
 
@@ -30,9 +31,10 @@ import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -62,21 +64,21 @@ public class LiferayHttpResourceAccessor extends HttpResourceAccessor {
 	}
 
 	@Override
-	public ExternalResourceMetaData getMetaData(URI uri) {
-		if (!_FORCED_CACHE_ENABLED) {
-			return super.getMetaData(uri);
+	public ExternalResourceMetaData getMetaData(URI uri, boolean revalidate) {
+		if (!_isForcedCacheEnabled()) {
+			return super.getMetaData(uri, revalidate);
 		}
 
 		String location = _getLocation(uri);
 
 		if (StringUtils.isBlank(location)) {
-			return super.getMetaData(uri);
+			return super.getMetaData(uri, revalidate);
 		}
 
 		File cachedArtifactFile = _getCachedArtifactFile(location);
 
 		if (cachedArtifactFile == null) {
-			return super.getMetaData(uri);
+			return super.getMetaData(uri, revalidate);
 		}
 
 		HashValue hashValue = HashUtil.sha1(cachedArtifactFile);
@@ -87,15 +89,15 @@ public class LiferayHttpResourceAccessor extends HttpResourceAccessor {
 	}
 
 	@Override
-	public HttpResponseResource openResource(URI uri) {
-		if (!_FORCED_CACHE_ENABLED) {
-			return super.openResource(uri);
+	public HttpResponseResource openResource(URI uri, boolean revalidate) {
+		if (!_isForcedCacheEnabled()) {
+			return super.openResource(uri, revalidate);
 		}
 
 		String location = _getLocation(uri);
 
 		if (StringUtils.isBlank(location)) {
-			return super.openResource(uri);
+			return super.openResource(uri, revalidate);
 		}
 
 		HttpResponseResource httpResponseResource = null;
@@ -116,7 +118,7 @@ public class LiferayHttpResourceAccessor extends HttpResourceAccessor {
 		}
 
 		if (httpResponseResource == null) {
-			httpResponseResource = super.openResource(uri);
+			httpResponseResource = super.openResource(uri, revalidate);
 		}
 
 		return httpResponseResource;
@@ -213,6 +215,22 @@ public class LiferayHttpResourceAccessor extends HttpResourceAccessor {
 			}
 		}
 
+		for (String key : _REPOSITORY_URL_PROPERTY_KEYS) {
+			String repositoryUrl = System.getProperty(key);
+
+			if ((repositoryUrl == null) || repositoryUrl.isEmpty()) {
+				continue;
+			}
+
+			if (repositoryUrl.charAt(repositoryUrl.length() - 1) != '/') {
+				repositoryUrl += '/';
+			}
+
+			if (location.startsWith(repositoryUrl)) {
+				return location.substring(repositoryUrl.length());
+			}
+		}
+
 		return null;
 	}
 
@@ -283,18 +301,21 @@ public class LiferayHttpResourceAccessor extends HttpResourceAccessor {
 
 		metadataXpp3Writer.write(byteArrayOutputStream, metadata);
 
-		HttpResponse httpResponse = new BasicHttpResponse(
-			new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, null));
+		CloseableHttpResponse closeableHttpResponse =
+			new BasicCloseableHttpResponse(
+				new BasicStatusLine(
+					HttpVersion.HTTP_1_1, HttpStatus.SC_OK, null));
 
-		httpResponse.setEntity(
+		closeableHttpResponse.setEntity(
 			new ByteArrayEntity(
 				byteArrayOutputStream.toByteArray(),
 				ContentType.APPLICATION_XML));
-		httpResponse.setHeader(
+		closeableHttpResponse.setHeader(
 			HttpHeaders.CONTENT_LENGTH,
 			String.valueOf(byteArrayOutputStream.size()));
 
-		return new HttpResponseResource(HttpGet.METHOD_NAME, uri, httpResponse);
+		return new HttpResponseResource(
+			HttpGet.METHOD_NAME, uri, closeableHttpResponse);
 	}
 
 	private String _getModuleLatestVersion(
@@ -315,8 +336,7 @@ public class LiferayHttpResourceAccessor extends HttpResourceAccessor {
 	private SortedSet<ComparableVersion> _getModuleVersions(
 		File moduleDir, boolean excludeSnapshots) {
 
-		SortedSet<ComparableVersion> moduleVersions =
-			new TreeSet<ComparableVersion>();
+		SortedSet<ComparableVersion> moduleVersions = new TreeSet<>();
 
 		String[] versions = moduleDir.list(DirectoryFileFilter.DIRECTORY);
 
@@ -349,39 +369,57 @@ public class LiferayHttpResourceAccessor extends HttpResourceAccessor {
 
 		String sha1 = hashValue.asHexString();
 
-		HttpResponse httpResponse = new BasicHttpResponse(
-			new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, null));
+		CloseableHttpResponse closeableHttpResponse =
+			new BasicCloseableHttpResponse(
+				new BasicStatusLine(
+					HttpVersion.HTTP_1_1, HttpStatus.SC_OK, null));
 
-		httpResponse.setEntity(new StringEntity(sha1));
-		httpResponse.setHeader(
+		closeableHttpResponse.setEntity(new StringEntity(sha1));
+		closeableHttpResponse.setHeader(
 			HttpHeaders.CONTENT_LENGTH, String.valueOf(sha1.length()));
-		httpResponse.setHeader(
+		closeableHttpResponse.setHeader(
 			HttpHeaders.LAST_MODIFIED,
 			String.valueOf(cachedArtifactFile.lastModified()));
 
-		return new HttpResponseResource(HttpGet.METHOD_NAME, uri, httpResponse);
+		return new HttpResponseResource(
+			HttpGet.METHOD_NAME, uri, closeableHttpResponse);
+	}
+
+	private boolean _isForcedCacheEnabled() {
+		return Boolean.getBoolean("forced.cache.enabled");
 	}
 
 	private static final String _FILES_CACHE_DIR_NAME =
 		"caches/modules-2/files-2.1";
 
-	private static final boolean _FORCED_CACHE_ENABLED = Boolean.getBoolean(
-		"forced.cache.enabled");
+	private static final String[] _REPOSITORY_URL_PROPERTY_KEYS = {
+		"repository.private.url", "repository.url"
+	};
 
 	private static final String[] _REPOSITORY_URLS = {
 		"http://cdn.repository.liferay.com/nexus/content/groups/public/",
 		"http://repository.liferay.com/nexus/content/groups/public/",
+		"http://repository-cdn.liferay.com/nexus/content/groups/public/",
 		"https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups" +
-			"/public/"
+			"/public/",
+		"https://repository.liferay.com/nexus/content/groups/public/",
+		"https://repository-cdn.liferay.com/nexus/content/groups/public/"
 	};
 
 	private static final Logger _logger = LoggerFactory.getLogger(
 		LiferayHttpResourceAccessor.class);
 
-	static {
-		if (_FORCED_CACHE_ENABLED) {
-			System.out.println("Forced cache is enabled.");
+	private static class BasicCloseableHttpResponse
+		extends BasicHttpResponse implements CloseableHttpResponse {
+
+		public BasicCloseableHttpResponse(StatusLine statusLine) {
+			super(statusLine);
 		}
+
+		@Override
+		public void close() throws IOException {
+		}
+
 	}
 
 }

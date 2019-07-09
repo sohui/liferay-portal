@@ -14,31 +14,31 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the UserGroupGroupRole service. Represents a row in the &quot;UserGroupGroupRole&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see UserGroupGroupRoleModel
- * @see com.liferay.portal.model.impl.UserGroupGroupRoleImpl
- * @see com.liferay.portal.model.impl.UserGroupGroupRoleModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.UserGroupGroupRoleImpl")
 @ProviderType
-public interface UserGroupGroupRole extends UserGroupGroupRoleModel,
-	PersistedModel {
+public interface UserGroupGroupRole
+	extends PersistedModel, UserGroupGroupRoleModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.UserGroupGroupRoleImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.UserGroupGroupRoleImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<UserGroupGroupRole, Long> USER_GROUP_ID_ACCESSOR =
-		new Accessor<UserGroupGroupRole, Long>() {
+	public static final Accessor<UserGroupGroupRole, Long>
+		USER_GROUP_ID_ACCESSOR = new Accessor<UserGroupGroupRole, Long>() {
+
 			@Override
 			public Long get(UserGroupGroupRole userGroupGroupRole) {
 				return userGroupGroupRole.getUserGroupId();
@@ -53,9 +53,11 @@ public interface UserGroupGroupRole extends UserGroupGroupRoleModel,
 			public Class<UserGroupGroupRole> getTypeClass() {
 				return UserGroupGroupRole.class;
 			}
-		};
 
-	public static final Accessor<UserGroupGroupRole, Long> GROUP_ID_ACCESSOR = new Accessor<UserGroupGroupRole, Long>() {
+		};
+	public static final Accessor<UserGroupGroupRole, Long> GROUP_ID_ACCESSOR =
+		new Accessor<UserGroupGroupRole, Long>() {
+
 			@Override
 			public Long get(UserGroupGroupRole userGroupGroupRole) {
 				return userGroupGroupRole.getGroupId();
@@ -70,9 +72,11 @@ public interface UserGroupGroupRole extends UserGroupGroupRoleModel,
 			public Class<UserGroupGroupRole> getTypeClass() {
 				return UserGroupGroupRole.class;
 			}
-		};
 
-	public static final Accessor<UserGroupGroupRole, Long> ROLE_ID_ACCESSOR = new Accessor<UserGroupGroupRole, Long>() {
+		};
+	public static final Accessor<UserGroupGroupRole, Long> ROLE_ID_ACCESSOR =
+		new Accessor<UserGroupGroupRole, Long>() {
+
 			@Override
 			public Long get(UserGroupGroupRole userGroupGroupRole) {
 				return userGroupGroupRole.getRoleId();
@@ -87,6 +91,7 @@ public interface UserGroupGroupRole extends UserGroupGroupRoleModel,
 			public Class<UserGroupGroupRole> getTypeClass() {
 				return UserGroupGroupRole.class;
 			}
+
 		};
 
 	public Group getGroup()
@@ -97,4 +102,5 @@ public interface UserGroupGroupRole extends UserGroupGroupRoleModel,
 
 	public UserGroup getUserGroup()
 		throws com.liferay.portal.kernel.exception.PortalException;
+
 }

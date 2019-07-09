@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.dao.db;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -24,11 +24,15 @@ import javax.sql.DataSource;
 public class DBManagerUtil {
 
 	public static DB getDB() {
-		return getDBManager().getDB();
+		DBManager dbManager = getDBManager();
+
+		return dbManager.getDB();
 	}
 
 	public static DB getDB(DBType dbType, DataSource dataSource) {
-		return getDBManager().getDB(dbType, dataSource);
+		DBManager dbManager = getDBManager();
+
+		return dbManager.getDB(dbType, dataSource);
 	}
 
 	public static DB getDB(Object dialect, DataSource dataSource) {
@@ -38,13 +42,19 @@ public class DBManagerUtil {
 	}
 
 	public static DBManager getDBManager() {
-		PortalRuntimePermission.checkGetBeanProperty(DBManagerUtil.class);
-
 		return _dbManager;
 	}
 
 	public static DBType getDBType(Object dialect) {
-		return getDBManager().getDBType(dialect);
+		DBManager dbManager = getDBManager();
+
+		return dbManager.getDBType(dialect);
+	}
+
+	public static Set<DBType> getDBTypes() {
+		DBManager dbManager = getDBManager();
+
+		return dbManager.getDBTypes();
 	}
 
 	public static void reset() {
@@ -65,8 +75,6 @@ public class DBManagerUtil {
 	}
 
 	public static void setDBManager(DBManager dbManager) {
-		PortalRuntimePermission.checkSetBeanProperty(DBManagerUtil.class);
-
 		_dbManager = dbManager;
 	}
 

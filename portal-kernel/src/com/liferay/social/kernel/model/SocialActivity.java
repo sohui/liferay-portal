@@ -14,30 +14,33 @@
 
 package com.liferay.social.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the SocialActivity service. Represents a row in the &quot;SocialActivity&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see SocialActivityModel
- * @see com.liferay.portlet.social.model.impl.SocialActivityImpl
- * @see com.liferay.portlet.social.model.impl.SocialActivityModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.social.model.impl.SocialActivityImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.social.model.impl.SocialActivityImpl"
+)
 @ProviderType
-public interface SocialActivity extends SocialActivityModel, PersistedModel {
+public interface SocialActivity extends PersistedModel, SocialActivityModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.social.model.impl.SocialActivityImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.social.model.impl.SocialActivityImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<SocialActivity, Long> ACTIVITY_ID_ACCESSOR = new Accessor<SocialActivity, Long>() {
+	public static final Accessor<SocialActivity, Long> ACTIVITY_ID_ACCESSOR =
+		new Accessor<SocialActivity, Long>() {
+
 			@Override
 			public Long get(SocialActivity socialActivity) {
 				return socialActivity.getActivityId();
@@ -52,22 +55,23 @@ public interface SocialActivity extends SocialActivityModel, PersistedModel {
 			public Class<SocialActivity> getTypeClass() {
 				return SocialActivity.class;
 			}
+
 		};
 
 	public com.liferay.asset.kernel.model.AssetEntry getAssetEntry();
 
-	public java.lang.String getExtraDataValue(java.lang.String key)
+	public String getExtraDataValue(String key)
 		throws com.liferay.portal.kernel.json.JSONException;
 
-	public java.lang.String getExtraDataValue(java.lang.String key,
-		java.util.Locale locale)
+	public String getExtraDataValue(String key, java.util.Locale locale)
 		throws com.liferay.portal.kernel.json.JSONException;
 
-	public boolean isClassName(java.lang.String className);
+	public boolean isClassName(String className);
 
 	public void setAssetEntry(
 		com.liferay.asset.kernel.model.AssetEntry assetEntry);
 
-	public void setExtraDataValue(java.lang.String key, java.lang.String value)
+	public void setExtraDataValue(String key, String value)
 		throws com.liferay.portal.kernel.json.JSONException;
+
 }

@@ -19,19 +19,20 @@ import com.liferay.knowledge.base.constants.KBArticleConstants;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class SuggestionPermission {
 
 	public static boolean contains(
 			PermissionChecker permissionChecker, long groupId,
 			KBArticle kbArticle, String actionId)
-		throws PrincipalException {
+		throws PortalException {
 
 		if (!actionId.equals(KBActionKeys.VIEW_SUGGESTIONS)) {
 			throw new IllegalArgumentException(

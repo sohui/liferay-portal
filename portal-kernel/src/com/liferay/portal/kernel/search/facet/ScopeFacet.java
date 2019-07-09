@@ -38,8 +38,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class ScopeFacet extends MultiValueFacet {
 
 	public ScopeFacet(SearchContext searchContext) {
@@ -97,7 +99,7 @@ public class ScopeFacet extends MultiValueFacet {
 		TermsFilter scopeGroupIdsTermsFilter = new TermsFilter(
 			Field.SCOPE_GROUP_ID);
 
-		for (int i = 0; i < groupIds.length; i ++) {
+		for (int i = 0; i < groupIds.length; i++) {
 			long groupId = groupIds[i];
 
 			if (groupId <= 0) {
@@ -107,7 +109,7 @@ public class ScopeFacet extends MultiValueFacet {
 			try {
 				Group group = GroupLocalServiceUtil.getGroup(groupId);
 
-				if (!group.isActive()) {
+				if (!GroupLocalServiceUtil.isLiveGroupActive(group)) {
 					continue;
 				}
 
@@ -199,8 +201,7 @@ public class ScopeFacet extends MultiValueFacet {
 		return addScopeGroup(groupId);
 	}
 
-	private static final long[] _GROUP_IDS_FROM_SEARCH_CONTEXT_DEFAULT =
-		new long[] {0};
+	private static final long[] _GROUP_IDS_FROM_SEARCH_CONTEXT_DEFAULT = {0};
 
 	private static final Log _log = LogFactoryUtil.getLog(ScopeFacet.class);
 

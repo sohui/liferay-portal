@@ -14,20 +14,14 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.exportimport.kernel.lar.StagedModelType;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -39,20 +33,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class LayoutFriendlyURLWrapper implements LayoutFriendlyURL,
-	ModelWrapper<LayoutFriendlyURL> {
+public class LayoutFriendlyURLWrapper
+	extends BaseModelWrapper<LayoutFriendlyURL>
+	implements LayoutFriendlyURL, ModelWrapper<LayoutFriendlyURL> {
+
 	public LayoutFriendlyURLWrapper(LayoutFriendlyURL layoutFriendlyURL) {
-		_layoutFriendlyURL = layoutFriendlyURL;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return LayoutFriendlyURL.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return LayoutFriendlyURL.class.getName();
+		super(layoutFriendlyURL);
 	}
 
 	@Override
@@ -69,7 +55,7 @@ public class LayoutFriendlyURLWrapper implements LayoutFriendlyURL,
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("plid", getPlid());
-		attributes.put("privateLayout", getPrivateLayout());
+		attributes.put("privateLayout", isPrivateLayout());
 		attributes.put("friendlyURL", getFriendlyURL());
 		attributes.put("languageId", getLanguageId());
 		attributes.put("lastPublishDate", getLastPublishDate());
@@ -164,480 +150,351 @@ public class LayoutFriendlyURLWrapper implements LayoutFriendlyURL,
 		}
 	}
 
-	@Override
-	public CacheModel<LayoutFriendlyURL> toCacheModel() {
-		return _layoutFriendlyURL.toCacheModel();
-	}
-
-	@Override
-	public LayoutFriendlyURL toEscapedModel() {
-		return new LayoutFriendlyURLWrapper(_layoutFriendlyURL.toEscapedModel());
-	}
-
-	@Override
-	public LayoutFriendlyURL toUnescapedModel() {
-		return new LayoutFriendlyURLWrapper(_layoutFriendlyURL.toUnescapedModel());
-	}
-
 	/**
-	* Returns the private layout of this layout friendly u r l.
-	*
-	* @return the private layout of this layout friendly u r l
-	*/
-	@Override
-	public boolean getPrivateLayout() {
-		return _layoutFriendlyURL.getPrivateLayout();
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _layoutFriendlyURL.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _layoutFriendlyURL.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _layoutFriendlyURL.isNew();
-	}
-
-	/**
-	* Returns <code>true</code> if this layout friendly u r l is private layout.
-	*
-	* @return <code>true</code> if this layout friendly u r l is private layout; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isPrivateLayout() {
-		return _layoutFriendlyURL.isPrivateLayout();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _layoutFriendlyURL.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(LayoutFriendlyURL layoutFriendlyURL) {
-		return _layoutFriendlyURL.compareTo(layoutFriendlyURL);
-	}
-
-	@Override
-	public int hashCode() {
-		return _layoutFriendlyURL.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _layoutFriendlyURL.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new LayoutFriendlyURLWrapper((LayoutFriendlyURL)_layoutFriendlyURL.clone());
-	}
-
-	/**
-	* Returns the friendly u r l of this layout friendly u r l.
-	*
-	* @return the friendly u r l of this layout friendly u r l
-	*/
-	@Override
-	public java.lang.String getFriendlyURL() {
-		return _layoutFriendlyURL.getFriendlyURL();
-	}
-
-	/**
-	* Returns the language ID of this layout friendly u r l.
-	*
-	* @return the language ID of this layout friendly u r l
-	*/
-	@Override
-	public java.lang.String getLanguageId() {
-		return _layoutFriendlyURL.getLanguageId();
-	}
-
-	/**
-	* Returns the user name of this layout friendly u r l.
-	*
-	* @return the user name of this layout friendly u r l
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _layoutFriendlyURL.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this layout friendly u r l.
-	*
-	* @return the user uuid of this layout friendly u r l
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _layoutFriendlyURL.getUserUuid();
-	}
-
-	/**
-	* Returns the uuid of this layout friendly u r l.
-	*
-	* @return the uuid of this layout friendly u r l
-	*/
-	@Override
-	public java.lang.String getUuid() {
-		return _layoutFriendlyURL.getUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _layoutFriendlyURL.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _layoutFriendlyURL.toXmlString();
-	}
-
-	/**
-	* Returns the create date of this layout friendly u r l.
-	*
-	* @return the create date of this layout friendly u r l
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _layoutFriendlyURL.getCreateDate();
-	}
-
-	/**
-	* Returns the last publish date of this layout friendly u r l.
-	*
-	* @return the last publish date of this layout friendly u r l
-	*/
-	@Override
-	public Date getLastPublishDate() {
-		return _layoutFriendlyURL.getLastPublishDate();
-	}
-
-	/**
-	* Returns the modified date of this layout friendly u r l.
-	*
-	* @return the modified date of this layout friendly u r l
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _layoutFriendlyURL.getModifiedDate();
-	}
-
-	/**
-	* Returns the company ID of this layout friendly u r l.
-	*
-	* @return the company ID of this layout friendly u r l
-	*/
+	 * Returns the company ID of this layout friendly url.
+	 *
+	 * @return the company ID of this layout friendly url
+	 */
 	@Override
 	public long getCompanyId() {
-		return _layoutFriendlyURL.getCompanyId();
+		return model.getCompanyId();
 	}
 
 	/**
-	* Returns the group ID of this layout friendly u r l.
-	*
-	* @return the group ID of this layout friendly u r l
-	*/
+	 * Returns the create date of this layout friendly url.
+	 *
+	 * @return the create date of this layout friendly url
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the friendly url of this layout friendly url.
+	 *
+	 * @return the friendly url of this layout friendly url
+	 */
+	@Override
+	public String getFriendlyURL() {
+		return model.getFriendlyURL();
+	}
+
+	/**
+	 * Returns the group ID of this layout friendly url.
+	 *
+	 * @return the group ID of this layout friendly url
+	 */
 	@Override
 	public long getGroupId() {
-		return _layoutFriendlyURL.getGroupId();
+		return model.getGroupId();
 	}
 
 	/**
-	* Returns the layout friendly u r l ID of this layout friendly u r l.
-	*
-	* @return the layout friendly u r l ID of this layout friendly u r l
-	*/
+	 * Returns the language ID of this layout friendly url.
+	 *
+	 * @return the language ID of this layout friendly url
+	 */
+	@Override
+	public String getLanguageId() {
+		return model.getLanguageId();
+	}
+
+	/**
+	 * Returns the last publish date of this layout friendly url.
+	 *
+	 * @return the last publish date of this layout friendly url
+	 */
+	@Override
+	public Date getLastPublishDate() {
+		return model.getLastPublishDate();
+	}
+
+	/**
+	 * Returns the layout friendly url ID of this layout friendly url.
+	 *
+	 * @return the layout friendly url ID of this layout friendly url
+	 */
 	@Override
 	public long getLayoutFriendlyURLId() {
-		return _layoutFriendlyURL.getLayoutFriendlyURLId();
+		return model.getLayoutFriendlyURLId();
 	}
 
 	/**
-	* Returns the mvcc version of this layout friendly u r l.
-	*
-	* @return the mvcc version of this layout friendly u r l
-	*/
+	 * Returns the modified date of this layout friendly url.
+	 *
+	 * @return the modified date of this layout friendly url
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this layout friendly url.
+	 *
+	 * @return the mvcc version of this layout friendly url
+	 */
 	@Override
 	public long getMvccVersion() {
-		return _layoutFriendlyURL.getMvccVersion();
+		return model.getMvccVersion();
 	}
 
 	/**
-	* Returns the plid of this layout friendly u r l.
-	*
-	* @return the plid of this layout friendly u r l
-	*/
+	 * Returns the plid of this layout friendly url.
+	 *
+	 * @return the plid of this layout friendly url
+	 */
 	@Override
 	public long getPlid() {
-		return _layoutFriendlyURL.getPlid();
+		return model.getPlid();
 	}
 
 	/**
-	* Returns the primary key of this layout friendly u r l.
-	*
-	* @return the primary key of this layout friendly u r l
-	*/
+	 * Returns the primary key of this layout friendly url.
+	 *
+	 * @return the primary key of this layout friendly url
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _layoutFriendlyURL.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Returns the user ID of this layout friendly u r l.
-	*
-	* @return the user ID of this layout friendly u r l
-	*/
+	 * Returns the private layout of this layout friendly url.
+	 *
+	 * @return the private layout of this layout friendly url
+	 */
+	@Override
+	public boolean getPrivateLayout() {
+		return model.getPrivateLayout();
+	}
+
+	/**
+	 * Returns the user ID of this layout friendly url.
+	 *
+	 * @return the user ID of this layout friendly url
+	 */
 	@Override
 	public long getUserId() {
-		return _layoutFriendlyURL.getUserId();
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user name of this layout friendly url.
+	 *
+	 * @return the user name of this layout friendly url
+	 */
+	@Override
+	public String getUserName() {
+		return model.getUserName();
+	}
+
+	/**
+	 * Returns the user uuid of this layout friendly url.
+	 *
+	 * @return the user uuid of this layout friendly url
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the uuid of this layout friendly url.
+	 *
+	 * @return the uuid of this layout friendly url
+	 */
+	@Override
+	public String getUuid() {
+		return model.getUuid();
+	}
+
+	/**
+	 * Returns <code>true</code> if this layout friendly url is private layout.
+	 *
+	 * @return <code>true</code> if this layout friendly url is private layout; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isPrivateLayout() {
+		return model.isPrivateLayout();
 	}
 
 	@Override
 	public void persist() {
-		_layoutFriendlyURL.persist();
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_layoutFriendlyURL.setCachedModel(cachedModel);
+		model.persist();
 	}
 
 	/**
-	* Sets the company ID of this layout friendly u r l.
-	*
-	* @param companyId the company ID of this layout friendly u r l
-	*/
+	 * Sets the company ID of this layout friendly url.
+	 *
+	 * @param companyId the company ID of this layout friendly url
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_layoutFriendlyURL.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this layout friendly u r l.
-	*
-	* @param createDate the create date of this layout friendly u r l
-	*/
+	 * Sets the create date of this layout friendly url.
+	 *
+	 * @param createDate the create date of this layout friendly url
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_layoutFriendlyURL.setCreateDate(createDate);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_layoutFriendlyURL.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_layoutFriendlyURL.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_layoutFriendlyURL.setExpandoBridgeAttributes(serviceContext);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the friendly u r l of this layout friendly u r l.
-	*
-	* @param friendlyURL the friendly u r l of this layout friendly u r l
-	*/
+	 * Sets the friendly url of this layout friendly url.
+	 *
+	 * @param friendlyURL the friendly url of this layout friendly url
+	 */
 	@Override
-	public void setFriendlyURL(java.lang.String friendlyURL) {
-		_layoutFriendlyURL.setFriendlyURL(friendlyURL);
+	public void setFriendlyURL(String friendlyURL) {
+		model.setFriendlyURL(friendlyURL);
 	}
 
 	/**
-	* Sets the group ID of this layout friendly u r l.
-	*
-	* @param groupId the group ID of this layout friendly u r l
-	*/
+	 * Sets the group ID of this layout friendly url.
+	 *
+	 * @param groupId the group ID of this layout friendly url
+	 */
 	@Override
 	public void setGroupId(long groupId) {
-		_layoutFriendlyURL.setGroupId(groupId);
+		model.setGroupId(groupId);
 	}
 
 	/**
-	* Sets the language ID of this layout friendly u r l.
-	*
-	* @param languageId the language ID of this layout friendly u r l
-	*/
+	 * Sets the language ID of this layout friendly url.
+	 *
+	 * @param languageId the language ID of this layout friendly url
+	 */
 	@Override
-	public void setLanguageId(java.lang.String languageId) {
-		_layoutFriendlyURL.setLanguageId(languageId);
+	public void setLanguageId(String languageId) {
+		model.setLanguageId(languageId);
 	}
 
 	/**
-	* Sets the last publish date of this layout friendly u r l.
-	*
-	* @param lastPublishDate the last publish date of this layout friendly u r l
-	*/
+	 * Sets the last publish date of this layout friendly url.
+	 *
+	 * @param lastPublishDate the last publish date of this layout friendly url
+	 */
 	@Override
 	public void setLastPublishDate(Date lastPublishDate) {
-		_layoutFriendlyURL.setLastPublishDate(lastPublishDate);
+		model.setLastPublishDate(lastPublishDate);
 	}
 
 	/**
-	* Sets the layout friendly u r l ID of this layout friendly u r l.
-	*
-	* @param layoutFriendlyURLId the layout friendly u r l ID of this layout friendly u r l
-	*/
+	 * Sets the layout friendly url ID of this layout friendly url.
+	 *
+	 * @param layoutFriendlyURLId the layout friendly url ID of this layout friendly url
+	 */
 	@Override
 	public void setLayoutFriendlyURLId(long layoutFriendlyURLId) {
-		_layoutFriendlyURL.setLayoutFriendlyURLId(layoutFriendlyURLId);
+		model.setLayoutFriendlyURLId(layoutFriendlyURLId);
 	}
 
 	/**
-	* Sets the modified date of this layout friendly u r l.
-	*
-	* @param modifiedDate the modified date of this layout friendly u r l
-	*/
+	 * Sets the modified date of this layout friendly url.
+	 *
+	 * @param modifiedDate the modified date of this layout friendly url
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_layoutFriendlyURL.setModifiedDate(modifiedDate);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the mvcc version of this layout friendly u r l.
-	*
-	* @param mvccVersion the mvcc version of this layout friendly u r l
-	*/
+	 * Sets the mvcc version of this layout friendly url.
+	 *
+	 * @param mvccVersion the mvcc version of this layout friendly url
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_layoutFriendlyURL.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_layoutFriendlyURL.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the plid of this layout friendly u r l.
-	*
-	* @param plid the plid of this layout friendly u r l
-	*/
+	 * Sets the plid of this layout friendly url.
+	 *
+	 * @param plid the plid of this layout friendly url
+	 */
 	@Override
 	public void setPlid(long plid) {
-		_layoutFriendlyURL.setPlid(plid);
+		model.setPlid(plid);
 	}
 
 	/**
-	* Sets the primary key of this layout friendly u r l.
-	*
-	* @param primaryKey the primary key of this layout friendly u r l
-	*/
+	 * Sets the primary key of this layout friendly url.
+	 *
+	 * @param primaryKey the primary key of this layout friendly url
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_layoutFriendlyURL.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_layoutFriendlyURL.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets whether this layout friendly u r l is private layout.
-	*
-	* @param privateLayout the private layout of this layout friendly u r l
-	*/
+	 * Sets whether this layout friendly url is private layout.
+	 *
+	 * @param privateLayout the private layout of this layout friendly url
+	 */
 	@Override
 	public void setPrivateLayout(boolean privateLayout) {
-		_layoutFriendlyURL.setPrivateLayout(privateLayout);
+		model.setPrivateLayout(privateLayout);
 	}
 
 	/**
-	* Sets the user ID of this layout friendly u r l.
-	*
-	* @param userId the user ID of this layout friendly u r l
-	*/
+	 * Sets the user ID of this layout friendly url.
+	 *
+	 * @param userId the user ID of this layout friendly url
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_layoutFriendlyURL.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user name of this layout friendly u r l.
-	*
-	* @param userName the user name of this layout friendly u r l
-	*/
+	 * Sets the user name of this layout friendly url.
+	 *
+	 * @param userName the user name of this layout friendly url
+	 */
 	@Override
-	public void setUserName(java.lang.String userName) {
-		_layoutFriendlyURL.setUserName(userName);
+	public void setUserName(String userName) {
+		model.setUserName(userName);
 	}
 
 	/**
-	* Sets the user uuid of this layout friendly u r l.
-	*
-	* @param userUuid the user uuid of this layout friendly u r l
-	*/
+	 * Sets the user uuid of this layout friendly url.
+	 *
+	 * @param userUuid the user uuid of this layout friendly url
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_layoutFriendlyURL.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets the uuid of this layout friendly u r l.
-	*
-	* @param uuid the uuid of this layout friendly u r l
-	*/
+	 * Sets the uuid of this layout friendly url.
+	 *
+	 * @param uuid the uuid of this layout friendly url
+	 */
 	@Override
-	public void setUuid(java.lang.String uuid) {
-		_layoutFriendlyURL.setUuid(uuid);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof LayoutFriendlyURLWrapper)) {
-			return false;
-		}
-
-		LayoutFriendlyURLWrapper layoutFriendlyURLWrapper = (LayoutFriendlyURLWrapper)obj;
-
-		if (Objects.equals(_layoutFriendlyURL,
-					layoutFriendlyURLWrapper._layoutFriendlyURL)) {
-			return true;
-		}
-
-		return false;
+	public void setUuid(String uuid) {
+		model.setUuid(uuid);
 	}
 
 	@Override
 	public StagedModelType getStagedModelType() {
-		return _layoutFriendlyURL.getStagedModelType();
+		return model.getStagedModelType();
 	}
 
 	@Override
-	public LayoutFriendlyURL getWrappedModel() {
-		return _layoutFriendlyURL;
+	protected LayoutFriendlyURLWrapper wrap(
+		LayoutFriendlyURL layoutFriendlyURL) {
+
+		return new LayoutFriendlyURLWrapper(layoutFriendlyURL);
 	}
 
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _layoutFriendlyURL.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _layoutFriendlyURL.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_layoutFriendlyURL.resetOriginalValues();
-	}
-
-	private final LayoutFriendlyURL _layoutFriendlyURL;
 }

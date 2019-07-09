@@ -48,6 +48,10 @@ public class PortletResourcesUtil {
 	}
 
 	public static URL getResource(ServletContext servletContext, String path) {
+		if (servletContext == null) {
+			return null;
+		}
+
 		path = PortalWebResourcesUtil.stripContextPath(servletContext, path);
 
 		try {
@@ -102,9 +106,9 @@ public class PortletResourcesUtil {
 
 			PortletApp portletApp = portlet.getPortletApp();
 
-			ServletContext servletContext = portletApp.getServletContext();
-
 			if (portletApp.isWARFile()) {
+				ServletContext servletContext = portletApp.getServletContext();
+
 				_servletContexts.put(serviceReference, servletContext);
 			}
 

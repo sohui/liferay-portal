@@ -14,13 +14,13 @@
 
 package com.liferay.portal.kernel.tree;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.TreeModel;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.VerifyThreadLocal;
 
 import java.util.Deque;
@@ -92,8 +92,10 @@ public class TreePathUtil {
 
 			for (TreeModel treeModel : treeModels) {
 				String treePath = curParentTreePath.concat(
-					String.valueOf(treeModel.getPrimaryKeyObj())).concat(
-						StringPool.SLASH);
+					String.valueOf(treeModel.getPrimaryKeyObj())
+				).concat(
+					StringPool.SLASH
+				);
 
 				if (!treePath.equals(treeModel.getTreePath())) {
 					treeModel.updateTreePath(treePath);
@@ -150,8 +152,10 @@ public class TreePathUtil {
 
 			for (TreeModel treeModel : treeModels) {
 				String treePath = _parentTreePath.concat(
-					String.valueOf(treeModel.getPrimaryKeyObj())).concat(
-						StringPool.SLASH);
+					String.valueOf(treeModel.getPrimaryKeyObj())
+				).concat(
+					StringPool.SLASH
+				);
 
 				if (!treePath.equals(treeModel.getTreePath())) {
 					treeModel.updateTreePath(treePath);

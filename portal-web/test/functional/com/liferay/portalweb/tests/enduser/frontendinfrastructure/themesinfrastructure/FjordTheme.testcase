@@ -1,0 +1,51 @@
+@component-name = "portal-frontend-infrastructure"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Theme";
+	property testray.main.component.name = "Theme";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "5"
+	test AddThemeSite {
+		property osgi.app.includes = "frontend-theme-fjord";
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "FjordTheme#AddThemeSite";
+
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addSiteTemplateCP(
+			siteName = "Fjord Theme Site",
+			siteTemplateName = "Fjord");
+
+		ProductMenu.gotoSite(site = "Fjord Theme Site");
+
+		AssertClick(
+			key_pageName = "Home",
+			locator1 = "Home#PAGE",
+			value1 = "Home");
+
+		AssertTextEquals(
+			key_title = "Dynamic and Customizable for a Healthier You",
+			locator1 = "Header#H1_TITLE",
+			value1 = "Dynamic and Customizable for a Healthier You");
+	}
+
+}

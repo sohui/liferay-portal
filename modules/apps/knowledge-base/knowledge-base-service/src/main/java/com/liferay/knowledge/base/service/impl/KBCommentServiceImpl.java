@@ -14,17 +14,21 @@
 
 package com.liferay.knowledge.base.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.constants.KBActionKeys;
+import com.liferay.knowledge.base.constants.KBArticleConstants;
+import com.liferay.knowledge.base.constants.KBConstants;
+import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBComment;
 import com.liferay.knowledge.base.service.base.KBCommentServiceBaseImpl;
-import com.liferay.knowledge.base.service.permission.AdminPermission;
-import com.liferay.knowledge.base.service.permission.KBCommentPermission;
-import com.liferay.knowledge.base.service.permission.SuggestionPermission;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,14 +36,13 @@ import java.util.List;
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 
 	@Override
 	public KBComment deleteKBComment(KBComment kbComment)
 		throws PortalException {
 
-		KBCommentPermission.check(
+		_kbCommentModelResourcePermission.check(
 			getPermissionChecker(), kbComment, KBActionKeys.DELETE);
 
 		return kbCommentLocalService.deleteKBComment(kbComment);
@@ -55,7 +58,7 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 
 	@Override
 	public KBComment getKBComment(long kbCommentId) throws PortalException {
-		KBCommentPermission.check(
+		_kbCommentModelResourcePermission.check(
 			getPermissionChecker(), kbCommentId, KBActionKeys.VIEW);
 
 		return kbCommentLocalService.getKBComment(kbCommentId);
@@ -66,11 +69,29 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 			long groupId, int status, int start, int end)
 		throws PortalException {
 
-		if (AdminPermission.contains(
+		if (_portletResourcePermission.contains(
 				getPermissionChecker(), groupId,
 				KBActionKeys.VIEW_SUGGESTIONS)) {
 
-			return kbCommentPersistence.findByG_S(groupId, status, start, end);
+			return kbCommentLocalService.getKBComments(
+				groupId, status, start, end);
+		}
+
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<KBComment> getKBComments(
+			long groupId, int status, int start, int end,
+			OrderByComparator<KBComment> obc)
+		throws PortalException {
+
+		if (_portletResourcePermission.contains(
+				getPermissionChecker(), groupId,
+				KBActionKeys.VIEW_SUGGESTIONS)) {
+
+			return kbCommentLocalService.getKBComments(
+				groupId, status, start, end, obc);
 		}
 
 		return Collections.emptyList();
@@ -81,11 +102,12 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 			long groupId, int start, int end, OrderByComparator<KBComment> obc)
 		throws PortalException {
 
-		if (AdminPermission.contains(
+		if (_portletResourcePermission.contains(
 				getPermissionChecker(), groupId,
 				KBActionKeys.VIEW_SUGGESTIONS)) {
 
-			return kbCommentPersistence.findByGroupId(groupId, start, end, obc);
+			return kbCommentLocalService.getKBComments(
+				groupId, start, end, obc);
 		}
 
 		return Collections.emptyList();
@@ -97,12 +119,27 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 			int end)
 		throws PortalException {
 
-		if (SuggestionPermission.contains(
-				getPermissionChecker(), groupId, className, classPK,
-				KBActionKeys.VIEW_SUGGESTIONS)) {
+		if (_containsViewSuggestionPermission(
+				getPermissionChecker(), groupId, className, classPK)) {
 
 			return kbCommentLocalService.getKBComments(
 				className, classPK, status, start, end);
+		}
+
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<KBComment> getKBComments(
+			long groupId, String className, long classPK, int status, int start,
+			int end, OrderByComparator<KBComment> obc)
+		throws PortalException {
+
+		if (_containsViewSuggestionPermission(
+				getPermissionChecker(), groupId, className, classPK)) {
+
+			return kbCommentLocalService.getKBComments(
+				className, classPK, status, start, end, obc);
 		}
 
 		return Collections.emptyList();
@@ -114,9 +151,8 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 			OrderByComparator<KBComment> obc)
 		throws PortalException {
 
-		if (SuggestionPermission.contains(
-				getPermissionChecker(), groupId, className, classPK,
-				KBActionKeys.VIEW_SUGGESTIONS)) {
+		if (_containsViewSuggestionPermission(
+				getPermissionChecker(), groupId, className, classPK)) {
 
 			return kbCommentLocalService.getKBComments(
 				className, classPK, start, end, obc);
@@ -127,7 +163,7 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 
 	@Override
 	public int getKBCommentsCount(long groupId) throws PortalException {
-		if (AdminPermission.contains(
+		if (_portletResourcePermission.contains(
 				getPermissionChecker(), groupId,
 				KBActionKeys.VIEW_SUGGESTIONS)) {
 
@@ -141,11 +177,11 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 	public int getKBCommentsCount(long groupId, int status)
 		throws PortalException {
 
-		if (AdminPermission.contains(
+		if (_portletResourcePermission.contains(
 				getPermissionChecker(), groupId,
 				KBActionKeys.VIEW_SUGGESTIONS)) {
 
-			return kbCommentPersistence.countByG_S(groupId, status);
+			return kbCommentLocalService.getKBCommentsCount(groupId, status);
 		}
 
 		return 0;
@@ -155,9 +191,8 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 	public int getKBCommentsCount(long groupId, String className, long classPK)
 		throws PortalException {
 
-		if (SuggestionPermission.contains(
-				getPermissionChecker(), groupId, className, classPK,
-				KBActionKeys.VIEW_SUGGESTIONS)) {
+		if (_containsViewSuggestionPermission(
+				getPermissionChecker(), groupId, className, classPK)) {
 
 			return kbCommentLocalService.getKBCommentsCount(className, classPK);
 		}
@@ -170,9 +205,8 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 			long groupId, String className, long classPK, int status)
 		throws PortalException {
 
-		if (SuggestionPermission.contains(
-				getPermissionChecker(), groupId, className, classPK,
-				KBActionKeys.VIEW_SUGGESTIONS)) {
+		if (_containsViewSuggestionPermission(
+				getPermissionChecker(), groupId, className, classPK)) {
 
 			return kbCommentLocalService.getKBCommentsCount(
 				className, classPK, status);
@@ -187,7 +221,7 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 			int status, ServiceContext serviceContext)
 		throws PortalException {
 
-		KBCommentPermission.check(
+		_kbCommentModelResourcePermission.check(
 			getPermissionChecker(), kbCommentId, KBActionKeys.UPDATE);
 
 		return kbCommentLocalService.updateKBComment(
@@ -213,11 +247,59 @@ public class KBCommentServiceImpl extends KBCommentServiceBaseImpl {
 			long kbCommentId, int status, ServiceContext serviceContext)
 		throws PortalException {
 
-		KBCommentPermission.check(
+		_kbCommentModelResourcePermission.check(
 			getPermissionChecker(), kbCommentId, KBActionKeys.UPDATE);
 
 		return kbCommentLocalService.updateStatus(
 			getUserId(), kbCommentId, status, serviceContext);
 	}
+
+	private boolean _containsViewSuggestionPermission(
+			PermissionChecker permissionChecker, long groupId, String className,
+			long classPK)
+		throws PortalException {
+
+		if (!className.equals(KBArticleConstants.getClassName())) {
+			throw new IllegalArgumentException(
+				"Only KB articles support suggestions");
+		}
+
+		KBArticle kbArticle = kbArticleLocalService.fetchKBArticle(classPK);
+
+		if (kbArticle != null) {
+			kbArticle = kbArticleLocalService.getLatestKBArticle(
+				kbArticle.getResourcePrimKey(), WorkflowConstants.STATUS_ANY);
+		}
+		else {
+			kbArticle = kbArticleLocalService.getLatestKBArticle(
+				classPK, WorkflowConstants.STATUS_ANY);
+		}
+
+		if (_portletResourcePermission.contains(
+				permissionChecker, groupId, KBActionKeys.VIEW_SUGGESTIONS) ||
+			_kbArticleModelResourcePermission.contains(
+				permissionChecker, kbArticle, KBActionKeys.UPDATE)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private static volatile ModelResourcePermission<KBArticle>
+		_kbArticleModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				KBCommentServiceImpl.class, "_kbArticleModelResourcePermission",
+				KBArticle.class);
+	private static volatile ModelResourcePermission<KBComment>
+		_kbCommentModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				KBCommentServiceImpl.class, "_kbCommentModelResourcePermission",
+				KBComment.class);
+	private static volatile PortletResourcePermission
+		_portletResourcePermission =
+			PortletResourcePermissionFactory.getInstance(
+				KBCommentServiceImpl.class, "_portletResourcePermission",
+				KBConstants.RESOURCE_NAME_ADMIN);
 
 }

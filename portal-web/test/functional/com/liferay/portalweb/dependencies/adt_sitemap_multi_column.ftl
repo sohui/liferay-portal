@@ -6,7 +6,7 @@
 					<h3>
 						<a
 
-						<#assign layoutType = entry.getLayoutType()>
+						<#assign layoutType = entry.getLayoutType() />
 
 						<#if layoutType.isBrowsable()>
 							href="${portalUtil.getLayoutURL(entry, themeDisplay)}"
@@ -16,22 +16,26 @@
 					</h3>
 				</div>
 
-				<@displayPages pages=entry.getChildren() />
+				<@displayPages
+					depth=1
+					pages=entry.getChildren()
+				/>
 			</@liferay_aui.col>
 		</#list>
 	</@liferay_aui.row>
 </#if>
 
 <#macro displayPages
+	depth
 	pages
 >
-	<#if pages?has_content>
+	<#if pages?has_content && ((depth < displayDepth?number) || (displayDepth?number == 0))>
 		<ul class="child-pages">
 			<#list pages as page>
 				<li>
 					<a
 
-					<#assign pageType = page.getLayoutType()>
+					<#assign pageType = page.getLayoutType() />
 
 					<#if pageType.isBrowsable()>
 						href="${portalUtil.getLayoutURL(page, themeDisplay)}"
@@ -39,7 +43,10 @@
 
 					>${page.getName(locale)}</a>
 
-					<@displayPages pages=page.getChildren() />
+					<@displayPages
+						depth=depth + 1
+						pages=page.getChildren()
+					/>
 				</li>
 			</#list>
 		</ul>

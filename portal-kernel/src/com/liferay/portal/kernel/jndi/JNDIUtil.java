@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.jndi;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import javax.naming.Context;
@@ -36,8 +35,6 @@ public class JNDIUtil {
 
 	private static Object _lookup(Context context, String location)
 		throws NamingException {
-
-		PortalRuntimePermission.checkGetBeanProperty(JNDIUtil.class);
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Lookup " + location);
@@ -79,10 +76,10 @@ public class JNDIUtil {
 					obj = context.lookup(newLocation);
 				}
 			}
-
-			// java:ObjectName to ObjectName
-
 			else if (location.contains("java:")) {
+
+				// java:ObjectName to ObjectName
+
 				try {
 					String newLocation = StringUtil.replace(
 						location, "java:", "");
@@ -109,10 +106,10 @@ public class JNDIUtil {
 					obj = context.lookup(newLocation);
 				}
 			}
-
-			// ObjectName to java:ObjectName
-
 			else if (!location.contains("java:")) {
+
+				// ObjectName to java:ObjectName
+
 				try {
 					String newLocation = "java:" + location;
 

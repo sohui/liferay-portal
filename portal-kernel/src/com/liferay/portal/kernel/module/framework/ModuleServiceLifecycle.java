@@ -25,7 +25,12 @@ public interface ModuleServiceLifecycle {
 	public String PORTAL_INITIALIZED =
 		"(module.service.lifecycle=portal.initialized)";
 
+	public String PORTLETS_INITIALIZED =
+		"(module.service.lifecycle=portlets.initialized)";
+
 	public String SPRING_INITIALIZED =
 		"(module.service.lifecycle=spring.initialized)";
+
+	public String SYSTEM_CHECK = "(module.service.lifecycle=system.check)";
 
 }

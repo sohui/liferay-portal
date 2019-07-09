@@ -14,11 +14,12 @@
 
 package com.liferay.portal.fabric.netty.rpc;
 
+import com.liferay.petra.concurrent.AsyncBroker;
+import com.liferay.petra.concurrent.DefaultNoticeableFuture;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.fabric.netty.NettyTestUtil;
 import com.liferay.portal.fabric.netty.handlers.NettyChannelAttributes;
-import com.liferay.portal.kernel.concurrent.AsyncBroker;
-import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
@@ -67,8 +68,9 @@ public class RPCResponseTest {
 			_ID, true, _RESULT, _throwable);
 
 		Assert.assertEquals(
-			"{cancelled=true, id=" + _ID + ", result=" + _RESULT +
-				", throwable=" + _throwable + "}",
+			StringBundler.concat(
+				"{cancelled=true, id=", _ID, ", result=", _RESULT,
+				", throwable=", _throwable, "}"),
 			rpcResponse.toString());
 	}
 
@@ -89,7 +91,7 @@ public class RPCResponseTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -108,8 +110,9 @@ public class RPCResponseTest {
 			}
 			else {
 				Assert.assertEquals(
-					"Unable to place result " + result +
-						" because no future exists with ID " + _ID,
+					StringBundler.concat(
+						"Unable to place result ", result,
+						" because no future exists with ID ", _ID),
 					logRecord.getMessage());
 			}
 		}
@@ -131,13 +134,13 @@ public class RPCResponseTest {
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
 			if (!cancelled) {
-				Assert.assertTrue(logRecords.isEmpty());
+				Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 				return;
 			}
 
 			Assert.assertTrue(noticeableFuture.isCancelled());
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.remove(0);
 
@@ -157,7 +160,7 @@ public class RPCResponseTest {
 
 			rpcResponse.execute(_embeddedChannel);
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			logRecord = logRecords.remove(0);
 

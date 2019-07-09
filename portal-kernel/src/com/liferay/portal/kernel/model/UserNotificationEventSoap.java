@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * This class is used by SOAP remote services.
@@ -29,30 +29,35 @@ import java.util.List;
  */
 @ProviderType
 public class UserNotificationEventSoap implements Serializable {
+
 	public static UserNotificationEventSoap toSoapModel(
 		UserNotificationEvent model) {
+
 		UserNotificationEventSoap soapModel = new UserNotificationEventSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
-		soapModel.setUserNotificationEventId(model.getUserNotificationEventId());
+		soapModel.setUserNotificationEventId(
+			model.getUserNotificationEventId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setUserId(model.getUserId());
 		soapModel.setType(model.getType());
 		soapModel.setTimestamp(model.getTimestamp());
 		soapModel.setDeliveryType(model.getDeliveryType());
 		soapModel.setDeliverBy(model.getDeliverBy());
-		soapModel.setDelivered(model.getDelivered());
+		soapModel.setDelivered(model.isDelivered());
 		soapModel.setPayload(model.getPayload());
-		soapModel.setActionRequired(model.getActionRequired());
-		soapModel.setArchived(model.getArchived());
+		soapModel.setActionRequired(model.isActionRequired());
+		soapModel.setArchived(model.isArchived());
 
 		return soapModel;
 	}
 
 	public static UserNotificationEventSoap[] toSoapModels(
 		UserNotificationEvent[] models) {
-		UserNotificationEventSoap[] soapModels = new UserNotificationEventSoap[models.length];
+
+		UserNotificationEventSoap[] soapModels =
+			new UserNotificationEventSoap[models.length];
 
 		for (int i = 0; i < models.length; i++) {
 			soapModels[i] = toSoapModel(models[i]);
@@ -63,10 +68,12 @@ public class UserNotificationEventSoap implements Serializable {
 
 	public static UserNotificationEventSoap[][] toSoapModels(
 		UserNotificationEvent[][] models) {
+
 		UserNotificationEventSoap[][] soapModels = null;
 
 		if (models.length > 0) {
-			soapModels = new UserNotificationEventSoap[models.length][models[0].length];
+			soapModels =
+				new UserNotificationEventSoap[models.length][models[0].length];
 		}
 		else {
 			soapModels = new UserNotificationEventSoap[0][0];
@@ -81,13 +88,16 @@ public class UserNotificationEventSoap implements Serializable {
 
 	public static UserNotificationEventSoap[] toSoapModels(
 		List<UserNotificationEvent> models) {
-		List<UserNotificationEventSoap> soapModels = new ArrayList<UserNotificationEventSoap>(models.size());
+
+		List<UserNotificationEventSoap> soapModels =
+			new ArrayList<UserNotificationEventSoap>(models.size());
 
 		for (UserNotificationEvent model : models) {
 			soapModels.add(toSoapModel(model));
 		}
 
-		return soapModels.toArray(new UserNotificationEventSoap[soapModels.size()]);
+		return soapModels.toArray(
+			new UserNotificationEventSoap[soapModels.size()]);
 	}
 
 	public UserNotificationEventSoap() {
@@ -230,4 +240,5 @@ public class UserNotificationEventSoap implements Serializable {
 	private String _payload;
 	private boolean _actionRequired;
 	private boolean _archived;
+
 }

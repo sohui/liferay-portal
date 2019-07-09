@@ -14,10 +14,10 @@
 
 package com.liferay.portal.kernel.service.persistence.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.NestedSetsTreeNodeModel;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -372,14 +372,13 @@ public class NestedSetsTreeManagerTest {
 
 	private final NestedSetsTreeManager<SimpleNestedSetsTreeNode>
 		_nestedSetsTreeManager = new MemoryNestedSetsTreeManager();
-	private final SimpleNestedSetsTreeNode[] _simpleNestedSetsTreeNodes =
-		new SimpleNestedSetsTreeNode[] {
-			new SimpleNestedSetsTreeNode(0), new SimpleNestedSetsTreeNode(1),
-			new SimpleNestedSetsTreeNode(2), new SimpleNestedSetsTreeNode(3),
-			new SimpleNestedSetsTreeNode(4), new SimpleNestedSetsTreeNode(5),
-			new SimpleNestedSetsTreeNode(6), new SimpleNestedSetsTreeNode(7),
-			new SimpleNestedSetsTreeNode(8)
-		};
+	private final SimpleNestedSetsTreeNode[] _simpleNestedSetsTreeNodes = {
+		new SimpleNestedSetsTreeNode(0), new SimpleNestedSetsTreeNode(1),
+		new SimpleNestedSetsTreeNode(2), new SimpleNestedSetsTreeNode(3),
+		new SimpleNestedSetsTreeNode(4), new SimpleNestedSetsTreeNode(5),
+		new SimpleNestedSetsTreeNode(6), new SimpleNestedSetsTreeNode(7),
+		new SimpleNestedSetsTreeNode(8)
+	};
 
 	private static class SimpleNestedSetsTreeNode
 		implements Cloneable, Comparable<SimpleNestedSetsTreeNode>,
@@ -412,9 +411,8 @@ public class NestedSetsTreeManagerTest {
 			else if (_nestedSetsTreeNodeLeft == nestedSetsTreeNodeLeft) {
 				return 0;
 			}
-			else {
-				return -1;
-			}
+
+			return -1;
 		}
 
 		@Override

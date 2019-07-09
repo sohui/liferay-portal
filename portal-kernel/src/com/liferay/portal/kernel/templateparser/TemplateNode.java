@@ -14,18 +14,28 @@
 
 package com.liferay.portal.kernel.templateparser;
 
+import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
+import com.liferay.asset.kernel.model.AssetRenderer;
+import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
+import com.liferay.document.library.kernel.util.DLUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
@@ -33,6 +43,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Alexander Chow
@@ -119,63 +134,27 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 	public String getData() {
 		String type = getType();
 
-		if (type.equals("link_to_layout")) {
-			String data = (String)get("data");
-
-			int pos = data.indexOf(CharPool.AT);
-
-			if (pos != -1) {
-				data = data.substring(0, pos);
-			}
-
-			return data;
+		if (type.equals("document_library") || type.equals("image")) {
+			return _getFileEntryData();
 		}
-		else {
-			return (String)get("data");
+		else if (type.equals("link_to_layout")) {
+			return _getLinkToLayoutData();
 		}
+
+		return (String)get("data");
 	}
 
 	public String getFriendlyUrl() {
-		if (_themeDisplay == null) {
-			return getUrl();
-		}
-
 		String type = getType();
 
-		if (!type.equals("link_to_layout")) {
-			return StringPool.BLANK;
+		if (type.equals("ddm-journal-article")) {
+			return _getDDMJournalArticleFriendlyURL();
+		}
+		else if (type.equals("link_to_layout")) {
+			return _getLinkToLayoutFriendlyURL();
 		}
 
-		String layoutType = getLayoutType();
-
-		if (Validator.isNull(layoutType)) {
-			return StringPool.BLANK;
-		}
-
-		long groupId = getLayoutGroupId();
-
-		if (groupId == 0) {
-			groupId = _themeDisplay.getScopeGroupId();
-		}
-
-		boolean privateLayout = layoutType.startsWith("private");
-
-		try {
-			Layout layout = LayoutLocalServiceUtil.getLayout(
-				groupId, privateLayout, getLayoutId());
-
-			return PortalUtil.getLayoutFriendlyURL(layout, _themeDisplay);
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					"Error finding friendly URL on page " +
-						_themeDisplay.getURLCurrent(),
-					e);
-			}
-
-			return getUrl();
-		}
+		return StringPool.BLANK;
 	}
 
 	public String getName() {
@@ -205,13 +184,13 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(5);
-
 		String layoutType = getLayoutType();
 
 		if (Validator.isNull(layoutType)) {
 			return StringPool.BLANK;
 		}
+
+		StringBundler sb = new StringBundler(5);
 
 		if (layoutType.equals(_LAYOUT_TYPE_PRIVATE_GROUP)) {
 			sb.append(PortalUtil.getPathFriendlyURLPrivateGroup());
@@ -287,6 +266,133 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 		}
 
 		return data;
+	}
+
+	private String _getDDMJournalArticleFriendlyURL() {
+		if (_themeDisplay == null) {
+			return StringPool.BLANK;
+		}
+
+		String data = (String)get("data");
+
+		try {
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(data);
+
+			AssetRendererFactory<?> assetRendererFactory =
+				AssetRendererFactoryRegistryUtil.
+					getAssetRendererFactoryByClassName(
+						jsonObject.getString("className"));
+
+			if (assetRendererFactory == null) {
+				return StringPool.BLANK;
+			}
+
+			long classPK = GetterUtil.getLong(jsonObject.getLong("classPK"));
+
+			AssetRenderer<?> assetRenderer =
+				assetRendererFactory.getAssetRenderer(classPK);
+
+			if (assetRenderer == null) {
+				return StringPool.BLANK;
+			}
+
+			HttpServletRequest httpServletRequest = _themeDisplay.getRequest();
+
+			PortletRequest portletRequest =
+				(PortletRequest)httpServletRequest.getAttribute(
+					JavaConstants.JAVAX_PORTLET_REQUEST);
+			PortletResponse portletResponse =
+				(PortletResponse)httpServletRequest.getAttribute(
+					JavaConstants.JAVAX_PORTLET_RESPONSE);
+
+			return assetRenderer.getURLViewInContext(
+				PortalUtil.getLiferayPortletRequest(portletRequest),
+				PortalUtil.getLiferayPortletResponse(portletResponse),
+				StringPool.BLANK);
+		}
+		catch (Exception e) {
+		}
+
+		return StringPool.BLANK;
+	}
+
+	private String _getFileEntryData() {
+		String data = (String)get("data");
+
+		try {
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(data);
+
+			String uuid = jsonObject.getString("uuid");
+			long groupId = jsonObject.getLong("groupId");
+
+			if (Validator.isNull(uuid) && (groupId == 0)) {
+				return StringPool.BLANK;
+			}
+
+			FileEntry fileEntry =
+				DLAppLocalServiceUtil.getFileEntryByUuidAndGroupId(
+					uuid, groupId);
+
+			return DLUtil.getPreviewURL(
+				fileEntry, fileEntry.getFileVersion(), null, StringPool.BLANK,
+				false, true);
+		}
+		catch (Exception e) {
+		}
+
+		return StringPool.BLANK;
+	}
+
+	private String _getLinkToLayoutData() {
+		String data = (String)get("data");
+
+		int pos = data.indexOf(CharPool.AT);
+
+		if (pos != -1) {
+			data = data.substring(0, pos);
+		}
+
+		return data;
+	}
+
+	private String _getLinkToLayoutFriendlyURL() {
+		if (_themeDisplay == null) {
+			return getUrl();
+		}
+
+		String layoutType = getLayoutType();
+
+		if (Validator.isNull(layoutType)) {
+			return StringPool.BLANK;
+		}
+
+		long groupId = getLayoutGroupId();
+
+		if (groupId == 0) {
+			groupId = _themeDisplay.getScopeGroupId();
+		}
+
+		boolean privateLayout = layoutType.startsWith("private");
+
+		try {
+			Layout layout = LayoutLocalServiceUtil.getLayout(
+				groupId, privateLayout, getLayoutId());
+
+			String layoutFriendlyURL = PortalUtil.getLayoutFriendlyURL(
+				layout, _themeDisplay);
+
+			return HttpUtil.removeDomain(layoutFriendlyURL);
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Unable to get friendly URL for URL " +
+						_themeDisplay.getURLCurrent(),
+					e);
+			}
+
+			return getUrl();
+		}
 	}
 
 	private static final String _LAYOUT_TYPE_PRIVATE_GROUP = "private-group";

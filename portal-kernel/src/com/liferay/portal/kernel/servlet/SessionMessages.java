@@ -14,17 +14,18 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletSession;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.portlet.PortletRequest;
@@ -70,24 +71,26 @@ public class SessionMessages {
 	public static final String KEY_SUFFIX_UPDATED_PREFERENCES =
 		".updatedPreferences";
 
-	public static void add(HttpServletRequest request, Class<?> clazz) {
-		add(_getPortalSession(request), clazz.getName());
+	public static void add(
+		HttpServletRequest httpServletRequest, Class<?> clazz) {
+
+		add(_getPortalSession(httpServletRequest), clazz.getName());
 	}
 
 	public static void add(
-		HttpServletRequest request, Class<?> clazz, Object value) {
+		HttpServletRequest httpServletRequest, Class<?> clazz, Object value) {
 
-		add(_getPortalSession(request), clazz.getName(), value);
+		add(_getPortalSession(httpServletRequest), clazz.getName(), value);
 	}
 
-	public static void add(HttpServletRequest request, String key) {
-		add(_getPortalSession(request), key);
+	public static void add(HttpServletRequest httpServletRequest, String key) {
+		add(_getPortalSession(httpServletRequest), key);
 	}
 
 	public static void add(
-		HttpServletRequest request, String key, Object value) {
+		HttpServletRequest httpServletRequest, String key, Object value) {
 
-		add(_getPortalSession(request), key, value);
+		add(_getPortalSession(httpServletRequest), key, value);
 	}
 
 	public static void add(HttpSession session, Class<?> clazz) {
@@ -150,8 +153,8 @@ public class SessionMessages {
 		map.put(key, value);
 	}
 
-	public static void clear(HttpServletRequest request) {
-		clear(_getPortalSession(request));
+	public static void clear(HttpServletRequest httpServletRequest) {
+		clear(_getPortalSession(httpServletRequest));
 	}
 
 	public static void clear(HttpSession session) {
@@ -170,12 +173,16 @@ public class SessionMessages {
 		}
 	}
 
-	public static boolean contains(HttpServletRequest request, Class<?> clazz) {
-		return contains(_getPortalSession(request), clazz.getName());
+	public static boolean contains(
+		HttpServletRequest httpServletRequest, Class<?> clazz) {
+
+		return contains(_getPortalSession(httpServletRequest), clazz.getName());
 	}
 
-	public static boolean contains(HttpServletRequest request, String key) {
-		return contains(_getPortalSession(request), key);
+	public static boolean contains(
+		HttpServletRequest httpServletRequest, String key) {
+
+		return contains(_getPortalSession(httpServletRequest), key);
 	}
 
 	public static boolean contains(HttpSession session, Class<?> clazz) {
@@ -208,12 +215,16 @@ public class SessionMessages {
 		return map.containsKey(key);
 	}
 
-	public static Object get(HttpServletRequest request, Class<?> clazz) {
-		return get(_getPortalSession(request), clazz.getName());
+	public static Object get(
+		HttpServletRequest httpServletRequest, Class<?> clazz) {
+
+		return get(_getPortalSession(httpServletRequest), clazz.getName());
 	}
 
-	public static Object get(HttpServletRequest request, String key) {
-		return get(_getPortalSession(request), key);
+	public static Object get(
+		HttpServletRequest httpServletRequest, String key) {
+
+		return get(_getPortalSession(httpServletRequest), key);
 	}
 
 	public static Object get(HttpSession session, Class<?> clazz) {
@@ -244,8 +255,8 @@ public class SessionMessages {
 		return map.get(key);
 	}
 
-	public static boolean isEmpty(HttpServletRequest request) {
-		return isEmpty(_getPortalSession(request));
+	public static boolean isEmpty(HttpServletRequest httpServletRequest) {
+		return isEmpty(_getPortalSession(httpServletRequest));
 	}
 
 	public static boolean isEmpty(HttpSession session) {
@@ -268,8 +279,10 @@ public class SessionMessages {
 		return map.isEmpty();
 	}
 
-	public static Iterator<String> iterator(HttpServletRequest request) {
-		return iterator(_getPortalSession(request));
+	public static Iterator<String> iterator(
+		HttpServletRequest httpServletRequest) {
+
+		return iterator(_getPortalSession(httpServletRequest));
 	}
 
 	public static Iterator<String> iterator(HttpSession session) {
@@ -300,8 +313,8 @@ public class SessionMessages {
 		return set.iterator();
 	}
 
-	public static Set<String> keySet(HttpServletRequest request) {
-		return keySet(_getPortalSession(request));
+	public static Set<String> keySet(HttpServletRequest httpServletRequest) {
+		return keySet(_getPortalSession(httpServletRequest));
 	}
 
 	public static Set<String> keySet(HttpSession session) {
@@ -324,8 +337,8 @@ public class SessionMessages {
 		return Collections.unmodifiableSet(map.keySet());
 	}
 
-	public static void print(HttpServletRequest request) {
-		print(_getPortalSession(request));
+	public static void print(HttpServletRequest httpServletRequest) {
+		print(_getPortalSession(httpServletRequest));
 	}
 
 	public static void print(HttpSession session) {
@@ -344,8 +357,8 @@ public class SessionMessages {
 		}
 	}
 
-	public static int size(HttpServletRequest request) {
-		return size(_getPortalSession(request));
+	public static int size(HttpServletRequest httpServletRequest) {
+		return size(_getPortalSession(httpServletRequest));
 	}
 
 	public static int size(HttpSession session) {
@@ -419,20 +432,22 @@ public class SessionMessages {
 			createIfAbsent);
 	}
 
-	private static HttpSession _getPortalSession(HttpServletRequest request) {
-		HttpServletRequest originalRequest =
-			PortalUtil.getOriginalServletRequest(request);
+	private static HttpSession _getPortalSession(
+		HttpServletRequest httpServletRequest) {
 
-		return originalRequest.getSession();
+		HttpServletRequest originalHttpServletRequest =
+			PortalUtil.getOriginalServletRequest(httpServletRequest);
+
+		return originalHttpServletRequest.getSession();
 	}
 
 	private static HttpSession _getPortalSession(
 		PortletRequest portletRequest) {
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			portletRequest);
+		HttpServletRequest httpServletRequest =
+			PortalUtil.getHttpServletRequest(portletRequest);
 
-		return _getPortalSession(request);
+		return _getPortalSession(httpServletRequest);
 	}
 
 	private static final String _CLASS_NAME = SessionMessages.class.getName();
@@ -455,7 +470,7 @@ public class SessionMessages {
 		}
 
 		private String _transformKey(String key) {
-			if ("request_processed".equals(key)) {
+			if (Objects.equals(key, "request_processed")) {
 				key = "requestProcessed";
 			}
 

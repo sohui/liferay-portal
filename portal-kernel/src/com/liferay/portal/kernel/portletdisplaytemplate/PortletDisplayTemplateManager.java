@@ -23,9 +23,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Leonardo Barros
  */
+@ProviderType
 public interface PortletDisplayTemplateManager {
 
 	public static final String DISPLAY_STYLE_PREFIX = "ddmTemplate_";
@@ -42,9 +45,15 @@ public interface PortletDisplayTemplateManager {
 		String language);
 
 	public String renderDDMTemplate(
-			HttpServletRequest request, HttpServletResponse response,
-			long templateId, List<?> entries,
-			Map<String, Object> contextObjects)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, DDMTemplate ddmTemplate,
+			List<?> entries, Map<String, Object> contextObjects)
+		throws Exception;
+
+	public String renderDDMTemplate(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, long templateId,
+			List<?> entries, Map<String, Object> contextObjects)
 		throws Exception;
 
 }

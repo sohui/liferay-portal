@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.resiliency.spi.agent;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.resiliency.spi.SPI;
 import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.IOException;
 
@@ -36,10 +36,11 @@ import javax.servlet.http.HttpSession;
 public class AcceptorServlet extends HttpServlet {
 
 	protected void doService(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException {
 
-		PortalUtil.setPortalInetSocketAddresses(request);
+		PortalUtil.setPortalInetSocketAddresses(httpServletRequest);
 
 		ServletContext servletContext = getServletContext();
 
@@ -60,10 +61,10 @@ public class AcceptorServlet extends HttpServlet {
 		SPIAgent spiAgent = spi.getSPIAgent();
 
 		HttpServletRequest spiAgentHttpServletRequest = spiAgent.prepareRequest(
-			request);
+			httpServletRequest);
 
 		HttpServletResponse spiAgentHttpServletResponse =
-			spiAgent.prepareResponse(request, response);
+			spiAgent.prepareResponse(httpServletRequest, httpServletResponse);
 
 		Exception exception = null;
 
@@ -85,11 +86,12 @@ public class AcceptorServlet extends HttpServlet {
 
 	@Override
 	protected void service(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException {
 
 		try {
-			doService(request, response);
+			doService(httpServletRequest, httpServletResponse);
 		}
 		catch (IOException ioe) {
 			_log.error(ioe, ioe);

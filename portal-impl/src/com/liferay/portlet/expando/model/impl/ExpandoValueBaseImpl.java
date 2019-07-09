@@ -14,10 +14,10 @@
 
 package com.liferay.portlet.expando.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.expando.kernel.model.ExpandoValue;
 import com.liferay.expando.kernel.service.ExpandoValueLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the ExpandoValue service. Represents a row in the &quot;ExpandoValue&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.expando.kernel.service.ExpandoValueLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class ExpandoValueBaseImpl extends ExpandoValueModelImpl
-	implements ExpandoValue {
+public abstract class ExpandoValueBaseImpl
+	extends ExpandoValueModelImpl implements ExpandoValue {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a expando value model instance should use the {@link ExpandoValue} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a expando value model instance should use the <code>ExpandoValue</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class ExpandoValueBaseImpl extends ExpandoValueModelImpl
 			ExpandoValueLocalServiceUtil.updateExpandoValue(this);
 		}
 	}
+
 }

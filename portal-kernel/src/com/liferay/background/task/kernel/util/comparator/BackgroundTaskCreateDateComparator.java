@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 public class BackgroundTaskCreateDateComparator
 	extends OrderByComparator<BackgroundTask> {
@@ -48,9 +48,8 @@ public class BackgroundTaskCreateDateComparator
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	@Override
@@ -58,9 +57,8 @@ public class BackgroundTaskCreateDateComparator
 		if (_ascending) {
 			return ORDER_BY_ASC;
 		}
-		else {
-			return ORDER_BY_DESC;
-		}
+
+		return ORDER_BY_DESC;
 	}
 
 	@Override

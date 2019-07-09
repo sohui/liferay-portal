@@ -14,14 +14,11 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.MembershipRequest;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,16 +27,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing MembershipRequest in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see MembershipRequest
  * @generated
  */
 @ProviderType
-public class MembershipRequestCacheModel implements CacheModel<MembershipRequest>,
-	Externalizable, MVCCModel {
+public class MembershipRequestCacheModel
+	implements CacheModel<MembershipRequest>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -50,10 +49,13 @@ public class MembershipRequestCacheModel implements CacheModel<MembershipRequest
 			return false;
 		}
 
-		MembershipRequestCacheModel membershipRequestCacheModel = (MembershipRequestCacheModel)obj;
+		MembershipRequestCacheModel membershipRequestCacheModel =
+			(MembershipRequestCacheModel)obj;
 
-		if ((membershipRequestId == membershipRequestCacheModel.membershipRequestId) &&
-				(mvccVersion == membershipRequestCacheModel.mvccVersion)) {
+		if ((membershipRequestId ==
+				membershipRequestCacheModel.membershipRequestId) &&
+			(mvccVersion == membershipRequestCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -110,7 +112,8 @@ public class MembershipRequestCacheModel implements CacheModel<MembershipRequest
 
 	@Override
 	public MembershipRequest toEntityModel() {
-		MembershipRequestImpl membershipRequestImpl = new MembershipRequestImpl();
+		MembershipRequestImpl membershipRequestImpl =
+			new MembershipRequestImpl();
 
 		membershipRequestImpl.setMvccVersion(mvccVersion);
 		membershipRequestImpl.setMembershipRequestId(membershipRequestId);
@@ -126,14 +129,14 @@ public class MembershipRequestCacheModel implements CacheModel<MembershipRequest
 		}
 
 		if (comments == null) {
-			membershipRequestImpl.setComments(StringPool.BLANK);
+			membershipRequestImpl.setComments("");
 		}
 		else {
 			membershipRequestImpl.setComments(comments);
 		}
 
 		if (replyComments == null) {
-			membershipRequestImpl.setReplyComments(StringPool.BLANK);
+			membershipRequestImpl.setReplyComments("");
 		}
 		else {
 			membershipRequestImpl.setReplyComments(replyComments);
@@ -176,8 +179,7 @@ public class MembershipRequestCacheModel implements CacheModel<MembershipRequest
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(membershipRequestId);
@@ -190,14 +192,14 @@ public class MembershipRequestCacheModel implements CacheModel<MembershipRequest
 		objectOutput.writeLong(createDate);
 
 		if (comments == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(comments);
 		}
 
 		if (replyComments == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(replyComments);
@@ -221,4 +223,5 @@ public class MembershipRequestCacheModel implements CacheModel<MembershipRequest
 	public long replyDate;
 	public long replierUserId;
 	public long statusId;
+
 }

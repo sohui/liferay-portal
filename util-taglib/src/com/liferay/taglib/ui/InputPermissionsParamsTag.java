@@ -14,20 +14,21 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.List;
@@ -45,16 +46,18 @@ import javax.servlet.jsp.tagext.TagSupport;
  */
 public class InputPermissionsParamsTag extends TagSupport {
 
-	public static String doTag(String modelName, HttpServletRequest request)
+	public static String doTag(
+			String modelName, HttpServletRequest httpServletRequest)
 		throws Exception {
 
 		try {
 			RenderResponse renderResponse =
-				(RenderResponse)request.getAttribute(
+				(RenderResponse)httpServletRequest.getAttribute(
 					JavaConstants.JAVAX_PORTLET_RESPONSE);
 
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
 			Layout layout = themeDisplay.getLayout();
 
@@ -76,9 +79,7 @@ public class InputPermissionsParamsTag extends TagSupport {
 
 			StringBundler sb = new StringBundler();
 
-			for (int i = 0; i < supportedActions.size(); i++) {
-				String action = supportedActions.get(i);
-
+			for (String action : supportedActions) {
 				boolean groupChecked = groupDefaultActions.contains(action);
 
 				boolean guestChecked = false;
@@ -103,20 +104,20 @@ public class InputPermissionsParamsTag extends TagSupport {
 					guestChecked = false;
 				}
 
-				if (group.isOrganization() || group.isRegularSite()) {
-					if (groupChecked) {
-						sb.append(StringPool.AMPERSAND);
-						sb.append(renderResponse.getNamespace());
-						sb.append("groupPermissions=");
-						sb.append(HttpUtil.encodeURL(action));
-					}
+				if ((group.isOrganization() || group.isRegularSite()) &&
+					groupChecked) {
+
+					sb.append(StringPool.AMPERSAND);
+					sb.append(renderResponse.getNamespace());
+					sb.append("groupPermissions=");
+					sb.append(URLCodec.encodeURL(action));
 				}
 
 				if (guestChecked) {
 					sb.append(StringPool.AMPERSAND);
 					sb.append(renderResponse.getNamespace());
 					sb.append("guestPermissions=");
-					sb.append(HttpUtil.encodeURL(action));
+					sb.append(URLCodec.encodeURL(action));
 				}
 			}
 
@@ -126,7 +127,7 @@ public class InputPermissionsParamsTag extends TagSupport {
 			sb.append(StringPool.AMPERSAND);
 			sb.append(renderResponse.getNamespace());
 			sb.append("inputPermissionsViewRole=");
-			sb.append(HttpUtil.encodeURL(inputPermissionsViewRole));
+			sb.append(URLCodec.encodeURL(inputPermissionsViewRole));
 
 			return sb.toString();
 		}
@@ -145,12 +146,26 @@ public class InputPermissionsParamsTag extends TagSupport {
 			ResourceActionsUtil.getModelResourceGuestDefaultActions(modelName);
 
 		if (layout.isTypeControlPanel()) {
-			Group group = themeDisplay.getScopeGroup();
+			long refererPlid = themeDisplay.getRefererPlid();
 
-			if (!group.hasPrivateLayouts() &&
-				guestDefaultActions.contains(ActionKeys.VIEW)) {
+			if (refererPlid > 0) {
+				Layout refererLayout = LayoutLocalServiceUtil.getLayout(
+					refererPlid);
 
-				return RoleConstants.GUEST;
+				if (refererLayout.isPublicLayout() &&
+					guestDefaultActions.contains(ActionKeys.VIEW)) {
+
+					return RoleConstants.GUEST;
+				}
+			}
+			else {
+				Group group = themeDisplay.getScopeGroup();
+
+				if (!group.hasPrivateLayouts() &&
+					guestDefaultActions.contains(ActionKeys.VIEW)) {
+
+					return RoleConstants.GUEST;
+				}
 			}
 		}
 		else if (layout.isPublicLayout() &&

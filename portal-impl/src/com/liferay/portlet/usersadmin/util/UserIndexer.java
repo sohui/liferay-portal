@@ -14,7 +14,6 @@
 
 package com.liferay.portlet.usersadmin.util;
 
-import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.NoSuchContactException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -56,10 +55,13 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 /**
- * @author Raymond Augé
- * @author Zsigmond Rab
- * @author Hugo Huijser
+ * @author     Raymond Augé
+ * @author     Zsigmond Rab
+ * @author     Hugo Huijser
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.users.admin.internal.search.UserIndexer}
  */
+@Deprecated
 @OSGiBeanProperties
 public class UserIndexer extends BaseIndexer<User> {
 
@@ -104,7 +106,6 @@ public class UserIndexer extends BaseIndexer<User> {
 		}
 
 		for (Map.Entry<String, Object> entry : params.entrySet()) {
-			String key = entry.getKey();
 			Object value = entry.getValue();
 
 			if (value == null) {
@@ -122,7 +123,7 @@ public class UserIndexer extends BaseIndexer<User> {
 			}
 
 			addContextQueryParams(
-				contextBooleanFilter, searchContext, key, value);
+				contextBooleanFilter, searchContext, entry.getKey(), value);
 		}
 	}
 
@@ -300,9 +301,8 @@ public class UserIndexer extends BaseIndexer<User> {
 		else if (orderByCol.equals("screen-name")) {
 			return "screenName";
 		}
-		else {
-			return orderByCol;
-		}
+
+		return orderByCol;
 	}
 
 	@Override
@@ -392,27 +392,20 @@ public class UserIndexer extends BaseIndexer<User> {
 
 		indexableActionableDynamicQuery.setCompanyId(companyId);
 		indexableActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<User>() {
+			(User user) -> {
+				if (!user.isDefaultUser()) {
+					try {
+						Document document = getDocument(user);
 
-				@Override
-				public void performAction(User user) {
-					if (!user.isDefaultUser()) {
-						try {
-							Document document = getDocument(user);
-
-							indexableActionableDynamicQuery.addDocuments(
-								document);
-						}
-						catch (PortalException pe) {
-							if (_log.isWarnEnabled()) {
-								_log.warn(
-									"Unable to index user " + user.getUserId(),
-									pe);
-							}
+						indexableActionableDynamicQuery.addDocuments(document);
+					}
+					catch (PortalException pe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to index user " + user.getUserId(), pe);
 						}
 					}
 				}
-
 			});
 		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 

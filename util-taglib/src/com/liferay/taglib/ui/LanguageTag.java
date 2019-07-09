@@ -48,6 +48,38 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class LanguageTag extends IncludeTag {
 
+	public long getDdmTemplateGroupId() {
+		return _ddmTemplateGroupId;
+	}
+
+	public String getDdmTemplateKey() {
+		return _ddmTemplateKey;
+	}
+
+	public String getFormName() {
+		return _formName;
+	}
+
+	public String getLanguageId() {
+		return _languageId;
+	}
+
+	public String[] getLanguageIds() {
+		return _languageIds;
+	}
+
+	public String getName() {
+		return _name;
+	}
+
+	public boolean isDisplayCurrentLocale() {
+		return _displayCurrentLocale;
+	}
+
+	public boolean isUseNamespace() {
+		return _useNamespace;
+	}
+
 	public void setDdmTemplateGroupId(long ddmTemplateGroupId) {
 		_ddmTemplateGroupId = ddmTemplateGroupId;
 	}
@@ -86,6 +118,8 @@ public class LanguageTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_ddmTemplateGroupId = 0;
 		_ddmTemplateKey = null;
 		_displayCurrentLocale = true;
@@ -130,6 +164,7 @@ public class LanguageTag extends IncludeTag {
 		formAction =
 			themeDisplay.getPathMain() + "/portal/update_language?p_l_id=" +
 				themeDisplay.getPlid();
+
 		formAction = HttpUtil.setParameter(
 			formAction, "redirect", PortalUtil.getCurrentURL(request));
 
@@ -239,24 +274,27 @@ public class LanguageTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
 			"liferay-ui:language:displayCurrentLocale",
 			String.valueOf(_displayCurrentLocale));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:language:displayStyle", getDisplayStyle());
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:language:displayStyleGroupId",
 			getDisplayStyleGroupId());
-		request.setAttribute("liferay-ui:language:formAction", getFormAction());
-		request.setAttribute("liferay-ui:language:formName", _formName);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:language:formAction", getFormAction());
+		httpServletRequest.setAttribute(
+			"liferay-ui:language:formName", _formName);
+		httpServletRequest.setAttribute(
 			"liferay-ui:language:languageEntries",
 			getLanguageEntries(
 				getLocales(), _displayCurrentLocale, getFormAction(),
 				getNamespacedName()));
-		request.setAttribute("liferay-ui:language:languageId", _languageId);
-		request.setAttribute("liferay-ui:language:name", _name);
+		httpServletRequest.setAttribute(
+			"liferay-ui:language:languageId", _languageId);
+		httpServletRequest.setAttribute("liferay-ui:language:name", _name);
 	}
 
 	private static final String _PAGE = "/html/taglib/ui/language/page.jsp";

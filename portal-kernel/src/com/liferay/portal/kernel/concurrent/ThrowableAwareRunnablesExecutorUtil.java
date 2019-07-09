@@ -25,8 +25,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class ThrowableAwareRunnablesExecutorUtil {
 
 	public static void execute(

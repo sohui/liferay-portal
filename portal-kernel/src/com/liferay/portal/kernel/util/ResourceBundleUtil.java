@@ -14,8 +14,12 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.language.UTF8Control;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
 
 import java.text.MessageFormat;
 
@@ -52,6 +56,22 @@ public class ResourceBundleUtil {
 
 		};
 
+	public static ResourceBundle getBundle(Locale locale, Class<?> clazz) {
+		return getBundle("content.Language", locale, clazz);
+	}
+
+	public static ResourceBundle getBundle(
+		Locale locale, ClassLoader classLoader) {
+
+		return getBundle("content.Language", locale, classLoader);
+	}
+
+	public static ResourceBundle getBundle(Locale locale, String symbolicName) {
+		return _getBundle(
+			"content.Language", locale,
+			ResourceBundleUtil.class.getClassLoader(), symbolicName);
+	}
+
 	public static ResourceBundle getBundle(String baseName, Class<?> clazz) {
 		return getBundle(baseName, clazz.getClassLoader());
 	}
@@ -59,8 +79,7 @@ public class ResourceBundleUtil {
 	public static ResourceBundle getBundle(
 		String baseName, ClassLoader classLoader) {
 
-		return ResourceBundle.getBundle(
-			baseName, Locale.getDefault(), classLoader, UTF8Control.INSTANCE);
+		return getBundle(baseName, LocaleUtil.getDefault(), classLoader);
 	}
 
 	public static ResourceBundle getBundle(
@@ -72,8 +91,11 @@ public class ResourceBundleUtil {
 	public static ResourceBundle getBundle(
 		String baseName, Locale locale, ClassLoader classLoader) {
 
-		return ResourceBundle.getBundle(
-			baseName, locale, classLoader, UTF8Control.INSTANCE);
+		Registry registry = RegistryUtil.getRegistry();
+
+		String symbolicName = registry.getSymbolicName(classLoader);
+
+		return _getBundle(baseName, locale, classLoader, symbolicName);
 	}
 
 	public static Map<Locale, String> getLocalizationMap(
@@ -83,23 +105,7 @@ public class ResourceBundleUtil {
 
 		for (Locale locale : LanguageUtil.getAvailableLocales()) {
 			ResourceBundle resourceBundle =
-				resourceBundleLoader.loadResourceBundle(
-					LocaleUtil.toLanguageId(locale));
-
-			map.put(locale, getString(resourceBundle, key));
-		}
-
-		return map;
-	}
-
-	@Deprecated
-	public static Map<Locale, String> getLocalizationMap(
-		String baseName, Class<?> clazz, String key) {
-
-		Map<Locale, String> map = new HashMap<>();
-
-		for (Locale locale : LanguageUtil.getAvailableLocales()) {
-			ResourceBundle resourceBundle = getBundle(baseName, locale, clazz);
+				resourceBundleLoader.loadResourceBundle(locale);
 
 			map.put(locale, getString(resourceBundle, key));
 		}
@@ -114,8 +120,8 @@ public class ResourceBundleUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.1, replaced by {@link #getString(ResourceBundle,
-	 *             String, Object...)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getString(ResourceBundle, String, Object...)}
 	 */
 	@Deprecated
 	public static String getString(
@@ -161,6 +167,10 @@ public class ResourceBundleUtil {
 		return value;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static void loadResourceBundles(
 		Map<String, ResourceBundle> resourceBundles, Locale locale,
 		ResourceBundleLoader resourceBundleLoader) {
@@ -170,6 +180,10 @@ public class ResourceBundleUtil {
 		loadResourceBundles(resourceBundles, languageId, resourceBundleLoader);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static void loadResourceBundles(
 		Map<String, ResourceBundle> resourceBundles, String languageId,
 		ResourceBundleLoader resourceBundleLoader) {
@@ -201,6 +215,26 @@ public class ResourceBundleUtil {
 							new ResourceBundle[size])));
 			}
 		}
+	}
+
+	private static ResourceBundle _getBundle(
+		String baseName, Locale locale, ClassLoader classLoader,
+		String symbolicName) {
+
+		ResourceBundleLoader resourceBundleLoader = null;
+
+		if (symbolicName != null) {
+			resourceBundleLoader =
+				ResourceBundleLoaderUtil.
+					getResourceBundleLoaderByBundleSymbolicName(symbolicName);
+		}
+
+		if (resourceBundleLoader == null) {
+			return ResourceBundle.getBundle(
+				baseName, locale, classLoader, UTF8Control.INSTANCE);
+		}
+
+		return resourceBundleLoader.loadResourceBundle(locale);
 	}
 
 	private static List<String> _getLanguageIds(String languageId) {

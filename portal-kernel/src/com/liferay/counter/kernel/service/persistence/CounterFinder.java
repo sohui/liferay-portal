@@ -14,7 +14,7 @@
 
 package com.liferay.counter.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -22,21 +22,23 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface CounterFinder {
-	public java.util.List<java.lang.String> getNames();
 
-	public java.lang.String getRegistryName();
+	public java.util.List<String> getNames();
+
+	public String getRegistryName();
 
 	public long increment();
 
-	public long increment(java.lang.String name);
+	public long increment(String name);
 
-	public long increment(java.lang.String name, int size);
+	public long increment(String name, int size);
 
 	public void invalidate();
 
-	public void rename(java.lang.String oldName, java.lang.String newName);
+	public void rename(String oldName, String newName);
 
-	public void reset(java.lang.String name);
+	public void reset(String name);
 
-	public void reset(java.lang.String name, long size);
+	public void reset(String name, long size);
+
 }

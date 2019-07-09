@@ -19,9 +19,11 @@ import java.lang.reflect.Method;
 import java.util.Comparator;
 
 /**
- * @author Shuyang Zhou
- * @author Brian Wing Shun Chan
+ * @author     Shuyang Zhou
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class MethodComparator implements Comparator<Method> {
 
 	@Override
@@ -58,12 +60,11 @@ public class MethodComparator implements Comparator<Method> {
 			index++;
 		}
 
-		if (index < (parameterTypes1.length -1)) {
+		if (index < (parameterTypes1.length - 1)) {
 			return -1;
 		}
-		else {
-			return 1;
-		}
+
+		return 1;
 	}
 
 }

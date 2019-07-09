@@ -27,8 +27,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author Julio Camarero
+ * @author     Julio Camarero
+ * @deprecated As of Judson (7.1.x)
  */
+@Deprecated
 public abstract class BaseJSPAssetEntryQueryProcessor
 	extends BaseAssetEntryQueryProcessor {
 
@@ -36,7 +38,8 @@ public abstract class BaseJSPAssetEntryQueryProcessor
 
 	@Override
 	public void include(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException {
 
 		String jspPath = getJspPath();
@@ -49,7 +52,7 @@ public abstract class BaseJSPAssetEntryQueryProcessor
 			_servletContext.getRequestDispatcher(jspPath);
 
 		try {
-			requestDispatcher.include(request, response);
+			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
 		catch (ServletException se) {
 			_log.error("Unable to include " + jspPath, se);

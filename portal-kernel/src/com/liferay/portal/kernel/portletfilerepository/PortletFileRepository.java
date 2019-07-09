@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.portletfilerepository;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -31,6 +29,8 @@ import java.io.File;
 import java.io.InputStream;
 
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Eudaldo Alonso
@@ -77,12 +77,6 @@ public interface PortletFileRepository {
 			long groupId, String portletId, ServiceContext serviceContext)
 		throws PortalException;
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #deletePortletFolder}
-	 */
-	@Deprecated
-	public void deleteFolder(long folderId) throws PortalException;
-
 	public void deletePortletFileEntries(long groupId, long folderId)
 		throws PortalException;
 
@@ -100,6 +94,9 @@ public interface PortletFileRepository {
 
 	public void deletePortletRepository(long groupId, String portletId)
 		throws PortalException;
+
+	public FileEntry fetchPortletFileEntry(
+		long groupId, long folderId, String fileName);
 
 	public Repository fetchPortletRepository(long groupId, String portletId);
 
@@ -126,11 +123,20 @@ public interface PortletFileRepository {
 			long groupId, long folderId, OrderByComparator<FileEntry> obc)
 		throws PortalException;
 
+	public List<FileEntry> getPortletFileEntries(
+			long groupId, long folderId, String[] mimeTypes, int status,
+			int start, int end, OrderByComparator<FileEntry> obc)
+		throws PortalException;
+
 	public int getPortletFileEntriesCount(long groupId, long folderId)
 		throws PortalException;
 
 	public int getPortletFileEntriesCount(
 			long groupId, long folderId, int status)
+		throws PortalException;
+
+	public int getPortletFileEntriesCount(
+			long groupId, long folderId, String[] mimeTypes, int status)
 		throws PortalException;
 
 	public FileEntry getPortletFileEntry(long fileEntryId)

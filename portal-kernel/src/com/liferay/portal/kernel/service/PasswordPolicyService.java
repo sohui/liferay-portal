@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -24,6 +22,11 @@ import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.OrderByComparator;
+
+import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the remote service interface for PasswordPolicy. Methods of this
@@ -32,54 +35,65 @@ import com.liferay.portal.kernel.transaction.Transactional;
  *
  * @author Brian Wing Shun Chan
  * @see PasswordPolicyServiceUtil
- * @see com.liferay.portal.service.base.PasswordPolicyServiceBaseImpl
- * @see com.liferay.portal.service.impl.PasswordPolicyServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface PasswordPolicyService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link PasswordPolicyServiceUtil} to access the password policy remote service. Add custom service methods to {@link com.liferay.portal.service.impl.PasswordPolicyServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link PasswordPolicyServiceUtil} to access the password policy remote service. Add custom service methods to <code>com.liferay.portal.service.impl.PasswordPolicyServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public PasswordPolicy addPasswordPolicy(java.lang.String name,
-		java.lang.String description, boolean changeable,
-		boolean changeRequired, long minAge, boolean checkSyntax,
-		boolean allowDictionaryWords, int minAlphanumeric, int minLength,
-		int minLowerCase, int minNumbers, int minSymbols, int minUpperCase,
-		java.lang.String regex, boolean history, int historyCount,
-		boolean expireable, long maxAge, long warningTime, int graceLimit,
-		boolean lockout, int maxFailure, long lockoutDuration,
-		long resetFailureCount, long resetTicketMaxAge,
-		ServiceContext serviceContext) throws PortalException;
+	public PasswordPolicy addPasswordPolicy(
+			String name, String description, boolean changeable,
+			boolean changeRequired, long minAge, boolean checkSyntax,
+			boolean allowDictionaryWords, int minAlphanumeric, int minLength,
+			int minLowerCase, int minNumbers, int minSymbols, int minUpperCase,
+			String regex, boolean history, int historyCount, boolean expireable,
+			long maxAge, long warningTime, int graceLimit, boolean lockout,
+			int maxFailure, long lockoutDuration, long resetFailureCount,
+			long resetTicketMaxAge, ServiceContext serviceContext)
+		throws PortalException;
+
+	public void deletePasswordPolicy(long passwordPolicyId)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public PasswordPolicy fetchPasswordPolicy(long passwordPolicyId)
 		throws PortalException;
 
-	public PasswordPolicy updatePasswordPolicy(long passwordPolicyId,
-		java.lang.String name, java.lang.String description,
-		boolean changeable, boolean changeRequired, long minAge,
-		boolean checkSyntax, boolean allowDictionaryWords, int minAlphanumeric,
-		int minLength, int minLowerCase, int minNumbers, int minSymbols,
-		int minUpperCase, java.lang.String regex, boolean history,
-		int historyCount, boolean expireable, long maxAge, long warningTime,
-		int graceLimit, boolean lockout, int maxFailure, long lockoutDuration,
-		long resetFailureCount, long resetTicketMaxAge,
-		ServiceContext serviceContext) throws PortalException;
-
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
 
-	public void deletePasswordPolicy(long passwordPolicyId)
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<PasswordPolicy> search(
+		long companyId, String name, int start, int end,
+		OrderByComparator<PasswordPolicy> obc);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int searchCount(long companyId, String name);
+
+	public PasswordPolicy updatePasswordPolicy(
+			long passwordPolicyId, String name, String description,
+			boolean changeable, boolean changeRequired, long minAge,
+			boolean checkSyntax, boolean allowDictionaryWords,
+			int minAlphanumeric, int minLength, int minLowerCase,
+			int minNumbers, int minSymbols, int minUpperCase, String regex,
+			boolean history, int historyCount, boolean expireable, long maxAge,
+			long warningTime, int graceLimit, boolean lockout, int maxFailure,
+			long lockoutDuration, long resetFailureCount,
+			long resetTicketMaxAge, ServiceContext serviceContext)
 		throws PortalException;
+
 }

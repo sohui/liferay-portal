@@ -29,13 +29,21 @@ import javax.servlet.http.HttpServletResponseWrapper;
  */
 public class GenericServletResponse extends HttpServletResponseWrapper {
 
-	public GenericServletResponse(HttpServletResponse response) {
-		super(response);
+	public GenericServletResponse(HttpServletResponse httpServletResponse) {
+		super(httpServletResponse);
 
 		_ubaos = new UnsyncByteArrayOutputStream();
 	}
 
 	public int getContentLength() {
+		if (_contentLength > Integer.MAX_VALUE) {
+			return -1;
+		}
+
+		return (int)_contentLength;
+	}
+
+	public long getContentLengthLong() {
 		return _contentLength;
 	}
 
@@ -66,6 +74,12 @@ public class GenericServletResponse extends HttpServletResponseWrapper {
 		_contentLength = length;
 	}
 
+	public void setContentLengthLong(long length) {
+		super.setContentLengthLong(length);
+
+		_contentLength = length;
+	}
+
 	@Override
 	public void setContentType(String type) {
 		super.setContentType(type);
@@ -73,7 +87,7 @@ public class GenericServletResponse extends HttpServletResponseWrapper {
 		_contentType = type;
 	}
 
-	private int _contentLength;
+	private long _contentLength;
 	private String _contentType;
 	private final UnsyncByteArrayOutputStream _ubaos;
 

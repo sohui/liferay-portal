@@ -22,12 +22,9 @@ import com.liferay.asset.kernel.service.persistence.AssetTagFinder;
 import com.liferay.asset.kernel.service.persistence.AssetTagPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetVocabularyFinder;
 import com.liferay.asset.kernel.service.persistence.AssetVocabularyPersistence;
-
 import com.liferay.expando.kernel.service.persistence.ExpandoRowPersistence;
-
 import com.liferay.exportimport.kernel.service.persistence.ExportImportConfigurationFinder;
 import com.liferay.exportimport.kernel.service.persistence.ExportImportConfigurationPersistence;
-
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -45,10 +42,8 @@ import com.liferay.portal.kernel.service.persistence.GroupFinder;
 import com.liferay.portal.kernel.service.persistence.GroupPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutFinder;
 import com.liferay.portal.kernel.service.persistence.LayoutPersistence;
-import com.liferay.portal.kernel.service.persistence.LayoutPrototypePersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutSetBranchPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutSetPersistence;
-import com.liferay.portal.kernel.service.persistence.LayoutSetPrototypePersistence;
 import com.liferay.portal.kernel.service.persistence.MembershipRequestPersistence;
 import com.liferay.portal.kernel.service.persistence.OrganizationFinder;
 import com.liferay.portal.kernel.service.persistence.OrganizationPersistence;
@@ -56,15 +51,11 @@ import com.liferay.portal.kernel.service.persistence.PortletPersistence;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesFinder;
 import com.liferay.portal.kernel.service.persistence.PortletPreferencesPersistence;
 import com.liferay.portal.kernel.service.persistence.ResourceActionPersistence;
-import com.liferay.portal.kernel.service.persistence.ResourceBlockFinder;
-import com.liferay.portal.kernel.service.persistence.ResourceBlockPersistence;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionFinder;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionPersistence;
-import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionFinder;
-import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionPersistence;
 import com.liferay.portal.kernel.service.persistence.RoleFinder;
 import com.liferay.portal.kernel.service.persistence.RolePersistence;
-import com.liferay.portal.kernel.service.persistence.SubscriptionPersistence;
+import com.liferay.portal.kernel.service.persistence.SystemEventPersistence;
 import com.liferay.portal.kernel.service.persistence.TeamFinder;
 import com.liferay.portal.kernel.service.persistence.TeamPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
@@ -77,13 +68,10 @@ import com.liferay.portal.kernel.service.persistence.UserGroupRolePersistence;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
 import com.liferay.portal.kernel.service.persistence.WorkflowDefinitionLinkPersistence;
 import com.liferay.portal.kernel.util.PortalUtil;
-
 import com.liferay.social.kernel.service.persistence.SocialActivityFinder;
 import com.liferay.social.kernel.service.persistence.SocialActivityPersistence;
 import com.liferay.social.kernel.service.persistence.SocialActivitySettingPersistence;
 import com.liferay.social.kernel.service.persistence.SocialRequestPersistence;
-
-import com.liferay.trash.kernel.service.persistence.TrashEntryPersistence;
 
 import javax.sql.DataSource;
 
@@ -96,15 +84,15 @@ import javax.sql.DataSource;
  *
  * @author Brian Wing Shun Chan
  * @see com.liferay.portal.service.impl.GroupServiceImpl
- * @see com.liferay.portal.kernel.service.GroupServiceUtil
  * @generated
  */
-public abstract class GroupServiceBaseImpl extends BaseServiceImpl
-	implements GroupService, IdentifiableOSGiService {
+public abstract class GroupServiceBaseImpl
+	extends BaseServiceImpl implements GroupService, IdentifiableOSGiService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link com.liferay.portal.kernel.service.GroupServiceUtil} to access the group remote service.
+	 * Never modify or reference this class directly. Use <code>GroupService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.GroupServiceUtil</code>.
 	 */
 
 	/**
@@ -112,7 +100,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the group local service
 	 */
-	public com.liferay.portal.kernel.service.GroupLocalService getGroupLocalService() {
+	public com.liferay.portal.kernel.service.GroupLocalService
+		getGroupLocalService() {
+
 		return groupLocalService;
 	}
 
@@ -123,6 +113,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setGroupLocalService(
 		com.liferay.portal.kernel.service.GroupLocalService groupLocalService) {
+
 		this.groupLocalService = groupLocalService;
 	}
 
@@ -185,7 +176,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the counter local service
 	 */
-	public com.liferay.counter.kernel.service.CounterLocalService getCounterLocalService() {
+	public com.liferay.counter.kernel.service.CounterLocalService
+		getCounterLocalService() {
+
 		return counterLocalService;
 	}
 
@@ -195,7 +188,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param counterLocalService the counter local service
 	 */
 	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService counterLocalService) {
+		com.liferay.counter.kernel.service.CounterLocalService
+			counterLocalService) {
+
 		this.counterLocalService = counterLocalService;
 	}
 
@@ -204,7 +199,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the account local service
 	 */
-	public com.liferay.portal.kernel.service.AccountLocalService getAccountLocalService() {
+	public com.liferay.portal.kernel.service.AccountLocalService
+		getAccountLocalService() {
+
 		return accountLocalService;
 	}
 
@@ -214,7 +211,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param accountLocalService the account local service
 	 */
 	public void setAccountLocalService(
-		com.liferay.portal.kernel.service.AccountLocalService accountLocalService) {
+		com.liferay.portal.kernel.service.AccountLocalService
+			accountLocalService) {
+
 		this.accountLocalService = accountLocalService;
 	}
 
@@ -223,7 +222,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the account remote service
 	 */
-	public com.liferay.portal.kernel.service.AccountService getAccountService() {
+	public com.liferay.portal.kernel.service.AccountService
+		getAccountService() {
+
 		return accountService;
 	}
 
@@ -234,6 +235,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAccountService(
 		com.liferay.portal.kernel.service.AccountService accountService) {
+
 		this.accountService = accountService;
 	}
 
@@ -260,7 +262,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the class name local service
 	 */
-	public com.liferay.portal.kernel.service.ClassNameLocalService getClassNameLocalService() {
+	public com.liferay.portal.kernel.service.ClassNameLocalService
+		getClassNameLocalService() {
+
 		return classNameLocalService;
 	}
 
@@ -270,7 +274,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param classNameLocalService the class name local service
 	 */
 	public void setClassNameLocalService(
-		com.liferay.portal.kernel.service.ClassNameLocalService classNameLocalService) {
+		com.liferay.portal.kernel.service.ClassNameLocalService
+			classNameLocalService) {
+
 		this.classNameLocalService = classNameLocalService;
 	}
 
@@ -279,7 +285,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the class name remote service
 	 */
-	public com.liferay.portal.kernel.service.ClassNameService getClassNameService() {
+	public com.liferay.portal.kernel.service.ClassNameService
+		getClassNameService() {
+
 		return classNameService;
 	}
 
@@ -290,6 +298,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setClassNameService(
 		com.liferay.portal.kernel.service.ClassNameService classNameService) {
+
 		this.classNameService = classNameService;
 	}
 
@@ -309,6 +318,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setClassNamePersistence(
 		ClassNamePersistence classNamePersistence) {
+
 		this.classNamePersistence = classNamePersistence;
 	}
 
@@ -317,7 +327,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the company local service
 	 */
-	public com.liferay.portal.kernel.service.CompanyLocalService getCompanyLocalService() {
+	public com.liferay.portal.kernel.service.CompanyLocalService
+		getCompanyLocalService() {
+
 		return companyLocalService;
 	}
 
@@ -327,7 +339,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param companyLocalService the company local service
 	 */
 	public void setCompanyLocalService(
-		com.liferay.portal.kernel.service.CompanyLocalService companyLocalService) {
+		com.liferay.portal.kernel.service.CompanyLocalService
+			companyLocalService) {
+
 		this.companyLocalService = companyLocalService;
 	}
 
@@ -336,7 +350,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the company remote service
 	 */
-	public com.liferay.portal.kernel.service.CompanyService getCompanyService() {
+	public com.liferay.portal.kernel.service.CompanyService
+		getCompanyService() {
+
 		return companyService;
 	}
 
@@ -347,6 +363,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setCompanyService(
 		com.liferay.portal.kernel.service.CompanyService companyService) {
+
 		this.companyService = companyService;
 	}
 
@@ -373,7 +390,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset category local service
 	 */
-	public com.liferay.asset.kernel.service.AssetCategoryLocalService getAssetCategoryLocalService() {
+	public com.liferay.asset.kernel.service.AssetCategoryLocalService
+		getAssetCategoryLocalService() {
+
 		return assetCategoryLocalService;
 	}
 
@@ -383,7 +402,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param assetCategoryLocalService the asset category local service
 	 */
 	public void setAssetCategoryLocalService(
-		com.liferay.asset.kernel.service.AssetCategoryLocalService assetCategoryLocalService) {
+		com.liferay.asset.kernel.service.AssetCategoryLocalService
+			assetCategoryLocalService) {
+
 		this.assetCategoryLocalService = assetCategoryLocalService;
 	}
 
@@ -392,7 +413,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset category remote service
 	 */
-	public com.liferay.asset.kernel.service.AssetCategoryService getAssetCategoryService() {
+	public com.liferay.asset.kernel.service.AssetCategoryService
+		getAssetCategoryService() {
+
 		return assetCategoryService;
 	}
 
@@ -402,7 +425,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param assetCategoryService the asset category remote service
 	 */
 	public void setAssetCategoryService(
-		com.liferay.asset.kernel.service.AssetCategoryService assetCategoryService) {
+		com.liferay.asset.kernel.service.AssetCategoryService
+			assetCategoryService) {
+
 		this.assetCategoryService = assetCategoryService;
 	}
 
@@ -422,6 +447,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAssetCategoryPersistence(
 		AssetCategoryPersistence assetCategoryPersistence) {
+
 		this.assetCategoryPersistence = assetCategoryPersistence;
 	}
 
@@ -439,7 +465,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @param assetCategoryFinder the asset category finder
 	 */
-	public void setAssetCategoryFinder(AssetCategoryFinder assetCategoryFinder) {
+	public void setAssetCategoryFinder(
+		AssetCategoryFinder assetCategoryFinder) {
+
 		this.assetCategoryFinder = assetCategoryFinder;
 	}
 
@@ -448,7 +476,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset entry local service
 	 */
-	public com.liferay.asset.kernel.service.AssetEntryLocalService getAssetEntryLocalService() {
+	public com.liferay.asset.kernel.service.AssetEntryLocalService
+		getAssetEntryLocalService() {
+
 		return assetEntryLocalService;
 	}
 
@@ -458,7 +488,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param assetEntryLocalService the asset entry local service
 	 */
 	public void setAssetEntryLocalService(
-		com.liferay.asset.kernel.service.AssetEntryLocalService assetEntryLocalService) {
+		com.liferay.asset.kernel.service.AssetEntryLocalService
+			assetEntryLocalService) {
+
 		this.assetEntryLocalService = assetEntryLocalService;
 	}
 
@@ -467,7 +499,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset entry remote service
 	 */
-	public com.liferay.asset.kernel.service.AssetEntryService getAssetEntryService() {
+	public com.liferay.asset.kernel.service.AssetEntryService
+		getAssetEntryService() {
+
 		return assetEntryService;
 	}
 
@@ -478,6 +512,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAssetEntryService(
 		com.liferay.asset.kernel.service.AssetEntryService assetEntryService) {
+
 		this.assetEntryService = assetEntryService;
 	}
 
@@ -497,6 +532,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAssetEntryPersistence(
 		AssetEntryPersistence assetEntryPersistence) {
+
 		this.assetEntryPersistence = assetEntryPersistence;
 	}
 
@@ -523,7 +559,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset tag local service
 	 */
-	public com.liferay.asset.kernel.service.AssetTagLocalService getAssetTagLocalService() {
+	public com.liferay.asset.kernel.service.AssetTagLocalService
+		getAssetTagLocalService() {
+
 		return assetTagLocalService;
 	}
 
@@ -533,7 +571,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param assetTagLocalService the asset tag local service
 	 */
 	public void setAssetTagLocalService(
-		com.liferay.asset.kernel.service.AssetTagLocalService assetTagLocalService) {
+		com.liferay.asset.kernel.service.AssetTagLocalService
+			assetTagLocalService) {
+
 		this.assetTagLocalService = assetTagLocalService;
 	}
 
@@ -542,7 +582,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset tag remote service
 	 */
-	public com.liferay.asset.kernel.service.AssetTagService getAssetTagService() {
+	public com.liferay.asset.kernel.service.AssetTagService
+		getAssetTagService() {
+
 		return assetTagService;
 	}
 
@@ -553,6 +595,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAssetTagService(
 		com.liferay.asset.kernel.service.AssetTagService assetTagService) {
+
 		this.assetTagService = assetTagService;
 	}
 
@@ -570,7 +613,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @param assetTagPersistence the asset tag persistence
 	 */
-	public void setAssetTagPersistence(AssetTagPersistence assetTagPersistence) {
+	public void setAssetTagPersistence(
+		AssetTagPersistence assetTagPersistence) {
+
 		this.assetTagPersistence = assetTagPersistence;
 	}
 
@@ -597,7 +642,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset vocabulary local service
 	 */
-	public com.liferay.asset.kernel.service.AssetVocabularyLocalService getAssetVocabularyLocalService() {
+	public com.liferay.asset.kernel.service.AssetVocabularyLocalService
+		getAssetVocabularyLocalService() {
+
 		return assetVocabularyLocalService;
 	}
 
@@ -607,7 +654,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param assetVocabularyLocalService the asset vocabulary local service
 	 */
 	public void setAssetVocabularyLocalService(
-		com.liferay.asset.kernel.service.AssetVocabularyLocalService assetVocabularyLocalService) {
+		com.liferay.asset.kernel.service.AssetVocabularyLocalService
+			assetVocabularyLocalService) {
+
 		this.assetVocabularyLocalService = assetVocabularyLocalService;
 	}
 
@@ -616,7 +665,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the asset vocabulary remote service
 	 */
-	public com.liferay.asset.kernel.service.AssetVocabularyService getAssetVocabularyService() {
+	public com.liferay.asset.kernel.service.AssetVocabularyService
+		getAssetVocabularyService() {
+
 		return assetVocabularyService;
 	}
 
@@ -626,7 +677,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param assetVocabularyService the asset vocabulary remote service
 	 */
 	public void setAssetVocabularyService(
-		com.liferay.asset.kernel.service.AssetVocabularyService assetVocabularyService) {
+		com.liferay.asset.kernel.service.AssetVocabularyService
+			assetVocabularyService) {
+
 		this.assetVocabularyService = assetVocabularyService;
 	}
 
@@ -646,6 +699,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAssetVocabularyPersistence(
 		AssetVocabularyPersistence assetVocabularyPersistence) {
+
 		this.assetVocabularyPersistence = assetVocabularyPersistence;
 	}
 
@@ -665,44 +719,52 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setAssetVocabularyFinder(
 		AssetVocabularyFinder assetVocabularyFinder) {
+
 		this.assetVocabularyFinder = assetVocabularyFinder;
 	}
 
 	/**
-	 * Returns the d l app local service.
+	 * Returns the dl app local service.
 	 *
-	 * @return the d l app local service
+	 * @return the dl app local service
 	 */
-	public com.liferay.document.library.kernel.service.DLAppLocalService getDLAppLocalService() {
+	public com.liferay.document.library.kernel.service.DLAppLocalService
+		getDLAppLocalService() {
+
 		return dlAppLocalService;
 	}
 
 	/**
-	 * Sets the d l app local service.
+	 * Sets the dl app local service.
 	 *
-	 * @param dlAppLocalService the d l app local service
+	 * @param dlAppLocalService the dl app local service
 	 */
 	public void setDLAppLocalService(
-		com.liferay.document.library.kernel.service.DLAppLocalService dlAppLocalService) {
+		com.liferay.document.library.kernel.service.DLAppLocalService
+			dlAppLocalService) {
+
 		this.dlAppLocalService = dlAppLocalService;
 	}
 
 	/**
-	 * Returns the d l app remote service.
+	 * Returns the dl app remote service.
 	 *
-	 * @return the d l app remote service
+	 * @return the dl app remote service
 	 */
-	public com.liferay.document.library.kernel.service.DLAppService getDLAppService() {
+	public com.liferay.document.library.kernel.service.DLAppService
+		getDLAppService() {
+
 		return dlAppService;
 	}
 
 	/**
-	 * Sets the d l app remote service.
+	 * Sets the dl app remote service.
 	 *
-	 * @param dlAppService the d l app remote service
+	 * @param dlAppService the dl app remote service
 	 */
 	public void setDLAppService(
 		com.liferay.document.library.kernel.service.DLAppService dlAppService) {
+
 		this.dlAppService = dlAppService;
 	}
 
@@ -711,7 +773,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the expando row local service
 	 */
-	public com.liferay.expando.kernel.service.ExpandoRowLocalService getExpandoRowLocalService() {
+	public com.liferay.expando.kernel.service.ExpandoRowLocalService
+		getExpandoRowLocalService() {
+
 		return expandoRowLocalService;
 	}
 
@@ -721,7 +785,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param expandoRowLocalService the expando row local service
 	 */
 	public void setExpandoRowLocalService(
-		com.liferay.expando.kernel.service.ExpandoRowLocalService expandoRowLocalService) {
+		com.liferay.expando.kernel.service.ExpandoRowLocalService
+			expandoRowLocalService) {
+
 		this.expandoRowLocalService = expandoRowLocalService;
 	}
 
@@ -741,6 +807,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setExpandoRowPersistence(
 		ExpandoRowPersistence expandoRowPersistence) {
+
 		this.expandoRowPersistence = expandoRowPersistence;
 	}
 
@@ -749,7 +816,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the export import local service
 	 */
-	public com.liferay.exportimport.kernel.service.ExportImportLocalService getExportImportLocalService() {
+	public com.liferay.exportimport.kernel.service.ExportImportLocalService
+		getExportImportLocalService() {
+
 		return exportImportLocalService;
 	}
 
@@ -759,7 +828,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param exportImportLocalService the export import local service
 	 */
 	public void setExportImportLocalService(
-		com.liferay.exportimport.kernel.service.ExportImportLocalService exportImportLocalService) {
+		com.liferay.exportimport.kernel.service.ExportImportLocalService
+			exportImportLocalService) {
+
 		this.exportImportLocalService = exportImportLocalService;
 	}
 
@@ -768,7 +839,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the export import remote service
 	 */
-	public com.liferay.exportimport.kernel.service.ExportImportService getExportImportService() {
+	public com.liferay.exportimport.kernel.service.ExportImportService
+		getExportImportService() {
+
 		return exportImportService;
 	}
 
@@ -778,7 +851,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param exportImportService the export import remote service
 	 */
 	public void setExportImportService(
-		com.liferay.exportimport.kernel.service.ExportImportService exportImportService) {
+		com.liferay.exportimport.kernel.service.ExportImportService
+			exportImportService) {
+
 		this.exportImportService = exportImportService;
 	}
 
@@ -787,7 +862,10 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the export import configuration local service
 	 */
-	public com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService getExportImportConfigurationLocalService() {
+	public com.liferay.exportimport.kernel.service.
+		ExportImportConfigurationLocalService
+			getExportImportConfigurationLocalService() {
+
 		return exportImportConfigurationLocalService;
 	}
 
@@ -797,8 +875,12 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param exportImportConfigurationLocalService the export import configuration local service
 	 */
 	public void setExportImportConfigurationLocalService(
-		com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService exportImportConfigurationLocalService) {
-		this.exportImportConfigurationLocalService = exportImportConfigurationLocalService;
+		com.liferay.exportimport.kernel.service.
+			ExportImportConfigurationLocalService
+				exportImportConfigurationLocalService) {
+
+		this.exportImportConfigurationLocalService =
+			exportImportConfigurationLocalService;
 	}
 
 	/**
@@ -806,7 +888,10 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the export import configuration remote service
 	 */
-	public com.liferay.exportimport.kernel.service.ExportImportConfigurationService getExportImportConfigurationService() {
+	public
+		com.liferay.exportimport.kernel.service.ExportImportConfigurationService
+			getExportImportConfigurationService() {
+
 		return exportImportConfigurationService;
 	}
 
@@ -816,8 +901,11 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param exportImportConfigurationService the export import configuration remote service
 	 */
 	public void setExportImportConfigurationService(
-		com.liferay.exportimport.kernel.service.ExportImportConfigurationService exportImportConfigurationService) {
-		this.exportImportConfigurationService = exportImportConfigurationService;
+		com.liferay.exportimport.kernel.service.ExportImportConfigurationService
+			exportImportConfigurationService) {
+
+		this.exportImportConfigurationService =
+			exportImportConfigurationService;
 	}
 
 	/**
@@ -825,7 +913,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the export import configuration persistence
 	 */
-	public ExportImportConfigurationPersistence getExportImportConfigurationPersistence() {
+	public ExportImportConfigurationPersistence
+		getExportImportConfigurationPersistence() {
+
 		return exportImportConfigurationPersistence;
 	}
 
@@ -835,8 +925,11 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param exportImportConfigurationPersistence the export import configuration persistence
 	 */
 	public void setExportImportConfigurationPersistence(
-		ExportImportConfigurationPersistence exportImportConfigurationPersistence) {
-		this.exportImportConfigurationPersistence = exportImportConfigurationPersistence;
+		ExportImportConfigurationPersistence
+			exportImportConfigurationPersistence) {
+
+		this.exportImportConfigurationPersistence =
+			exportImportConfigurationPersistence;
 	}
 
 	/**
@@ -844,7 +937,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the export import configuration finder
 	 */
-	public ExportImportConfigurationFinder getExportImportConfigurationFinder() {
+	public ExportImportConfigurationFinder
+		getExportImportConfigurationFinder() {
+
 		return exportImportConfigurationFinder;
 	}
 
@@ -855,6 +950,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setExportImportConfigurationFinder(
 		ExportImportConfigurationFinder exportImportConfigurationFinder) {
+
 		this.exportImportConfigurationFinder = exportImportConfigurationFinder;
 	}
 
@@ -863,7 +959,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the staging local service
 	 */
-	public com.liferay.exportimport.kernel.service.StagingLocalService getStagingLocalService() {
+	public com.liferay.exportimport.kernel.service.StagingLocalService
+		getStagingLocalService() {
+
 		return stagingLocalService;
 	}
 
@@ -873,7 +971,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param stagingLocalService the staging local service
 	 */
 	public void setStagingLocalService(
-		com.liferay.exportimport.kernel.service.StagingLocalService stagingLocalService) {
+		com.liferay.exportimport.kernel.service.StagingLocalService
+			stagingLocalService) {
+
 		this.stagingLocalService = stagingLocalService;
 	}
 
@@ -882,7 +982,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the staging remote service
 	 */
-	public com.liferay.exportimport.kernel.service.StagingService getStagingService() {
+	public com.liferay.exportimport.kernel.service.StagingService
+		getStagingService() {
+
 		return stagingService;
 	}
 
@@ -893,6 +995,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setStagingService(
 		com.liferay.exportimport.kernel.service.StagingService stagingService) {
+
 		this.stagingService = stagingService;
 	}
 
@@ -901,7 +1004,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the social activity local service
 	 */
-	public com.liferay.social.kernel.service.SocialActivityLocalService getSocialActivityLocalService() {
+	public com.liferay.social.kernel.service.SocialActivityLocalService
+		getSocialActivityLocalService() {
+
 		return socialActivityLocalService;
 	}
 
@@ -911,7 +1016,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param socialActivityLocalService the social activity local service
 	 */
 	public void setSocialActivityLocalService(
-		com.liferay.social.kernel.service.SocialActivityLocalService socialActivityLocalService) {
+		com.liferay.social.kernel.service.SocialActivityLocalService
+			socialActivityLocalService) {
+
 		this.socialActivityLocalService = socialActivityLocalService;
 	}
 
@@ -920,7 +1027,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the social activity remote service
 	 */
-	public com.liferay.social.kernel.service.SocialActivityService getSocialActivityService() {
+	public com.liferay.social.kernel.service.SocialActivityService
+		getSocialActivityService() {
+
 		return socialActivityService;
 	}
 
@@ -930,7 +1039,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param socialActivityService the social activity remote service
 	 */
 	public void setSocialActivityService(
-		com.liferay.social.kernel.service.SocialActivityService socialActivityService) {
+		com.liferay.social.kernel.service.SocialActivityService
+			socialActivityService) {
+
 		this.socialActivityService = socialActivityService;
 	}
 
@@ -950,6 +1061,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setSocialActivityPersistence(
 		SocialActivityPersistence socialActivityPersistence) {
+
 		this.socialActivityPersistence = socialActivityPersistence;
 	}
 
@@ -969,6 +1081,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setSocialActivityFinder(
 		SocialActivityFinder socialActivityFinder) {
+
 		this.socialActivityFinder = socialActivityFinder;
 	}
 
@@ -977,7 +1090,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the social activity setting local service
 	 */
-	public com.liferay.social.kernel.service.SocialActivitySettingLocalService getSocialActivitySettingLocalService() {
+	public com.liferay.social.kernel.service.SocialActivitySettingLocalService
+		getSocialActivitySettingLocalService() {
+
 		return socialActivitySettingLocalService;
 	}
 
@@ -987,8 +1102,11 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param socialActivitySettingLocalService the social activity setting local service
 	 */
 	public void setSocialActivitySettingLocalService(
-		com.liferay.social.kernel.service.SocialActivitySettingLocalService socialActivitySettingLocalService) {
-		this.socialActivitySettingLocalService = socialActivitySettingLocalService;
+		com.liferay.social.kernel.service.SocialActivitySettingLocalService
+			socialActivitySettingLocalService) {
+
+		this.socialActivitySettingLocalService =
+			socialActivitySettingLocalService;
 	}
 
 	/**
@@ -996,7 +1114,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the social activity setting remote service
 	 */
-	public com.liferay.social.kernel.service.SocialActivitySettingService getSocialActivitySettingService() {
+	public com.liferay.social.kernel.service.SocialActivitySettingService
+		getSocialActivitySettingService() {
+
 		return socialActivitySettingService;
 	}
 
@@ -1006,7 +1126,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param socialActivitySettingService the social activity setting remote service
 	 */
 	public void setSocialActivitySettingService(
-		com.liferay.social.kernel.service.SocialActivitySettingService socialActivitySettingService) {
+		com.liferay.social.kernel.service.SocialActivitySettingService
+			socialActivitySettingService) {
+
 		this.socialActivitySettingService = socialActivitySettingService;
 	}
 
@@ -1015,7 +1137,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the social activity setting persistence
 	 */
-	public SocialActivitySettingPersistence getSocialActivitySettingPersistence() {
+	public SocialActivitySettingPersistence
+		getSocialActivitySettingPersistence() {
+
 		return socialActivitySettingPersistence;
 	}
 
@@ -1026,7 +1150,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setSocialActivitySettingPersistence(
 		SocialActivitySettingPersistence socialActivitySettingPersistence) {
-		this.socialActivitySettingPersistence = socialActivitySettingPersistence;
+
+		this.socialActivitySettingPersistence =
+			socialActivitySettingPersistence;
 	}
 
 	/**
@@ -1034,7 +1160,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the social request local service
 	 */
-	public com.liferay.social.kernel.service.SocialRequestLocalService getSocialRequestLocalService() {
+	public com.liferay.social.kernel.service.SocialRequestLocalService
+		getSocialRequestLocalService() {
+
 		return socialRequestLocalService;
 	}
 
@@ -1044,7 +1172,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param socialRequestLocalService the social request local service
 	 */
 	public void setSocialRequestLocalService(
-		com.liferay.social.kernel.service.SocialRequestLocalService socialRequestLocalService) {
+		com.liferay.social.kernel.service.SocialRequestLocalService
+			socialRequestLocalService) {
+
 		this.socialRequestLocalService = socialRequestLocalService;
 	}
 
@@ -1053,7 +1183,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the social request remote service
 	 */
-	public com.liferay.social.kernel.service.SocialRequestService getSocialRequestService() {
+	public com.liferay.social.kernel.service.SocialRequestService
+		getSocialRequestService() {
+
 		return socialRequestService;
 	}
 
@@ -1063,7 +1195,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param socialRequestService the social request remote service
 	 */
 	public void setSocialRequestService(
-		com.liferay.social.kernel.service.SocialRequestService socialRequestService) {
+		com.liferay.social.kernel.service.SocialRequestService
+			socialRequestService) {
+
 		this.socialRequestService = socialRequestService;
 	}
 
@@ -1083,64 +1217,8 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setSocialRequestPersistence(
 		SocialRequestPersistence socialRequestPersistence) {
+
 		this.socialRequestPersistence = socialRequestPersistence;
-	}
-
-	/**
-	 * Returns the trash entry local service.
-	 *
-	 * @return the trash entry local service
-	 */
-	public com.liferay.trash.kernel.service.TrashEntryLocalService getTrashEntryLocalService() {
-		return trashEntryLocalService;
-	}
-
-	/**
-	 * Sets the trash entry local service.
-	 *
-	 * @param trashEntryLocalService the trash entry local service
-	 */
-	public void setTrashEntryLocalService(
-		com.liferay.trash.kernel.service.TrashEntryLocalService trashEntryLocalService) {
-		this.trashEntryLocalService = trashEntryLocalService;
-	}
-
-	/**
-	 * Returns the trash entry remote service.
-	 *
-	 * @return the trash entry remote service
-	 */
-	public com.liferay.trash.kernel.service.TrashEntryService getTrashEntryService() {
-		return trashEntryService;
-	}
-
-	/**
-	 * Sets the trash entry remote service.
-	 *
-	 * @param trashEntryService the trash entry remote service
-	 */
-	public void setTrashEntryService(
-		com.liferay.trash.kernel.service.TrashEntryService trashEntryService) {
-		this.trashEntryService = trashEntryService;
-	}
-
-	/**
-	 * Returns the trash entry persistence.
-	 *
-	 * @return the trash entry persistence
-	 */
-	public TrashEntryPersistence getTrashEntryPersistence() {
-		return trashEntryPersistence;
-	}
-
-	/**
-	 * Sets the trash entry persistence.
-	 *
-	 * @param trashEntryPersistence the trash entry persistence
-	 */
-	public void setTrashEntryPersistence(
-		TrashEntryPersistence trashEntryPersistence) {
-		this.trashEntryPersistence = trashEntryPersistence;
 	}
 
 	/**
@@ -1148,7 +1226,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the layout local service
 	 */
-	public com.liferay.portal.kernel.service.LayoutLocalService getLayoutLocalService() {
+	public com.liferay.portal.kernel.service.LayoutLocalService
+		getLayoutLocalService() {
+
 		return layoutLocalService;
 	}
 
@@ -1158,7 +1238,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param layoutLocalService the layout local service
 	 */
 	public void setLayoutLocalService(
-		com.liferay.portal.kernel.service.LayoutLocalService layoutLocalService) {
+		com.liferay.portal.kernel.service.LayoutLocalService
+			layoutLocalService) {
+
 		this.layoutLocalService = layoutLocalService;
 	}
 
@@ -1178,6 +1260,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setLayoutService(
 		com.liferay.portal.kernel.service.LayoutService layoutService) {
+
 		this.layoutService = layoutService;
 	}
 
@@ -1218,68 +1301,13 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	}
 
 	/**
-	 * Returns the layout prototype local service.
-	 *
-	 * @return the layout prototype local service
-	 */
-	public com.liferay.portal.kernel.service.LayoutPrototypeLocalService getLayoutPrototypeLocalService() {
-		return layoutPrototypeLocalService;
-	}
-
-	/**
-	 * Sets the layout prototype local service.
-	 *
-	 * @param layoutPrototypeLocalService the layout prototype local service
-	 */
-	public void setLayoutPrototypeLocalService(
-		com.liferay.portal.kernel.service.LayoutPrototypeLocalService layoutPrototypeLocalService) {
-		this.layoutPrototypeLocalService = layoutPrototypeLocalService;
-	}
-
-	/**
-	 * Returns the layout prototype remote service.
-	 *
-	 * @return the layout prototype remote service
-	 */
-	public com.liferay.portal.kernel.service.LayoutPrototypeService getLayoutPrototypeService() {
-		return layoutPrototypeService;
-	}
-
-	/**
-	 * Sets the layout prototype remote service.
-	 *
-	 * @param layoutPrototypeService the layout prototype remote service
-	 */
-	public void setLayoutPrototypeService(
-		com.liferay.portal.kernel.service.LayoutPrototypeService layoutPrototypeService) {
-		this.layoutPrototypeService = layoutPrototypeService;
-	}
-
-	/**
-	 * Returns the layout prototype persistence.
-	 *
-	 * @return the layout prototype persistence
-	 */
-	public LayoutPrototypePersistence getLayoutPrototypePersistence() {
-		return layoutPrototypePersistence;
-	}
-
-	/**
-	 * Sets the layout prototype persistence.
-	 *
-	 * @param layoutPrototypePersistence the layout prototype persistence
-	 */
-	public void setLayoutPrototypePersistence(
-		LayoutPrototypePersistence layoutPrototypePersistence) {
-		this.layoutPrototypePersistence = layoutPrototypePersistence;
-	}
-
-	/**
 	 * Returns the layout set local service.
 	 *
 	 * @return the layout set local service
 	 */
-	public com.liferay.portal.kernel.service.LayoutSetLocalService getLayoutSetLocalService() {
+	public com.liferay.portal.kernel.service.LayoutSetLocalService
+		getLayoutSetLocalService() {
+
 		return layoutSetLocalService;
 	}
 
@@ -1289,7 +1317,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param layoutSetLocalService the layout set local service
 	 */
 	public void setLayoutSetLocalService(
-		com.liferay.portal.kernel.service.LayoutSetLocalService layoutSetLocalService) {
+		com.liferay.portal.kernel.service.LayoutSetLocalService
+			layoutSetLocalService) {
+
 		this.layoutSetLocalService = layoutSetLocalService;
 	}
 
@@ -1298,7 +1328,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the layout set remote service
 	 */
-	public com.liferay.portal.kernel.service.LayoutSetService getLayoutSetService() {
+	public com.liferay.portal.kernel.service.LayoutSetService
+		getLayoutSetService() {
+
 		return layoutSetService;
 	}
 
@@ -1309,6 +1341,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setLayoutSetService(
 		com.liferay.portal.kernel.service.LayoutSetService layoutSetService) {
+
 		this.layoutSetService = layoutSetService;
 	}
 
@@ -1328,6 +1361,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setLayoutSetPersistence(
 		LayoutSetPersistence layoutSetPersistence) {
+
 		this.layoutSetPersistence = layoutSetPersistence;
 	}
 
@@ -1336,7 +1370,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the layout set branch local service
 	 */
-	public com.liferay.portal.kernel.service.LayoutSetBranchLocalService getLayoutSetBranchLocalService() {
+	public com.liferay.portal.kernel.service.LayoutSetBranchLocalService
+		getLayoutSetBranchLocalService() {
+
 		return layoutSetBranchLocalService;
 	}
 
@@ -1346,7 +1382,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param layoutSetBranchLocalService the layout set branch local service
 	 */
 	public void setLayoutSetBranchLocalService(
-		com.liferay.portal.kernel.service.LayoutSetBranchLocalService layoutSetBranchLocalService) {
+		com.liferay.portal.kernel.service.LayoutSetBranchLocalService
+			layoutSetBranchLocalService) {
+
 		this.layoutSetBranchLocalService = layoutSetBranchLocalService;
 	}
 
@@ -1355,7 +1393,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the layout set branch remote service
 	 */
-	public com.liferay.portal.kernel.service.LayoutSetBranchService getLayoutSetBranchService() {
+	public com.liferay.portal.kernel.service.LayoutSetBranchService
+		getLayoutSetBranchService() {
+
 		return layoutSetBranchService;
 	}
 
@@ -1365,7 +1405,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param layoutSetBranchService the layout set branch remote service
 	 */
 	public void setLayoutSetBranchService(
-		com.liferay.portal.kernel.service.LayoutSetBranchService layoutSetBranchService) {
+		com.liferay.portal.kernel.service.LayoutSetBranchService
+			layoutSetBranchService) {
+
 		this.layoutSetBranchService = layoutSetBranchService;
 	}
 
@@ -1385,64 +1427,8 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setLayoutSetBranchPersistence(
 		LayoutSetBranchPersistence layoutSetBranchPersistence) {
+
 		this.layoutSetBranchPersistence = layoutSetBranchPersistence;
-	}
-
-	/**
-	 * Returns the layout set prototype local service.
-	 *
-	 * @return the layout set prototype local service
-	 */
-	public com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService getLayoutSetPrototypeLocalService() {
-		return layoutSetPrototypeLocalService;
-	}
-
-	/**
-	 * Sets the layout set prototype local service.
-	 *
-	 * @param layoutSetPrototypeLocalService the layout set prototype local service
-	 */
-	public void setLayoutSetPrototypeLocalService(
-		com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService layoutSetPrototypeLocalService) {
-		this.layoutSetPrototypeLocalService = layoutSetPrototypeLocalService;
-	}
-
-	/**
-	 * Returns the layout set prototype remote service.
-	 *
-	 * @return the layout set prototype remote service
-	 */
-	public com.liferay.portal.kernel.service.LayoutSetPrototypeService getLayoutSetPrototypeService() {
-		return layoutSetPrototypeService;
-	}
-
-	/**
-	 * Sets the layout set prototype remote service.
-	 *
-	 * @param layoutSetPrototypeService the layout set prototype remote service
-	 */
-	public void setLayoutSetPrototypeService(
-		com.liferay.portal.kernel.service.LayoutSetPrototypeService layoutSetPrototypeService) {
-		this.layoutSetPrototypeService = layoutSetPrototypeService;
-	}
-
-	/**
-	 * Returns the layout set prototype persistence.
-	 *
-	 * @return the layout set prototype persistence
-	 */
-	public LayoutSetPrototypePersistence getLayoutSetPrototypePersistence() {
-		return layoutSetPrototypePersistence;
-	}
-
-	/**
-	 * Sets the layout set prototype persistence.
-	 *
-	 * @param layoutSetPrototypePersistence the layout set prototype persistence
-	 */
-	public void setLayoutSetPrototypePersistence(
-		LayoutSetPrototypePersistence layoutSetPrototypePersistence) {
-		this.layoutSetPrototypePersistence = layoutSetPrototypePersistence;
 	}
 
 	/**
@@ -1450,7 +1436,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the membership request local service
 	 */
-	public com.liferay.portal.kernel.service.MembershipRequestLocalService getMembershipRequestLocalService() {
+	public com.liferay.portal.kernel.service.MembershipRequestLocalService
+		getMembershipRequestLocalService() {
+
 		return membershipRequestLocalService;
 	}
 
@@ -1460,7 +1448,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param membershipRequestLocalService the membership request local service
 	 */
 	public void setMembershipRequestLocalService(
-		com.liferay.portal.kernel.service.MembershipRequestLocalService membershipRequestLocalService) {
+		com.liferay.portal.kernel.service.MembershipRequestLocalService
+			membershipRequestLocalService) {
+
 		this.membershipRequestLocalService = membershipRequestLocalService;
 	}
 
@@ -1469,7 +1459,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the membership request remote service
 	 */
-	public com.liferay.portal.kernel.service.MembershipRequestService getMembershipRequestService() {
+	public com.liferay.portal.kernel.service.MembershipRequestService
+		getMembershipRequestService() {
+
 		return membershipRequestService;
 	}
 
@@ -1479,7 +1471,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param membershipRequestService the membership request remote service
 	 */
 	public void setMembershipRequestService(
-		com.liferay.portal.kernel.service.MembershipRequestService membershipRequestService) {
+		com.liferay.portal.kernel.service.MembershipRequestService
+			membershipRequestService) {
+
 		this.membershipRequestService = membershipRequestService;
 	}
 
@@ -1499,6 +1493,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setMembershipRequestPersistence(
 		MembershipRequestPersistence membershipRequestPersistence) {
+
 		this.membershipRequestPersistence = membershipRequestPersistence;
 	}
 
@@ -1507,7 +1502,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the organization local service
 	 */
-	public com.liferay.portal.kernel.service.OrganizationLocalService getOrganizationLocalService() {
+	public com.liferay.portal.kernel.service.OrganizationLocalService
+		getOrganizationLocalService() {
+
 		return organizationLocalService;
 	}
 
@@ -1517,7 +1514,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param organizationLocalService the organization local service
 	 */
 	public void setOrganizationLocalService(
-		com.liferay.portal.kernel.service.OrganizationLocalService organizationLocalService) {
+		com.liferay.portal.kernel.service.OrganizationLocalService
+			organizationLocalService) {
+
 		this.organizationLocalService = organizationLocalService;
 	}
 
@@ -1526,7 +1525,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the organization remote service
 	 */
-	public com.liferay.portal.kernel.service.OrganizationService getOrganizationService() {
+	public com.liferay.portal.kernel.service.OrganizationService
+		getOrganizationService() {
+
 		return organizationService;
 	}
 
@@ -1536,7 +1537,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param organizationService the organization remote service
 	 */
 	public void setOrganizationService(
-		com.liferay.portal.kernel.service.OrganizationService organizationService) {
+		com.liferay.portal.kernel.service.OrganizationService
+			organizationService) {
+
 		this.organizationService = organizationService;
 	}
 
@@ -1556,6 +1559,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setOrganizationPersistence(
 		OrganizationPersistence organizationPersistence) {
+
 		this.organizationPersistence = organizationPersistence;
 	}
 
@@ -1582,7 +1586,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the portlet local service
 	 */
-	public com.liferay.portal.kernel.service.PortletLocalService getPortletLocalService() {
+	public com.liferay.portal.kernel.service.PortletLocalService
+		getPortletLocalService() {
+
 		return portletLocalService;
 	}
 
@@ -1592,7 +1598,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param portletLocalService the portlet local service
 	 */
 	public void setPortletLocalService(
-		com.liferay.portal.kernel.service.PortletLocalService portletLocalService) {
+		com.liferay.portal.kernel.service.PortletLocalService
+			portletLocalService) {
+
 		this.portletLocalService = portletLocalService;
 	}
 
@@ -1601,7 +1609,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the portlet remote service
 	 */
-	public com.liferay.portal.kernel.service.PortletService getPortletService() {
+	public com.liferay.portal.kernel.service.PortletService
+		getPortletService() {
+
 		return portletService;
 	}
 
@@ -1612,6 +1622,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setPortletService(
 		com.liferay.portal.kernel.service.PortletService portletService) {
+
 		this.portletService = portletService;
 	}
 
@@ -1638,7 +1649,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the portlet preferences local service
 	 */
-	public com.liferay.portal.kernel.service.PortletPreferencesLocalService getPortletPreferencesLocalService() {
+	public com.liferay.portal.kernel.service.PortletPreferencesLocalService
+		getPortletPreferencesLocalService() {
+
 		return portletPreferencesLocalService;
 	}
 
@@ -1648,7 +1661,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param portletPreferencesLocalService the portlet preferences local service
 	 */
 	public void setPortletPreferencesLocalService(
-		com.liferay.portal.kernel.service.PortletPreferencesLocalService portletPreferencesLocalService) {
+		com.liferay.portal.kernel.service.PortletPreferencesLocalService
+			portletPreferencesLocalService) {
+
 		this.portletPreferencesLocalService = portletPreferencesLocalService;
 	}
 
@@ -1657,7 +1672,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the portlet preferences remote service
 	 */
-	public com.liferay.portal.kernel.service.PortletPreferencesService getPortletPreferencesService() {
+	public com.liferay.portal.kernel.service.PortletPreferencesService
+		getPortletPreferencesService() {
+
 		return portletPreferencesService;
 	}
 
@@ -1667,7 +1684,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param portletPreferencesService the portlet preferences remote service
 	 */
 	public void setPortletPreferencesService(
-		com.liferay.portal.kernel.service.PortletPreferencesService portletPreferencesService) {
+		com.liferay.portal.kernel.service.PortletPreferencesService
+			portletPreferencesService) {
+
 		this.portletPreferencesService = portletPreferencesService;
 	}
 
@@ -1687,6 +1706,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setPortletPreferencesPersistence(
 		PortletPreferencesPersistence portletPreferencesPersistence) {
+
 		this.portletPreferencesPersistence = portletPreferencesPersistence;
 	}
 
@@ -1706,6 +1726,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setPortletPreferencesFinder(
 		PortletPreferencesFinder portletPreferencesFinder) {
+
 		this.portletPreferencesFinder = portletPreferencesFinder;
 	}
 
@@ -1714,7 +1735,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the resource local service
 	 */
-	public com.liferay.portal.kernel.service.ResourceLocalService getResourceLocalService() {
+	public com.liferay.portal.kernel.service.ResourceLocalService
+		getResourceLocalService() {
+
 		return resourceLocalService;
 	}
 
@@ -1724,7 +1747,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param resourceLocalService the resource local service
 	 */
 	public void setResourceLocalService(
-		com.liferay.portal.kernel.service.ResourceLocalService resourceLocalService) {
+		com.liferay.portal.kernel.service.ResourceLocalService
+			resourceLocalService) {
+
 		this.resourceLocalService = resourceLocalService;
 	}
 
@@ -1733,7 +1758,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the resource action local service
 	 */
-	public com.liferay.portal.kernel.service.ResourceActionLocalService getResourceActionLocalService() {
+	public com.liferay.portal.kernel.service.ResourceActionLocalService
+		getResourceActionLocalService() {
+
 		return resourceActionLocalService;
 	}
 
@@ -1743,7 +1770,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param resourceActionLocalService the resource action local service
 	 */
 	public void setResourceActionLocalService(
-		com.liferay.portal.kernel.service.ResourceActionLocalService resourceActionLocalService) {
+		com.liferay.portal.kernel.service.ResourceActionLocalService
+			resourceActionLocalService) {
+
 		this.resourceActionLocalService = resourceActionLocalService;
 	}
 
@@ -1763,82 +1792,8 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setResourceActionPersistence(
 		ResourceActionPersistence resourceActionPersistence) {
+
 		this.resourceActionPersistence = resourceActionPersistence;
-	}
-
-	/**
-	 * Returns the resource block local service.
-	 *
-	 * @return the resource block local service
-	 */
-	public com.liferay.portal.kernel.service.ResourceBlockLocalService getResourceBlockLocalService() {
-		return resourceBlockLocalService;
-	}
-
-	/**
-	 * Sets the resource block local service.
-	 *
-	 * @param resourceBlockLocalService the resource block local service
-	 */
-	public void setResourceBlockLocalService(
-		com.liferay.portal.kernel.service.ResourceBlockLocalService resourceBlockLocalService) {
-		this.resourceBlockLocalService = resourceBlockLocalService;
-	}
-
-	/**
-	 * Returns the resource block remote service.
-	 *
-	 * @return the resource block remote service
-	 */
-	public com.liferay.portal.kernel.service.ResourceBlockService getResourceBlockService() {
-		return resourceBlockService;
-	}
-
-	/**
-	 * Sets the resource block remote service.
-	 *
-	 * @param resourceBlockService the resource block remote service
-	 */
-	public void setResourceBlockService(
-		com.liferay.portal.kernel.service.ResourceBlockService resourceBlockService) {
-		this.resourceBlockService = resourceBlockService;
-	}
-
-	/**
-	 * Returns the resource block persistence.
-	 *
-	 * @return the resource block persistence
-	 */
-	public ResourceBlockPersistence getResourceBlockPersistence() {
-		return resourceBlockPersistence;
-	}
-
-	/**
-	 * Sets the resource block persistence.
-	 *
-	 * @param resourceBlockPersistence the resource block persistence
-	 */
-	public void setResourceBlockPersistence(
-		ResourceBlockPersistence resourceBlockPersistence) {
-		this.resourceBlockPersistence = resourceBlockPersistence;
-	}
-
-	/**
-	 * Returns the resource block finder.
-	 *
-	 * @return the resource block finder
-	 */
-	public ResourceBlockFinder getResourceBlockFinder() {
-		return resourceBlockFinder;
-	}
-
-	/**
-	 * Sets the resource block finder.
-	 *
-	 * @param resourceBlockFinder the resource block finder
-	 */
-	public void setResourceBlockFinder(ResourceBlockFinder resourceBlockFinder) {
-		this.resourceBlockFinder = resourceBlockFinder;
 	}
 
 	/**
@@ -1846,7 +1801,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the resource permission local service
 	 */
-	public com.liferay.portal.kernel.service.ResourcePermissionLocalService getResourcePermissionLocalService() {
+	public com.liferay.portal.kernel.service.ResourcePermissionLocalService
+		getResourcePermissionLocalService() {
+
 		return resourcePermissionLocalService;
 	}
 
@@ -1856,7 +1813,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param resourcePermissionLocalService the resource permission local service
 	 */
 	public void setResourcePermissionLocalService(
-		com.liferay.portal.kernel.service.ResourcePermissionLocalService resourcePermissionLocalService) {
+		com.liferay.portal.kernel.service.ResourcePermissionLocalService
+			resourcePermissionLocalService) {
+
 		this.resourcePermissionLocalService = resourcePermissionLocalService;
 	}
 
@@ -1865,7 +1824,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the resource permission remote service
 	 */
-	public com.liferay.portal.kernel.service.ResourcePermissionService getResourcePermissionService() {
+	public com.liferay.portal.kernel.service.ResourcePermissionService
+		getResourcePermissionService() {
+
 		return resourcePermissionService;
 	}
 
@@ -1875,7 +1836,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param resourcePermissionService the resource permission remote service
 	 */
 	public void setResourcePermissionService(
-		com.liferay.portal.kernel.service.ResourcePermissionService resourcePermissionService) {
+		com.liferay.portal.kernel.service.ResourcePermissionService
+			resourcePermissionService) {
+
 		this.resourcePermissionService = resourcePermissionService;
 	}
 
@@ -1895,6 +1858,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setResourcePermissionPersistence(
 		ResourcePermissionPersistence resourcePermissionPersistence) {
+
 		this.resourcePermissionPersistence = resourcePermissionPersistence;
 	}
 
@@ -1914,64 +1878,8 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setResourcePermissionFinder(
 		ResourcePermissionFinder resourcePermissionFinder) {
+
 		this.resourcePermissionFinder = resourcePermissionFinder;
-	}
-
-	/**
-	 * Returns the resource type permission local service.
-	 *
-	 * @return the resource type permission local service
-	 */
-	public com.liferay.portal.kernel.service.ResourceTypePermissionLocalService getResourceTypePermissionLocalService() {
-		return resourceTypePermissionLocalService;
-	}
-
-	/**
-	 * Sets the resource type permission local service.
-	 *
-	 * @param resourceTypePermissionLocalService the resource type permission local service
-	 */
-	public void setResourceTypePermissionLocalService(
-		com.liferay.portal.kernel.service.ResourceTypePermissionLocalService resourceTypePermissionLocalService) {
-		this.resourceTypePermissionLocalService = resourceTypePermissionLocalService;
-	}
-
-	/**
-	 * Returns the resource type permission persistence.
-	 *
-	 * @return the resource type permission persistence
-	 */
-	public ResourceTypePermissionPersistence getResourceTypePermissionPersistence() {
-		return resourceTypePermissionPersistence;
-	}
-
-	/**
-	 * Sets the resource type permission persistence.
-	 *
-	 * @param resourceTypePermissionPersistence the resource type permission persistence
-	 */
-	public void setResourceTypePermissionPersistence(
-		ResourceTypePermissionPersistence resourceTypePermissionPersistence) {
-		this.resourceTypePermissionPersistence = resourceTypePermissionPersistence;
-	}
-
-	/**
-	 * Returns the resource type permission finder.
-	 *
-	 * @return the resource type permission finder
-	 */
-	public ResourceTypePermissionFinder getResourceTypePermissionFinder() {
-		return resourceTypePermissionFinder;
-	}
-
-	/**
-	 * Sets the resource type permission finder.
-	 *
-	 * @param resourceTypePermissionFinder the resource type permission finder
-	 */
-	public void setResourceTypePermissionFinder(
-		ResourceTypePermissionFinder resourceTypePermissionFinder) {
-		this.resourceTypePermissionFinder = resourceTypePermissionFinder;
 	}
 
 	/**
@@ -1979,7 +1887,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the role local service
 	 */
-	public com.liferay.portal.kernel.service.RoleLocalService getRoleLocalService() {
+	public com.liferay.portal.kernel.service.RoleLocalService
+		getRoleLocalService() {
+
 		return roleLocalService;
 	}
 
@@ -1990,6 +1900,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setRoleLocalService(
 		com.liferay.portal.kernel.service.RoleLocalService roleLocalService) {
+
 		this.roleLocalService = roleLocalService;
 	}
 
@@ -2009,6 +1920,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setRoleService(
 		com.liferay.portal.kernel.service.RoleService roleService) {
+
 		this.roleService = roleService;
 	}
 
@@ -2049,41 +1961,46 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	}
 
 	/**
-	 * Returns the subscription local service.
+	 * Returns the system event local service.
 	 *
-	 * @return the subscription local service
+	 * @return the system event local service
 	 */
-	public com.liferay.portal.kernel.service.SubscriptionLocalService getSubscriptionLocalService() {
-		return subscriptionLocalService;
+	public com.liferay.portal.kernel.service.SystemEventLocalService
+		getSystemEventLocalService() {
+
+		return systemEventLocalService;
 	}
 
 	/**
-	 * Sets the subscription local service.
+	 * Sets the system event local service.
 	 *
-	 * @param subscriptionLocalService the subscription local service
+	 * @param systemEventLocalService the system event local service
 	 */
-	public void setSubscriptionLocalService(
-		com.liferay.portal.kernel.service.SubscriptionLocalService subscriptionLocalService) {
-		this.subscriptionLocalService = subscriptionLocalService;
+	public void setSystemEventLocalService(
+		com.liferay.portal.kernel.service.SystemEventLocalService
+			systemEventLocalService) {
+
+		this.systemEventLocalService = systemEventLocalService;
 	}
 
 	/**
-	 * Returns the subscription persistence.
+	 * Returns the system event persistence.
 	 *
-	 * @return the subscription persistence
+	 * @return the system event persistence
 	 */
-	public SubscriptionPersistence getSubscriptionPersistence() {
-		return subscriptionPersistence;
+	public SystemEventPersistence getSystemEventPersistence() {
+		return systemEventPersistence;
 	}
 
 	/**
-	 * Sets the subscription persistence.
+	 * Sets the system event persistence.
 	 *
-	 * @param subscriptionPersistence the subscription persistence
+	 * @param systemEventPersistence the system event persistence
 	 */
-	public void setSubscriptionPersistence(
-		SubscriptionPersistence subscriptionPersistence) {
-		this.subscriptionPersistence = subscriptionPersistence;
+	public void setSystemEventPersistence(
+		SystemEventPersistence systemEventPersistence) {
+
+		this.systemEventPersistence = systemEventPersistence;
 	}
 
 	/**
@@ -2091,7 +2008,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the team local service
 	 */
-	public com.liferay.portal.kernel.service.TeamLocalService getTeamLocalService() {
+	public com.liferay.portal.kernel.service.TeamLocalService
+		getTeamLocalService() {
+
 		return teamLocalService;
 	}
 
@@ -2102,6 +2021,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setTeamLocalService(
 		com.liferay.portal.kernel.service.TeamLocalService teamLocalService) {
+
 		this.teamLocalService = teamLocalService;
 	}
 
@@ -2121,6 +2041,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setTeamService(
 		com.liferay.portal.kernel.service.TeamService teamService) {
+
 		this.teamService = teamService;
 	}
 
@@ -2165,7 +2086,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the user local service
 	 */
-	public com.liferay.portal.kernel.service.UserLocalService getUserLocalService() {
+	public com.liferay.portal.kernel.service.UserLocalService
+		getUserLocalService() {
+
 		return userLocalService;
 	}
 
@@ -2176,6 +2099,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserLocalService(
 		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
+
 		this.userLocalService = userLocalService;
 	}
 
@@ -2195,6 +2119,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserService(
 		com.liferay.portal.kernel.service.UserService userService) {
+
 		this.userService = userService;
 	}
 
@@ -2239,7 +2164,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the user group local service
 	 */
-	public com.liferay.portal.kernel.service.UserGroupLocalService getUserGroupLocalService() {
+	public com.liferay.portal.kernel.service.UserGroupLocalService
+		getUserGroupLocalService() {
+
 		return userGroupLocalService;
 	}
 
@@ -2249,7 +2176,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param userGroupLocalService the user group local service
 	 */
 	public void setUserGroupLocalService(
-		com.liferay.portal.kernel.service.UserGroupLocalService userGroupLocalService) {
+		com.liferay.portal.kernel.service.UserGroupLocalService
+			userGroupLocalService) {
+
 		this.userGroupLocalService = userGroupLocalService;
 	}
 
@@ -2258,7 +2187,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the user group remote service
 	 */
-	public com.liferay.portal.kernel.service.UserGroupService getUserGroupService() {
+	public com.liferay.portal.kernel.service.UserGroupService
+		getUserGroupService() {
+
 		return userGroupService;
 	}
 
@@ -2269,6 +2200,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserGroupService(
 		com.liferay.portal.kernel.service.UserGroupService userGroupService) {
+
 		this.userGroupService = userGroupService;
 	}
 
@@ -2288,6 +2220,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserGroupPersistence(
 		UserGroupPersistence userGroupPersistence) {
+
 		this.userGroupPersistence = userGroupPersistence;
 	}
 
@@ -2314,7 +2247,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the user group group role local service
 	 */
-	public com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService getUserGroupGroupRoleLocalService() {
+	public com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService
+		getUserGroupGroupRoleLocalService() {
+
 		return userGroupGroupRoleLocalService;
 	}
 
@@ -2324,7 +2259,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param userGroupGroupRoleLocalService the user group group role local service
 	 */
 	public void setUserGroupGroupRoleLocalService(
-		com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService userGroupGroupRoleLocalService) {
+		com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService
+			userGroupGroupRoleLocalService) {
+
 		this.userGroupGroupRoleLocalService = userGroupGroupRoleLocalService;
 	}
 
@@ -2333,7 +2270,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the user group group role remote service
 	 */
-	public com.liferay.portal.kernel.service.UserGroupGroupRoleService getUserGroupGroupRoleService() {
+	public com.liferay.portal.kernel.service.UserGroupGroupRoleService
+		getUserGroupGroupRoleService() {
+
 		return userGroupGroupRoleService;
 	}
 
@@ -2343,7 +2282,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param userGroupGroupRoleService the user group group role remote service
 	 */
 	public void setUserGroupGroupRoleService(
-		com.liferay.portal.kernel.service.UserGroupGroupRoleService userGroupGroupRoleService) {
+		com.liferay.portal.kernel.service.UserGroupGroupRoleService
+			userGroupGroupRoleService) {
+
 		this.userGroupGroupRoleService = userGroupGroupRoleService;
 	}
 
@@ -2363,6 +2304,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserGroupGroupRolePersistence(
 		UserGroupGroupRolePersistence userGroupGroupRolePersistence) {
+
 		this.userGroupGroupRolePersistence = userGroupGroupRolePersistence;
 	}
 
@@ -2382,6 +2324,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserGroupGroupRoleFinder(
 		UserGroupGroupRoleFinder userGroupGroupRoleFinder) {
+
 		this.userGroupGroupRoleFinder = userGroupGroupRoleFinder;
 	}
 
@@ -2390,7 +2333,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the user group role local service
 	 */
-	public com.liferay.portal.kernel.service.UserGroupRoleLocalService getUserGroupRoleLocalService() {
+	public com.liferay.portal.kernel.service.UserGroupRoleLocalService
+		getUserGroupRoleLocalService() {
+
 		return userGroupRoleLocalService;
 	}
 
@@ -2400,7 +2345,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param userGroupRoleLocalService the user group role local service
 	 */
 	public void setUserGroupRoleLocalService(
-		com.liferay.portal.kernel.service.UserGroupRoleLocalService userGroupRoleLocalService) {
+		com.liferay.portal.kernel.service.UserGroupRoleLocalService
+			userGroupRoleLocalService) {
+
 		this.userGroupRoleLocalService = userGroupRoleLocalService;
 	}
 
@@ -2409,7 +2356,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the user group role remote service
 	 */
-	public com.liferay.portal.kernel.service.UserGroupRoleService getUserGroupRoleService() {
+	public com.liferay.portal.kernel.service.UserGroupRoleService
+		getUserGroupRoleService() {
+
 		return userGroupRoleService;
 	}
 
@@ -2419,7 +2368,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param userGroupRoleService the user group role remote service
 	 */
 	public void setUserGroupRoleService(
-		com.liferay.portal.kernel.service.UserGroupRoleService userGroupRoleService) {
+		com.liferay.portal.kernel.service.UserGroupRoleService
+			userGroupRoleService) {
+
 		this.userGroupRoleService = userGroupRoleService;
 	}
 
@@ -2439,6 +2390,7 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setUserGroupRolePersistence(
 		UserGroupRolePersistence userGroupRolePersistence) {
+
 		this.userGroupRolePersistence = userGroupRolePersistence;
 	}
 
@@ -2456,7 +2408,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @param userGroupRoleFinder the user group role finder
 	 */
-	public void setUserGroupRoleFinder(UserGroupRoleFinder userGroupRoleFinder) {
+	public void setUserGroupRoleFinder(
+		UserGroupRoleFinder userGroupRoleFinder) {
+
 		this.userGroupRoleFinder = userGroupRoleFinder;
 	}
 
@@ -2465,7 +2419,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the workflow definition link local service
 	 */
-	public com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService getWorkflowDefinitionLinkLocalService() {
+	public com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService
+		getWorkflowDefinitionLinkLocalService() {
+
 		return workflowDefinitionLinkLocalService;
 	}
 
@@ -2475,8 +2431,11 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 * @param workflowDefinitionLinkLocalService the workflow definition link local service
 	 */
 	public void setWorkflowDefinitionLinkLocalService(
-		com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService) {
-		this.workflowDefinitionLinkLocalService = workflowDefinitionLinkLocalService;
+		com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService
+			workflowDefinitionLinkLocalService) {
+
+		this.workflowDefinitionLinkLocalService =
+			workflowDefinitionLinkLocalService;
 	}
 
 	/**
@@ -2484,7 +2443,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the workflow definition link persistence
 	 */
-	public WorkflowDefinitionLinkPersistence getWorkflowDefinitionLinkPersistence() {
+	public WorkflowDefinitionLinkPersistence
+		getWorkflowDefinitionLinkPersistence() {
+
 		return workflowDefinitionLinkPersistence;
 	}
 
@@ -2495,7 +2456,9 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setWorkflowDefinitionLinkPersistence(
 		WorkflowDefinitionLinkPersistence workflowDefinitionLinkPersistence) {
-		this.workflowDefinitionLinkPersistence = workflowDefinitionLinkPersistence;
+
+		this.workflowDefinitionLinkPersistence =
+			workflowDefinitionLinkPersistence;
 	}
 
 	public void afterPropertiesSet() {
@@ -2536,8 +2499,8 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 			sql = db.buildSQL(sql);
 			sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource,
-					sql);
+			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(
+				dataSource, sql);
 
 			sqlUpdate.update();
 		}
@@ -2546,258 +2509,516 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 		}
 	}
 
-	@BeanReference(type = com.liferay.portal.kernel.service.GroupLocalService.class)
-	protected com.liferay.portal.kernel.service.GroupLocalService groupLocalService;
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.GroupLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.GroupLocalService
+		groupLocalService;
+
 	@BeanReference(type = GroupService.class)
 	protected GroupService groupService;
+
 	@BeanReference(type = GroupPersistence.class)
 	protected GroupPersistence groupPersistence;
+
 	@BeanReference(type = GroupFinder.class)
 	protected GroupFinder groupFinder;
-	@BeanReference(type = com.liferay.counter.kernel.service.CounterLocalService.class)
-	protected com.liferay.counter.kernel.service.CounterLocalService counterLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.AccountLocalService.class)
-	protected com.liferay.portal.kernel.service.AccountLocalService accountLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.AccountService.class)
+
+	@BeanReference(
+		type = com.liferay.counter.kernel.service.CounterLocalService.class
+	)
+	protected com.liferay.counter.kernel.service.CounterLocalService
+		counterLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.AccountLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.AccountLocalService
+		accountLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.AccountService.class
+	)
 	protected com.liferay.portal.kernel.service.AccountService accountService;
+
 	@BeanReference(type = AccountPersistence.class)
 	protected AccountPersistence accountPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.ClassNameLocalService.class)
-	protected com.liferay.portal.kernel.service.ClassNameLocalService classNameLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.ClassNameService.class)
-	protected com.liferay.portal.kernel.service.ClassNameService classNameService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.ClassNameLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.ClassNameLocalService
+		classNameLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.ClassNameService.class
+	)
+	protected com.liferay.portal.kernel.service.ClassNameService
+		classNameService;
+
 	@BeanReference(type = ClassNamePersistence.class)
 	protected ClassNamePersistence classNamePersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.CompanyLocalService.class)
-	protected com.liferay.portal.kernel.service.CompanyLocalService companyLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.CompanyService.class)
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.CompanyLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.CompanyLocalService
+		companyLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.CompanyService.class
+	)
 	protected com.liferay.portal.kernel.service.CompanyService companyService;
+
 	@BeanReference(type = CompanyPersistence.class)
 	protected CompanyPersistence companyPersistence;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetCategoryLocalService.class)
-	protected com.liferay.asset.kernel.service.AssetCategoryLocalService assetCategoryLocalService;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetCategoryService.class)
-	protected com.liferay.asset.kernel.service.AssetCategoryService assetCategoryService;
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetCategoryLocalService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetCategoryLocalService
+		assetCategoryLocalService;
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetCategoryService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetCategoryService
+		assetCategoryService;
+
 	@BeanReference(type = AssetCategoryPersistence.class)
 	protected AssetCategoryPersistence assetCategoryPersistence;
+
 	@BeanReference(type = AssetCategoryFinder.class)
 	protected AssetCategoryFinder assetCategoryFinder;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetEntryLocalService.class)
-	protected com.liferay.asset.kernel.service.AssetEntryLocalService assetEntryLocalService;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetEntryService.class)
-	protected com.liferay.asset.kernel.service.AssetEntryService assetEntryService;
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetEntryLocalService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetEntryLocalService
+		assetEntryLocalService;
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetEntryService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetEntryService
+		assetEntryService;
+
 	@BeanReference(type = AssetEntryPersistence.class)
 	protected AssetEntryPersistence assetEntryPersistence;
+
 	@BeanReference(type = AssetEntryFinder.class)
 	protected AssetEntryFinder assetEntryFinder;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetTagLocalService.class)
-	protected com.liferay.asset.kernel.service.AssetTagLocalService assetTagLocalService;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetTagService.class)
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetTagLocalService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetTagLocalService
+		assetTagLocalService;
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetTagService.class
+	)
 	protected com.liferay.asset.kernel.service.AssetTagService assetTagService;
+
 	@BeanReference(type = AssetTagPersistence.class)
 	protected AssetTagPersistence assetTagPersistence;
+
 	@BeanReference(type = AssetTagFinder.class)
 	protected AssetTagFinder assetTagFinder;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetVocabularyLocalService.class)
-	protected com.liferay.asset.kernel.service.AssetVocabularyLocalService assetVocabularyLocalService;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetVocabularyService.class)
-	protected com.liferay.asset.kernel.service.AssetVocabularyService assetVocabularyService;
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetVocabularyLocalService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetVocabularyLocalService
+		assetVocabularyLocalService;
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetVocabularyService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetVocabularyService
+		assetVocabularyService;
+
 	@BeanReference(type = AssetVocabularyPersistence.class)
 	protected AssetVocabularyPersistence assetVocabularyPersistence;
+
 	@BeanReference(type = AssetVocabularyFinder.class)
 	protected AssetVocabularyFinder assetVocabularyFinder;
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLAppLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLAppLocalService dlAppLocalService;
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLAppService.class)
-	protected com.liferay.document.library.kernel.service.DLAppService dlAppService;
-	@BeanReference(type = com.liferay.expando.kernel.service.ExpandoRowLocalService.class)
-	protected com.liferay.expando.kernel.service.ExpandoRowLocalService expandoRowLocalService;
+
+	@BeanReference(
+		type = com.liferay.document.library.kernel.service.DLAppLocalService.class
+	)
+	protected com.liferay.document.library.kernel.service.DLAppLocalService
+		dlAppLocalService;
+
+	@BeanReference(
+		type = com.liferay.document.library.kernel.service.DLAppService.class
+	)
+	protected com.liferay.document.library.kernel.service.DLAppService
+		dlAppService;
+
+	@BeanReference(
+		type = com.liferay.expando.kernel.service.ExpandoRowLocalService.class
+	)
+	protected com.liferay.expando.kernel.service.ExpandoRowLocalService
+		expandoRowLocalService;
+
 	@BeanReference(type = ExpandoRowPersistence.class)
 	protected ExpandoRowPersistence expandoRowPersistence;
-	@BeanReference(type = com.liferay.exportimport.kernel.service.ExportImportLocalService.class)
-	protected com.liferay.exportimport.kernel.service.ExportImportLocalService exportImportLocalService;
-	@BeanReference(type = com.liferay.exportimport.kernel.service.ExportImportService.class)
-	protected com.liferay.exportimport.kernel.service.ExportImportService exportImportService;
-	@BeanReference(type = com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService.class)
-	protected com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService exportImportConfigurationLocalService;
-	@BeanReference(type = com.liferay.exportimport.kernel.service.ExportImportConfigurationService.class)
-	protected com.liferay.exportimport.kernel.service.ExportImportConfigurationService exportImportConfigurationService;
+
+	@BeanReference(
+		type = com.liferay.exportimport.kernel.service.ExportImportLocalService.class
+	)
+	protected com.liferay.exportimport.kernel.service.ExportImportLocalService
+		exportImportLocalService;
+
+	@BeanReference(
+		type = com.liferay.exportimport.kernel.service.ExportImportService.class
+	)
+	protected com.liferay.exportimport.kernel.service.ExportImportService
+		exportImportService;
+
+	@BeanReference(
+		type = com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService.class
+	)
+	protected com.liferay.exportimport.kernel.service.
+		ExportImportConfigurationLocalService
+			exportImportConfigurationLocalService;
+
+	@BeanReference(
+		type = com.liferay.exportimport.kernel.service.ExportImportConfigurationService.class
+	)
+	protected
+		com.liferay.exportimport.kernel.service.ExportImportConfigurationService
+			exportImportConfigurationService;
+
 	@BeanReference(type = ExportImportConfigurationPersistence.class)
-	protected ExportImportConfigurationPersistence exportImportConfigurationPersistence;
+	protected ExportImportConfigurationPersistence
+		exportImportConfigurationPersistence;
+
 	@BeanReference(type = ExportImportConfigurationFinder.class)
 	protected ExportImportConfigurationFinder exportImportConfigurationFinder;
-	@BeanReference(type = com.liferay.exportimport.kernel.service.StagingLocalService.class)
-	protected com.liferay.exportimport.kernel.service.StagingLocalService stagingLocalService;
-	@BeanReference(type = com.liferay.exportimport.kernel.service.StagingService.class)
-	protected com.liferay.exportimport.kernel.service.StagingService stagingService;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivityLocalService.class)
-	protected com.liferay.social.kernel.service.SocialActivityLocalService socialActivityLocalService;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivityService.class)
-	protected com.liferay.social.kernel.service.SocialActivityService socialActivityService;
+
+	@BeanReference(
+		type = com.liferay.exportimport.kernel.service.StagingLocalService.class
+	)
+	protected com.liferay.exportimport.kernel.service.StagingLocalService
+		stagingLocalService;
+
+	@BeanReference(
+		type = com.liferay.exportimport.kernel.service.StagingService.class
+	)
+	protected com.liferay.exportimport.kernel.service.StagingService
+		stagingService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivityLocalService.class
+	)
+	protected com.liferay.social.kernel.service.SocialActivityLocalService
+		socialActivityLocalService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivityService.class
+	)
+	protected com.liferay.social.kernel.service.SocialActivityService
+		socialActivityService;
+
 	@BeanReference(type = SocialActivityPersistence.class)
 	protected SocialActivityPersistence socialActivityPersistence;
+
 	@BeanReference(type = SocialActivityFinder.class)
 	protected SocialActivityFinder socialActivityFinder;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivitySettingLocalService.class)
-	protected com.liferay.social.kernel.service.SocialActivitySettingLocalService socialActivitySettingLocalService;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivitySettingService.class)
-	protected com.liferay.social.kernel.service.SocialActivitySettingService socialActivitySettingService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivitySettingLocalService.class
+	)
+	protected
+		com.liferay.social.kernel.service.SocialActivitySettingLocalService
+			socialActivitySettingLocalService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivitySettingService.class
+	)
+	protected com.liferay.social.kernel.service.SocialActivitySettingService
+		socialActivitySettingService;
+
 	@BeanReference(type = SocialActivitySettingPersistence.class)
 	protected SocialActivitySettingPersistence socialActivitySettingPersistence;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialRequestLocalService.class)
-	protected com.liferay.social.kernel.service.SocialRequestLocalService socialRequestLocalService;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialRequestService.class)
-	protected com.liferay.social.kernel.service.SocialRequestService socialRequestService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialRequestLocalService.class
+	)
+	protected com.liferay.social.kernel.service.SocialRequestLocalService
+		socialRequestLocalService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialRequestService.class
+	)
+	protected com.liferay.social.kernel.service.SocialRequestService
+		socialRequestService;
+
 	@BeanReference(type = SocialRequestPersistence.class)
 	protected SocialRequestPersistence socialRequestPersistence;
-	@BeanReference(type = com.liferay.trash.kernel.service.TrashEntryLocalService.class)
-	protected com.liferay.trash.kernel.service.TrashEntryLocalService trashEntryLocalService;
-	@BeanReference(type = com.liferay.trash.kernel.service.TrashEntryService.class)
-	protected com.liferay.trash.kernel.service.TrashEntryService trashEntryService;
-	@BeanReference(type = TrashEntryPersistence.class)
-	protected TrashEntryPersistence trashEntryPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutLocalService.class)
-	protected com.liferay.portal.kernel.service.LayoutLocalService layoutLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.LayoutLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.LayoutLocalService
+		layoutLocalService;
+
 	@BeanReference(type = com.liferay.portal.kernel.service.LayoutService.class)
 	protected com.liferay.portal.kernel.service.LayoutService layoutService;
+
 	@BeanReference(type = LayoutPersistence.class)
 	protected LayoutPersistence layoutPersistence;
+
 	@BeanReference(type = LayoutFinder.class)
 	protected LayoutFinder layoutFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutPrototypeLocalService.class)
-	protected com.liferay.portal.kernel.service.LayoutPrototypeLocalService layoutPrototypeLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutPrototypeService.class)
-	protected com.liferay.portal.kernel.service.LayoutPrototypeService layoutPrototypeService;
-	@BeanReference(type = LayoutPrototypePersistence.class)
-	protected LayoutPrototypePersistence layoutPrototypePersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetLocalService.class)
-	protected com.liferay.portal.kernel.service.LayoutSetLocalService layoutSetLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetService.class)
-	protected com.liferay.portal.kernel.service.LayoutSetService layoutSetService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.LayoutSetLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.LayoutSetLocalService
+		layoutSetLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.LayoutSetService.class
+	)
+	protected com.liferay.portal.kernel.service.LayoutSetService
+		layoutSetService;
+
 	@BeanReference(type = LayoutSetPersistence.class)
 	protected LayoutSetPersistence layoutSetPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetBranchLocalService.class)
-	protected com.liferay.portal.kernel.service.LayoutSetBranchLocalService layoutSetBranchLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetBranchService.class)
-	protected com.liferay.portal.kernel.service.LayoutSetBranchService layoutSetBranchService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.LayoutSetBranchLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.LayoutSetBranchLocalService
+		layoutSetBranchLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.LayoutSetBranchService.class
+	)
+	protected com.liferay.portal.kernel.service.LayoutSetBranchService
+		layoutSetBranchService;
+
 	@BeanReference(type = LayoutSetBranchPersistence.class)
 	protected LayoutSetBranchPersistence layoutSetBranchPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService.class)
-	protected com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService layoutSetPrototypeLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutSetPrototypeService.class)
-	protected com.liferay.portal.kernel.service.LayoutSetPrototypeService layoutSetPrototypeService;
-	@BeanReference(type = LayoutSetPrototypePersistence.class)
-	protected LayoutSetPrototypePersistence layoutSetPrototypePersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.MembershipRequestLocalService.class)
-	protected com.liferay.portal.kernel.service.MembershipRequestLocalService membershipRequestLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.MembershipRequestService.class)
-	protected com.liferay.portal.kernel.service.MembershipRequestService membershipRequestService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.MembershipRequestLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.MembershipRequestLocalService
+		membershipRequestLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.MembershipRequestService.class
+	)
+	protected com.liferay.portal.kernel.service.MembershipRequestService
+		membershipRequestService;
+
 	@BeanReference(type = MembershipRequestPersistence.class)
 	protected MembershipRequestPersistence membershipRequestPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.OrganizationLocalService.class)
-	protected com.liferay.portal.kernel.service.OrganizationLocalService organizationLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.OrganizationService.class)
-	protected com.liferay.portal.kernel.service.OrganizationService organizationService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.OrganizationLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.OrganizationLocalService
+		organizationLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.OrganizationService.class
+	)
+	protected com.liferay.portal.kernel.service.OrganizationService
+		organizationService;
+
 	@BeanReference(type = OrganizationPersistence.class)
 	protected OrganizationPersistence organizationPersistence;
+
 	@BeanReference(type = OrganizationFinder.class)
 	protected OrganizationFinder organizationFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.PortletLocalService.class)
-	protected com.liferay.portal.kernel.service.PortletLocalService portletLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.PortletService.class)
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.PortletLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.PortletLocalService
+		portletLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.PortletService.class
+	)
 	protected com.liferay.portal.kernel.service.PortletService portletService;
+
 	@BeanReference(type = PortletPersistence.class)
 	protected PortletPersistence portletPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.PortletPreferencesLocalService.class)
-	protected com.liferay.portal.kernel.service.PortletPreferencesLocalService portletPreferencesLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.PortletPreferencesService.class)
-	protected com.liferay.portal.kernel.service.PortletPreferencesService portletPreferencesService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.PortletPreferencesLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.PortletPreferencesLocalService
+		portletPreferencesLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.PortletPreferencesService.class
+	)
+	protected com.liferay.portal.kernel.service.PortletPreferencesService
+		portletPreferencesService;
+
 	@BeanReference(type = PortletPreferencesPersistence.class)
 	protected PortletPreferencesPersistence portletPreferencesPersistence;
+
 	@BeanReference(type = PortletPreferencesFinder.class)
 	protected PortletPreferencesFinder portletPreferencesFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourceLocalService.class)
-	protected com.liferay.portal.kernel.service.ResourceLocalService resourceLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourceActionLocalService.class)
-	protected com.liferay.portal.kernel.service.ResourceActionLocalService resourceActionLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.ResourceLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.ResourceLocalService
+		resourceLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.ResourceActionLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.ResourceActionLocalService
+		resourceActionLocalService;
+
 	@BeanReference(type = ResourceActionPersistence.class)
 	protected ResourceActionPersistence resourceActionPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourceBlockLocalService.class)
-	protected com.liferay.portal.kernel.service.ResourceBlockLocalService resourceBlockLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourceBlockService.class)
-	protected com.liferay.portal.kernel.service.ResourceBlockService resourceBlockService;
-	@BeanReference(type = ResourceBlockPersistence.class)
-	protected ResourceBlockPersistence resourceBlockPersistence;
-	@BeanReference(type = ResourceBlockFinder.class)
-	protected ResourceBlockFinder resourceBlockFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourcePermissionLocalService.class)
-	protected com.liferay.portal.kernel.service.ResourcePermissionLocalService resourcePermissionLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourcePermissionService.class)
-	protected com.liferay.portal.kernel.service.ResourcePermissionService resourcePermissionService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.ResourcePermissionLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.ResourcePermissionLocalService
+		resourcePermissionLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.ResourcePermissionService.class
+	)
+	protected com.liferay.portal.kernel.service.ResourcePermissionService
+		resourcePermissionService;
+
 	@BeanReference(type = ResourcePermissionPersistence.class)
 	protected ResourcePermissionPersistence resourcePermissionPersistence;
+
 	@BeanReference(type = ResourcePermissionFinder.class)
 	protected ResourcePermissionFinder resourcePermissionFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.ResourceTypePermissionLocalService.class)
-	protected com.liferay.portal.kernel.service.ResourceTypePermissionLocalService resourceTypePermissionLocalService;
-	@BeanReference(type = ResourceTypePermissionPersistence.class)
-	protected ResourceTypePermissionPersistence resourceTypePermissionPersistence;
-	@BeanReference(type = ResourceTypePermissionFinder.class)
-	protected ResourceTypePermissionFinder resourceTypePermissionFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.RoleLocalService.class)
-	protected com.liferay.portal.kernel.service.RoleLocalService roleLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.RoleLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.RoleLocalService
+		roleLocalService;
+
 	@BeanReference(type = com.liferay.portal.kernel.service.RoleService.class)
 	protected com.liferay.portal.kernel.service.RoleService roleService;
+
 	@BeanReference(type = RolePersistence.class)
 	protected RolePersistence rolePersistence;
+
 	@BeanReference(type = RoleFinder.class)
 	protected RoleFinder roleFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.SubscriptionLocalService.class)
-	protected com.liferay.portal.kernel.service.SubscriptionLocalService subscriptionLocalService;
-	@BeanReference(type = SubscriptionPersistence.class)
-	protected SubscriptionPersistence subscriptionPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.TeamLocalService.class)
-	protected com.liferay.portal.kernel.service.TeamLocalService teamLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.SystemEventLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.SystemEventLocalService
+		systemEventLocalService;
+
+	@BeanReference(type = SystemEventPersistence.class)
+	protected SystemEventPersistence systemEventPersistence;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.TeamLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.TeamLocalService
+		teamLocalService;
+
 	@BeanReference(type = com.liferay.portal.kernel.service.TeamService.class)
 	protected com.liferay.portal.kernel.service.TeamService teamService;
+
 	@BeanReference(type = TeamPersistence.class)
 	protected TeamPersistence teamPersistence;
+
 	@BeanReference(type = TeamFinder.class)
 	protected TeamFinder teamFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserLocalService.class)
-	protected com.liferay.portal.kernel.service.UserLocalService userLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserLocalService
+		userLocalService;
+
 	@BeanReference(type = com.liferay.portal.kernel.service.UserService.class)
 	protected com.liferay.portal.kernel.service.UserService userService;
+
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
+
 	@BeanReference(type = UserFinder.class)
 	protected UserFinder userFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserGroupLocalService.class)
-	protected com.liferay.portal.kernel.service.UserGroupLocalService userGroupLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserGroupService.class)
-	protected com.liferay.portal.kernel.service.UserGroupService userGroupService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserGroupLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserGroupLocalService
+		userGroupLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserGroupService.class
+	)
+	protected com.liferay.portal.kernel.service.UserGroupService
+		userGroupService;
+
 	@BeanReference(type = UserGroupPersistence.class)
 	protected UserGroupPersistence userGroupPersistence;
+
 	@BeanReference(type = UserGroupFinder.class)
 	protected UserGroupFinder userGroupFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService.class)
-	protected com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService userGroupGroupRoleLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserGroupGroupRoleService.class)
-	protected com.liferay.portal.kernel.service.UserGroupGroupRoleService userGroupGroupRoleService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserGroupGroupRoleLocalService
+		userGroupGroupRoleLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserGroupGroupRoleService.class
+	)
+	protected com.liferay.portal.kernel.service.UserGroupGroupRoleService
+		userGroupGroupRoleService;
+
 	@BeanReference(type = UserGroupGroupRolePersistence.class)
 	protected UserGroupGroupRolePersistence userGroupGroupRolePersistence;
+
 	@BeanReference(type = UserGroupGroupRoleFinder.class)
 	protected UserGroupGroupRoleFinder userGroupGroupRoleFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserGroupRoleLocalService.class)
-	protected com.liferay.portal.kernel.service.UserGroupRoleLocalService userGroupRoleLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserGroupRoleService.class)
-	protected com.liferay.portal.kernel.service.UserGroupRoleService userGroupRoleService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserGroupRoleLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserGroupRoleLocalService
+		userGroupRoleLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserGroupRoleService.class
+	)
+	protected com.liferay.portal.kernel.service.UserGroupRoleService
+		userGroupRoleService;
+
 	@BeanReference(type = UserGroupRolePersistence.class)
 	protected UserGroupRolePersistence userGroupRolePersistence;
+
 	@BeanReference(type = UserGroupRoleFinder.class)
 	protected UserGroupRoleFinder userGroupRoleFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService.class)
-	protected com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService.class
+	)
+	protected
+		com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService
+			workflowDefinitionLinkLocalService;
+
 	@BeanReference(type = WorkflowDefinitionLinkPersistence.class)
-	protected WorkflowDefinitionLinkPersistence workflowDefinitionLinkPersistence;
+	protected WorkflowDefinitionLinkPersistence
+		workflowDefinitionLinkPersistence;
+
 }

@@ -14,13 +14,12 @@
 
 package com.liferay.portal.kernel.words;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.jazzy.InvalidWord;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.util.List;
 import java.util.Set;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Shinn Lok
@@ -45,8 +44,6 @@ public class WordsUtil {
 	}
 
 	public static Words getWords() {
-		PortalRuntimePermission.checkGetBeanProperty(WordsUtil.class);
-
 		return _words;
 	}
 
@@ -55,8 +52,6 @@ public class WordsUtil {
 	}
 
 	public void setWords(Words words) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_words = words;
 	}
 

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.split.packages;
 
+import com.liferay.petra.string.StringBundler;
+
 import java.io.IOException;
 
 import java.nio.file.DirectoryStream;
@@ -120,28 +122,23 @@ public class SplitPackagesTest {
 			Path modulePath = entry.getKey();
 
 			if (!modulePackageNames.isEmpty() &&
-				modulePath.equals(Paths.get("portal-impl"))) {
+				modulePath.equals(Paths.get("portal-impl")) &&
+				Files.exists(dirPath.resolve(".lfrbuild-app-server-lib"))) {
 
-				String buildGradleContent = new String(
-					Files.readAllBytes(dirPath.resolve("build.gradle")));
+				Set<String> portalImplPackages = entry.getValue();
 
-				if (buildGradleContent.contains(
-						"deployDir = new File(appServerPortalDir, " +
-							"\"WEB-INF/lib\")")) {
+				portalImplPackages.addAll(packageNames);
 
-					Set<String> portalImplPackages = entry.getValue();
+				addedToImpl = true;
 
-					portalImplPackages.addAll(packageNames);
-
-					addedToImpl = true;
-
-					modulePackageNames.clear();
-				}
+				modulePackageNames.clear();
 			}
 
 			Assert.assertTrue(
-				"Detected split packages in " + portalPath.relativize(dirPath) +
-					" and " + modulePath + ": " + modulePackageNames,
+				StringBundler.concat(
+					"Detected split packages in ",
+					portalPath.relativize(dirPath), " and ", modulePath, ": ",
+					modulePackageNames),
 				modulePackageNames.isEmpty());
 		}
 

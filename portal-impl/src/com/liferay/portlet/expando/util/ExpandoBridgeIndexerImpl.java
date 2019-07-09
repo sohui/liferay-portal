@@ -22,17 +22,17 @@ import com.liferay.expando.kernel.model.ExpandoValue;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalServiceUtil;
 import com.liferay.expando.kernel.service.ExpandoValueLocalServiceUtil;
 import com.liferay.expando.kernel.util.ExpandoBridgeIndexer;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portlet.expando.model.impl.ExpandoValueImpl;
@@ -43,7 +43,6 @@ import java.util.List;
 /**
  * @author Raymond Augé
  */
-@DoPrivileged
 public class ExpandoBridgeIndexerImpl implements ExpandoBridgeIndexer {
 
 	@Override
@@ -60,12 +59,29 @@ public class ExpandoBridgeIndexerImpl implements ExpandoBridgeIndexer {
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #encodeFieldName(String, int)}
+	 */
+	@Deprecated
 	@Override
 	public String encodeFieldName(String columnName) {
-		StringBundler sb = new StringBundler(5);
+		return encodeFieldName(
+			columnName, ExpandoColumnConstants.INDEX_TYPE_TEXT);
+	}
+
+	@Override
+	public String encodeFieldName(String columnName, int indexType) {
+		StringBundler sb = new StringBundler(7);
 
 		sb.append(FIELD_NAMESPACE);
 		sb.append(StringPool.DOUBLE_UNDERLINE);
+
+		if (indexType == ExpandoColumnConstants.INDEX_TYPE_KEYWORD) {
+			sb.append("keyword");
+			sb.append(StringPool.DOUBLE_UNDERLINE);
+		}
+
 		sb.append(
 			StringUtil.toLowerCase(ExpandoTableConstants.DEFAULT_TABLE_NAME));
 		sb.append(StringPool.DOUBLE_UNDERLINE);
@@ -79,7 +95,13 @@ public class ExpandoBridgeIndexerImpl implements ExpandoBridgeIndexer {
 			List<ExpandoValue> expandoValues)
 		throws PortalException {
 
-		String fieldName = encodeFieldName(expandoColumn.getName());
+		UnicodeProperties unicodeProperties =
+			expandoColumn.getTypeSettingsProperties();
+
+		int indexType = GetterUtil.getInteger(
+			unicodeProperties.getProperty(ExpandoColumnConstants.INDEX_TYPE));
+
+		String fieldName = encodeFieldName(expandoColumn.getName(), indexType);
 
 		ExpandoValue expandoValue = new ExpandoValueImpl();
 
@@ -97,13 +119,6 @@ public class ExpandoBridgeIndexerImpl implements ExpandoBridgeIndexer {
 				break;
 			}
 		}
-
-		UnicodeProperties typeSettingsProperties =
-			expandoColumn.getTypeSettingsProperties();
-
-		int indexType = GetterUtil.getInteger(
-			typeSettingsProperties.getProperty(
-				ExpandoColumnConstants.INDEX_TYPE));
 
 		int type = expandoColumn.getType();
 
@@ -143,6 +158,15 @@ public class ExpandoBridgeIndexerImpl implements ExpandoBridgeIndexer {
 				document.addKeyword(fieldName, new float[0]);
 			}
 		}
+		else if (type == ExpandoColumnConstants.GEOLOCATION) {
+			JSONObject jsonObject = expandoValue.getGeolocationJSONObject();
+
+			double latitude = jsonObject.getDouble("latitude");
+			double longitude = jsonObject.getDouble("longitude");
+
+			document.addGeoLocation(
+				fieldName.concat("_geolocation"), latitude, longitude);
+		}
 		else if (type == ExpandoColumnConstants.INTEGER) {
 			document.addKeyword(fieldName, expandoValue.getInteger());
 		}
@@ -166,7 +190,9 @@ public class ExpandoBridgeIndexerImpl implements ExpandoBridgeIndexer {
 			}
 		}
 		else if (type == ExpandoColumnConstants.NUMBER) {
-			document.addKeyword(fieldName, expandoValue.getNumber().toString());
+			Number number = expandoValue.getNumber();
+
+			document.addKeyword(fieldName, number.toString());
 		}
 		else if (type == ExpandoColumnConstants.NUMBER_ARRAY) {
 			if (!defaultValue) {

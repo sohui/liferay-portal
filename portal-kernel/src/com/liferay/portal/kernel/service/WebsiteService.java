@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -27,6 +25,8 @@ import com.liferay.portal.kernel.transaction.Transactional;
 
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for Website. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -34,41 +34,45 @@ import java.util.List;
  *
  * @author Brian Wing Shun Chan
  * @see WebsiteServiceUtil
- * @see com.liferay.portal.service.base.WebsiteServiceBaseImpl
- * @see com.liferay.portal.service.impl.WebsiteServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface WebsiteService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link WebsiteServiceUtil} to access the website remote service. Add custom service methods to {@link com.liferay.portal.service.impl.WebsiteServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link WebsiteServiceUtil} to access the website remote service. Add custom service methods to <code>com.liferay.portal.service.impl.WebsiteServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public Website addWebsite(java.lang.String className, long classPK,
-		java.lang.String url, long typeId, boolean primary,
-		ServiceContext serviceContext) throws PortalException;
+	public Website addWebsite(
+			String className, long classPK, String url, long typeId,
+			boolean primary, ServiceContext serviceContext)
+		throws PortalException;
+
+	public void deleteWebsite(long websiteId) throws PortalException;
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public Website getWebsite(long websiteId) throws PortalException;
 
-	public Website updateWebsite(long websiteId, java.lang.String url,
-		long typeId, boolean primary) throws PortalException;
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
-
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<Website> getWebsites(java.lang.String className, long classPK)
+	public List<Website> getWebsites(String className, long classPK)
 		throws PortalException;
 
-	public void deleteWebsite(long websiteId) throws PortalException;
+	public Website updateWebsite(
+			long websiteId, String url, long typeId, boolean primary)
+		throws PortalException;
+
 }

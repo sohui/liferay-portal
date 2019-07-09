@@ -21,9 +21,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @deprecated As of 7.0.0, replaced by {@link
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), replaced by {@link
  *             com.liferay.portal.kernel.model.cache.CacheField}
- * @author Shuyang Zhou
  */
 @Deprecated
 @Documented

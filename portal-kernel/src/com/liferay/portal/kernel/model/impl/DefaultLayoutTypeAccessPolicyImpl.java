@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.model.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypeAccessPolicy;
@@ -53,20 +55,73 @@ public class DefaultLayoutTypeAccessPolicyImpl
 
 	@Override
 	public void checkAccessAllowedToPortlet(
-			HttpServletRequest request, Layout layout, Portlet portlet)
+			HttpServletRequest httpServletRequest, Layout layout,
+			Portlet portlet)
 		throws PortalException {
 
-		if (isAccessAllowedToLayoutPortlet(request, layout, portlet)) {
-			PortalUtil.addPortletDefaultResource(request, portlet);
+		String checkAccessAllowedToPortletCacheKey = StringBundler.concat(
+			DefaultLayoutTypeAccessPolicyImpl.class.getName(), "#",
+			layout.getPlid(), "#", portlet.getPortletId());
 
-			if (hasAccessPermission(request, layout, portlet)) {
+		Boolean allowed = (Boolean)httpServletRequest.getAttribute(
+			checkAccessAllowedToPortletCacheKey);
+
+		if (allowed != null) {
+			if (allowed) {
+				return;
+			}
+
+			throw new PrincipalException.MustHavePermission(
+				PortalUtil.getUserId(httpServletRequest),
+				StringBundler.concat(
+					portlet.getDisplayName(), StringPool.SPACE,
+					portlet.getPortletId()),
+				0, ActionKeys.ACCESS);
+		}
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		String layoutFriendlyURL = layout.getFriendlyURL();
+
+		if (layout.isSystem() &&
+			layoutFriendlyURL.equals(
+				PropsUtil.get(PropsKeys.CONTROL_PANEL_LAYOUT_FRIENDLY_URL)) &&
+			PortletPermissionUtil.hasControlPanelAccessPermission(
+				permissionChecker, themeDisplay.getScopeGroupId(), portlet)) {
+
+			httpServletRequest.setAttribute(
+				checkAccessAllowedToPortletCacheKey, Boolean.TRUE);
+
+			return;
+		}
+
+		if (isAccessAllowedToLayoutPortlet(
+				httpServletRequest, layout, portlet)) {
+
+			PortalUtil.addPortletDefaultResource(httpServletRequest, portlet);
+
+			if (hasAccessPermission(httpServletRequest, layout, portlet)) {
+				httpServletRequest.setAttribute(
+					checkAccessAllowedToPortletCacheKey, Boolean.TRUE);
+
 				return;
 			}
 		}
 
+		httpServletRequest.setAttribute(
+			checkAccessAllowedToPortletCacheKey, Boolean.FALSE);
+
 		throw new PrincipalException.MustHavePermission(
-			PortalUtil.getUserId(request), portlet.getDisplayName(),
-			portlet.getPortletId(), ActionKeys.ACCESS);
+			PortalUtil.getUserId(httpServletRequest),
+			StringBundler.concat(
+				portlet.getDisplayName(), StringPool.SPACE,
+				portlet.getPortletId()),
+			0, ActionKeys.ACCESS);
 	}
 
 	@Override
@@ -115,20 +170,22 @@ public class DefaultLayoutTypeAccessPolicyImpl
 	}
 
 	protected boolean hasAccessPermission(
-			HttpServletRequest request, Layout layout, Portlet portlet)
+			HttpServletRequest httpServletRequest, Layout layout,
+			Portlet portlet)
 		throws PortalException {
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		PortletMode portletMode = PortletMode.VIEW;
 
 		String portletId = portlet.getPortletId();
-		String ppid = request.getParameter("p_p_id");
-		String ppmode = request.getParameter("p_p_mode");
+		String ppid = httpServletRequest.getParameter("p_p_id");
+		String ppmode = httpServletRequest.getParameter("p_p_mode");
 
 		if (portletId.equals(ppid) && (ppmode != null)) {
 			portletMode = PortletModeFactory.getPortletMode(ppmode);
@@ -140,9 +197,9 @@ public class DefaultLayoutTypeAccessPolicyImpl
 	}
 
 	protected boolean isAccessAllowedToLayoutPortlet(
-		HttpServletRequest request, Layout layout, Portlet portlet) {
+		HttpServletRequest httpServletRequest, Layout layout, Portlet portlet) {
 
-		if (isAccessGrantedByRuntimePortlet(request)) {
+		if (isAccessGrantedByRuntimePortlet(httpServletRequest)) {
 			return true;
 		}
 
@@ -151,7 +208,7 @@ public class DefaultLayoutTypeAccessPolicyImpl
 		}
 
 		if (isAccessGrantedByPortletAuthenticationToken(
-				request, layout, portlet)) {
+				httpServletRequest, layout, portlet)) {
 
 			return true;
 		}
@@ -160,7 +217,7 @@ public class DefaultLayoutTypeAccessPolicyImpl
 	}
 
 	protected boolean isAccessGrantedByPortletAuthenticationToken(
-		HttpServletRequest request, Layout layout, Portlet portlet) {
+		HttpServletRequest httpServletRequest, Layout layout, Portlet portlet) {
 
 		if (!portlet.isAddDefaultResource()) {
 			return false;
@@ -171,7 +228,7 @@ public class DefaultLayoutTypeAccessPolicyImpl
 		}
 
 		if (AuthTokenUtil.isValidPortletInvocationToken(
-				request, layout, portlet)) {
+				httpServletRequest, layout, portlet)) {
 
 			return true;
 		}
@@ -201,10 +258,11 @@ public class DefaultLayoutTypeAccessPolicyImpl
 	}
 
 	protected boolean isAccessGrantedByRuntimePortlet(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
-		Boolean renderPortletResource = (Boolean)request.getAttribute(
-			WebKeys.RENDER_PORTLET_RESOURCE);
+		Boolean renderPortletResource =
+			(Boolean)httpServletRequest.getAttribute(
+				WebKeys.RENDER_PORTLET_RESOURCE);
 
 		if (renderPortletResource != null) {
 			return renderPortletResource;

@@ -9,23 +9,28 @@
 </thead>
 <tbody>
 <tr>
-	<td>ADVANCED</td>
-	<td>//input[contains(@id,'advanced') and @type='radio']</td>
+	<td>APPEND</td>
+	<td>//label[contains(.,'Append')]/input</td>
 	<td></td>
 </tr>
 <tr>
-	<td>BASIC</td>
-	<td>//input[contains(@id,'basic') and @type='radio']</td>
+	<td>AUTOMATIC_URL</td>
+	<td>//label[contains(.,'Automatic')]/input[@type='radio']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CONTENT_ALL_CONTENT</td>
-	<td>//input[contains(@id,'allContent')]</td>
+	<td>CHOOSE_MENU</td>
+	<td>//label[contains(.,'Choose Menu')]/input[@type='radio']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CONTENT_CHOOSE_CONTENT</td>
-	<td>//input[contains(@id,'chooseContent')]</td>
+	<td>CUSTOM_URL</td>
+	<td>//label[contains(.,'Custom')]/input[@type='radio']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHOOSE_CONTENT_DATE_RANGE_CHANGE</td>
+	<td>//input[contains(@id,'rangeDateRange')]//following-sibling::span</td>
 	<td></td>
 </tr>
 <tr>
@@ -44,28 +49,18 @@
 	<td></td>
 </tr>
 <tr>
-	<td>LOCAL_LIVE</td>
-	<td>//label[contains(.,'Local Live')]/input[@type='radio']</td>
+	<td>CURRENT_VERSION</td>
+	<td>//label[contains(.,'Current Version')]/input</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MAJOR_VERSION</td>
-	<td>//input[contains(@id,'MajorVersion_1')]</td>
+	<td>//label[contains(.,'Major Version')]/input</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MINOR_VERSION</td>
-	<td>//input[contains(@id,'MajorVersion_3')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>NONE</td>
-	<td>//label[contains(.,'None')]/input[@type='radio']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>OVERWRITE</td>
-	<td>//label[contains(.,'Overwrite')]/input[@type='radio']</td>
+	<td>//label[contains(.,'Minor Version')]/input</td>
 	<td></td>
 </tr>
 <tr>
@@ -74,13 +69,33 @@
 	<td></td>
 </tr>
 <tr>
-	<td>RANGE_ALL</td>
-	<td>//label[contains(.,'All')]/input[contains(@id,'rangeAll')]</td>
+	<td>REPLACE</td>
+	<td>//label[contains(.,'Replace')]/input</td>
 	<td></td>
 </tr>
 <tr>
-	<td>REMOTE_LIVE</td>
-	<td>//label[contains(.,'Remote Live')]/input[@type='radio']</td>
+	<td>SPECIFIC_LOOK</td>
+	<td>//input[contains(@id,'UniqueLookAndFeel')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SOCIAL_BOOKMARKS_DISPLAY_STYLE</td>
+	<td>//label[contains(.,'${key_displayStyle}')]/input[@type='radio']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_DEFAULT_WORKFLOW</td>
+	<td>//input[contains(@id,'restrictionTypeWorkflow')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_PARENT_FOLDER</td>
+	<td>//input[contains(@id,'restrictionTypeInherit')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WORKFLOW_SPECIFIC_RESTRICTIONS</td>
+	<td>//input[contains(@id,'restrictionTypeDefined')]</td>
 	<td></td>
 </tr>
 </tbody>

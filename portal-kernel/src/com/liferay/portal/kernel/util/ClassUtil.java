@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.log.Log;
@@ -74,6 +76,7 @@ public class ClassUtil {
 					st.ordinaryChar(' ');
 					st.wordChars('=', '=');
 					st.wordChars('+', '+');
+					st.wordChars('-', '-');
 
 					String[] annotationClasses = _processAnnotation(
 						st.sval, st);
@@ -177,14 +180,14 @@ public class ClassUtil {
 			path = url.getFile();
 		}
 
-		if (ServerDetector.isJBoss() || ServerDetector.isWildfly()) {
-			if (path.startsWith("file:") && !path.startsWith("file:/")) {
-				path = path.substring(5);
+		if ((ServerDetector.isJBoss() || ServerDetector.isWildfly()) &&
+			path.startsWith("file:") && !path.startsWith("file:/")) {
 
-				path = "file:/".concat(path);
+			path = path.substring(5);
 
-				path = StringUtil.replace(path, "%5C", StringPool.SLASH);
-			}
+			path = "file:/".concat(path);
+
+			path = StringUtil.replace(path, "%5C", StringPool.SLASH);
 		}
 
 		if (_log.isDebugEnabled()) {
@@ -243,12 +246,16 @@ public class ClassUtil {
 			return false;
 		}
 
-		if (a.getName().equals(s)) {
+		String name = a.getName();
+
+		if (name.equals(s)) {
 			return true;
 		}
 
 		for (Class<?> x = a; x != null; x = x.getSuperclass()) {
-			if (x.getName().equals(s)) {
+			name = x.getName();
+
+			if (name.equals(s)) {
 				return true;
 			}
 
@@ -271,9 +278,9 @@ public class ClassUtil {
 
 		List<String> tokens = new ArrayList<>();
 
-		Matcher annotationNameMatcher = _ANNOTATION_NAME_REGEXP.matcher(s);
+		Matcher annotationNameMatcher = _annotationNamePattern.matcher(s);
 		Matcher annotationParametersMatcher =
-			_ANNOTATION_PARAMETERS_REGEXP.matcher(s);
+			_annotationParametersPattern.matcher(s);
 
 		if (annotationNameMatcher.matches()) {
 			tokens.add(annotationNameMatcher.group(1));
@@ -281,17 +288,15 @@ public class ClassUtil {
 		else if (annotationParametersMatcher.matches()) {
 			tokens.add(annotationParametersMatcher.group(1));
 
-			String annotationParameters = StringPool.BLANK;
+			String annotationParameters = null;
 
-			if (s.trim().endsWith(")")) {
+			String trimmedString = s.trim();
+
+			if (trimmedString.endsWith(")")) {
 				annotationParameters = annotationParametersMatcher.group(3);
 			}
 			else {
-				int pos = s.indexOf('{');
-
-				if (pos != -1) {
-					annotationParameters += s.substring(pos + 1);
-				}
+				annotationParameters = s.substring(s.indexOf('('));
 
 				while (st.nextToken() != StreamTokenizer.TT_EOF) {
 					if (st.ttype != StreamTokenizer.TT_WORD) {
@@ -311,7 +316,7 @@ public class ClassUtil {
 					int openParenthesesCount = StringUtil.count(
 						annotationParameters, '(');
 
-					if (closeParenthesesCount > openParenthesesCount) {
+					if (closeParenthesesCount == openParenthesesCount) {
 						break;
 					}
 				}
@@ -320,7 +325,7 @@ public class ClassUtil {
 			tokens = _processAnnotationParameters(annotationParameters, tokens);
 		}
 
-		return tokens.toArray(new String[tokens.size()]);
+		return tokens.toArray(new String[0]);
 	}
 
 	private static List<String> _processAnnotationParameters(
@@ -378,18 +383,16 @@ public class ClassUtil {
 		st.wordChars(')', ')');
 		st.wordChars('{', '{');
 		st.wordChars('}', '}');
-		st.wordChars(',',',');
+		st.wordChars(',', ',');
 	}
-
-	private static final Pattern _ANNOTATION_NAME_REGEXP = Pattern.compile(
-		"@(\\w+)\\.?(\\w*)$");
-
-	private static final Pattern _ANNOTATION_PARAMETERS_REGEXP =
-		Pattern.compile(
-			"@(\\w+)\\.?(\\w*)\\({0,1}\\{{0,1}([^)}]+)\\}{0,1}\\){0,1}");
 
 	private static final String _CLASS_EXTENSION = ".class";
 
 	private static final Log _log = LogFactoryUtil.getLog(ClassUtil.class);
+
+	private static final Pattern _annotationNamePattern = Pattern.compile(
+		"@(\\w+)\\.?(\\w*)$");
+	private static final Pattern _annotationParametersPattern = Pattern.compile(
+		"@(\\w+)\\.?(\\w*)\\({0,1}\\{{0,1}([^)}]+)\\}{0,1}\\){0,1}");
 
 }

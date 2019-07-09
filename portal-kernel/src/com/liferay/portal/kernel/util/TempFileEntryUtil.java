@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.util;
 
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.util.DLAppHelperThreadLocal;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Repository;
@@ -33,7 +34,7 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.ArrayList;
@@ -55,19 +56,12 @@ public class TempFileEntryUtil {
 			File file, String mimeType)
 		throws PortalException {
 
-		InputStream inputStream = null;
-
-		try {
-			inputStream = new FileInputStream(file);
-
+		try (InputStream inputStream = new FileInputStream(file)) {
 			return addTempFileEntry(
 				groupId, userId, folderName, fileName, inputStream, mimeType);
 		}
-		catch (FileNotFoundException fnfe) {
-			throw new PortalException(fnfe);
-		}
-		finally {
-			StreamUtil.cleanUp(inputStream);
+		catch (IOException ioe) {
+			throw new PortalException(ioe);
 		}
 	}
 

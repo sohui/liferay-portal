@@ -14,18 +14,13 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -37,19 +32,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class ContactWrapper implements Contact, ModelWrapper<Contact> {
+public class ContactWrapper
+	extends BaseModelWrapper<Contact>
+	implements Contact, ModelWrapper<Contact> {
+
 	public ContactWrapper(Contact contact) {
-		_contact = contact;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return Contact.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return Contact.class.getName();
+		super(contact);
 	}
 
 	@Override
@@ -73,7 +61,7 @@ public class ContactWrapper implements Contact, ModelWrapper<Contact> {
 		attributes.put("lastName", getLastName());
 		attributes.put("prefixId", getPrefixId());
 		attributes.put("suffixId", getSuffixId());
-		attributes.put("male", getMale());
+		attributes.put("male", isMale());
 		attributes.put("birthday", getBirthday());
 		attributes.put("smsSn", getSmsSn());
 		attributes.put("facebookSn", getFacebookSn());
@@ -266,799 +254,669 @@ public class ContactWrapper implements Contact, ModelWrapper<Contact> {
 		}
 	}
 
+	/**
+	 * Returns the account ID of this contact.
+	 *
+	 * @return the account ID of this contact
+	 */
 	@Override
-	public CacheModel<Contact> toCacheModel() {
-		return _contact.toCacheModel();
-	}
-
-	@Override
-	public Contact toEscapedModel() {
-		return new ContactWrapper(_contact.toEscapedModel());
-	}
-
-	@Override
-	public Contact toUnescapedModel() {
-		return new ContactWrapper(_contact.toUnescapedModel());
+	public long getAccountId() {
+		return model.getAccountId();
 	}
 
 	/**
-	* Returns the male of this contact.
-	*
-	* @return the male of this contact
-	*/
+	 * Returns the birthday of this contact.
+	 *
+	 * @return the birthday of this contact
+	 */
+	@Override
+	public Date getBirthday() {
+		return model.getBirthday();
+	}
+
+	/**
+	 * Returns the fully qualified class name of this contact.
+	 *
+	 * @return the fully qualified class name of this contact
+	 */
+	@Override
+	public String getClassName() {
+		return model.getClassName();
+	}
+
+	/**
+	 * Returns the class name ID of this contact.
+	 *
+	 * @return the class name ID of this contact
+	 */
+	@Override
+	public long getClassNameId() {
+		return model.getClassNameId();
+	}
+
+	/**
+	 * Returns the class pk of this contact.
+	 *
+	 * @return the class pk of this contact
+	 */
+	@Override
+	public long getClassPK() {
+		return model.getClassPK();
+	}
+
+	/**
+	 * Returns the company ID of this contact.
+	 *
+	 * @return the company ID of this contact
+	 */
+	@Override
+	public long getCompanyId() {
+		return model.getCompanyId();
+	}
+
+	/**
+	 * Returns the contact ID of this contact.
+	 *
+	 * @return the contact ID of this contact
+	 */
+	@Override
+	public long getContactId() {
+		return model.getContactId();
+	}
+
+	/**
+	 * Returns the create date of this contact.
+	 *
+	 * @return the create date of this contact
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the email address of this contact.
+	 *
+	 * @return the email address of this contact
+	 */
+	@Override
+	public String getEmailAddress() {
+		return model.getEmailAddress();
+	}
+
+	/**
+	 * Returns the employee number of this contact.
+	 *
+	 * @return the employee number of this contact
+	 */
+	@Override
+	public String getEmployeeNumber() {
+		return model.getEmployeeNumber();
+	}
+
+	/**
+	 * Returns the employee status ID of this contact.
+	 *
+	 * @return the employee status ID of this contact
+	 */
+	@Override
+	public String getEmployeeStatusId() {
+		return model.getEmployeeStatusId();
+	}
+
+	/**
+	 * Returns the facebook sn of this contact.
+	 *
+	 * @return the facebook sn of this contact
+	 */
+	@Override
+	public String getFacebookSn() {
+		return model.getFacebookSn();
+	}
+
+	/**
+	 * Returns the first name of this contact.
+	 *
+	 * @return the first name of this contact
+	 */
+	@Override
+	public String getFirstName() {
+		return model.getFirstName();
+	}
+
+	@Override
+	public String getFullName() {
+		return model.getFullName();
+	}
+
+	/**
+	 * Returns the hours of operation of this contact.
+	 *
+	 * @return the hours of operation of this contact
+	 */
+	@Override
+	public String getHoursOfOperation() {
+		return model.getHoursOfOperation();
+	}
+
+	/**
+	 * Returns the jabber sn of this contact.
+	 *
+	 * @return the jabber sn of this contact
+	 */
+	@Override
+	public String getJabberSn() {
+		return model.getJabberSn();
+	}
+
+	/**
+	 * Returns the job class of this contact.
+	 *
+	 * @return the job class of this contact
+	 */
+	@Override
+	public String getJobClass() {
+		return model.getJobClass();
+	}
+
+	/**
+	 * Returns the job title of this contact.
+	 *
+	 * @return the job title of this contact
+	 */
+	@Override
+	public String getJobTitle() {
+		return model.getJobTitle();
+	}
+
+	/**
+	 * Returns the last name of this contact.
+	 *
+	 * @return the last name of this contact
+	 */
+	@Override
+	public String getLastName() {
+		return model.getLastName();
+	}
+
+	/**
+	 * Returns the male of this contact.
+	 *
+	 * @return the male of this contact
+	 */
 	@Override
 	public boolean getMale() {
-		return _contact.getMale();
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _contact.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _contact.isEscapedModel();
+		return model.getMale();
 	}
 
 	/**
-	* Returns <code>true</code> if this contact is male.
-	*
-	* @return <code>true</code> if this contact is male; <code>false</code> otherwise
-	*/
+	 * Returns the middle name of this contact.
+	 *
+	 * @return the middle name of this contact
+	 */
 	@Override
-	public boolean isMale() {
-		return _contact.isMale();
+	public String getMiddleName() {
+		return model.getMiddleName();
 	}
 
+	/**
+	 * Returns the modified date of this contact.
+	 *
+	 * @return the modified date of this contact
+	 */
 	@Override
-	public boolean isNew() {
-		return _contact.isNew();
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this contact.
+	 *
+	 * @return the mvcc version of this contact
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
+	 * Returns the parent contact ID of this contact.
+	 *
+	 * @return the parent contact ID of this contact
+	 */
+	@Override
+	public long getParentContactId() {
+		return model.getParentContactId();
+	}
+
+	/**
+	 * Returns the prefix ID of this contact.
+	 *
+	 * @return the prefix ID of this contact
+	 */
+	@Override
+	public long getPrefixId() {
+		return model.getPrefixId();
+	}
+
+	/**
+	 * Returns the primary key of this contact.
+	 *
+	 * @return the primary key of this contact
+	 */
+	@Override
+	public long getPrimaryKey() {
+		return model.getPrimaryKey();
+	}
+
+	/**
+	 * Returns the skype sn of this contact.
+	 *
+	 * @return the skype sn of this contact
+	 */
+	@Override
+	public String getSkypeSn() {
+		return model.getSkypeSn();
+	}
+
+	/**
+	 * Returns the sms sn of this contact.
+	 *
+	 * @return the sms sn of this contact
+	 */
+	@Override
+	public String getSmsSn() {
+		return model.getSmsSn();
+	}
+
+	/**
+	 * Returns the suffix ID of this contact.
+	 *
+	 * @return the suffix ID of this contact
+	 */
+	@Override
+	public long getSuffixId() {
+		return model.getSuffixId();
+	}
+
+	/**
+	 * Returns the twitter sn of this contact.
+	 *
+	 * @return the twitter sn of this contact
+	 */
+	@Override
+	public String getTwitterSn() {
+		return model.getTwitterSn();
+	}
+
+	/**
+	 * Returns the user ID of this contact.
+	 *
+	 * @return the user ID of this contact
+	 */
+	@Override
+	public long getUserId() {
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user name of this contact.
+	 *
+	 * @return the user name of this contact
+	 */
+	@Override
+	public String getUserName() {
+		return model.getUserName();
+	}
+
+	/**
+	 * Returns the user uuid of this contact.
+	 *
+	 * @return the user uuid of this contact
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns <code>true</code> if this contact is male.
+	 *
+	 * @return <code>true</code> if this contact is male; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isMale() {
+		return model.isMale();
 	}
 
 	@Override
 	public boolean isUser() {
-		return _contact.isUser();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _contact.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(Contact contact) {
-		return _contact.compareTo(contact);
-	}
-
-	@Override
-	public int hashCode() {
-		return _contact.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _contact.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new ContactWrapper((Contact)_contact.clone());
-	}
-
-	/**
-	* Returns the fully qualified class name of this contact.
-	*
-	* @return the fully qualified class name of this contact
-	*/
-	@Override
-	public java.lang.String getClassName() {
-		return _contact.getClassName();
-	}
-
-	/**
-	* Returns the email address of this contact.
-	*
-	* @return the email address of this contact
-	*/
-	@Override
-	public java.lang.String getEmailAddress() {
-		return _contact.getEmailAddress();
-	}
-
-	/**
-	* Returns the employee number of this contact.
-	*
-	* @return the employee number of this contact
-	*/
-	@Override
-	public java.lang.String getEmployeeNumber() {
-		return _contact.getEmployeeNumber();
-	}
-
-	/**
-	* Returns the employee status ID of this contact.
-	*
-	* @return the employee status ID of this contact
-	*/
-	@Override
-	public java.lang.String getEmployeeStatusId() {
-		return _contact.getEmployeeStatusId();
-	}
-
-	/**
-	* Returns the facebook sn of this contact.
-	*
-	* @return the facebook sn of this contact
-	*/
-	@Override
-	public java.lang.String getFacebookSn() {
-		return _contact.getFacebookSn();
-	}
-
-	/**
-	* Returns the first name of this contact.
-	*
-	* @return the first name of this contact
-	*/
-	@Override
-	public java.lang.String getFirstName() {
-		return _contact.getFirstName();
-	}
-
-	@Override
-	public java.lang.String getFullName() {
-		return _contact.getFullName();
-	}
-
-	/**
-	* Returns the hours of operation of this contact.
-	*
-	* @return the hours of operation of this contact
-	*/
-	@Override
-	public java.lang.String getHoursOfOperation() {
-		return _contact.getHoursOfOperation();
-	}
-
-	/**
-	* Returns the jabber sn of this contact.
-	*
-	* @return the jabber sn of this contact
-	*/
-	@Override
-	public java.lang.String getJabberSn() {
-		return _contact.getJabberSn();
-	}
-
-	/**
-	* Returns the job class of this contact.
-	*
-	* @return the job class of this contact
-	*/
-	@Override
-	public java.lang.String getJobClass() {
-		return _contact.getJobClass();
-	}
-
-	/**
-	* Returns the job title of this contact.
-	*
-	* @return the job title of this contact
-	*/
-	@Override
-	public java.lang.String getJobTitle() {
-		return _contact.getJobTitle();
-	}
-
-	/**
-	* Returns the last name of this contact.
-	*
-	* @return the last name of this contact
-	*/
-	@Override
-	public java.lang.String getLastName() {
-		return _contact.getLastName();
-	}
-
-	/**
-	* Returns the middle name of this contact.
-	*
-	* @return the middle name of this contact
-	*/
-	@Override
-	public java.lang.String getMiddleName() {
-		return _contact.getMiddleName();
-	}
-
-	/**
-	* Returns the skype sn of this contact.
-	*
-	* @return the skype sn of this contact
-	*/
-	@Override
-	public java.lang.String getSkypeSn() {
-		return _contact.getSkypeSn();
-	}
-
-	/**
-	* Returns the sms sn of this contact.
-	*
-	* @return the sms sn of this contact
-	*/
-	@Override
-	public java.lang.String getSmsSn() {
-		return _contact.getSmsSn();
-	}
-
-	/**
-	* Returns the twitter sn of this contact.
-	*
-	* @return the twitter sn of this contact
-	*/
-	@Override
-	public java.lang.String getTwitterSn() {
-		return _contact.getTwitterSn();
-	}
-
-	/**
-	* Returns the user name of this contact.
-	*
-	* @return the user name of this contact
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _contact.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this contact.
-	*
-	* @return the user uuid of this contact
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _contact.getUserUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _contact.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _contact.toXmlString();
-	}
-
-	/**
-	* Returns the birthday of this contact.
-	*
-	* @return the birthday of this contact
-	*/
-	@Override
-	public Date getBirthday() {
-		return _contact.getBirthday();
-	}
-
-	/**
-	* Returns the create date of this contact.
-	*
-	* @return the create date of this contact
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _contact.getCreateDate();
-	}
-
-	/**
-	* Returns the modified date of this contact.
-	*
-	* @return the modified date of this contact
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _contact.getModifiedDate();
-	}
-
-	/**
-	* Returns the account ID of this contact.
-	*
-	* @return the account ID of this contact
-	*/
-	@Override
-	public long getAccountId() {
-		return _contact.getAccountId();
-	}
-
-	/**
-	* Returns the class name ID of this contact.
-	*
-	* @return the class name ID of this contact
-	*/
-	@Override
-	public long getClassNameId() {
-		return _contact.getClassNameId();
-	}
-
-	/**
-	* Returns the class p k of this contact.
-	*
-	* @return the class p k of this contact
-	*/
-	@Override
-	public long getClassPK() {
-		return _contact.getClassPK();
-	}
-
-	/**
-	* Returns the company ID of this contact.
-	*
-	* @return the company ID of this contact
-	*/
-	@Override
-	public long getCompanyId() {
-		return _contact.getCompanyId();
-	}
-
-	/**
-	* Returns the contact ID of this contact.
-	*
-	* @return the contact ID of this contact
-	*/
-	@Override
-	public long getContactId() {
-		return _contact.getContactId();
-	}
-
-	/**
-	* Returns the mvcc version of this contact.
-	*
-	* @return the mvcc version of this contact
-	*/
-	@Override
-	public long getMvccVersion() {
-		return _contact.getMvccVersion();
-	}
-
-	/**
-	* Returns the parent contact ID of this contact.
-	*
-	* @return the parent contact ID of this contact
-	*/
-	@Override
-	public long getParentContactId() {
-		return _contact.getParentContactId();
-	}
-
-	/**
-	* Returns the prefix ID of this contact.
-	*
-	* @return the prefix ID of this contact
-	*/
-	@Override
-	public long getPrefixId() {
-		return _contact.getPrefixId();
-	}
-
-	/**
-	* Returns the primary key of this contact.
-	*
-	* @return the primary key of this contact
-	*/
-	@Override
-	public long getPrimaryKey() {
-		return _contact.getPrimaryKey();
-	}
-
-	/**
-	* Returns the suffix ID of this contact.
-	*
-	* @return the suffix ID of this contact
-	*/
-	@Override
-	public long getSuffixId() {
-		return _contact.getSuffixId();
-	}
-
-	/**
-	* Returns the user ID of this contact.
-	*
-	* @return the user ID of this contact
-	*/
-	@Override
-	public long getUserId() {
-		return _contact.getUserId();
+		return model.isUser();
 	}
 
 	@Override
 	public void persist() {
-		_contact.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets the account ID of this contact.
-	*
-	* @param accountId the account ID of this contact
-	*/
+	 * Sets the account ID of this contact.
+	 *
+	 * @param accountId the account ID of this contact
+	 */
 	@Override
 	public void setAccountId(long accountId) {
-		_contact.setAccountId(accountId);
+		model.setAccountId(accountId);
 	}
 
 	/**
-	* Sets the birthday of this contact.
-	*
-	* @param birthday the birthday of this contact
-	*/
+	 * Sets the birthday of this contact.
+	 *
+	 * @param birthday the birthday of this contact
+	 */
 	@Override
 	public void setBirthday(Date birthday) {
-		_contact.setBirthday(birthday);
+		model.setBirthday(birthday);
 	}
 
 	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_contact.setCachedModel(cachedModel);
-	}
-
-	@Override
-	public void setClassName(java.lang.String className) {
-		_contact.setClassName(className);
+	public void setClassName(String className) {
+		model.setClassName(className);
 	}
 
 	/**
-	* Sets the class name ID of this contact.
-	*
-	* @param classNameId the class name ID of this contact
-	*/
+	 * Sets the class name ID of this contact.
+	 *
+	 * @param classNameId the class name ID of this contact
+	 */
 	@Override
 	public void setClassNameId(long classNameId) {
-		_contact.setClassNameId(classNameId);
+		model.setClassNameId(classNameId);
 	}
 
 	/**
-	* Sets the class p k of this contact.
-	*
-	* @param classPK the class p k of this contact
-	*/
+	 * Sets the class pk of this contact.
+	 *
+	 * @param classPK the class pk of this contact
+	 */
 	@Override
 	public void setClassPK(long classPK) {
-		_contact.setClassPK(classPK);
+		model.setClassPK(classPK);
 	}
 
 	/**
-	* Sets the company ID of this contact.
-	*
-	* @param companyId the company ID of this contact
-	*/
+	 * Sets the company ID of this contact.
+	 *
+	 * @param companyId the company ID of this contact
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_contact.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the contact ID of this contact.
-	*
-	* @param contactId the contact ID of this contact
-	*/
+	 * Sets the contact ID of this contact.
+	 *
+	 * @param contactId the contact ID of this contact
+	 */
 	@Override
 	public void setContactId(long contactId) {
-		_contact.setContactId(contactId);
+		model.setContactId(contactId);
 	}
 
 	/**
-	* Sets the create date of this contact.
-	*
-	* @param createDate the create date of this contact
-	*/
+	 * Sets the create date of this contact.
+	 *
+	 * @param createDate the create date of this contact
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_contact.setCreateDate(createDate);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the email address of this contact.
-	*
-	* @param emailAddress the email address of this contact
-	*/
+	 * Sets the email address of this contact.
+	 *
+	 * @param emailAddress the email address of this contact
+	 */
 	@Override
-	public void setEmailAddress(java.lang.String emailAddress) {
-		_contact.setEmailAddress(emailAddress);
+	public void setEmailAddress(String emailAddress) {
+		model.setEmailAddress(emailAddress);
 	}
 
 	/**
-	* Sets the employee number of this contact.
-	*
-	* @param employeeNumber the employee number of this contact
-	*/
+	 * Sets the employee number of this contact.
+	 *
+	 * @param employeeNumber the employee number of this contact
+	 */
 	@Override
-	public void setEmployeeNumber(java.lang.String employeeNumber) {
-		_contact.setEmployeeNumber(employeeNumber);
+	public void setEmployeeNumber(String employeeNumber) {
+		model.setEmployeeNumber(employeeNumber);
 	}
 
 	/**
-	* Sets the employee status ID of this contact.
-	*
-	* @param employeeStatusId the employee status ID of this contact
-	*/
+	 * Sets the employee status ID of this contact.
+	 *
+	 * @param employeeStatusId the employee status ID of this contact
+	 */
 	@Override
-	public void setEmployeeStatusId(java.lang.String employeeStatusId) {
-		_contact.setEmployeeStatusId(employeeStatusId);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_contact.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_contact.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_contact.setExpandoBridgeAttributes(serviceContext);
+	public void setEmployeeStatusId(String employeeStatusId) {
+		model.setEmployeeStatusId(employeeStatusId);
 	}
 
 	/**
-	* Sets the facebook sn of this contact.
-	*
-	* @param facebookSn the facebook sn of this contact
-	*/
+	 * Sets the facebook sn of this contact.
+	 *
+	 * @param facebookSn the facebook sn of this contact
+	 */
 	@Override
-	public void setFacebookSn(java.lang.String facebookSn) {
-		_contact.setFacebookSn(facebookSn);
+	public void setFacebookSn(String facebookSn) {
+		model.setFacebookSn(facebookSn);
 	}
 
 	/**
-	* Sets the first name of this contact.
-	*
-	* @param firstName the first name of this contact
-	*/
+	 * Sets the first name of this contact.
+	 *
+	 * @param firstName the first name of this contact
+	 */
 	@Override
-	public void setFirstName(java.lang.String firstName) {
-		_contact.setFirstName(firstName);
+	public void setFirstName(String firstName) {
+		model.setFirstName(firstName);
 	}
 
 	/**
-	* Sets the hours of operation of this contact.
-	*
-	* @param hoursOfOperation the hours of operation of this contact
-	*/
+	 * Sets the hours of operation of this contact.
+	 *
+	 * @param hoursOfOperation the hours of operation of this contact
+	 */
 	@Override
-	public void setHoursOfOperation(java.lang.String hoursOfOperation) {
-		_contact.setHoursOfOperation(hoursOfOperation);
+	public void setHoursOfOperation(String hoursOfOperation) {
+		model.setHoursOfOperation(hoursOfOperation);
 	}
 
 	/**
-	* Sets the jabber sn of this contact.
-	*
-	* @param jabberSn the jabber sn of this contact
-	*/
+	 * Sets the jabber sn of this contact.
+	 *
+	 * @param jabberSn the jabber sn of this contact
+	 */
 	@Override
-	public void setJabberSn(java.lang.String jabberSn) {
-		_contact.setJabberSn(jabberSn);
+	public void setJabberSn(String jabberSn) {
+		model.setJabberSn(jabberSn);
 	}
 
 	/**
-	* Sets the job class of this contact.
-	*
-	* @param jobClass the job class of this contact
-	*/
+	 * Sets the job class of this contact.
+	 *
+	 * @param jobClass the job class of this contact
+	 */
 	@Override
-	public void setJobClass(java.lang.String jobClass) {
-		_contact.setJobClass(jobClass);
+	public void setJobClass(String jobClass) {
+		model.setJobClass(jobClass);
 	}
 
 	/**
-	* Sets the job title of this contact.
-	*
-	* @param jobTitle the job title of this contact
-	*/
+	 * Sets the job title of this contact.
+	 *
+	 * @param jobTitle the job title of this contact
+	 */
 	@Override
-	public void setJobTitle(java.lang.String jobTitle) {
-		_contact.setJobTitle(jobTitle);
+	public void setJobTitle(String jobTitle) {
+		model.setJobTitle(jobTitle);
 	}
 
 	/**
-	* Sets the last name of this contact.
-	*
-	* @param lastName the last name of this contact
-	*/
+	 * Sets the last name of this contact.
+	 *
+	 * @param lastName the last name of this contact
+	 */
 	@Override
-	public void setLastName(java.lang.String lastName) {
-		_contact.setLastName(lastName);
+	public void setLastName(String lastName) {
+		model.setLastName(lastName);
 	}
 
 	/**
-	* Sets whether this contact is male.
-	*
-	* @param male the male of this contact
-	*/
+	 * Sets whether this contact is male.
+	 *
+	 * @param male the male of this contact
+	 */
 	@Override
 	public void setMale(boolean male) {
-		_contact.setMale(male);
+		model.setMale(male);
 	}
 
 	/**
-	* Sets the middle name of this contact.
-	*
-	* @param middleName the middle name of this contact
-	*/
+	 * Sets the middle name of this contact.
+	 *
+	 * @param middleName the middle name of this contact
+	 */
 	@Override
-	public void setMiddleName(java.lang.String middleName) {
-		_contact.setMiddleName(middleName);
+	public void setMiddleName(String middleName) {
+		model.setMiddleName(middleName);
 	}
 
 	/**
-	* Sets the modified date of this contact.
-	*
-	* @param modifiedDate the modified date of this contact
-	*/
+	 * Sets the modified date of this contact.
+	 *
+	 * @param modifiedDate the modified date of this contact
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_contact.setModifiedDate(modifiedDate);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the mvcc version of this contact.
-	*
-	* @param mvccVersion the mvcc version of this contact
-	*/
+	 * Sets the mvcc version of this contact.
+	 *
+	 * @param mvccVersion the mvcc version of this contact
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_contact.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_contact.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the parent contact ID of this contact.
-	*
-	* @param parentContactId the parent contact ID of this contact
-	*/
+	 * Sets the parent contact ID of this contact.
+	 *
+	 * @param parentContactId the parent contact ID of this contact
+	 */
 	@Override
 	public void setParentContactId(long parentContactId) {
-		_contact.setParentContactId(parentContactId);
+		model.setParentContactId(parentContactId);
 	}
 
 	/**
-	* Sets the prefix ID of this contact.
-	*
-	* @param prefixId the prefix ID of this contact
-	*/
+	 * Sets the prefix ID of this contact.
+	 *
+	 * @param prefixId the prefix ID of this contact
+	 */
 	@Override
 	public void setPrefixId(long prefixId) {
-		_contact.setPrefixId(prefixId);
+		model.setPrefixId(prefixId);
 	}
 
 	/**
-	* Sets the primary key of this contact.
-	*
-	* @param primaryKey the primary key of this contact
-	*/
+	 * Sets the primary key of this contact.
+	 *
+	 * @param primaryKey the primary key of this contact
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_contact.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_contact.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the skype sn of this contact.
-	*
-	* @param skypeSn the skype sn of this contact
-	*/
+	 * Sets the skype sn of this contact.
+	 *
+	 * @param skypeSn the skype sn of this contact
+	 */
 	@Override
-	public void setSkypeSn(java.lang.String skypeSn) {
-		_contact.setSkypeSn(skypeSn);
+	public void setSkypeSn(String skypeSn) {
+		model.setSkypeSn(skypeSn);
 	}
 
 	/**
-	* Sets the sms sn of this contact.
-	*
-	* @param smsSn the sms sn of this contact
-	*/
+	 * Sets the sms sn of this contact.
+	 *
+	 * @param smsSn the sms sn of this contact
+	 */
 	@Override
-	public void setSmsSn(java.lang.String smsSn) {
-		_contact.setSmsSn(smsSn);
+	public void setSmsSn(String smsSn) {
+		model.setSmsSn(smsSn);
 	}
 
 	/**
-	* Sets the suffix ID of this contact.
-	*
-	* @param suffixId the suffix ID of this contact
-	*/
+	 * Sets the suffix ID of this contact.
+	 *
+	 * @param suffixId the suffix ID of this contact
+	 */
 	@Override
 	public void setSuffixId(long suffixId) {
-		_contact.setSuffixId(suffixId);
+		model.setSuffixId(suffixId);
 	}
 
 	/**
-	* Sets the twitter sn of this contact.
-	*
-	* @param twitterSn the twitter sn of this contact
-	*/
+	 * Sets the twitter sn of this contact.
+	 *
+	 * @param twitterSn the twitter sn of this contact
+	 */
 	@Override
-	public void setTwitterSn(java.lang.String twitterSn) {
-		_contact.setTwitterSn(twitterSn);
+	public void setTwitterSn(String twitterSn) {
+		model.setTwitterSn(twitterSn);
 	}
 
 	/**
-	* Sets the user ID of this contact.
-	*
-	* @param userId the user ID of this contact
-	*/
+	 * Sets the user ID of this contact.
+	 *
+	 * @param userId the user ID of this contact
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_contact.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user name of this contact.
-	*
-	* @param userName the user name of this contact
-	*/
+	 * Sets the user name of this contact.
+	 *
+	 * @param userName the user name of this contact
+	 */
 	@Override
-	public void setUserName(java.lang.String userName) {
-		_contact.setUserName(userName);
+	public void setUserName(String userName) {
+		model.setUserName(userName);
 	}
 
 	/**
-	* Sets the user uuid of this contact.
-	*
-	* @param userUuid the user uuid of this contact
-	*/
+	 * Sets the user uuid of this contact.
+	 *
+	 * @param userUuid the user uuid of this contact
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_contact.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof ContactWrapper)) {
-			return false;
-		}
-
-		ContactWrapper contactWrapper = (ContactWrapper)obj;
-
-		if (Objects.equals(_contact, contactWrapper._contact)) {
-			return true;
-		}
-
-		return false;
+	protected ContactWrapper wrap(Contact contact) {
+		return new ContactWrapper(contact);
 	}
 
-	@Override
-	public Contact getWrappedModel() {
-		return _contact;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _contact.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _contact.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_contact.resetOriginalValues();
-	}
-
-	private final Contact _contact;
 }

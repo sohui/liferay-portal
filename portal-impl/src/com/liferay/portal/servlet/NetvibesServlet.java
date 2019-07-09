@@ -14,20 +14,18 @@
 
 package com.liferay.portal.servlet;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
-import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
-import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
@@ -47,36 +45,40 @@ public class NetvibesServlet extends HttpServlet {
 
 	@Override
 	public void service(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
 		try {
-			String content = getContent(request);
+			String content = getContent(httpServletRequest);
 
 			if (content == null) {
 				PortalUtil.sendError(
 					HttpServletResponse.SC_NOT_FOUND,
-					new NoSuchLayoutException(), request, response);
+					new NoSuchLayoutException(), httpServletRequest,
+					httpServletResponse);
 			}
 			else {
-				request.setAttribute(WebKeys.NETVIBES, Boolean.TRUE);
+				httpServletRequest.setAttribute(WebKeys.NETVIBES, Boolean.TRUE);
 
-				response.setContentType(ContentTypes.TEXT_HTML);
+				httpServletResponse.setContentType(ContentTypes.TEXT_HTML);
 
-				ServletResponseUtil.write(response, content);
+				ServletResponseUtil.write(httpServletResponse, content);
 			}
 		}
 		catch (Exception e) {
 			_log.error(e, e);
 
 			PortalUtil.sendError(
-				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, request,
-				response);
+				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e,
+				httpServletRequest, httpServletResponse);
 		}
 	}
 
-	protected String getContent(HttpServletRequest request) throws Exception {
-		String path = GetterUtil.getString(request.getPathInfo());
+	protected String getContent(HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		String path = GetterUtil.getString(httpServletRequest.getPathInfo());
 
 		if (Validator.isNull(path)) {
 			return null;
@@ -88,7 +90,7 @@ public class NetvibesServlet extends HttpServlet {
 			return null;
 		}
 
-		long companyId = PortalUtil.getCompanyId(request);
+		long companyId = PortalUtil.getCompanyId(httpServletRequest);
 
 		String portletId = path.substring(
 			pos + Portal.FRIENDLY_URL_SEPARATOR.length());
@@ -98,25 +100,19 @@ public class NetvibesServlet extends HttpServlet {
 
 		String title = HtmlUtil.escape(portlet.getDisplayName());
 
-		String portalURL = PortalUtil.getPortalURL(request);
+		String portalURL = PortalUtil.getPortalURL(httpServletRequest);
 
 		String iconURL =
 			portalURL + PortalUtil.getPathContext() + portlet.getIcon();
 
-		String widgetJsURL = portalURL;
-
-		widgetJsURL += PortalWebResourcesUtil.getContextPath(
-			PortalWebResourceConstants.RESOURCE_TYPE_JS);
-		widgetJsURL += "/liferay/widget.js";
-
-		String widgetURL = String.valueOf(request.getRequestURL());
+		String widgetURL = String.valueOf(httpServletRequest.getRequestURL());
 
 		widgetURL = widgetURL.replaceFirst(
 			PropsValues.NETVIBES_SERVLET_MAPPING,
 			PropsValues.WIDGET_SERVLET_MAPPING);
 		widgetURL = HtmlUtil.escapeJS(widgetURL);
 
-		StringBundler sb = new StringBundler(31);
+		StringBundler sb = new StringBundler(26);
 
 		sb.append("<!DOCTYPE html>");
 		sb.append("<html>");
@@ -138,15 +134,10 @@ public class NetvibesServlet extends HttpServlet {
 		sb.append("/>");
 		sb.append("</head>");
 		sb.append("<body>");
-		sb.append("<script src=\"");
-		sb.append(widgetJsURL);
-		sb.append("\" ");
-		sb.append("type=\"text/javascript\"></script>");
-		sb.append("<script type=\"text/javascript\">");
-		sb.append("Liferay.Widget({url:\"");
+		sb.append("<iframe frameborder=\"0\" height=\"100%\" src=\"");
 		sb.append(widgetURL);
-		sb.append("\"});");
-		sb.append("</script>");
+		sb.append("\" width=\"100%\">");
+		sb.append("</iframe>");
 		sb.append("</body>");
 		sb.append("</html>");
 

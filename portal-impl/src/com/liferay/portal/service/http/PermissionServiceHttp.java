@@ -14,8 +14,6 @@
 
 package com.liferay.portal.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
@@ -24,12 +22,15 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the HTTP utility for the
- * {@link PermissionServiceUtil} service utility. The
+ * <code>PermissionServiceUtil</code> service
+ * utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it requires an additional
- * {@link HttpPrincipal} parameter.
+ * <code>HttpPrincipal</code> parameter.
  *
  * <p>
  * The benefits of using the HTTP utility is that it is fast and allows for
@@ -48,31 +49,37 @@ import com.liferay.portal.kernel.util.MethodKey;
  *
  * @author Brian Wing Shun Chan
  * @see PermissionServiceSoap
- * @see HttpPrincipal
- * @see PermissionServiceUtil
  * @generated
  */
 @ProviderType
 public class PermissionServiceHttp {
-	public static void checkPermission(HttpPrincipal httpPrincipal,
-		long groupId, java.lang.String name, long primKey)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(PermissionServiceUtil.class,
-					"checkPermission", _checkPermissionParameterTypes1);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
-					name, primKey);
+	public static void checkPermission(
+			HttpPrincipal httpPrincipal, long groupId, String name,
+			long primKey)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				PermissionServiceUtil.class, "checkPermission",
+				_checkPermissionParameterTypes0);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, name, primKey);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
@@ -82,25 +89,32 @@ public class PermissionServiceHttp {
 		}
 	}
 
-	public static void checkPermission(HttpPrincipal httpPrincipal,
-		long groupId, java.lang.String name, java.lang.String primKey)
+	public static void checkPermission(
+			HttpPrincipal httpPrincipal, long groupId, String name,
+			String primKey)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(PermissionServiceUtil.class,
-					"checkPermission", _checkPermissionParameterTypes2);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
-					name, primKey);
+		try {
+			MethodKey methodKey = new MethodKey(
+				PermissionServiceUtil.class, "checkPermission",
+				_checkPermissionParameterTypes1);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, name, primKey);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
@@ -110,11 +124,12 @@ public class PermissionServiceHttp {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(PermissionServiceHttp.class);
-	private static final Class<?>[] _checkPermissionParameterTypes1 = new Class[] {
-			long.class, java.lang.String.class, long.class
-		};
-	private static final Class<?>[] _checkPermissionParameterTypes2 = new Class[] {
-			long.class, java.lang.String.class, java.lang.String.class
-		};
+	private static Log _log = LogFactoryUtil.getLog(
+		PermissionServiceHttp.class);
+
+	private static final Class<?>[] _checkPermissionParameterTypes0 =
+		new Class[] {long.class, String.class, long.class};
+	private static final Class<?>[] _checkPermissionParameterTypes1 =
+		new Class[] {long.class, String.class, String.class};
+
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.upgrade.v7_0_0;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.dao.db.PostgreSQLDB;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,6 +31,7 @@ import java.util.Map;
 
 /**
  * @author Michael Bowerman
+ * @author Amadea Fejes
  */
 public class UpgradePostgreSQL extends UpgradeProcess {
 
@@ -42,13 +43,17 @@ public class UpgradePostgreSQL extends UpgradeProcess {
 			return;
 		}
 
-		Map<String, String> oidColumnNames = getOidColumnNames();
+		Map<String, String> oidColumnNames = new HashMap<>();
+
+		oidColumnNames.put("DLContent", "data_");
 
 		updatePostgreSQLRules(oidColumnNames);
-
-		updateOrphanedLargeObjects(oidColumnNames);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected String getCurrentSchema() throws Exception {
 		try (PreparedStatement ps = connection.prepareStatement(
 				"select current_schema();");
@@ -62,6 +67,10 @@ public class UpgradePostgreSQL extends UpgradeProcess {
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected Map<String, String> getOidColumnNames() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			Map<String, String> columnsWithOids = new HashMap<>();
@@ -97,6 +106,10 @@ public class UpgradePostgreSQL extends UpgradeProcess {
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected void updateOrphanedLargeObjects(
 			Map<String, String> oidColumnNames)
 		throws Exception {
@@ -104,9 +117,8 @@ public class UpgradePostgreSQL extends UpgradeProcess {
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			StringBundler sb = new StringBundler();
 
-			sb.append(
-				"select lo_unlink(l.oid) from pg_largeobject_metadata l ");
-			sb.append("where ");
+			sb.append("select lo_unlink(l.oid) from pg_largeobject_metadata ");
+			sb.append("l where ");
 
 			int i = 1;
 

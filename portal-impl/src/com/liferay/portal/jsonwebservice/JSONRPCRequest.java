@@ -14,11 +14,11 @@
 
 package com.liferay.portal.jsonwebservice;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONDeserializer;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashMap;
@@ -35,10 +35,11 @@ import jodd.servlet.ServletUtil;
 public class JSONRPCRequest {
 
 	public static JSONRPCRequest detectJSONRPCRequest(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
 		try {
-			String requestBody = ServletUtil.readRequestBody(request);
+			String requestBody = ServletUtil.readRequestBody(
+				httpServletRequest);
 
 			if (Validator.isNull(requestBody) ||
 				!requestBody.startsWith(StringPool.OPEN_CURLY_BRACE) ||
@@ -102,9 +103,8 @@ public class JSONRPCRequest {
 		if (value != null) {
 			return String.valueOf(value);
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	public Set<String> getParameterNames() {

@@ -14,6 +14,8 @@
 
 package com.liferay.taglib.portletext;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -22,8 +24,9 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.model.PortletInstance;
+import com.liferay.portal.kernel.model.PortletWrapper;
 import com.liferay.portal.kernel.portlet.PortletContainerUtil;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletJSONUtil;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.portlet.PortletParameterUtil;
@@ -37,20 +40,20 @@ import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
-import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.PrefixPredicateFilter;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.taglib.DirectTag;
 import com.liferay.taglib.servlet.PipingServletResponse;
 import com.liferay.taglib.util.PortalIncludeUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.Stack;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -61,14 +64,17 @@ import javax.servlet.jsp.tagext.TagSupport;
 /**
  * @author Brian Wing Shun Chan
  */
-public class RuntimeTag extends TagSupport {
+public class RuntimeTag extends TagSupport implements DirectTag {
 
 	public static void doTag(
 			String portletName, PageContext pageContext,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		doTag(portletName, null, pageContext, request, response);
+		doTag(
+			portletName, null, pageContext, httpServletRequest,
+			httpServletResponse);
 	}
 
 	public static void doTag(
@@ -76,7 +82,8 @@ public class RuntimeTag extends TagSupport {
 			PortletProvider.Action portletProviderAction, String instanceId,
 			String queryString, String defaultPreferences,
 			boolean persistSettings, PageContext pageContext,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		String portletId = PortletProviderUtil.getPortletId(
@@ -85,12 +92,13 @@ public class RuntimeTag extends TagSupport {
 		if (Validator.isNotNull(portletId)) {
 			doTag(
 				portletId, instanceId, queryString, _SETTINGS_SCOPE_DEFAULT,
-				defaultPreferences, persistSettings, pageContext, request,
-				response);
+				defaultPreferences, persistSettings, pageContext,
+				httpServletRequest, httpServletResponse);
 		}
 		else {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
 			Layout layout = themeDisplay.getLayout();
 
@@ -103,13 +111,13 @@ public class RuntimeTag extends TagSupport {
 			}
 
 			String errorMessage = LanguageUtil.format(
-				request, "an-app-that-can-x-x-belongs-here",
+				httpServletRequest, "an-app-that-can-x-x-belongs-here",
 				new Object[] {
 					portletProviderAction.name(), portletProviderClassName
 				},
 				false);
 
-			request.setAttribute(
+			httpServletRequest.setAttribute(
 				"liferay-portlet:runtime:errorMessage", errorMessage);
 
 			PortalIncludeUtil.include(pageContext, _ERROR_PAGE);
@@ -118,91 +126,135 @@ public class RuntimeTag extends TagSupport {
 
 	public static void doTag(
 			String portletName, String queryString, PageContext pageContext,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		doTag(portletName, queryString, null, pageContext, request, response);
+		doTag(
+			portletName, queryString, null, pageContext, httpServletRequest,
+			httpServletResponse);
 	}
 
 	public static void doTag(
 			String portletName, String queryString, String defaultPreferences,
-			PageContext pageContext, HttpServletRequest request,
-			HttpServletResponse response)
+			PageContext pageContext, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		doTag(
 			portletName, StringPool.BLANK, queryString, _SETTINGS_SCOPE_DEFAULT,
-			defaultPreferences, true, pageContext, request, response);
+			defaultPreferences, true, pageContext, httpServletRequest,
+			httpServletResponse);
 	}
 
 	public static void doTag(
 			String portletName, String instanceId, String queryString,
 			String defaultPreferences, PageContext pageContext,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		doTag(
 			portletName, instanceId, queryString, _SETTINGS_SCOPE_DEFAULT,
-			defaultPreferences, true, pageContext, request, response);
+			defaultPreferences, true, pageContext, httpServletRequest,
+			httpServletResponse);
 	}
 
 	public static void doTag(
 			String portletName, String instanceId, String queryString,
 			String settingsScope, String defaultPreferences,
 			boolean persistSettings, PageContext pageContext,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
+		instanceId = PortalUtil.getJsSafePortletId(instanceId);
+
 		if (pageContext != null) {
-			response = new PipingServletResponse(
-				response, pageContext.getOut());
+			if (httpServletResponse == pageContext.getResponse()) {
+				httpServletResponse =
+					PipingServletResponse.createPipingServletResponse(
+						pageContext);
+			}
+			else {
+				httpServletResponse = new PipingServletResponse(
+					httpServletResponse, pageContext.getOut());
+			}
 		}
 
-		PortletInstance portletInstance =
-			PortletInstance.fromPortletInstanceKey(portletName);
-
-		if (Validator.isNotNull(instanceId)) {
-			portletInstance = new PortletInstance(
-				portletInstance.getPortletName(), portletInstance.getUserId(),
-				instanceId);
-		}
+		HttpServletRequest originalHttpServletRequest =
+			PortalUtil.getOriginalServletRequest(httpServletRequest);
 
 		RestrictPortletServletRequest restrictPortletServletRequest =
-			new RestrictPortletServletRequest(
-				PortalUtil.getOriginalServletRequest(request));
+			new RestrictPortletServletRequest(originalHttpServletRequest);
 
-		queryString = PortletParameterUtil.addNamespace(
-			portletInstance.getPortletInstanceKey(), queryString);
+		Map<String, String[]> parameterMap = new HashMap<>(
+			httpServletRequest.getParameterMap());
 
-		Map<String, String[]> parameterMap = request.getParameterMap();
+		String portletInstanceKey = portletName;
 
-		if (!Objects.equals(
-				portletInstance.getPortletInstanceKey(),
-				request.getParameter("p_p_id"))) {
-
-			parameterMap = MapUtil.filterByKeys(
-				parameterMap, new PrefixPredicateFilter("p_p_"));
+		if (Validator.isNotNull(instanceId)) {
+			portletInstanceKey = PortletIdCodec.encode(
+				PortletIdCodec.decodePortletName(portletName),
+				PortletIdCodec.decodeUserId(portletName), instanceId);
 		}
 
-		request = DynamicServletRequest.addQueryString(
+		if (!Objects.equals(
+				portletInstanceKey,
+				httpServletRequest.getParameter("p_p_id"))) {
+
+			Set<String> keySet = parameterMap.keySet();
+
+			keySet.removeIf(key -> key.startsWith("p_p_"));
+		}
+
+		String portletNamespace = PortalUtil.getPortletNamespace(
+			portletInstanceKey);
+
+		Map<String, String[]> originalParameterMap =
+			originalHttpServletRequest.getParameterMap();
+
+		for (Map.Entry<String, String[]> entry :
+				originalParameterMap.entrySet()) {
+
+			String key = entry.getKey();
+
+			if (key.startsWith(portletNamespace)) {
+				parameterMap.put(key, entry.getValue());
+			}
+		}
+
+		queryString = PortletParameterUtil.addNamespace(
+			portletInstanceKey, queryString);
+
+		httpServletRequest = DynamicServletRequest.addQueryString(
 			restrictPortletServletRequest, parameterMap, queryString, false);
 
 		try {
-			request.setAttribute(WebKeys.RENDER_PORTLET_RESOURCE, Boolean.TRUE);
+			httpServletRequest.setAttribute(
+				WebKeys.RENDER_PORTLET_RESOURCE, Boolean.TRUE);
 
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
-			PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+			Portlet portlet = getPortlet(
+				themeDisplay.getCompanyId(), portletInstanceKey);
 
-			if (Objects.equals(
-					portletDisplay.getId(),
-					portletInstance.getPortletInstanceKey())) {
+			Stack<String> embeddedPortletIds = _embeddedPortletIds.get();
 
+			if (embeddedPortletIds == null) {
+				embeddedPortletIds = new Stack<>();
+
+				_embeddedPortletIds.set(embeddedPortletIds);
+			}
+
+			if (embeddedPortletIds.search(portlet.getPortletId()) > -1) {
 				String errorMessage = LanguageUtil.get(
-					request, "the-application-cannot-include-itself");
+					httpServletRequest,
+					"the-application-cannot-include-itself");
 
-				request.setAttribute(
+				httpServletRequest.setAttribute(
 					"liferay-portlet:runtime:errorMessage", errorMessage);
 
 				PortalIncludeUtil.include(pageContext, _ERROR_PAGE);
@@ -215,7 +267,7 @@ public class RuntimeTag extends TagSupport {
 					themeDisplay.getLayoutTypePortlet();
 
 				if (layoutTypePortlet.hasStateMaxPortletId(
-						portletInstance.getPortletInstanceKey())) {
+						portletInstanceKey)) {
 
 					// A portlet in the maximized state has already been
 					// processed
@@ -226,70 +278,70 @@ public class RuntimeTag extends TagSupport {
 
 			Layout layout = themeDisplay.getLayout();
 
-			Portlet portlet = getPortlet(
-				themeDisplay.getCompanyId(),
-				portletInstance.getPortletInstanceKey());
-
-			request.setAttribute(WebKeys.SETTINGS_SCOPE, settingsScope);
+			httpServletRequest.setAttribute(
+				WebKeys.SETTINGS_SCOPE, settingsScope);
 
 			JSONObject jsonObject = null;
 
-			boolean writeJSONObject = false;
-
-			LayoutTypePortlet layoutTypePortlet =
-				themeDisplay.getLayoutTypePortlet();
+			boolean writeObject = false;
 
 			if (persistSettings &&
-				!layoutTypePortlet.isPortletEmbedded(portlet.getPortletId())) {
+				!layout.isPortletEmbedded(
+					portlet.getPortletId(), layout.getGroupId())) {
 
 				PortletPreferencesFactoryUtil.getLayoutPortletSetup(
 					themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId(),
 					PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-					PortletKeys.PREFS_PLID_SHARED,
-					portletInstance.getPortletInstanceKey(),
+					PortletKeys.PREFS_PLID_SHARED, portletInstanceKey,
 					defaultPreferences);
 
-				writeJSONObject = true;
+				writeObject = true;
 			}
 
-			if (PortletPreferencesLocalServiceUtil.getPortletPreferencesCount(
+			long count =
+				PortletPreferencesLocalServiceUtil.getPortletPreferencesCount(
 					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, themeDisplay.getPlid(),
-					portletInstance.getPortletInstanceKey()) < 1) {
+					portletInstanceKey);
 
+			if (count < 1) {
 				PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-					layout, portletInstance.getPortletInstanceKey(),
-					defaultPreferences);
+					layout, portletInstanceKey, defaultPreferences);
 				PortletPreferencesFactoryUtil.getPortletSetup(
-					request, portletInstance.getPortletInstanceKey(),
-					defaultPreferences);
+					httpServletRequest, portletInstanceKey, defaultPreferences);
 
 				PortletLayoutListener portletLayoutListener =
 					portlet.getPortletLayoutListenerInstance();
 
 				if (portletLayoutListener != null) {
 					portletLayoutListener.onAddToLayout(
-						portletInstance.getPortletInstanceKey(),
-						themeDisplay.getPlid());
+						portletInstanceKey, themeDisplay.getPlid());
 				}
 
-				writeJSONObject = true;
+				writeObject = true;
 			}
 
-			if (writeJSONObject) {
+			if (writeObject) {
 				jsonObject = JSONFactoryUtil.createJSONObject();
 
 				PortletJSONUtil.populatePortletJSONObject(
-					request, StringPool.BLANK, portlet, jsonObject);
+					httpServletRequest, StringPool.BLANK, portlet, jsonObject);
 			}
 
 			if (jsonObject != null) {
-				PortletJSONUtil.writeHeaderPaths(response, jsonObject);
+				PortletJSONUtil.writeHeaderPaths(
+					httpServletResponse, jsonObject);
 			}
 
-			PortletContainerUtil.render(request, response, portlet);
+			embeddedPortletIds.push(portletInstanceKey);
+
+			PortletContainerUtil.render(
+				httpServletRequest, httpServletResponse, portlet);
+
+			embeddedPortletIds.pop();
 
 			if (jsonObject != null) {
-				PortletJSONUtil.writeFooterPaths(response, jsonObject);
+				PortletJSONUtil.writeFooterPaths(
+					httpServletResponse, jsonObject);
 			}
 		}
 		finally {
@@ -300,16 +352,17 @@ public class RuntimeTag extends TagSupport {
 	@Override
 	public int doEndTag() throws JspException {
 		try {
-			HttpServletRequest request =
+			HttpServletRequest httpServletRequest =
 				(HttpServletRequest)pageContext.getRequest();
 
-			Layout layout = (Layout)request.getAttribute(WebKeys.LAYOUT);
+			Layout layout = (Layout)httpServletRequest.getAttribute(
+				WebKeys.LAYOUT);
 
 			if (layout == null) {
 				return EVAL_PAGE;
 			}
 
-			HttpServletResponse response =
+			HttpServletResponse httpServletResponse =
 				(HttpServletResponse)pageContext.getResponse();
 
 			if (Validator.isNotNull(_portletProviderClassName) &&
@@ -318,13 +371,15 @@ public class RuntimeTag extends TagSupport {
 				doTag(
 					_portletProviderClassName, _portletProviderAction,
 					_instanceId, _queryString, _defaultPreferences,
-					_persistSettings, pageContext, request, response);
+					_persistSettings, pageContext, httpServletRequest,
+					httpServletResponse);
 			}
 			else {
 				doTag(
-					_portletName, _instanceId, _queryString, _settingsScope,
-					_defaultPreferences, _persistSettings, pageContext, request,
-					response);
+					_portletName, _instanceId, _queryString,
+					_SETTINGS_SCOPE_DEFAULT, _defaultPreferences,
+					_persistSettings, pageContext, httpServletRequest,
+					httpServletResponse);
 			}
 
 			return EVAL_PAGE;
@@ -366,8 +421,11 @@ public class RuntimeTag extends TagSupport {
 		_queryString = queryString;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setSettingsScope(String settingsScope) {
-		_settingsScope = settingsScope;
 	}
 
 	/**
@@ -384,7 +442,26 @@ public class RuntimeTag extends TagSupport {
 		// non-instanceable portlets
 
 		if (!portlet.isInstanceable()) {
-			portlet = (Portlet)portlet.clone();
+			portlet = new PortletWrapper(portlet) {
+
+				@Override
+				public boolean getStatic() {
+					return _staticPortlet;
+				}
+
+				@Override
+				public boolean isStatic() {
+					return _staticPortlet;
+				}
+
+				@Override
+				public void setStatic(boolean staticPortlet) {
+					_staticPortlet = staticPortlet;
+				}
+
+				private boolean _staticPortlet;
+
+			};
 		}
 
 		portlet.setStatic(true);
@@ -400,6 +477,9 @@ public class RuntimeTag extends TagSupport {
 
 	private static final Log _log = LogFactoryUtil.getLog(RuntimeTag.class);
 
+	private static final ThreadLocal<Stack<String>> _embeddedPortletIds =
+		new CentralizedThreadLocal<>(RuntimeTag.class + "._embeddedPortletIds");
+
 	private String _defaultPreferences;
 	private String _instanceId;
 	private boolean _persistSettings = true;
@@ -407,6 +487,5 @@ public class RuntimeTag extends TagSupport {
 	private PortletProvider.Action _portletProviderAction;
 	private String _portletProviderClassName;
 	private String _queryString;
-	private String _settingsScope = _SETTINGS_SCOPE_DEFAULT;
 
 }

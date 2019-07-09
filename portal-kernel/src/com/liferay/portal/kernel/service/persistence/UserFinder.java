@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -22,67 +22,81 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface UserFinder {
-	public java.util.Map<java.lang.Long, java.lang.Integer> countByGroups(
+
+	public java.util.Map<Long, Integer> countByGroups(
 		long companyId, int status, long[] groupIds);
 
-	public int countBySocialUsers(long companyId, long userId,
-		int socialRelationType, java.lang.String socialRelationTypeComparator,
-		int status);
+	public int countByKeywords(
+		long companyId, String keywords, int status,
+		java.util.LinkedHashMap<String, Object> params);
 
-	public int countByUser(long userId,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params);
+	public int countByOrganizationsAndUserGroups(
+		long[] organizationIds, long[] userGroupIds);
 
-	public int countByKeywords(long companyId, java.lang.String keywords,
-		int status,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params);
+	public int countBySocialUsers(
+		long companyId, long userId, int socialRelationType,
+		String socialRelationTypeComparator, int status);
 
-	public int countByC_FN_MN_LN_SN_EA_S(long companyId,
-		java.lang.String firstName, java.lang.String middleName,
-		java.lang.String lastName, java.lang.String screenName,
-		java.lang.String emailAddress, int status,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator);
+	public int countByUser(
+		long userId, java.util.LinkedHashMap<String, Object> params);
 
-	public int countByC_FN_MN_LN_SN_EA_S(long companyId,
-		java.lang.String[] firstNames, java.lang.String[] middleNames,
-		java.lang.String[] lastNames, java.lang.String[] screenNames,
-		java.lang.String[] emailAddresses, int status,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
+	public int countByC_FN_MN_LN_SN_EA_S(
+		long companyId, String firstName, String middleName, String lastName,
+		String screenName, String emailAddress, int status,
+		java.util.LinkedHashMap<String, Object> params, boolean andOperator);
+
+	public int countByC_FN_MN_LN_SN_EA_S(
+		long companyId, String[] firstNames, String[] middleNames,
+		String[] lastNames, String[] screenNames, String[] emailAddresses,
+		int status, java.util.LinkedHashMap<String, Object> params,
 		boolean andOperator);
 
 	public java.util.List<com.liferay.portal.kernel.model.User> findByKeywords(
-		long companyId, java.lang.String keywords, int status,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
-		int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.User> obc);
+		long companyId, String keywords, int status,
+		java.util.LinkedHashMap<String, Object> params, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator
+			<com.liferay.portal.kernel.model.User> obc);
 
-	public java.util.List<com.liferay.portal.kernel.model.User> findByNoAnnouncementsDeliveries(
-		java.lang.String type);
+	public java.util.List<com.liferay.portal.kernel.model.User>
+		findByNoAnnouncementsDeliveries(String type);
 
-	public java.util.List<com.liferay.portal.kernel.model.User> findByNoContacts();
+	public java.util.List<com.liferay.portal.kernel.model.User>
+		findByNoContacts();
 
-	public java.util.List<com.liferay.portal.kernel.model.User> findByNoGroups();
+	public java.util.List<com.liferay.portal.kernel.model.User>
+		findByNoGroups();
 
-	public java.util.List<com.liferay.portal.kernel.model.User> findBySocialUsers(
-		long companyId, long userId, int socialRelationType,
-		java.lang.String socialRelationTypeComparator, int status, int start,
-		int end,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.User> obc);
+	public java.util.List<com.liferay.portal.kernel.model.User>
+		findBySocialUsers(
+			long companyId, long userId, int socialRelationType,
+			String socialRelationTypeComparator, int status, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.User> obc);
 
-	public java.util.List<com.liferay.portal.kernel.model.User> findByC_FN_MN_LN_SN_EA_S(
-		long companyId, java.lang.String firstName,
-		java.lang.String middleName, java.lang.String lastName,
-		java.lang.String screenName, java.lang.String emailAddress, int status,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.User> obc);
+	public java.util.List<com.liferay.portal.kernel.model.User>
+		findByUsersOrgsGtUserId(
+			long companyId, long organizationId, long gtUserId, int size);
 
-	public java.util.List<com.liferay.portal.kernel.model.User> findByC_FN_MN_LN_SN_EA_S(
-		long companyId, java.lang.String[] firstNames,
-		java.lang.String[] middleNames, java.lang.String[] lastNames,
-		java.lang.String[] screenNames, java.lang.String[] emailAddresses,
-		int status,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
-		boolean andOperator, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.User> obc);
+	public java.util.List<com.liferay.portal.kernel.model.User>
+		findByUsersUserGroupsGtUserId(
+			long companyId, long userGroupId, long gtUserId, int size);
+
+	public java.util.List<com.liferay.portal.kernel.model.User>
+		findByC_FN_MN_LN_SN_EA_S(
+			long companyId, String firstName, String middleName,
+			String lastName, String screenName, String emailAddress, int status,
+			java.util.LinkedHashMap<String, Object> params, boolean andOperator,
+			int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.User> obc);
+
+	public java.util.List<com.liferay.portal.kernel.model.User>
+		findByC_FN_MN_LN_SN_EA_S(
+			long companyId, String[] firstNames, String[] middleNames,
+			String[] lastNames, String[] screenNames, String[] emailAddresses,
+			int status, java.util.LinkedHashMap<String, Object> params,
+			boolean andOperator, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.User> obc);
+
 }

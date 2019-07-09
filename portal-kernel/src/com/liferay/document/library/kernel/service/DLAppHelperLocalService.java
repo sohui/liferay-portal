@@ -14,15 +14,12 @@
 
 package com.liferay.document.library.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.model.AssetEntry;
-
 import com.liferay.document.library.kernel.model.DLFileShortcut;
 import com.liferay.document.library.kernel.model.DLFolder;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.messaging.async.Async;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
@@ -38,6 +35,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the local service interface for DLAppHelper. Methods of this
  * service will not have security checks based on the propagated JAAS
@@ -46,101 +45,35 @@ import java.util.Map;
  *
  * @author Brian Wing Shun Chan
  * @see DLAppHelperLocalServiceUtil
- * @see com.liferay.portlet.documentlibrary.service.base.DLAppHelperLocalServiceBaseImpl
- * @see com.liferay.portlet.documentlibrary.service.impl.DLAppHelperLocalServiceImpl
  * @generated
  */
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface DLAppHelperLocalService extends BaseLocalService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link DLAppHelperLocalServiceUtil} to access the d l app helper local service. Add custom service methods to {@link com.liferay.portlet.documentlibrary.service.impl.DLAppHelperLocalServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link DLAppHelperLocalServiceUtil} to access the dl app helper local service. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLAppHelperLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public AssetEntry updateAsset(long userId, FileEntry fileEntry,
-		FileVersion fileVersion, long assetClassPk) throws PortalException;
-
-	public AssetEntry updateAsset(long userId, FileEntry fileEntry,
-		FileVersion fileVersion, long[] assetCategoryIds,
-		java.lang.String[] assetTagNames, long[] assetLinkEntryIds)
+	public void addFolder(
+			long userId, Folder folder, ServiceContext serviceContext)
 		throws PortalException;
 
-	public AssetEntry updateAsset(long userId, Folder folder,
-		long[] assetCategoryIds, java.lang.String[] assetTagNames,
-		long[] assetLinkEntryIds) throws PortalException;
-
-	public FileEntry moveFileEntryFromTrash(long userId, FileEntry fileEntry,
-		long newFolderId, ServiceContext serviceContext)
+	public void cancelCheckOut(
+			long userId, FileEntry fileEntry, FileVersion sourceFileVersion,
+			FileVersion destinationFileVersion, FileVersion draftFileVersion,
+			ServiceContext serviceContext)
 		throws PortalException;
 
-	/**
-	* Moves the file entry to the recycle bin.
-	*
-	* @param userId the primary key of the user moving the file entry
-	* @param fileEntry the file entry to be moved
-	* @return the moved file entry
-	*/
-	public FileEntry moveFileEntryToTrash(long userId, FileEntry fileEntry)
+	public void cancelCheckOuts(long groupId) throws PortalException;
+
+	public void checkAssetEntry(
+			long userId, FileEntry fileEntry, FileVersion fileVersion)
 		throws PortalException;
-
-	public FileShortcut moveFileShortcutFromTrash(long userId,
-		FileShortcut fileShortcut, long newFolderId,
-		ServiceContext serviceContext) throws PortalException;
-
-	/**
-	* Moves the file shortcut to the recycle bin.
-	*
-	* @param userId the primary key of the user moving the file shortcut
-	* @param fileShortcut the file shortcut to be moved
-	* @return the moved file shortcut
-	*/
-	public FileShortcut moveFileShortcutToTrash(long userId,
-		FileShortcut fileShortcut) throws PortalException;
-
-	public Folder moveFolderFromTrash(long userId, Folder folder,
-		long parentFolderId, ServiceContext serviceContext)
-		throws PortalException;
-
-	/**
-	* Moves the folder to the recycle bin.
-	*
-	* @param userId the primary key of the user moving the folder
-	* @param folder the folder to be moved
-	* @return the moved folder
-	*/
-	public Folder moveFolderToTrash(long userId, Folder folder)
-		throws PortalException;
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public int getFileShortcutsCount(long groupId, long folderId,
-		boolean active, int status);
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<DLFileShortcut> getFileShortcuts(long groupId, long folderId,
-		boolean active, int status);
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public List<FileEntry> getNoAssetFileEntries();
-
-	public void addFolder(long userId, Folder folder,
-		ServiceContext serviceContext) throws PortalException;
-
-	public void cancelCheckOut(long userId, FileEntry fileEntry,
-		FileVersion sourceFileVersion, FileVersion destinationFileVersion,
-		FileVersion draftFileVersion, ServiceContext serviceContext)
-		throws PortalException;
-
-	public void checkAssetEntry(long userId, FileEntry fileEntry,
-		FileVersion fileVersion) throws PortalException;
 
 	public void deleteFileEntry(FileEntry fileEntry) throws PortalException;
 
@@ -150,65 +83,162 @@ public interface DLAppHelperLocalService extends BaseLocalService {
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public void getFileAsStream(long userId, FileEntry fileEntry,
-		boolean incrementCounter);
+	public long getCheckedOutFileEntriesCount(long groupId)
+		throws PortalException;
 
-	public void moveDependentsToTrash(DLFolder dlFolder)
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public void getFileAsStream(
+		long userId, FileEntry fileEntry, boolean incrementCounter);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<DLFileShortcut> getFileShortcuts(
+		long groupId, long folderId, boolean active, int status);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getFileShortcutsCount(
+		long groupId, long folderId, boolean active, int status);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FileEntry> getNoAssetFileEntries();
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
+
+	public void moveDependentsToTrash(DLFolder dlFolder) throws PortalException;
+
+	/**
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 #moveDependentsToTrash(DLFolder)}
+	 */
+	@Deprecated
+	public void moveDependentsToTrash(
+			List<Object> dlFileEntriesAndDLFolders, long trashEntryId)
+		throws PortalException;
+
+	public FileEntry moveFileEntryFromTrash(
+			long userId, FileEntry fileEntry, long newFolderId,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
-	#moveDependentsToTrash(DLFolder)}
-	*/
-	@java.lang.Deprecated
-	public void moveDependentsToTrash(
-		List<java.lang.Object> dlFileEntriesAndDLFolders, long trashEntryId)
+	 * Moves the file entry to the recycle bin.
+	 *
+	 * @param userId the primary key of the user moving the file entry
+	 * @param fileEntry the file entry to be moved
+	 * @return the moved file entry
+	 */
+	public FileEntry moveFileEntryToTrash(long userId, FileEntry fileEntry)
+		throws PortalException;
+
+	public FileShortcut moveFileShortcutFromTrash(
+			long userId, FileShortcut fileShortcut, long newFolderId,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * Moves the file shortcut to the recycle bin.
+	 *
+	 * @param userId the primary key of the user moving the file shortcut
+	 * @param fileShortcut the file shortcut to be moved
+	 * @return the moved file shortcut
+	 */
+	public FileShortcut moveFileShortcutToTrash(
+			long userId, FileShortcut fileShortcut)
+		throws PortalException;
+
+	public Folder moveFolderFromTrash(
+			long userId, Folder folder, long parentFolderId,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	/**
+	 * Moves the folder to the recycle bin.
+	 *
+	 * @param userId the primary key of the user moving the folder
+	 * @param folder the folder to be moved
+	 * @return the moved folder
+	 */
+	public Folder moveFolderToTrash(long userId, Folder folder)
+		throws PortalException;
+
+	@Async
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public void reindex(long companyId, List<Long> dlFileEntryIds)
 		throws PortalException;
 
 	public void restoreDependentsFromTrash(DLFolder dlFolder)
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
-	#restoreDependentsFromTrash(DLFolder)}
-	*/
-	@java.lang.Deprecated
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 #restoreDependentsFromTrash(DLFolder)}
+	 */
+	@Deprecated
 	public void restoreDependentsFromTrash(
-		List<java.lang.Object> dlFileEntriesAndDLFolders)
+			List<Object> dlFileEntriesAndDLFolders)
 		throws PortalException;
 
 	/**
-	* @deprecated As of 7.0.0, replaced by {@link
-	#restoreDependentsFromTrash(List)}
-	*/
-	@java.lang.Deprecated
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 #restoreDependentsFromTrash(List)}
+	 */
+	@Deprecated
 	public void restoreDependentsFromTrash(
-		List<java.lang.Object> dlFileEntriesAndDLFolders, long trashEntryId)
+			List<Object> dlFileEntriesAndDLFolders, long trashEntryId)
 		throws PortalException;
 
 	public void restoreFileEntryFromTrash(long userId, FileEntry fileEntry)
 		throws PortalException;
 
-	public void restoreFileShortcutFromTrash(long userId,
-		FileShortcut fileShortcut) throws PortalException;
+	public void restoreFileEntryFromTrash(
+			long userId, long newFolderId, FileEntry fileEntry)
+		throws PortalException;
+
+	public void restoreFileShortcutFromTrash(
+			long userId, FileShortcut fileShortcut)
+		throws PortalException;
 
 	public void restoreFolderFromTrash(long userId, Folder folder)
 		throws PortalException;
 
-	public void updateFileEntry(long userId, FileEntry fileEntry,
-		FileVersion sourceFileVersion, FileVersion destinationFileVersion,
-		ServiceContext serviceContext) throws PortalException;
-
-	public void updateFileEntry(long userId, FileEntry fileEntry,
-		FileVersion sourceFileVersion, FileVersion destinationFileVersion,
-		long assetClassPk) throws PortalException;
-
-	public void updateFolder(long userId, Folder folder,
-		ServiceContext serviceContext) throws PortalException;
-
-	public void updateStatus(long userId, FileEntry fileEntry,
-		FileVersion latestFileVersion, int oldStatus, int newStatus,
-		ServiceContext serviceContext,
-		Map<java.lang.String, Serializable> workflowContext)
+	public AssetEntry updateAsset(
+			long userId, FileEntry fileEntry, FileVersion fileVersion,
+			long assetClassPK)
 		throws PortalException;
+
+	public AssetEntry updateAsset(
+			long userId, FileEntry fileEntry, FileVersion fileVersion,
+			long[] assetCategoryIds, String[] assetTagNames,
+			long[] assetLinkEntryIds)
+		throws PortalException;
+
+	public AssetEntry updateAsset(
+			long userId, Folder folder, long[] assetCategoryIds,
+			String[] assetTagNames, long[] assetLinkEntryIds)
+		throws PortalException;
+
+	public void updateFileEntry(
+			long userId, FileEntry fileEntry, FileVersion sourceFileVersion,
+			FileVersion destinationFileVersion, long assetClassPK)
+		throws PortalException;
+
+	public void updateFileEntry(
+			long userId, FileEntry fileEntry, FileVersion sourceFileVersion,
+			FileVersion destinationFileVersion, ServiceContext serviceContext)
+		throws PortalException;
+
+	public void updateFolder(
+			long userId, Folder folder, ServiceContext serviceContext)
+		throws PortalException;
+
+	public void updateStatus(
+			long userId, FileEntry fileEntry, FileVersion latestFileVersion,
+			int oldStatus, int newStatus, ServiceContext serviceContext,
+			Map<String, Serializable> workflowContext)
+		throws PortalException;
+
 }

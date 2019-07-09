@@ -16,6 +16,8 @@ package com.liferay.portlet;
 
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
+import com.liferay.portal.kernel.portlet.LiferayActionRequest;
+import com.liferay.portlet.internal.ActionRequestImpl;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletMode;
@@ -24,23 +26,26 @@ import javax.portlet.WindowState;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
+@ProviderType
 public class ActionRequestFactory {
 
-	public static ActionRequestImpl create(
-			HttpServletRequest request, Portlet portlet,
-			InvokerPortlet invokerPortlet, PortletContext portletContext,
-			WindowState windowState, PortletMode portletMode,
-			PortletPreferences preferences, long plid)
-		throws Exception {
+	public static LiferayActionRequest create(
+		HttpServletRequest httpServletRequest, Portlet portlet,
+		InvokerPortlet invokerPortlet, PortletContext portletContext,
+		WindowState windowState, PortletMode portletMode,
+		PortletPreferences preferences, long plid) {
 
 		ActionRequestImpl actionRequestImpl = new ActionRequestImpl();
 
 		actionRequestImpl.init(
-			request, portlet, invokerPortlet, portletContext, windowState,
-			portletMode, preferences, plid);
+			httpServletRequest, portlet, invokerPortlet, portletContext,
+			windowState, portletMode, preferences, plid);
 
 		return actionRequestImpl;
 	}

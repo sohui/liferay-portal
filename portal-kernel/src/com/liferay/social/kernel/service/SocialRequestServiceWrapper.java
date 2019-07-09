@@ -14,9 +14,9 @@
 
 package com.liferay.social.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.service.ServiceWrapper;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides a wrapper for {@link SocialRequestService}.
@@ -26,30 +26,33 @@ import com.liferay.portal.kernel.service.ServiceWrapper;
  * @generated
  */
 @ProviderType
-public class SocialRequestServiceWrapper implements SocialRequestService,
-	ServiceWrapper<SocialRequestService> {
+public class SocialRequestServiceWrapper
+	implements SocialRequestService, ServiceWrapper<SocialRequestService> {
+
 	public SocialRequestServiceWrapper(
 		SocialRequestService socialRequestService) {
+
 		_socialRequestService = socialRequestService;
+	}
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	@Override
+	public String getOSGiServiceIdentifier() {
+		return _socialRequestService.getOSGiServiceIdentifier();
 	}
 
 	@Override
 	public com.liferay.social.kernel.model.SocialRequest updateRequest(
-		long requestId, int status,
-		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
+			long requestId, int status,
+			com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _socialRequestService.updateRequest(requestId, status,
-			themeDisplay);
-	}
 
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
-		return _socialRequestService.getOSGiServiceIdentifier();
+		return _socialRequestService.updateRequest(
+			requestId, status, themeDisplay);
 	}
 
 	@Override
@@ -63,4 +66,5 @@ public class SocialRequestServiceWrapper implements SocialRequestService,
 	}
 
 	private SocialRequestService _socialRequestService;
+
 }

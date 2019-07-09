@@ -1,27 +1,29 @@
-<#assign finderColConjunction = "">
+<#assign finderColConjunction = "" />
 
-<#if finderCol_has_next>
-	<#assign finderColConjunction = " AND ">
-<#elseif finder.where?? && validator.isNotNull(finder.getWhere())>
-	<#assign finderColConjunction = " AND " + finder.where>
+<#if entityColumn_has_next>
+	<#assign finderColConjunction = " AND " />
+<#elseif validator.isNull(finderFieldSuffix) && entityFinder.where?? && validator.isNotNull(entityFinder.getWhere())>
+	<#assign finderColConjunction = " AND " + entityFinder.where />
+<#elseif validator.isNotNull(finderFieldSuffix) && entityFinder.DBWhere?? && validator.isNotNull(entityFinder.getDBWhere())>
+	<#assign finderColConjunction = " AND " + entityFinder.DBWhere />
 </#if>
 
-<#if entity.hasCompoundPK() && finderCol.isPrimary()>
-	<#assign finderFieldName = entity.alias + ".id." + finderColName>
+<#if entity.hasCompoundPK() && entityColumn.isPrimary()>
+	<#assign finderFieldName = entity.alias + ".id." + entityColumnName />
 <#else>
-	<#assign finderFieldName = entity.alias + "." + finderColName>
+	<#assign finderFieldName = entity.alias + "." + entityColumnName />
 </#if>
 
-<#if serviceBuilder.getSqlType(entity.getName(), finderCol.getName(), finderCol.getType()) == "CLOB">
-	<#assign textFinderFieldName = "CAST_CLOB_TEXT(" + finderFieldName + ")">
+<#if serviceBuilder.getSqlType(entity.getName(), entityColumn.getName(), entityColumn.getType()) == "CLOB">
+	<#assign textFinderFieldName = "CAST_CLOB_TEXT(" + finderFieldName + ")" />
 <#else>
-	<#assign textFinderFieldName = finderFieldName>
+	<#assign textFinderFieldName = finderFieldName />
 </#if>
 
-<#if !finderCol.isPrimitiveType()>
-	private static final String _FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_1${finderFieldSuffix} =
+<#if !entityColumn.isPrimitiveType() && !(stringUtil.equals(entityColumn.type, "String") && entityColumn.isConvertNull())>
+	private static final String _FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_1${finderFieldSuffix} =
 
-	<#if (finderCol.comparator == "<>") || (finderCol.comparator == "!=")>
+	<#if (entityColumn.comparator == "<>") || (entityColumn.comparator == "!=")>
 		"${finderFieldName} IS NOT NULL${finderColConjunction}"
 	<#else>
 		"${finderFieldName} IS NULL${finderColConjunction}"
@@ -30,28 +32,30 @@
 	;
 </#if>
 
-<#if (finderCol.type == "String") && !finderCol.isCaseSensitive()>
-	<#assign finderColExpression = "lower(" + textFinderFieldName + ") " + finderCol.comparator + " ?">
+<#if stringUtil.equals(entityColumn.type, "String") && !entityColumn.isCaseSensitive()>
+	<#assign finderColExpression = "lower(" + textFinderFieldName + ") " + entityColumn.comparator + " ?" />
 <#else>
-	<#assign finderColExpression = textFinderFieldName + " " + finderCol.comparator + " ?">
+	<#assign finderColExpression = textFinderFieldName + " " + entityColumn.comparator + " ?" />
 </#if>
 
-private static final String _FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_2${finderFieldSuffix} = "${finderColExpression}${finderColConjunction}";
+private static final String _FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_2${finderFieldSuffix} = "${finderColExpression}${finderColConjunction}";
 
-<#if finderCol.type == "String">
-	<#assign finderColExpression = textFinderFieldName + " " + finderCol.comparator + " ''">
+<#if stringUtil.equals(entityColumn.type, "String")>
+	<#assign finderColExpression = textFinderFieldName + " " + entityColumn.comparator + " ''" />
 
-	private static final String _FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_3${finderFieldSuffix} = "(${finderFieldName} IS NULL OR ${finderColExpression})${finderColConjunction}";
+	private static final String _FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_3${finderFieldSuffix} = "(${finderFieldName} IS NULL OR ${finderColExpression})${finderColConjunction}";
 </#if>
 
-<#if finderCol.hasArrayableOperator() && (finderColConjunction != "") && (finderCol.type == "String")>
-	private static final String _FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_4${finderFieldSuffix} = "(" + removeConjunction(_FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_1) + ")";
+<#if entityColumn.hasArrayableOperator() && validator.isNotNull(finderColConjunction) && stringUtil.equals(entityColumn.type, "String")>
+	<#if !entityColumn.isConvertNull()>
+		private static final String _FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_4${finderFieldSuffix} = "(" + removeConjunction(_FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_1) + ")";
+	</#if>
 
-	private static final String _FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_5${finderFieldSuffix} = "(" + removeConjunction(_FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_2) + ")";
+	private static final String _FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_5${finderFieldSuffix} = "(" + removeConjunction(_FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_2) + ")";
 
-	private static final String _FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_6${finderFieldSuffix} = "(" + removeConjunction(_FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_3) + ")";
+	private static final String _FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_6${finderFieldSuffix} = "(" + removeConjunction(_FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_3) + ")";
 </#if>
 
-<#if finderCol.hasArrayableOperator() && (finderCol.type != "String")>
-	private static final String _FINDER_COLUMN_${finder.name?upper_case}_${finderCol.name?upper_case}_7${finderFieldSuffix} = "${finderFieldName}<#if finderCol.isArrayableAndOperator()> NOT IN (<#else> IN (</#if>";
+<#if entityColumn.hasArrayableOperator() && !stringUtil.equals(entityColumn.type, "String")>
+	private static final String _FINDER_COLUMN_${entityFinder.name?upper_case}_${entityColumn.name?upper_case}_7${finderFieldSuffix} = "${finderFieldName}<#if entityColumn.isArrayableAndOperator()> NOT IN (<#else> IN (</#if>";
 </#if>

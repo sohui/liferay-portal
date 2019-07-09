@@ -42,6 +42,7 @@ public class XMLMerger {
 		Document mergedDocument = (Document)masterDocument.clone();
 
 		Element mergedRootElement = mergedDocument.getRootElement();
+
 		Element slaveRootElement = slaveDocument.getRootElement();
 
 		for (Element slaveElement :
@@ -117,9 +118,7 @@ public class XMLMerger {
 		List<Element> originalElements = new ArrayList<>();
 		List<Element> duplicateElements = new ArrayList<>();
 
-		for (int i = 0; i < childElements.size(); i++) {
-			Element childElement = childElements.get(i);
-
+		for (Element childElement : childElements) {
 			if (_containsObjectEqualTo(
 					childElement, originalElements, elementComparator)) {
 
@@ -158,8 +157,8 @@ public class XMLMerger {
 
 		List<Element> elements = new ArrayList<>();
 
-		for (int i = 0; i < orderedChildrenNames.length; i++) {
-			elements.addAll(parentElement.elements(orderedChildrenNames[i]));
+		for (String orderedChildrenName : orderedChildrenNames) {
+			elements.addAll(parentElement.elements(orderedChildrenName));
 		}
 
 		for (Element element : elements) {

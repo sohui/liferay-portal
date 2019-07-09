@@ -25,8 +25,11 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.registry.RepositoryEventRegistry;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.capabilities.LiferayCommentCapability}
  */
+@Deprecated
 public class LiferayCommentCapability
 	implements CommentCapability, RepositoryEventAware {
 
@@ -35,31 +38,9 @@ public class LiferayCommentCapability
 		RepositoryEventRegistry repositoryEventRegistry) {
 
 		repositoryEventRegistry.registerRepositoryEventListener(
-			RepositoryEventType.Add.class, FileEntry.class,
-			_COMMENT_ADD_FILE_ENTRY_EVENT_LISTENER);
-		repositoryEventRegistry.registerRepositoryEventListener(
 			RepositoryEventType.Delete.class, FileEntry.class,
 			_COMMENT_DELETE_FILE_ENTRY_EVENT_LISTENER);
 	}
-
-	private static final RepositoryEventListener
-		<RepositoryEventType.Add, FileEntry>
-			_COMMENT_ADD_FILE_ENTRY_EVENT_LISTENER =
-				new RepositoryEventListener
-					<RepositoryEventType.Add, FileEntry>() {
-
-					@Override
-					public void execute(FileEntry fileEntry)
-						throws PortalException {
-
-						CommentManagerUtil.addDiscussion(
-							fileEntry.getUserId(), fileEntry.getGroupId(),
-							DLFileEntryConstants.getClassName(),
-							fileEntry.getFileEntryId(),
-							fileEntry.getUserName());
-					}
-
-				};
 
 	private static final RepositoryEventListener
 		<RepositoryEventType.Delete, FileEntry>

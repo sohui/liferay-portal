@@ -21,7 +21,6 @@ import com.liferay.document.library.kernel.service.persistence.DLFileEntryPersis
 import com.liferay.document.library.kernel.service.persistence.DLFileVersionPersistence;
 import com.liferay.document.library.kernel.service.persistence.DLFolderFinder;
 import com.liferay.document.library.kernel.service.persistence.DLFolderPersistence;
-
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -43,15 +42,16 @@ import javax.sql.DataSource;
  *
  * @author Brian Wing Shun Chan
  * @see com.liferay.portlet.documentlibrary.service.impl.DLFileVersionServiceImpl
- * @see com.liferay.document.library.kernel.service.DLFileVersionServiceUtil
  * @generated
  */
-public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
+public abstract class DLFileVersionServiceBaseImpl
+	extends BaseServiceImpl
 	implements DLFileVersionService, IdentifiableOSGiService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link com.liferay.document.library.kernel.service.DLFileVersionServiceUtil} to access the document library file version remote service.
+	 * Never modify or reference this class directly. Use <code>DLFileVersionService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.document.library.kernel.service.DLFileVersionServiceUtil</code>.
 	 */
 
 	/**
@@ -59,7 +59,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the document library file version local service
 	 */
-	public com.liferay.document.library.kernel.service.DLFileVersionLocalService getDLFileVersionLocalService() {
+	public com.liferay.document.library.kernel.service.DLFileVersionLocalService
+		getDLFileVersionLocalService() {
+
 		return dlFileVersionLocalService;
 	}
 
@@ -69,7 +71,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 * @param dlFileVersionLocalService the document library file version local service
 	 */
 	public void setDLFileVersionLocalService(
-		com.liferay.document.library.kernel.service.DLFileVersionLocalService dlFileVersionLocalService) {
+		com.liferay.document.library.kernel.service.DLFileVersionLocalService
+			dlFileVersionLocalService) {
+
 		this.dlFileVersionLocalService = dlFileVersionLocalService;
 	}
 
@@ -89,6 +93,7 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setDLFileVersionService(
 		DLFileVersionService dlFileVersionService) {
+
 		this.dlFileVersionService = dlFileVersionService;
 	}
 
@@ -108,6 +113,7 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setDLFileVersionPersistence(
 		DLFileVersionPersistence dlFileVersionPersistence) {
+
 		this.dlFileVersionPersistence = dlFileVersionPersistence;
 	}
 
@@ -116,7 +122,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the counter local service
 	 */
-	public com.liferay.counter.kernel.service.CounterLocalService getCounterLocalService() {
+	public com.liferay.counter.kernel.service.CounterLocalService
+		getCounterLocalService() {
+
 		return counterLocalService;
 	}
 
@@ -126,7 +134,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 * @param counterLocalService the counter local service
 	 */
 	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService counterLocalService) {
+		com.liferay.counter.kernel.service.CounterLocalService
+			counterLocalService) {
+
 		this.counterLocalService = counterLocalService;
 	}
 
@@ -135,7 +145,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the document library file entry local service
 	 */
-	public com.liferay.document.library.kernel.service.DLFileEntryLocalService getDLFileEntryLocalService() {
+	public com.liferay.document.library.kernel.service.DLFileEntryLocalService
+		getDLFileEntryLocalService() {
+
 		return dlFileEntryLocalService;
 	}
 
@@ -145,7 +157,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 * @param dlFileEntryLocalService the document library file entry local service
 	 */
 	public void setDLFileEntryLocalService(
-		com.liferay.document.library.kernel.service.DLFileEntryLocalService dlFileEntryLocalService) {
+		com.liferay.document.library.kernel.service.DLFileEntryLocalService
+			dlFileEntryLocalService) {
+
 		this.dlFileEntryLocalService = dlFileEntryLocalService;
 	}
 
@@ -154,7 +168,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the document library file entry remote service
 	 */
-	public com.liferay.document.library.kernel.service.DLFileEntryService getDLFileEntryService() {
+	public com.liferay.document.library.kernel.service.DLFileEntryService
+		getDLFileEntryService() {
+
 		return dlFileEntryService;
 	}
 
@@ -164,7 +180,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 * @param dlFileEntryService the document library file entry remote service
 	 */
 	public void setDLFileEntryService(
-		com.liferay.document.library.kernel.service.DLFileEntryService dlFileEntryService) {
+		com.liferay.document.library.kernel.service.DLFileEntryService
+			dlFileEntryService) {
+
 		this.dlFileEntryService = dlFileEntryService;
 	}
 
@@ -184,6 +202,7 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 */
 	public void setDLFileEntryPersistence(
 		DLFileEntryPersistence dlFileEntryPersistence) {
+
 		this.dlFileEntryPersistence = dlFileEntryPersistence;
 	}
 
@@ -210,7 +229,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the document library folder local service
 	 */
-	public com.liferay.document.library.kernel.service.DLFolderLocalService getDLFolderLocalService() {
+	public com.liferay.document.library.kernel.service.DLFolderLocalService
+		getDLFolderLocalService() {
+
 		return dlFolderLocalService;
 	}
 
@@ -220,7 +241,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 * @param dlFolderLocalService the document library folder local service
 	 */
 	public void setDLFolderLocalService(
-		com.liferay.document.library.kernel.service.DLFolderLocalService dlFolderLocalService) {
+		com.liferay.document.library.kernel.service.DLFolderLocalService
+			dlFolderLocalService) {
+
 		this.dlFolderLocalService = dlFolderLocalService;
 	}
 
@@ -229,7 +252,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @return the document library folder remote service
 	 */
-	public com.liferay.document.library.kernel.service.DLFolderService getDLFolderService() {
+	public com.liferay.document.library.kernel.service.DLFolderService
+		getDLFolderService() {
+
 		return dlFolderService;
 	}
 
@@ -239,7 +264,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 * @param dlFolderService the document library folder remote service
 	 */
 	public void setDLFolderService(
-		com.liferay.document.library.kernel.service.DLFolderService dlFolderService) {
+		com.liferay.document.library.kernel.service.DLFolderService
+			dlFolderService) {
+
 		this.dlFolderService = dlFolderService;
 	}
 
@@ -257,7 +284,9 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 	 *
 	 * @param dlFolderPersistence the document library folder persistence
 	 */
-	public void setDLFolderPersistence(DLFolderPersistence dlFolderPersistence) {
+	public void setDLFolderPersistence(
+		DLFolderPersistence dlFolderPersistence) {
+
 		this.dlFolderPersistence = dlFolderPersistence;
 	}
 
@@ -317,8 +346,8 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 			sql = db.buildSQL(sql);
 			sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource,
-					sql);
+			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(
+				dataSource, sql);
 
 			sqlUpdate.update();
 		}
@@ -327,28 +356,60 @@ public abstract class DLFileVersionServiceBaseImpl extends BaseServiceImpl
 		}
 	}
 
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLFileVersionLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLFileVersionLocalService dlFileVersionLocalService;
+	@BeanReference(
+		type = com.liferay.document.library.kernel.service.DLFileVersionLocalService.class
+	)
+	protected
+		com.liferay.document.library.kernel.service.DLFileVersionLocalService
+			dlFileVersionLocalService;
+
 	@BeanReference(type = DLFileVersionService.class)
 	protected DLFileVersionService dlFileVersionService;
+
 	@BeanReference(type = DLFileVersionPersistence.class)
 	protected DLFileVersionPersistence dlFileVersionPersistence;
-	@BeanReference(type = com.liferay.counter.kernel.service.CounterLocalService.class)
-	protected com.liferay.counter.kernel.service.CounterLocalService counterLocalService;
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLFileEntryLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLFileEntryLocalService dlFileEntryLocalService;
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLFileEntryService.class)
-	protected com.liferay.document.library.kernel.service.DLFileEntryService dlFileEntryService;
+
+	@BeanReference(
+		type = com.liferay.counter.kernel.service.CounterLocalService.class
+	)
+	protected com.liferay.counter.kernel.service.CounterLocalService
+		counterLocalService;
+
+	@BeanReference(
+		type = com.liferay.document.library.kernel.service.DLFileEntryLocalService.class
+	)
+	protected
+		com.liferay.document.library.kernel.service.DLFileEntryLocalService
+			dlFileEntryLocalService;
+
+	@BeanReference(
+		type = com.liferay.document.library.kernel.service.DLFileEntryService.class
+	)
+	protected com.liferay.document.library.kernel.service.DLFileEntryService
+		dlFileEntryService;
+
 	@BeanReference(type = DLFileEntryPersistence.class)
 	protected DLFileEntryPersistence dlFileEntryPersistence;
+
 	@BeanReference(type = DLFileEntryFinder.class)
 	protected DLFileEntryFinder dlFileEntryFinder;
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLFolderLocalService.class)
-	protected com.liferay.document.library.kernel.service.DLFolderLocalService dlFolderLocalService;
-	@BeanReference(type = com.liferay.document.library.kernel.service.DLFolderService.class)
-	protected com.liferay.document.library.kernel.service.DLFolderService dlFolderService;
+
+	@BeanReference(
+		type = com.liferay.document.library.kernel.service.DLFolderLocalService.class
+	)
+	protected com.liferay.document.library.kernel.service.DLFolderLocalService
+		dlFolderLocalService;
+
+	@BeanReference(
+		type = com.liferay.document.library.kernel.service.DLFolderService.class
+	)
+	protected com.liferay.document.library.kernel.service.DLFolderService
+		dlFolderService;
+
 	@BeanReference(type = DLFolderPersistence.class)
 	protected DLFolderPersistence dlFolderPersistence;
+
 	@BeanReference(type = DLFolderFinder.class)
 	protected DLFolderFinder dlFolderFinder;
+
 }

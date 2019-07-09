@@ -121,14 +121,13 @@ public class DefaultWorkflowTask implements Serializable, WorkflowTask {
 		WorkflowTaskAssignee workflowTaskAssignee = _workflowTaskAssignees.get(
 			0);
 
-		if (User.class.getName().equals(
-				workflowTaskAssignee.getAssigneeClassName())) {
+		String userClassName = User.class.getName();
 
+		if (userClassName.equals(workflowTaskAssignee.getAssigneeClassName())) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -141,9 +140,8 @@ public class DefaultWorkflowTask implements Serializable, WorkflowTask {
 		if (_completionDate != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public void setAsynchronous(boolean asynchronous) {
@@ -195,11 +193,19 @@ public class DefaultWorkflowTask implements Serializable, WorkflowTask {
 	public void setWorkflowTaskAssignees(
 		Collection<WorkflowTaskAssignee> workflowTaskAssignees) {
 
-		if (_workflowTaskAssignees == null) {
-			_workflowTaskAssignees = new ArrayList<>();
+		if (_workflowTaskAssignees != null) {
+			_workflowTaskAssignees.addAll(workflowTaskAssignees);
+
+			return;
 		}
 
-		_workflowTaskAssignees.addAll(workflowTaskAssignees);
+		if (workflowTaskAssignees instanceof List) {
+			_workflowTaskAssignees =
+				(List<WorkflowTaskAssignee>)workflowTaskAssignees;
+		}
+		else {
+			_workflowTaskAssignees = new ArrayList<>(workflowTaskAssignees);
+		}
 	}
 
 	public void setWorkflowTaskId(long workflowTaskId) {

@@ -14,13 +14,13 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * This class is used by SOAP remote services.
@@ -30,6 +30,7 @@ import java.util.List;
  */
 @ProviderType
 public class TicketSoap implements Serializable {
+
 	public static TicketSoap toSoapModel(Ticket model) {
 		TicketSoap soapModel = new TicketSoap();
 
@@ -185,4 +186,5 @@ public class TicketSoap implements Serializable {
 	private int _type;
 	private String _extraInfo;
 	private Date _expirationDate;
+
 }

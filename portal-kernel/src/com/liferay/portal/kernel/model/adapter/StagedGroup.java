@@ -18,7 +18,9 @@ import com.liferay.portal.kernel.model.GroupModel;
 import com.liferay.portal.kernel.model.StagedModel;
 
 /**
- * @author Daniel Kocsis
+ * @author     Daniel Kocsis
+ * @deprecated As of Judson (7.1.x)
  */
+@Deprecated
 public interface StagedGroup extends GroupModel, StagedModel {
 }

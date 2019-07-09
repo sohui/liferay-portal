@@ -14,10 +14,7 @@
 
 package com.liferay.exportimport.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -26,6 +23,8 @@ import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for ExportImportConfiguration. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -33,34 +32,39 @@ import com.liferay.portal.kernel.transaction.Transactional;
  *
  * @author Brian Wing Shun Chan
  * @see ExportImportConfigurationServiceUtil
- * @see com.liferay.portlet.exportimport.service.base.ExportImportConfigurationServiceBaseImpl
- * @see com.liferay.portlet.exportimport.service.impl.ExportImportConfigurationServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface ExportImportConfigurationService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link ExportImportConfigurationServiceUtil} to access the export import configuration remote service. Add custom service methods to {@link com.liferay.portlet.exportimport.service.impl.ExportImportConfigurationServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link ExportImportConfigurationServiceUtil} to access the export import configuration remote service. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.ExportImportConfigurationServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public ExportImportConfiguration moveExportImportConfigurationToTrash(
-		long exportImportConfigurationId) throws PortalException;
-
-	public ExportImportConfiguration restoreExportImportConfigurationFromTrash(
-		long exportImportConfigurationId) throws PortalException;
+	public void deleteExportImportConfiguration(
+			long exportImportConfigurationId)
+		throws PortalException;
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
 
-	public void deleteExportImportConfiguration(
-		long exportImportConfigurationId) throws PortalException;
+	public ExportImportConfiguration moveExportImportConfigurationToTrash(
+			long exportImportConfigurationId)
+		throws PortalException;
+
+	public ExportImportConfiguration restoreExportImportConfigurationFromTrash(
+			long exportImportConfigurationId)
+		throws PortalException;
+
 }

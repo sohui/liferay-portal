@@ -14,6 +14,7 @@
 
 package com.liferay.portal.resiliency.spi.agent;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.resiliency.PortalResiliencyException;
@@ -25,13 +26,14 @@ import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.ThreadLocalDistributor;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.portal.model.impl.PortletImpl;
 import com.liferay.portal.util.PortalImpl;
 import com.liferay.portal.util.PropsImpl;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -68,6 +70,8 @@ public class SPIAgentResponseTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+
 		PortalUtil portalUtil = new PortalUtil();
 
 		portalUtil.setPortal(new PortalImpl());
@@ -138,7 +142,9 @@ public class SPIAgentResponseTest {
 		Map<String, Serializable> distributedRequestAttributes =
 			spiAgentResponse.distributedRequestAttributes;
 
-		Assert.assertEquals(2, distributedRequestAttributes.size());
+		Assert.assertEquals(
+			distributedRequestAttributes.toString(), 2,
+			distributedRequestAttributes.size());
 		Assert.assertEquals(
 			RequestAttributes.ATTRIBUTE_1,
 			distributedRequestAttributes.get(RequestAttributes.ATTRIBUTE_1));
@@ -149,7 +155,9 @@ public class SPIAgentResponseTest {
 		Map<String, Serializable> deltaSessionAttributes =
 			spiAgentResponse.deltaSessionAttributes;
 
-		Assert.assertEquals(3, deltaSessionAttributes.size());
+		Assert.assertEquals(
+			deltaSessionAttributes.toString(), 3,
+			deltaSessionAttributes.size());
 		Assert.assertEquals(
 			_SESSION_ATTRIBUTE_1,
 			deltaSessionAttributes.get(_SESSION_ATTRIBUTE_1));
@@ -188,7 +196,7 @@ public class SPIAgentResponseTest {
 			new MockHttpServletRequest();
 
 		mockHttpServletRequest.setAttribute(
-			WebKeys.PORTAL_RESILIENCY_ACTION, true);
+			WebKeys.PORTAL_RESILIENCY_ACTION, Boolean.TRUE);
 
 		BufferCacheServletResponse bufferCacheServletResponse =
 			new BufferCacheServletResponse(new MockHttpServletResponse());
@@ -205,8 +213,9 @@ public class SPIAgentResponseTest {
 
 		// Portal resiliency action, byte model output, native buffer
 
-		byte[] byteArray =
-			new byte[] {(byte)0, (byte)1, (byte)2, (byte)3, (byte)4, (byte)5};
+		byte[] byteArray = {
+			(byte)0, (byte)1, (byte)2, (byte)3, (byte)4, (byte)5
+		};
 
 		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(byteArray.length);
 
@@ -392,11 +401,15 @@ public class SPIAgentResponseTest {
 		List<String> requestAttributeNames = ListUtil.fromEnumeration(
 			requestAttributeNameEnumeration);
 
-		Assert.assertEquals(2, requestAttributeNames.size());
+		Assert.assertEquals(
+			requestAttributeNames.toString(), 2, requestAttributeNames.size());
 		Assert.assertTrue(
+			requestAttributeNames.toString(),
 			requestAttributeNames.contains(RequestAttributes.ATTRIBUTE_1));
 		Assert.assertTrue(
+			requestAttributeNames.toString(),
 			requestAttributeNames.contains(RequestAttributes.ATTRIBUTE_3));
+
 		Assert.assertEquals(
 			RequestAttributes.ATTRIBUTE_1,
 			mockHttpServletRequest.getAttribute(RequestAttributes.ATTRIBUTE_1));

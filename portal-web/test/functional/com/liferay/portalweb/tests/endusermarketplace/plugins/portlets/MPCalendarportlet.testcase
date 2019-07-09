@@ -1,43 +1,44 @@
-<definition component-name="portal-plugins-deployment">
-	<property name="testray.main.component.name" value="Plugin Installer" />
+@component-name = "portal-plugins-deployment"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
+	property testray.main.component.name = "Plugin Installer";
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Test Page" />
-		</execute>
-	</set-up>
+	setUp {
+		User.firstLoginPG();
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-	<command name="CalendarPortletSmoke" priority="4">
-		<var name="appName" value="Calendar" />
+		SitePages.addPublicPage(pageName = "Test Page");
+	}
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Page" />
-		</execute>
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Calendar" />
-		</execute>
+	@priority = "4"
+	test CalendarPortletSmoke {
+		var appName = "Calendar";
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="App Manager" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Page");
 
-		<execute macro="AppManager#uninstallAppCP">
-			<var name="appName" value="${appName}" />
-		</execute>
+		Portlet.addPG(portletName = "Calendar");
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="App Manager" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "App Manager");
 
-		<execute macro="AppManager#viewUninstallAppCP">
-			<var name="appName" value="${appName}" />
-		</execute>
-	</command>
-</definition>
+		AppManager.uninstallAppCP(appName = "${appName}");
+
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "App Manager");
+
+		AppManager.viewUninstallAppCP(appName = "${appName}");
+	}
+
+}

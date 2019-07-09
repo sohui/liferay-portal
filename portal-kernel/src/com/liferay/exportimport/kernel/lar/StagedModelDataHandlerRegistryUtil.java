@@ -14,8 +14,6 @@
 
 package com.liferay.exportimport.kernel.lar;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -31,11 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides a utility facade to the staged model data handler registry
  * framework.
  *
- * @author Mate Thurzo
+ * @author Máté Thurzó
  * @author Brian Wing Shun Chan
  * @since  6.2
  */
@@ -106,8 +106,8 @@ public class StagedModelDataHandlerRegistryUtil {
 		Registry registry = RegistryUtil.getRegistry();
 
 		_serviceTracker = registry.trackServices(
-			(Class<StagedModelDataHandler<?>>)(Class<?>)
-				StagedModelDataHandler.class,
+			(Class<StagedModelDataHandler<?>>)
+				(Class<?>)StagedModelDataHandler.class,
 			new StagedModelDataHandlerServiceTrackerCustomizer());
 
 		_serviceTracker.open();
@@ -131,8 +131,9 @@ public class StagedModelDataHandlerRegistryUtil {
 
 		ServiceRegistration<StagedModelDataHandler<?>> serviceRegistration =
 			registry.registerService(
-				(Class<StagedModelDataHandler<?>>)(Class<?>)
-					StagedModelDataHandler.class, stagedModelDataHandler);
+				(Class<StagedModelDataHandler<?>>)
+					(Class<?>)StagedModelDataHandler.class,
+				stagedModelDataHandler);
 
 		_serviceRegistrations.put(stagedModelDataHandler, serviceRegistration);
 	}
@@ -151,9 +152,8 @@ public class StagedModelDataHandlerRegistryUtil {
 
 	private final ServiceRegistrationMap<StagedModelDataHandler<?>>
 		_serviceRegistrations = new ServiceRegistrationMapImpl<>();
-	private final
-		ServiceTracker<StagedModelDataHandler<?>, StagedModelDataHandler<?>>
-			_serviceTracker;
+	private final ServiceTracker
+		<StagedModelDataHandler<?>, StagedModelDataHandler<?>> _serviceTracker;
 	private final Map<String, StagedModelDataHandler<?>>
 		_stagedModelDataHandlers = new ConcurrentHashMap<>();
 

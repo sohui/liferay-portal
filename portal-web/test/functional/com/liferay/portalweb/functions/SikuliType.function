@@ -1,13 +1,16 @@
-<definition default="sikuliType">
-	<command name="sikuliType">
-		<execute function="WaitForSPARefresh" />
+@default = "sikuliType"
+definition {
 
-		<execute selenium="sikuliType" />
+	function sikuliType {
+		WaitForSPARefresh();
 
-		<execute argument1="2000" selenium="pause" />
+		selenium.sikuliType();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.pause("2000");
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

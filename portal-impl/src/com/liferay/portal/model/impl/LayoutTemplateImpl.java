@@ -14,17 +14,18 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.io.StreamUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutTemplate;
 import com.liferay.portal.kernel.model.Plugin;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -75,9 +76,8 @@ public class LayoutTemplateImpl
 		if (getLayoutTemplateId().equals(layoutTemplateId)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -152,13 +152,13 @@ public class LayoutTemplateImpl
 
 	@Override
 	public String getStaticResourcePath() {
-		String proxyPath = PortalUtil.getPathProxy();
-
 		String contextPath = getContextPath();
 
 		if (!isWARFile()) {
 			return contextPath;
 		}
+
+		String proxyPath = PortalUtil.getPathProxy();
 
 		return proxyPath.concat(contextPath);
 	}
@@ -183,9 +183,10 @@ public class LayoutTemplateImpl
 		if (_servletContext == null) {
 			if (_log.isDebugEnabled()) {
 				_log.debug(
-					"Cannot get latest content for " + _servletContextName +
-						" " + getTemplatePath() +
-							" because the servlet context is null");
+					StringBundler.concat(
+						"Cannot get latest content for ", _servletContextName,
+						" ", getTemplatePath(),
+						" because the servlet context is null"));
 			}
 
 			return _content;
@@ -193,12 +194,13 @@ public class LayoutTemplateImpl
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Getting latest content for " + _servletContextName + " " +
-					getTemplatePath());
+				StringBundler.concat(
+					"Getting latest content for ", _servletContextName, " ",
+					getTemplatePath()));
 		}
 
-		String content = HttpUtil.URLtoString(
-			_servletContext.getResource(getTemplatePath()));
+		String content = StreamUtil.toString(
+			_servletContext.getResourceAsStream(getTemplatePath()));
 
 		setContent(content);
 

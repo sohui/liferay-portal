@@ -14,17 +14,12 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -36,20 +31,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class PluginSettingWrapper implements PluginSetting,
-	ModelWrapper<PluginSetting> {
+public class PluginSettingWrapper
+	extends BaseModelWrapper<PluginSetting>
+	implements PluginSetting, ModelWrapper<PluginSetting> {
+
 	public PluginSettingWrapper(PluginSetting pluginSetting) {
-		_pluginSetting = pluginSetting;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return PluginSetting.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return PluginSetting.class.getName();
+		super(pluginSetting);
 	}
 
 	@Override
@@ -62,7 +49,7 @@ public class PluginSettingWrapper implements PluginSetting,
 		attributes.put("pluginId", getPluginId());
 		attributes.put("pluginType", getPluginType());
 		attributes.put("roles", getRoles());
-		attributes.put("active", getActive());
+		attributes.put("active", isActive());
 
 		return attributes;
 	}
@@ -112,364 +99,234 @@ public class PluginSettingWrapper implements PluginSetting,
 		}
 	}
 
+	/**
+	 * Adds a role to the list of roles.
+	 */
 	@Override
-	public CacheModel<PluginSetting> toCacheModel() {
-		return _pluginSetting.toCacheModel();
-	}
-
-	@Override
-	public PluginSetting toEscapedModel() {
-		return new PluginSettingWrapper(_pluginSetting.toEscapedModel());
-	}
-
-	@Override
-	public PluginSetting toUnescapedModel() {
-		return new PluginSettingWrapper(_pluginSetting.toUnescapedModel());
+	public void addRole(String role) {
+		model.addRole(role);
 	}
 
 	/**
-	* Returns the active of this plugin setting.
-	*
-	* @return the active of this plugin setting
-	*/
+	 * Returns the active of this plugin setting.
+	 *
+	 * @return the active of this plugin setting
+	 */
 	@Override
 	public boolean getActive() {
-		return _pluginSetting.getActive();
+		return model.getActive();
 	}
 
 	/**
-	* Returns <code>true</code> if the user has permission to use this plugin
-	*
-	* @param userId the primary key of the user
-	* @return <code>true</code> if the user has permission to use this plugin
-	*/
-	@Override
-	public boolean hasPermission(long userId) {
-		return _pluginSetting.hasPermission(userId);
-	}
-
-	/**
-	* Returns <code>true</code> if the plugin has a role with the specified
-	* name.
-	*
-	* @param roleName the role name
-	* @return <code>true</code> if the plugin has a role with the specified
-	name
-	*/
-	@Override
-	public boolean hasRoleWithName(java.lang.String roleName) {
-		return _pluginSetting.hasRoleWithName(roleName);
-	}
-
-	/**
-	* Returns <code>true</code> if this plugin setting is active.
-	*
-	* @return <code>true</code> if this plugin setting is active; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isActive() {
-		return _pluginSetting.isActive();
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _pluginSetting.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _pluginSetting.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _pluginSetting.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _pluginSetting.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(PluginSetting pluginSetting) {
-		return _pluginSetting.compareTo(pluginSetting);
-	}
-
-	@Override
-	public int hashCode() {
-		return _pluginSetting.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _pluginSetting.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new PluginSettingWrapper((PluginSetting)_pluginSetting.clone());
-	}
-
-	/**
-	* Returns the plugin ID of this plugin setting.
-	*
-	* @return the plugin ID of this plugin setting
-	*/
-	@Override
-	public java.lang.String getPluginId() {
-		return _pluginSetting.getPluginId();
-	}
-
-	/**
-	* Returns the plugin type of this plugin setting.
-	*
-	* @return the plugin type of this plugin setting
-	*/
-	@Override
-	public java.lang.String getPluginType() {
-		return _pluginSetting.getPluginType();
-	}
-
-	/**
-	* Returns the roles of this plugin setting.
-	*
-	* @return the roles of this plugin setting
-	*/
-	@Override
-	public java.lang.String getRoles() {
-		return _pluginSetting.getRoles();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _pluginSetting.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _pluginSetting.toXmlString();
-	}
-
-	/**
-	* Returns an array of required roles of the plugin.
-	*
-	* @return an array of required roles of the plugin
-	*/
-	@Override
-	public java.lang.String[] getRolesArray() {
-		return _pluginSetting.getRolesArray();
-	}
-
-	/**
-	* Returns the company ID of this plugin setting.
-	*
-	* @return the company ID of this plugin setting
-	*/
+	 * Returns the company ID of this plugin setting.
+	 *
+	 * @return the company ID of this plugin setting
+	 */
 	@Override
 	public long getCompanyId() {
-		return _pluginSetting.getCompanyId();
+		return model.getCompanyId();
 	}
 
 	/**
-	* Returns the mvcc version of this plugin setting.
-	*
-	* @return the mvcc version of this plugin setting
-	*/
+	 * Returns the mvcc version of this plugin setting.
+	 *
+	 * @return the mvcc version of this plugin setting
+	 */
 	@Override
 	public long getMvccVersion() {
-		return _pluginSetting.getMvccVersion();
+		return model.getMvccVersion();
 	}
 
 	/**
-	* Returns the plugin setting ID of this plugin setting.
-	*
-	* @return the plugin setting ID of this plugin setting
-	*/
+	 * Returns the plugin ID of this plugin setting.
+	 *
+	 * @return the plugin ID of this plugin setting
+	 */
+	@Override
+	public String getPluginId() {
+		return model.getPluginId();
+	}
+
+	/**
+	 * Returns the plugin setting ID of this plugin setting.
+	 *
+	 * @return the plugin setting ID of this plugin setting
+	 */
 	@Override
 	public long getPluginSettingId() {
-		return _pluginSetting.getPluginSettingId();
+		return model.getPluginSettingId();
 	}
 
 	/**
-	* Returns the primary key of this plugin setting.
-	*
-	* @return the primary key of this plugin setting
-	*/
+	 * Returns the plugin type of this plugin setting.
+	 *
+	 * @return the plugin type of this plugin setting
+	 */
+	@Override
+	public String getPluginType() {
+		return model.getPluginType();
+	}
+
+	/**
+	 * Returns the primary key of this plugin setting.
+	 *
+	 * @return the primary key of this plugin setting
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _pluginSetting.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Adds a role to the list of roles.
-	*/
+	 * Returns the roles of this plugin setting.
+	 *
+	 * @return the roles of this plugin setting
+	 */
 	@Override
-	public void addRole(java.lang.String role) {
-		_pluginSetting.addRole(role);
+	public String getRoles() {
+		return model.getRoles();
+	}
+
+	/**
+	 * Returns an array of required roles of the plugin.
+	 *
+	 * @return an array of required roles of the plugin
+	 */
+	@Override
+	public String[] getRolesArray() {
+		return model.getRolesArray();
+	}
+
+	/**
+	 * Returns <code>true</code> if the user has permission to use this plugin
+	 *
+	 * @param userId the primary key of the user
+	 * @return <code>true</code> if the user has permission to use this plugin
+	 */
+	@Override
+	public boolean hasPermission(long userId) {
+		return model.hasPermission(userId);
+	}
+
+	/**
+	 * Returns <code>true</code> if the plugin has a role with the specified
+	 * name.
+	 *
+	 * @param roleName the role name
+	 * @return <code>true</code> if the plugin has a role with the specified
+	 name
+	 */
+	@Override
+	public boolean hasRoleWithName(String roleName) {
+		return model.hasRoleWithName(roleName);
+	}
+
+	/**
+	 * Returns <code>true</code> if this plugin setting is active.
+	 *
+	 * @return <code>true</code> if this plugin setting is active; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isActive() {
+		return model.isActive();
 	}
 
 	@Override
 	public void persist() {
-		_pluginSetting.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets whether this plugin setting is active.
-	*
-	* @param active the active of this plugin setting
-	*/
+	 * Sets whether this plugin setting is active.
+	 *
+	 * @param active the active of this plugin setting
+	 */
 	@Override
 	public void setActive(boolean active) {
-		_pluginSetting.setActive(active);
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_pluginSetting.setCachedModel(cachedModel);
+		model.setActive(active);
 	}
 
 	/**
-	* Sets the company ID of this plugin setting.
-	*
-	* @param companyId the company ID of this plugin setting
-	*/
+	 * Sets the company ID of this plugin setting.
+	 *
+	 * @param companyId the company ID of this plugin setting
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_pluginSetting.setCompanyId(companyId);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_pluginSetting.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_pluginSetting.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_pluginSetting.setExpandoBridgeAttributes(serviceContext);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the mvcc version of this plugin setting.
-	*
-	* @param mvccVersion the mvcc version of this plugin setting
-	*/
+	 * Sets the mvcc version of this plugin setting.
+	 *
+	 * @param mvccVersion the mvcc version of this plugin setting
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_pluginSetting.setMvccVersion(mvccVersion);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_pluginSetting.setNew(n);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the plugin ID of this plugin setting.
-	*
-	* @param pluginId the plugin ID of this plugin setting
-	*/
+	 * Sets the plugin ID of this plugin setting.
+	 *
+	 * @param pluginId the plugin ID of this plugin setting
+	 */
 	@Override
-	public void setPluginId(java.lang.String pluginId) {
-		_pluginSetting.setPluginId(pluginId);
+	public void setPluginId(String pluginId) {
+		model.setPluginId(pluginId);
 	}
 
 	/**
-	* Sets the plugin setting ID of this plugin setting.
-	*
-	* @param pluginSettingId the plugin setting ID of this plugin setting
-	*/
+	 * Sets the plugin setting ID of this plugin setting.
+	 *
+	 * @param pluginSettingId the plugin setting ID of this plugin setting
+	 */
 	@Override
 	public void setPluginSettingId(long pluginSettingId) {
-		_pluginSetting.setPluginSettingId(pluginSettingId);
+		model.setPluginSettingId(pluginSettingId);
 	}
 
 	/**
-	* Sets the plugin type of this plugin setting.
-	*
-	* @param pluginType the plugin type of this plugin setting
-	*/
+	 * Sets the plugin type of this plugin setting.
+	 *
+	 * @param pluginType the plugin type of this plugin setting
+	 */
 	@Override
-	public void setPluginType(java.lang.String pluginType) {
-		_pluginSetting.setPluginType(pluginType);
+	public void setPluginType(String pluginType) {
+		model.setPluginType(pluginType);
 	}
 
 	/**
-	* Sets the primary key of this plugin setting.
-	*
-	* @param primaryKey the primary key of this plugin setting
-	*/
+	 * Sets the primary key of this plugin setting.
+	 *
+	 * @param primaryKey the primary key of this plugin setting
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_pluginSetting.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_pluginSetting.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the roles of this plugin setting.
-	*
-	* @param roles the roles of this plugin setting
-	*/
+	 * Sets the roles of this plugin setting.
+	 *
+	 * @param roles the roles of this plugin setting
+	 */
 	@Override
-	public void setRoles(java.lang.String roles) {
-		_pluginSetting.setRoles(roles);
+	public void setRoles(String roles) {
+		model.setRoles(roles);
 	}
 
 	/**
-	* Sets an array of required roles of the plugin.
-	*/
+	 * Sets an array of required roles of the plugin.
+	 */
 	@Override
-	public void setRolesArray(java.lang.String[] rolesArray) {
-		_pluginSetting.setRolesArray(rolesArray);
+	public void setRolesArray(String[] rolesArray) {
+		model.setRolesArray(rolesArray);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof PluginSettingWrapper)) {
-			return false;
-		}
-
-		PluginSettingWrapper pluginSettingWrapper = (PluginSettingWrapper)obj;
-
-		if (Objects.equals(_pluginSetting, pluginSettingWrapper._pluginSetting)) {
-			return true;
-		}
-
-		return false;
+	protected PluginSettingWrapper wrap(PluginSetting pluginSetting) {
+		return new PluginSettingWrapper(pluginSetting);
 	}
 
-	@Override
-	public PluginSetting getWrappedModel() {
-		return _pluginSetting;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _pluginSetting.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _pluginSetting.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_pluginSetting.resetOriginalValues();
-	}
-
-	private final PluginSetting _pluginSetting;
 }

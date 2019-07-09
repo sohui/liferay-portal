@@ -21,6 +21,7 @@ KBTemplate kbTemplate = (KBTemplate)request.getAttribute(KBWebKeys.KNOWLEDGE_BAS
 
 long kbTemplateId = BeanParamUtil.getLong(kbTemplate, request, "kbTemplateId");
 
+String title = BeanParamUtil.getString(kbTemplate, request, "title");
 String content = BeanParamUtil.getString(kbTemplate, request, "content");
 
 portletDisplay.setShowBackIcon(true);
@@ -45,36 +46,56 @@ renderResponse.setTitle((kbTemplate == null) ? LanguageUtil.get(request, "new-te
 
 		<aui:fieldset-group markupView="lexicon">
 			<aui:fieldset>
-				<aui:input name="title" />
+				<h1 class="kb-title">
+					<liferay-ui:input-editor
+						contents="<%= title %>"
+						editorName="alloyeditor"
+						name="titleEditor"
+						placeholder="title"
+						showSource="<%= false %>"
+					/>
+				</h1>
 
-				<aui:field-wrapper label="content">
-					<liferay-ui:input-editor contents="<%= content %>" width="100%" />
+				<aui:input name="title" type="hidden" />
 
-					<aui:input name="content" type="hidden" />
-				</aui:field-wrapper>
+				<liferay-ui:input-editor
+					contents="<%= content %>"
+					editorName="alloyeditor"
+					name="contentEditor"
+					placeholder="content"
+				/>
+
+				<aui:input name="content" type="hidden" />
 			</aui:fieldset>
 
 			<c:if test="<%= kbTemplate == null %>">
 				<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="permissions">
 					<liferay-ui:input-permissions
-							modelName="<%= KBTemplate.class.getName() %>"
+						modelName="<%= KBTemplate.class.getName() %>"
 					/>
 				</aui:fieldset>
 			</c:if>
 		</aui:fieldset-group>
 
 		<aui:button-row>
-			<aui:button cssClass="btn-lg" type="submit" value="publish" />
+			<aui:button type="submit" value="publish" />
 
-			<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
+			<aui:button href="<%= redirect %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>
 
 <aui:script>
 	function <portlet:namespace />updateKBTemplate() {
-		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = '<%= (kbTemplate == null) ? Constants.ADD : Constants.UPDATE %>';
-		document.<portlet:namespace />fm.<portlet:namespace />content.value = window.<portlet:namespace />editor.getHTML();
-		submitForm(document.<portlet:namespace />fm);
+		Liferay.Util.postForm(
+			document.<portlet:namespace />fm,
+			{
+				data: {
+					'<%= Constants.CMD %>': '<%= (kbTemplate == null) ? Constants.ADD : Constants.UPDATE %>',
+					title: window.<portlet:namespace />titleEditor.getText(),
+					content: window.<portlet:namespace />contentEditor.getHTML()
+				}
+			}
+		);
 	}
 </aui:script>

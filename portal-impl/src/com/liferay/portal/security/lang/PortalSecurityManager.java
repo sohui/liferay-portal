@@ -17,8 +17,10 @@ package com.liferay.portal.security.lang;
 import java.security.Policy;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public interface PortalSecurityManager {
 
 	public void destroy();

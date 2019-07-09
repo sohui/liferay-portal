@@ -14,6 +14,7 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -26,7 +27,6 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.language.LanguageResources;
 import com.liferay.portal.servlet.I18nServlet;
@@ -80,6 +80,7 @@ public class PortalImplLocaleTest {
 		LanguageResources.getSuperLocale(LocaleUtil.US);
 
 		_group = GroupTestUtil.addGroup();
+
 		_layout = LayoutTestUtil.addLayout(_group);
 
 		List<Locale> availableLocales = Arrays.asList(
@@ -142,7 +143,7 @@ public class PortalImplLocaleTest {
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest(
-				servletContext, HttpMethods.GET, servletPath+pathInfo);
+				servletContext, HttpMethods.GET, servletPath + pathInfo);
 
 		mockHttpServletRequest.setPathInfo(pathInfo);
 		mockHttpServletRequest.setServletPath(servletPath);
@@ -166,7 +167,8 @@ public class PortalImplLocaleTest {
 			String i18nLanguageId, String pathInfo, Locale expectedLocale)
 		throws IOException, ServletException {
 
-		MockServletContext mockServletContext = new MockServletContext() {};
+		MockServletContext mockServletContext = new MockServletContext() {
+		};
 
 		mockServletContext.setContextPath(StringPool.BLANK);
 		mockServletContext.setServletContextName(StringPool.BLANK);

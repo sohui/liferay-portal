@@ -1,53 +1,149 @@
-<definition>
-	<command name="addCategory">
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+definition {
 
-		<execute function="AssertClick" locator1="AssetCategorization#CATEGORY_SELECT" value1="Select" />
+	macro _addTag {
+		Type(
+			locator1 = "AssetCategorization#TAGS_FIELD",
+			value1 = "${tagName}");
 
-		<var name="key_categoryName" value="${categoryName}" />
+		ScrollWebElementIntoView(locator1 = "AssetCategorization#TAGS_FIELD");
 
-		<execute function="Click" locator1="AssetCategorization#CATEGORIES_CATEGORY_CHECKBOX" />
+		if (IsElementPresent(key_tagName = "${tagName}", locator1 = "AssetCategorization#TAG_AUTOCOMPLETE_SPECIFIC")) {
+			Click(
+				key_tagName = "${tagName}",
+				locator1 = "AssetCategorization#TAG_AUTOCOMPLETE_SPECIFIC");
+		}
+		else {
+			KeyPress(
+				locator1 = "AssetCategorization#TAGS_FIELD",
+				value1 = ",");
+		}
+	}
 
-		<execute function="AssertVisible" locator1="AssetCategorization#CATEGORIES_CATEGORY_CHECKBOX_CHECKED" />
+	macro addCategory {
+		Type.sendKeys(
+			key_vocabularyName = "${vocabularyName}",
+			locator1 = "AssetCategorization#CATEGORIES_FIELD",
+			value1 = "${categoryName}");
 
-		<execute function="Click" locator1="Icon#CLOSE" />
+		Click(
+			key_categoryName = "${categoryName}",
+			locator1 = "AssetCategorization#CATEGORY_AUTOCOMPLETE_SPECIFIC");
 
-		<execute function="AssertTextEquals" locator1="AssetCategorization#CATEGORY" value1="${categoryName}" />
-	</command>
+		AssertTextEquals(
+			key_categoryName = "${categoryName}",
+			locator1 = "AssetCategorization#CATEGORY",
+			value1 = "${categoryName}");
+	}
 
-	<command name="addMultipleCategories">
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+	macro addDuplicateTag {
+		AssetCategorization._addTag(tagName = "${tagName}");
 
-		<execute function="AssertClick" locator1="AssetCategorization#CATEGORY_SELECT" value1="Select" />
+		AssertTextEquals(
+			locator1 = "//div[contains(@class,'help-block')]",
+			value1 = "Duplicate Tag: ${tagName}");
+	}
 
-		<for list="${categoryNameList}" param="categoryName">
-			<var name="key_categoryName" value="${categoryName}" />
+	macro addMultipleCategories {
+		for (var categoryName : list "${categoryNameList}") {
+			AssetCategorization.addCategory(
+				categoryName = "${categoryName}",
+				vocabularyName = "${vocabularyName}");
+		}
+	}
 
-			<execute function="Click" locator1="AssetCategorization#CATEGORIES_CATEGORY_CHECKBOX" />
+	macro addTag {
+		AssetCategorization._addTag(tagName = "${tagName}");
 
-			<execute function="AssertVisible" locator1="AssetCategorization#CATEGORIES_CATEGORY_CHECKBOX_CHECKED" />
-		</for>
+		AssertTextEquals(
+			key_tagName = "${tagName}",
+			locator1 = "AssetCategorization#TAG",
+			value1 = "${tagName}");
+	}
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+	macro gotoSelectCategory {
+		SelectFrameTop();
 
-	<command name="addTag">
-		<var name="key_tagName" value="${tagName}" />
+		if (IsElementPresent(locator1 = "IFrame#SELECT_CATEGORY")) {
+			IFrame.selectCategoryFrame();
+		}
 
-		<execute function="Type" locator1="AssetCategorization#TAGS_FIELD" value1="${tagName}" />
+		Portlet.expandTree();
+	}
 
-		<execute function="AssertClick" locator1="Button#ADD_TAGS" value1="Add" />
+	macro removeTag {
+		var key_tagName = "${tagName}";
 
-		<execute function="AssertTextEquals" locator1="AssetCategorization#TAG" value1="${tagName}" />
-	</command>
+		AssertTextEquals(
+			locator1 = "AssetCategorization#TAG",
+			value1 = "${tagName}");
 
-	<command name="removeTag">
-		<var name="key_tagName" value="${tagName}" />
+		Click(locator1 = "AssetCategorization#TAG_REMOVE");
 
-		<execute function="AssertTextEquals" locator1="AssetCategorization#TAG" value1="${tagName}" />
+		AssertElementNotPresent(locator1 = "AssetCategorization#TAG");
+	}
 
-		<execute function="Click" locator1="AssetCategorization#TAG_REMOVE" />
+	macro selectCategory {
+		AssetCategorization.gotoSelectCategory();
 
-		<execute function="AssertElementNotPresent" locator1="AssetCategorization#TAG" />
-	</command>
-</definition>
+		Portlet.selectTreeNode(nodeName = "${categoryName}");
+
+		SelectFrameTop();
+
+		if (IsElementPresent(locator1 = "Button#ADD")) {
+			AssertClick(
+				locator1 = "Button#ADD",
+				value1 = "Add");
+		}
+		else if (IsElementPresent(locator1 = "Button#DONE")) {
+			AssertClick(
+				locator1 = "Button#DONE",
+				value1 = "Done");
+		}
+		else {
+			Click(locator1 = "Icon#CLOSE");
+		}
+
+		Pause(locator1 = "3000");
+
+		if (IsElementPresent(locator1 = "IFrame#MODAL_IFRAME")) {
+			IFrame.selectModalFrame();
+		}
+	}
+
+	macro selectTag {
+		Click(locator1 = "AssetCategorization#TAGS_SELECT_BUTTON");
+
+		SelectFrameTop();
+
+		if (IsElementPresent(locator1 = "IFrame#SELECT_TAG")) {
+			SelectFrame(locator1 = "IFrame#SELECT_TAG");
+		}
+
+		for (var tagName : list "${tagNameList}") {
+			Check(
+				key_rowEntry = "${tagName}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
+		}
+
+		SelectFrameTop();
+
+		if (IsElementPresent(locator1 = "Button#DONE")) {
+			AssertClick(
+				locator1 = "Button#DONE",
+				value1 = "Done");
+		}
+		else {
+			Click(locator1 = "Icon#CLOSE");
+		}
+
+		if (IsElementPresent(locator1 = "IFrame#MODAL_IFRAME")) {
+			IFrame.selectModalFrame();
+		}
+
+		AssertTextEquals(
+			key_tagName = "${tagName}",
+			locator1 = "AssetCategorization#TAG",
+			value1 = "${tagName}");
+	}
+
+}

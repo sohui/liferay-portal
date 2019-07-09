@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.resiliency.spi.agent;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.process.local.LocalProcessLauncher;
 import com.liferay.portal.kernel.resiliency.spi.MockSPI;
 import com.liferay.portal.kernel.resiliency.spi.SPI;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.util.PortalImpl;
 
 import java.io.IOException;
@@ -151,11 +151,14 @@ public class AcceptorServletTest {
 
 		Assert.assertEquals("/c/portal/resiliency", forwardPathReference.get());
 		Assert.assertSame(
-			mockHttpServletRequest, _recordSPIAgent._originalRequest1);
+			mockHttpServletRequest,
+			_recordSPIAgent._originalHttpServletRequest1);
 		Assert.assertSame(
-			mockHttpServletRequest, _recordSPIAgent._originalRequest2);
+			mockHttpServletRequest,
+			_recordSPIAgent._originalHttpServletRequest2);
 		Assert.assertSame(
-			mockHttpServletResponse, _recordSPIAgent._originalResponse);
+			mockHttpServletResponse,
+			_recordSPIAgent._originalHttpServletResponse);
 		Assert.assertNull(_recordSPIAgent._exception);
 		Assert.assertTrue(_mockHttpSession.isInvalid());
 
@@ -168,11 +171,14 @@ public class AcceptorServletTest {
 
 		Assert.assertEquals("/c/portal/resiliency", forwardPathReference.get());
 		Assert.assertSame(
-			mockHttpServletRequest, _recordSPIAgent._originalRequest1);
+			mockHttpServletRequest,
+			_recordSPIAgent._originalHttpServletRequest1);
 		Assert.assertSame(
-			mockHttpServletRequest, _recordSPIAgent._originalRequest2);
+			mockHttpServletRequest,
+			_recordSPIAgent._originalHttpServletRequest2);
 		Assert.assertSame(
-			mockHttpServletResponse, _recordSPIAgent._originalResponse);
+			mockHttpServletResponse,
+			_recordSPIAgent._originalHttpServletResponse);
 		Assert.assertNull(_recordSPIAgent._exception);
 		Assert.assertTrue(_mockHttpSession.isInvalid());
 
@@ -197,7 +203,7 @@ public class AcceptorServletTest {
 					"IOException on prepare request", ioe.getMessage());
 			}
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -225,7 +231,7 @@ public class AcceptorServletTest {
 					"RuntimeException on prepare request", re.getMessage());
 			}
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			logRecord = logRecords.get(0);
 
@@ -247,11 +253,14 @@ public class AcceptorServletTest {
 
 		Assert.assertEquals("/c/portal/resiliency", forwardPathReference.get());
 		Assert.assertSame(
-			mockHttpServletRequest, _recordSPIAgent._originalRequest1);
+			mockHttpServletRequest,
+			_recordSPIAgent._originalHttpServletRequest1);
 		Assert.assertSame(
-			mockHttpServletRequest, _recordSPIAgent._originalRequest2);
+			mockHttpServletRequest,
+			_recordSPIAgent._originalHttpServletRequest2);
 		Assert.assertSame(
-			mockHttpServletResponse, _recordSPIAgent._originalResponse);
+			mockHttpServletResponse,
+			_recordSPIAgent._originalHttpServletResponse);
 		Assert.assertSame(ioException, _recordSPIAgent._exception);
 		Assert.assertTrue(_mockHttpSession.isInvalid());
 	}
@@ -267,7 +276,8 @@ public class AcceptorServletTest {
 		}
 
 		@Override
-		public HttpServletRequest prepareRequest(HttpServletRequest request)
+		public HttpServletRequest prepareRequest(
+				HttpServletRequest httpServletRequest)
 			throws IOException {
 
 			if (_ioExceptionOnPrepareRequest) {
@@ -279,7 +289,7 @@ public class AcceptorServletTest {
 					"RuntimeException on prepare request");
 			}
 
-			_originalRequest1 = request;
+			_originalHttpServletRequest1 = httpServletRequest;
 
 			_preparedRequest = new MockHttpServletRequest();
 
@@ -290,10 +300,11 @@ public class AcceptorServletTest {
 
 		@Override
 		public HttpServletResponse prepareResponse(
-			HttpServletRequest request, HttpServletResponse response) {
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse) {
 
-			_originalRequest2 = request;
-			_originalResponse = response;
+			_originalHttpServletRequest2 = httpServletRequest;
+			_originalHttpServletResponse = httpServletResponse;
 
 			_preparedResponse = new MockHttpServletResponse();
 
@@ -315,20 +326,20 @@ public class AcceptorServletTest {
 
 		@Override
 		public void transferResponse(
-			HttpServletRequest request, HttpServletResponse response,
-			Exception e) {
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Exception e) {
 
-			Assert.assertSame(_preparedRequest, request);
-			Assert.assertSame(_preparedResponse, response);
+			Assert.assertSame(_preparedRequest, httpServletRequest);
+			Assert.assertSame(_preparedResponse, httpServletResponse);
 
 			_exception = e;
 		}
 
 		private Exception _exception;
 		private boolean _ioExceptionOnPrepareRequest;
-		private HttpServletRequest _originalRequest1;
-		private HttpServletRequest _originalRequest2;
-		private HttpServletResponse _originalResponse;
+		private HttpServletRequest _originalHttpServletRequest1;
+		private HttpServletRequest _originalHttpServletRequest2;
+		private HttpServletResponse _originalHttpServletResponse;
 		private MockHttpServletRequest _preparedRequest;
 		private MockHttpServletResponse _preparedResponse;
 		private boolean _runtimeExceptionOnPrepareRequest;

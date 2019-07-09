@@ -17,8 +17,10 @@ package com.liferay.portal.kernel.concurrent;
 import com.liferay.portal.kernel.concurrent.test.MarkerBlockingJob;
 import com.liferay.portal.kernel.concurrent.test.TestUtil;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -231,7 +233,7 @@ public class ThreadPoolExecutorTest {
 	}
 
 	@Test
-	public void testAdjustPoolSizeIncreaseCoreAndMaxPoolSizeWithNonEmptyTaskQueue()
+	public void testAdjustPoolSizeIncreaseCoreAndMaxPoolSizeWithNonemptyTaskQueue()
 		throws InterruptedException {
 
 		ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
@@ -576,6 +578,7 @@ public class ThreadPoolExecutorTest {
 
 		Assert.assertTrue(
 			threadPoolHandler instanceof ThreadPoolHandlerAdapter);
+
 		Assert.assertFalse(threadPoolExecutor.isShutdown());
 		Assert.assertFalse(threadPoolExecutor.isTerminating());
 		Assert.assertFalse(threadPoolExecutor.isTerminated());
@@ -606,6 +609,7 @@ public class ThreadPoolExecutorTest {
 
 		Assert.assertTrue(
 			threadPoolHandler instanceof ThreadPoolHandlerAdapter);
+
 		Assert.assertFalse(threadPoolExecutor.isShutdown());
 		Assert.assertFalse(threadPoolExecutor.isTerminating());
 		Assert.assertFalse(threadPoolExecutor.isTerminated());
@@ -795,8 +799,10 @@ public class ThreadPoolExecutorTest {
 
 			threadPoolExecutor.execute(markerBlockingJob);
 
-			Assert.assertTrue(
-				recordRejectedExecutionHandler.getRejectedList().isEmpty());
+			List<Runnable> rejectedList =
+				recordRejectedExecutionHandler.getRejectedList();
+
+			Assert.assertTrue(rejectedList.isEmpty());
 		}
 		finally {
 			TestUtil.closePool(threadPoolExecutor);
@@ -824,7 +830,7 @@ public class ThreadPoolExecutorTest {
 		List<Runnable> rejectedList =
 			recordRejectedExecutionHandler.getRejectedList();
 
-		Assert.assertEquals(1, rejectedList.size());
+		Assert.assertEquals(rejectedList.toString(), 1, rejectedList.size());
 		Assert.assertSame(markerBlockingJob, rejectedList.get(0));
 	}
 
@@ -1020,8 +1026,10 @@ public class ThreadPoolExecutorTest {
 			List<Runnable> rejectedList =
 				recordRejectedExecutionHandler.getRejectedList();
 
-			Assert.assertEquals(1, rejectedList.size());
+			Assert.assertEquals(
+				rejectedList.toString(), 1, rejectedList.size());
 			Assert.assertSame(markerBlockingJob, rejectedList.get(0));
+
 			Assert.assertFalse(markerBlockingJob.isStarted());
 		}
 		finally {
@@ -1064,17 +1072,20 @@ public class ThreadPoolExecutorTest {
 
 			threadPoolExecutor.execute(new MarkerBlockingJob(true));
 
-			Assert.assertEquals(0, rejectedList.size());
+			Assert.assertEquals(
+				rejectedList.toString(), 0, rejectedList.size());
 
 			threadPoolExecutor.execute(new MarkerBlockingJob(true));
 
-			Assert.assertEquals(0, rejectedList.size());
+			Assert.assertEquals(
+				rejectedList.toString(), 0, rejectedList.size());
 
 			MarkerBlockingJob markerBlockingJob = new MarkerBlockingJob();
 
 			threadPoolExecutor.execute(markerBlockingJob);
 
-			Assert.assertEquals(1, rejectedList.size());
+			Assert.assertEquals(
+				rejectedList.toString(), 1, rejectedList.size());
 			Assert.assertSame(markerBlockingJob, rejectedList.get(0));
 			Assert.assertFalse(markerBlockingJob.isStarted());
 		}
@@ -1116,8 +1127,11 @@ public class ThreadPoolExecutorTest {
 		}
 
 		Assert.assertEquals(1, threadPoolExecutor.getLargestPoolSize());
-		Assert.assertEquals(
-			10, recordUncaughtExceptionHandler.getUncaughtMap().size());
+
+		Map<Thread, Throwable> uncaughtMap =
+			recordUncaughtExceptionHandler.getUncaughtMap();
+
+		Assert.assertEquals(uncaughtMap.toString(), 10, uncaughtMap.size());
 
 		for (MarkerBlockingJob markerBlockingJob : markerBlockingJobQueue) {
 			Assert.assertTrue(markerBlockingJob.isStarted());
@@ -1171,9 +1185,12 @@ public class ThreadPoolExecutorTest {
 			Set<? extends AbstractQueuedSynchronizer> workerTasks =
 				threadPoolExecutor.getWorkerTasks();
 
-			Assert.assertEquals(1, workerTasks.size());
+			Assert.assertEquals(workerTasks.toString(), 1, workerTasks.size());
 
-			headWorkerTask = workerTasks.iterator().next();
+			Iterator<? extends AbstractQueuedSynchronizer> iterator =
+				workerTasks.iterator();
+
+			headWorkerTask = iterator.next();
 
 			headWorkerTask.acquire(1);
 		}

@@ -19,6 +19,12 @@ package com.liferay.portal.kernel.cache.thread.local;
  */
 public enum Lifecycle {
 
-	ETERNAL, REQUEST, SESSION
+	ETERNAL, REQUEST,
+
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
+	SESSION
 
 }

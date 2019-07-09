@@ -16,10 +16,9 @@ package com.liferay.gradle.plugins.patcher;
 
 import com.liferay.gradle.util.FileUtil;
 import com.liferay.gradle.util.GradleUtil;
+import com.liferay.gradle.util.OSDetector;
 import com.liferay.gradle.util.Validator;
 import com.liferay.gradle.util.copy.ReplaceLeadingPathAction;
-
-import groovy.lang.Closure;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -44,6 +43,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
 import org.gradle.api.artifacts.ResolvableDependencies;
@@ -73,6 +73,27 @@ public class PatchTask extends DefaultTask {
 	public static final String PATCHED_SRC_DIR_MAPPING_DEFAULT_EXTENSION = "*";
 
 	public PatchTask() {
+		_originalLibConfigurationName = new Callable<String>() {
+
+			@Override
+			public String call() throws Exception {
+				Project project = getProject();
+
+				ConfigurationContainer configurationContainer =
+					project.getConfigurations();
+
+				Configuration configuration = configurationContainer.findByName(
+					"compileClasspath");
+
+				if (configuration != null) {
+					return configuration.getName();
+				}
+
+				return JavaPlugin.COMPILE_CONFIGURATION_NAME;
+			}
+
+		};
+
 		_originalLibFile = new Callable<File>() {
 
 			@Override
@@ -91,7 +112,7 @@ public class PatchTask extends DefaultTask {
 
 		};
 
-		args("--binary", "--strip=1", "--no-backup-if-mismatch");
+		args("--no-backup-if-mismatch", "--strip=1");
 	}
 
 	public PatchTask args(Iterable<Object> args) {
@@ -158,7 +179,7 @@ public class PatchTask extends DefaultTask {
 	}
 
 	@InputFile
-	public File getOriginalLibSrcFile() throws Exception {
+	public File getOriginalLibSrcFile() {
 		return GradleUtil.toFile(getProject(), _originalLibSrcFile);
 	}
 
@@ -216,9 +237,8 @@ public class PatchTask extends DefaultTask {
 		if (!_patchFiles.isEmpty()) {
 			return project.files(_patchFiles);
 		}
-		else {
-			return project.fileTree(_patchesDir);
-		}
+
+		return project.fileTree(_patchesDir);
 	}
 
 	public boolean isCopyOriginalLibClasses() {
@@ -228,41 +248,11 @@ public class PatchTask extends DefaultTask {
 	@TaskAction
 	public void patch() throws Exception {
 		final Project project = getProject();
-		final File temporaryDir = getTemporaryDir();
 
-		project.delete(temporaryDir);
+		File patchesTemporaryDir = fixPatchFiles();
+		final File srcTemporaryDir = fixSrcFiles();
 
-		temporaryDir.mkdir();
-
-		Closure<Void> closure = new Closure<Void>(null) {
-
-			@SuppressWarnings("unused")
-			public void doCall(CopySpec copySpec) throws Exception {
-				final String originalLibSrcDirName = getOriginalLibSrcDirName();
-
-				if (!originalLibSrcDirName.equals(".")) {
-					Map<Object, Object> leadingPathReplacementsMap =
-						new HashMap<>();
-
-					leadingPathReplacementsMap.put(originalLibSrcDirName, "");
-
-					copySpec.eachFile(
-						new ReplaceLeadingPathAction(
-							leadingPathReplacementsMap));
-				}
-
-				copySpec.filter(FixCrLfFilter.class);
-				copySpec.from(project.zipTree(getOriginalLibSrcFile()));
-				copySpec.include(getFileNames());
-				copySpec.into(temporaryDir);
-				copySpec.setIncludeEmptyDirs(false);
-			}
-
-		};
-
-		project.copy(closure);
-
-		for (final File patchFile : getSortedPatchFiles()) {
+		for (final File patchFile : getSortedFiles(patchesTemporaryDir)) {
 			final ByteArrayOutputStream byteArrayOutputStream =
 				new ByteArrayOutputStream();
 
@@ -271,17 +261,21 @@ public class PatchTask extends DefaultTask {
 
 					@Override
 					public void execute(ExecSpec execSpec) {
-						execSpec.setExecutable("patch");
-						execSpec.setIgnoreExitValue(true);
-						execSpec.setWorkingDir(temporaryDir);
-
 						execSpec.args(getArgs());
 
-						execSpec.args(
-							"--input=" +
-								FileUtil.relativize(patchFile, temporaryDir));
+						if (OSDetector.isWindows()) {
+							execSpec.args("--binary");
+						}
 
+						String relativizePath = FileUtil.relativize(
+							patchFile, srcTemporaryDir);
+
+						execSpec.args("--input=" + relativizePath);
+
+						execSpec.setExecutable("patch");
+						execSpec.setIgnoreExitValue(true);
 						execSpec.setStandardOutput(byteArrayOutputStream);
+						execSpec.setWorkingDir(srcTemporaryDir);
 					}
 
 				});
@@ -293,7 +287,7 @@ public class PatchTask extends DefaultTask {
 			execResult.assertNormalExitValue();
 		}
 
-		FileTree fileTree = project.fileTree(temporaryDir);
+		FileTree fileTree = project.fileTree(srcTemporaryDir);
 
 		for (File file : fileTree) {
 			File patchedSrcDir = getPatchedSrcDir(file.getName());
@@ -304,7 +298,7 @@ public class PatchTask extends DefaultTask {
 
 			Path patchedSrcDirPath = patchedSrcDir.toPath();
 
-			String relativePath = FileUtil.relativize(file, temporaryDir);
+			String relativePath = FileUtil.relativize(file, srcTemporaryDir);
 
 			patchedSrcDirPath = patchedSrcDirPath.resolve(relativePath);
 
@@ -396,6 +390,67 @@ public class PatchTask extends DefaultTask {
 		patchFiles(patchFiles);
 	}
 
+	protected File fixPatchFiles() {
+		final Project project = getProject();
+
+		final File temporaryDir = new File(getTemporaryDir(), "patches");
+
+		project.delete(temporaryDir);
+
+		project.copy(
+			new Action<CopySpec>() {
+
+				@Override
+				public void execute(CopySpec copySpec) {
+					copySpec.filter(_fixCrLfArgs, FixCrLfFilter.class);
+					copySpec.from(getPatchFiles());
+					copySpec.into(temporaryDir);
+					copySpec.setIncludeEmptyDirs(false);
+				}
+
+			});
+
+		return temporaryDir;
+	}
+
+	protected File fixSrcFiles() {
+		final Project project = getProject();
+
+		final File temporaryDir = new File(getTemporaryDir(), "src");
+
+		project.delete(temporaryDir);
+
+		project.copy(
+			new Action<CopySpec>() {
+
+				@Override
+				public void execute(CopySpec copySpec) {
+					String originalLibSrcDirName = getOriginalLibSrcDirName();
+
+					if (!originalLibSrcDirName.equals(".")) {
+						Map<Object, Object> leadingPathReplacementsMap =
+							new HashMap<>();
+
+						leadingPathReplacementsMap.put(
+							originalLibSrcDirName, "");
+
+						copySpec.eachFile(
+							new ReplaceLeadingPathAction(
+								leadingPathReplacementsMap));
+					}
+
+					copySpec.filter(_fixCrLfArgs, FixCrLfFilter.class);
+					copySpec.from(project.zipTree(getOriginalLibSrcFile()));
+					copySpec.include(getFileNames());
+					copySpec.into(temporaryDir);
+					copySpec.setIncludeEmptyDirs(false);
+				}
+
+			});
+
+		return temporaryDir;
+	}
+
 	protected Dependency getOriginalLibDependency() {
 		Configuration configuration = GradleUtil.getConfiguration(
 			getProject(), getOriginalLibConfigurationName());
@@ -442,11 +497,9 @@ public class PatchTask extends DefaultTask {
 			ModuleVersionIdentifier moduleVersionIdentifier =
 				resolvedModuleVersion.getId();
 
-			if (moduleGroup.equals(
-					moduleVersionIdentifier.getGroup()) &&
+			if (moduleGroup.equals(moduleVersionIdentifier.getGroup()) &&
 				moduleName.equals(moduleVersionIdentifier.getName()) &&
-				moduleVersion.equals(
-					moduleVersionIdentifier.getVersion())) {
+				moduleVersion.equals(moduleVersionIdentifier.getVersion())) {
 
 				return resolvedArtifact.getFile();
 			}
@@ -473,6 +526,7 @@ public class PatchTask extends DefaultTask {
 			String moduleGroup = getOriginalLibModuleGroup();
 
 			sb.append(moduleGroup.replace('.', '/'));
+
 			sb.append('/');
 		}
 
@@ -507,24 +561,36 @@ public class PatchTask extends DefaultTask {
 		return GradleUtil.toFile(getProject(), patchedSrcDir);
 	}
 
-	protected List<File> getSortedPatchFiles() {
-		List<File> sortedPatchFiles = new ArrayList<>();
+	protected List<File> getSortedFiles(File dir) {
+		List<File> sortedFiles = new ArrayList<>();
 
-		GUtil.addToCollection(sortedPatchFiles, getPatchFiles());
+		Project project = getProject();
 
-		Collections.sort(sortedPatchFiles);
+		FileTree fileTree = project.fileTree(dir);
 
-		return sortedPatchFiles;
+		GUtil.addToCollection(sortedFiles, fileTree);
+
+		Collections.sort(sortedFiles);
+
+		return sortedFiles;
 	}
 
 	private static final String _BASE_URL =
 		"http://repo.maven.apache.org/maven2/";
 
+	private static final Map<String, Object> _fixCrLfArgs =
+		new HashMap<String, Object>() {
+			{
+				put("eof", FixCrLfFilter.AddAsisRemove.newInstance("remove"));
+				put("eol", FixCrLfFilter.CrLf.newInstance("lf"));
+				put("fixlast", false);
+			}
+		};
+
 	private final List<Object> _args = new ArrayList<>();
 	private boolean _copyOriginalLibClasses = true;
 	private final List<Object> _fileNames = new ArrayList<>();
-	private Object _originalLibConfigurationName =
-		JavaPlugin.COMPILE_CONFIGURATION_NAME;
+	private Object _originalLibConfigurationName;
 	private Object _originalLibFile;
 	private Object _originalLibModuleName;
 	private Object _originalLibSrcBaseUrl;

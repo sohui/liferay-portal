@@ -1,7 +1,10 @@
-<definition default="assertHTMLSourceTextNotPresent">
-	<command name="assertHTMLSourceTextNotPresent">
-		<execute function="WaitForSPARefresh" />
+@default = "assertHTMLSourceTextNotPresent"
+definition {
 
-		<execute selenium="assertHTMLSourceTextNotPresent" />
-	</command>
-</definition>
+	function assertHTMLSourceTextNotPresent {
+		WaitForSPARefresh();
+
+		selenium.assertHTMLSourceTextNotPresent();
+	}
+
+}

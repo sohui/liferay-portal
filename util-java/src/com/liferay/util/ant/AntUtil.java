@@ -14,10 +14,10 @@
 
 package com.liferay.util.ant;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.IOException;
 
@@ -46,12 +46,11 @@ public class AntUtil {
 
 				StringBundler sb = new StringBundler();
 
-				try {
-					boolean first = true;
-
-					UnsyncBufferedReader unsyncBufferedReader =
+				try (UnsyncBufferedReader unsyncBufferedReader =
 						new UnsyncBufferedReader(
-							new UnsyncStringReader(buildEvent.getMessage()));
+							new UnsyncStringReader(buildEvent.getMessage()))) {
+
+					boolean first = true;
 
 					String line = unsyncBufferedReader.readLine();
 

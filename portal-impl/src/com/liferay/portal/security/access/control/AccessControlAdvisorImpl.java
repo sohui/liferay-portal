@@ -23,10 +23,10 @@ import com.liferay.registry.ServiceReference;
 import com.liferay.registry.ServiceTracker;
 import com.liferay.registry.ServiceTrackerCustomizer;
 
+import java.lang.reflect.Method;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * @author Tomas Polesovsky
@@ -36,19 +36,9 @@ import org.aopalliance.intercept.MethodInvocation;
  */
 public class AccessControlAdvisorImpl implements AccessControlAdvisor {
 
-	public AccessControlAdvisorImpl() {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(
-			AccessControlPolicy.class,
-			new AccessControlPolicyTrackerCustomizer());
-
-		_serviceTracker.open();
-	}
-
 	@Override
 	public void accept(
-			MethodInvocation methodInvocation,
+			Method method, Object[] arguments,
 			AccessControlled accessControlled)
 		throws SecurityException {
 
@@ -57,8 +47,7 @@ public class AccessControlAdvisorImpl implements AccessControlAdvisor {
 					_accessControlPolicies) {
 
 				accessControlPolicy.onServiceRemoteAccess(
-					methodInvocation.getMethod(),
-					methodInvocation.getArguments(), accessControlled);
+					method, arguments, accessControlled);
 			}
 		}
 		else {
@@ -66,19 +55,18 @@ public class AccessControlAdvisorImpl implements AccessControlAdvisor {
 					_accessControlPolicies) {
 
 				accessControlPolicy.onServiceAccess(
-					methodInvocation.getMethod(),
-					methodInvocation.getArguments(), accessControlled);
+					method, arguments, accessControlled);
 			}
 		}
 	}
 
-	private final List<AccessControlPolicy> _accessControlPolicies =
+	private static final List<AccessControlPolicy> _accessControlPolicies =
 		new CopyOnWriteArrayList<>();
-	private final ServiceTracker<?, AccessControlPolicy> _serviceTracker;
+	private static final ServiceTracker<?, ?> _serviceTracker;
 
-	private class AccessControlPolicyTrackerCustomizer
-		implements
-			ServiceTrackerCustomizer<AccessControlPolicy, AccessControlPolicy> {
+	private static class AccessControlPolicyTrackerCustomizer
+		implements ServiceTrackerCustomizer
+			<AccessControlPolicy, AccessControlPolicy> {
 
 		@Override
 		public AccessControlPolicy addingService(
@@ -112,6 +100,16 @@ public class AccessControlAdvisorImpl implements AccessControlAdvisor {
 			_accessControlPolicies.remove(accessControlPolicy);
 		}
 
+	}
+
+	static {
+		Registry registry = RegistryUtil.getRegistry();
+
+		_serviceTracker = registry.trackServices(
+			AccessControlPolicy.class,
+			new AccessControlPolicyTrackerCustomizer());
+
+		_serviceTracker.open();
 	}
 
 }

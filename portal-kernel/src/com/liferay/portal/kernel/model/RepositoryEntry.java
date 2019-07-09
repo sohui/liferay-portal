@@ -14,30 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the RepositoryEntry service. Represents a row in the &quot;RepositoryEntry&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see RepositoryEntryModel
- * @see com.liferay.portal.model.impl.RepositoryEntryImpl
- * @see com.liferay.portal.model.impl.RepositoryEntryModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.RepositoryEntryImpl")
 @ProviderType
-public interface RepositoryEntry extends RepositoryEntryModel, PersistedModel {
+public interface RepositoryEntry extends PersistedModel, RepositoryEntryModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.RepositoryEntryImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.RepositoryEntryImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<RepositoryEntry, Long> REPOSITORY_ENTRY_ID_ACCESSOR =
-		new Accessor<RepositoryEntry, Long>() {
+	public static final Accessor<RepositoryEntry, Long>
+		REPOSITORY_ENTRY_ID_ACCESSOR = new Accessor<RepositoryEntry, Long>() {
+
 			@Override
 			public Long get(RepositoryEntry repositoryEntry) {
 				return repositoryEntry.getRepositoryEntryId();
@@ -52,5 +52,7 @@ public interface RepositoryEntry extends RepositoryEntryModel, PersistedModel {
 			public Class<RepositoryEntry> getTypeClass() {
 				return RepositoryEntry.class;
 			}
+
 		};
+
 }

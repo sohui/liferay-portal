@@ -19,6 +19,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import java.io.File;
 import java.io.InputStream;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The interface for all file store implementations. Most, if not all
  * implementations should extend from the class {@link BaseStore}.
@@ -27,6 +29,7 @@ import java.io.InputStream;
  * @author Edward Han
  * @see    BaseStore
  */
+@ProviderType
 public interface Store {
 
 	public static final String VERSION_DEFAULT = "1.0";
@@ -45,7 +48,16 @@ public interface Store {
 			long companyId, long repositoryId, String fileName, InputStream is)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public void checkRoot(long companyId);
+
+	public void copyFileToStore(
+			long companyId, long repositoryId, String fileName,
+			String versionLabel, Store targetStore)
+		throws PortalException;
 
 	public void copyFileVersion(
 			long companyId, long repositoryId, String fileName,
@@ -104,7 +116,16 @@ public interface Store {
 		long companyId, long repositoryId, String fileName,
 		String versionLabel);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public void move(String srcDir, String destDir);
+
+	public void moveFileToStore(
+			long companyId, long repositoryId, String fileName,
+			String versionLabel, Store targetStore)
+		throws PortalException;
 
 	public void updateFile(
 			long companyId, long repositoryId, long newRepositoryId,

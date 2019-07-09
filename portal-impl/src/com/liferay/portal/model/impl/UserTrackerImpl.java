@@ -14,13 +14,13 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserTracker;
 import com.liferay.portal.kernel.model.UserTrackerPath;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class UserTrackerImpl extends UserTrackerBaseImpl {
 		}
 		catch (ArrayIndexOutOfBoundsException aioobe) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(aioobe);
+				_log.warn(aioobe, aioobe);
 			}
 		}
 

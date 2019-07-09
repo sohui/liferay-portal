@@ -15,7 +15,10 @@
 package com.liferay.portlet.asset.model.impl;
 
 /**
- * @author Jorge Ferrer
+ * @author     Jorge Ferrer
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.asset.tag.stats.model.impl.AssetTagStatsImpl}
  */
+@Deprecated
 public class AssetTagStatsImpl extends AssetTagStatsBaseImpl {
 }

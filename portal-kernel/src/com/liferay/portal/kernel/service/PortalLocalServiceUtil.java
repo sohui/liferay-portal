@@ -14,52 +14,49 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the local service utility for Portal. This utility wraps
- * {@link com.liferay.portal.service.impl.PortalLocalServiceImpl} and is the
- * primary access point for service operations in application layer code running
+ * <code>com.liferay.portal.service.impl.PortalLocalServiceImpl</code> and
+ * is an access point for service operations in application layer code running
  * on the local server. Methods of this service will not have security checks
  * based on the propagated JAAS credentials because this service can only be
  * accessed from within the same VM.
  *
  * @author Brian Wing Shun Chan
  * @see PortalLocalService
- * @see com.liferay.portal.service.base.PortalLocalServiceBaseImpl
- * @see com.liferay.portal.service.impl.PortalLocalServiceImpl
  * @generated
  */
 @ProviderType
 public class PortalLocalServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portal.service.impl.PortalLocalServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.PortalLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
 	public static PortalLocalService getService() {
 		if (_service == null) {
-			_service = (PortalLocalService)PortalBeanLocatorUtil.locate(PortalLocalService.class.getName());
-
-			ReferenceRegistry.registerReference(PortalLocalServiceUtil.class,
-				"_service");
+			_service = (PortalLocalService)PortalBeanLocatorUtil.locate(
+				PortalLocalService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static PortalLocalService _service;
+
 }

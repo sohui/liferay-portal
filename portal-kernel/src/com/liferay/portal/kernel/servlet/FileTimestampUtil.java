@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.URLUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -46,7 +46,18 @@ public class FileTimestampUtil {
 			return 0;
 		}
 
-		Long timestamp = _timestamps.get(path);
+		String timestampsCacheKey = FileTimestampUtil.class.getName();
+
+		Map<String, Long> timestamps =
+			(Map<String, Long>)servletContext.getAttribute(timestampsCacheKey);
+
+		if (timestamps == null) {
+			timestamps = new ConcurrentHashMap<>();
+
+			servletContext.setAttribute(timestampsCacheKey, timestamps);
+		}
+
+		Long timestamp = timestamps.get(path);
 
 		if (timestamp != null) {
 			return timestamp;
@@ -62,7 +73,7 @@ public class FileTimestampUtil {
 			if (uriFile.exists()) {
 				timestamp = uriFile.lastModified();
 
-				_timestamps.put(path, timestamp);
+				timestamps.put(path, timestamp);
 
 				return timestamp;
 			}
@@ -82,19 +93,18 @@ public class FileTimestampUtil {
 			_log.error(ioe, ioe);
 		}
 
-		_timestamps.put(path, timestamp);
+		timestamps.put(path, timestamp);
 
 		return timestamp;
 	}
 
-	public static void reset() {
-		_timestamps.clear();
+	public static void reset(ServletContext servletContext) {
+		String timestampsCacheKey = FileTimestampUtil.class.getName();
+
+		servletContext.removeAttribute(timestampsCacheKey);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		FileTimestampUtil.class);
-
-	private static final Map<String, Long> _timestamps =
-		new ConcurrentHashMap<>();
 
 }

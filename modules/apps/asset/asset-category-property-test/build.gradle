@@ -1,0 +1,4 @@
+dependencies {
+	testIntegrationCompile project(":apps:asset:asset-category-property-api")
+	testIntegrationCompile project(":test:arquillian-extension-junit-bridge")
+}

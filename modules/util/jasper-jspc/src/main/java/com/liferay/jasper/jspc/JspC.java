@@ -52,12 +52,12 @@ public class JspC extends org.apache.jasper.JspC {
 			throw new RuntimeException(e);
 		}
 
-		JspC jspc = new JspC();
+		JspC jspC = new JspC();
 
 		try {
-			jspc.setArgs(args);
+			jspC.setArgs(args);
 
-			jspc.execute();
+			jspC.execute();
 		}
 		catch (Exception e1) {
 			e1.printStackTrace();
@@ -69,7 +69,7 @@ public class JspC extends org.apache.jasper.JspC {
 
 				noDieLevelField.setAccessible(true);
 
-				int dieLevel = jspc.getDieLevel();
+				int dieLevel = jspC.getDieLevel();
 
 				if (dieLevel != (Integer)noDieLevelField.get(null)) {
 					System.exit(dieLevel);
@@ -114,7 +114,9 @@ public class JspC extends org.apache.jasper.JspC {
 				page = page.replace(File.separatorChar, '/');
 			}
 
-			if (page.contains("/docroot/META-INF/custom_jsps/")) {
+			if (page.contains("/docroot/META-INF/custom_jsps/") ||
+				page.contains("/META-INF/resources/custom_jsps/")) {
+
 				iterator.remove();
 			}
 		}
@@ -141,15 +143,20 @@ public class JspC extends org.apache.jasper.JspC {
 
 		ClassLoader classLoader = new URLClassLoader(urls, null);
 
-		Class<?> jspcClass = classLoader.loadClass(JspC.class.getName());
+		Class<?> jspCClass = classLoader.loadClass(JspC.class.getName());
 
-		Object jspc = jspcClass.newInstance();
+		Object jspC = jspCClass.newInstance();
 
-		Method setArgsMethod = jspcClass.getMethod("setArgs", String[].class);
+		Method setArgsMethod = jspCClass.getMethod("setArgs", String[].class);
 
-		setArgsMethod.invoke(jspc, new Object[] {args});
+		setArgsMethod.invoke(jspC, new Object[] {args});
 
-		Method executeMethod = jspcClass.getMethod("execute");
+		Method setClassPathMethod = jspCClass.getMethod(
+			"setClassPath", String.class);
+
+		setClassPathMethod.invoke(jspC, classpath);
+
+		Method executeMethod = jspCClass.getMethod("execute");
 
 		Thread currentThread = Thread.currentThread();
 
@@ -158,7 +165,7 @@ public class JspC extends org.apache.jasper.JspC {
 		currentThread.setContextClassLoader(classLoader);
 
 		try {
-			executeMethod.invoke(jspc);
+			executeMethod.invoke(jspC);
 		}
 		finally {
 			currentThread.setContextClassLoader(contextClassLoader);

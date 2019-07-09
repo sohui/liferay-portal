@@ -9,33 +9,8 @@
 </thead>
 <tbody>
 <tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
-	<td>PREVIEW_AUTOSIZE</td>
-	<td>//div[@data-device='autosize']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PREVIEW_SMARTPHONE</td>
-	<td>//div[@data-device='smartphone']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PREVIEW_TABLET</td>
-	<td>//div[@data-device='tablet']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PREVIEW_DESKTOP</td>
-	<td>//div[@data-device='desktop']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PREVIEW_CUSTOM</td>
-	<td>//span[@data-device='custom']</td>
+	<td>PREVIEW_DATA_DEVICE_BUTTON</td>
+	<td>//div[contains(@class,'devices')]//button[@data-device='${key_deviceType}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -49,8 +24,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PREVIEW_MESSAGE</td>
-	<td>//li[contains(@id,'_simulationDeviceContainer')]//div[contains(@class,'preview-info-message')]</td>
+	<td>PREVIEW_DEVICE_IFRAME</td>
+	<td>//div[contains(@class,'${key_deviceType}')]//iframe[@id='simulationDeviceIframe']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PREVIEW_DEVICE_GENERAL_IFRAME</td>
+	<td>//iframe[@id='simulationDeviceIframe']</td>
 	<td></td>
 </tr>
 </tbody>

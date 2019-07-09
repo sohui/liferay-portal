@@ -75,12 +75,12 @@ public abstract class BaseValidatorTagSupport extends IncludeTag {
 			return;
 		}
 
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
 
 		Map<String, List<ValidatorTag>> validatorTagsMap =
-			(Map<String, List<ValidatorTag>>)request.getAttribute(
-				"aui:form:validatorTagsMap");
+			(Map<String, List<ValidatorTag>>)httpServletRequest.getAttribute(
+				"LIFERAY_SHARED_aui:form:validatorTagsMap");
 
 		if (validatorTagsMap != null) {
 			List<ValidatorTag> validatorTags = ListUtil.fromMapValues(

@@ -16,15 +16,14 @@ package com.liferay.portal.kernel.search;
 
 import com.liferay.portal.kernel.search.dummy.DummyIndexSearcher;
 import com.liferay.portal.kernel.search.dummy.DummyIndexWriter;
-import com.liferay.portal.kernel.search.generic.BooleanClauseFactoryImpl;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
+import com.liferay.portal.kernel.search.generic.BooleanQueryFactoryImpl;
+import com.liferay.portal.kernel.search.generic.TermQueryFactoryImpl;
 
 /**
  * @author Bruno Farache
  * @author Carlos Sierra Andrés
  * @author Marcellus Tavares
  */
-@DoPrivileged
 public class BaseSearchEngine implements SearchEngine {
 
 	/**
@@ -38,28 +37,13 @@ public class BaseSearchEngine implements SearchEngine {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	@Override
-	public BooleanClauseFactory getBooleanClauseFactory() {
-		if (_booleanClauseFactory == null) {
-			_booleanClauseFactory = new BooleanClauseFactoryImpl();
-		}
-
-		return _booleanClauseFactory;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
 	public BooleanQueryFactory getBooleanQueryFactory() {
 		if (_booleanQueryFactory == null) {
-			_booleanQueryFactory =
-				new com.liferay.portal.kernel.search.generic.
-					BooleanQueryFactoryImpl();
+			_booleanQueryFactory = new BooleanQueryFactoryImpl();
 		}
 
 		return _booleanQueryFactory;
@@ -76,33 +60,16 @@ public class BaseSearchEngine implements SearchEngine {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
 	public TermQueryFactory getTermQueryFactory() {
 		if (_termQueryFactory == null) {
-			_termQueryFactory =
-				new com.liferay.portal.kernel.search.generic.
-					TermQueryFactoryImpl();
+			_termQueryFactory = new TermQueryFactoryImpl();
 		}
 
 		return _termQueryFactory;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	@Override
-	public TermRangeQueryFactory getTermRangeQueryFactory() {
-		if (_termRangeQueryFactory == null) {
-			_termRangeQueryFactory =
-				new com.liferay.portal.kernel.search.generic.
-					TermRangeQueryFactoryImpl();
-		}
-
-		return _termRangeQueryFactory;
 	}
 
 	@Override
@@ -134,26 +101,6 @@ public class BaseSearchEngine implements SearchEngine {
 		throws SearchException {
 	}
 
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public void setBooleanClauseFactory(
-		BooleanClauseFactory booleanClauseFactory) {
-
-		_booleanClauseFactory = booleanClauseFactory;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public void setBooleanQueryFactory(
-		BooleanQueryFactory booleanQueryFactory) {
-
-		_booleanQueryFactory = booleanQueryFactory;
-	}
-
 	public void setIndexSearcher(IndexSearcher indexSearcher) {
 		_indexSearcher = indexSearcher;
 	}
@@ -162,29 +109,9 @@ public class BaseSearchEngine implements SearchEngine {
 		_indexWriter = indexWriter;
 	}
 
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public void setTermQueryFactory(TermQueryFactory termQueryFactory) {
-		_termQueryFactory = termQueryFactory;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public void setTermRangeQueryFactory(
-		TermRangeQueryFactory termRangeQueryFactory) {
-
-		_termRangeQueryFactory = termRangeQueryFactory;
-	}
-
 	public void setVendor(String vendor) {
 		_vendor = vendor;
 	}
-
-	private BooleanClauseFactory _booleanClauseFactory;
 
 	@SuppressWarnings("deprecation")
 	private BooleanQueryFactory _booleanQueryFactory;
@@ -194,9 +121,6 @@ public class BaseSearchEngine implements SearchEngine {
 
 	@SuppressWarnings("deprecation")
 	private TermQueryFactory _termQueryFactory;
-
-	@SuppressWarnings("deprecation")
-	private TermRangeQueryFactory _termRangeQueryFactory;
 
 	private String _vendor;
 

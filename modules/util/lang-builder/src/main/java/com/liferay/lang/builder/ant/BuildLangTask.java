@@ -38,6 +38,10 @@ public class BuildLangTask extends Task {
 		}
 	}
 
+	public void setExcludedLanguageIds(String[] excludedLanguageIds) {
+		_langBuilderArgs.setExcludedLanguageIds(excludedLanguageIds);
+	}
+
 	public void setLangDirName(String langDirName) {
 		_langBuilderArgs.setLangDirName(langDirName);
 	}
@@ -46,27 +50,16 @@ public class BuildLangTask extends Task {
 		_langBuilderArgs.setLangFileName(langFileName);
 	}
 
-	public void setPlugin(boolean plugin) {
-		_langBuilderArgs.setPlugin(plugin);
-	}
-
-	public void setPortalLanguagePropertiesFileName(
-		String portalLanguagePropertiesFileName) {
-
-		_langBuilderArgs.setPortalLanguagePropertiesFileName(
-			portalLanguagePropertiesFileName);
+	public void setTitleCapitalization(boolean titleCapitalization) {
+		_langBuilderArgs.setTitleCapitalization(titleCapitalization);
 	}
 
 	public void setTranslate(boolean translate) {
 		_langBuilderArgs.setTranslate(translate);
 	}
 
-	public void setTranslateClientId(String translateClientId) {
-		_langBuilderArgs.setTranslateClientId(translateClientId);
-	}
-
-	public void setTranslateClientSecret(String translateClientSecret) {
-		_langBuilderArgs.setTranslateClientSecret(translateClientSecret);
+	public void setTranslateSubscriptionKey(String translateSubscriptionKey) {
+		_langBuilderArgs.setTranslateSubscriptionKey(translateSubscriptionKey);
 	}
 
 	private final LangBuilderArgs _langBuilderArgs = new LangBuilderArgs();

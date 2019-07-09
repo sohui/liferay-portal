@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import java.io.Serializable;
 
 import java.text.DateFormat;
+import java.text.Normalizer;
 
 import java.util.Date;
 import java.util.Enumeration;
@@ -46,142 +47,165 @@ public class ParamUtil {
 	 * returned.
 	 * </p>
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a boolean
 	 */
 	public static boolean get(
-		HttpServletRequest request, String param, boolean defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		boolean defaultValue) {
 
-		return GetterUtil.get(request.getParameter(param), defaultValue);
+		return GetterUtil.get(
+			httpServletRequest.getParameter(param), defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as a Date. If the parameter is
 	 * missing or not convertible to a Date, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
-	 * @param  dateFormat the format used to parse date
+	 * @param  dateFormat the format used to parse the date
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a Date
 	 */
 	public static Date get(
-		HttpServletRequest request, String param, DateFormat dateFormat,
-		Date defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		DateFormat dateFormat, Date defaultValue) {
 
 		return GetterUtil.get(
-			request.getParameter(param), dateFormat, defaultValue);
+			httpServletRequest.getParameter(param), dateFormat, defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as a double. If the parameter is
 	 * missing or not convertible to a double, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a double
 	 */
 	public static double get(
-		HttpServletRequest request, String param, double defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		double defaultValue) {
 
-		return GetterUtil.get(request.getParameter(param), defaultValue);
+		return GetterUtil.get(
+			httpServletRequest.getParameter(param), defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as a float. If the parameter is
 	 * missing or not convertible to a float, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a float
 	 */
 	public static float get(
-		HttpServletRequest request, String param, float defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		float defaultValue) {
 
-		return GetterUtil.get(request.getParameter(param), defaultValue);
+		return GetterUtil.get(
+			httpServletRequest.getParameter(param), defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as an integer. If the parameter is
 	 * missing or not convertible to an integer, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as an integer
 	 */
 	public static int get(
-		HttpServletRequest request, String param, int defaultValue) {
+		HttpServletRequest httpServletRequest, String param, int defaultValue) {
 
-		return GetterUtil.get(request.getParameter(param), defaultValue);
+		return GetterUtil.get(
+			httpServletRequest.getParameter(param), defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as a long. If the parameter is
 	 * missing or not convertible to a long, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a long
 	 */
 	public static long get(
-		HttpServletRequest request, String param, long defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		long defaultValue) {
 
-		return GetterUtil.get(request.getParameter(param), defaultValue);
+		return GetterUtil.get(
+			httpServletRequest.getParameter(param), defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as a Number. If the parameter is
 	 * missing or not convertible to a Number, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a Number
 	 */
 	public static Number get(
-		HttpServletRequest request, String param, Number defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		Number defaultValue) {
 
-		return GetterUtil.get(request.getParameter(param), defaultValue);
+		return GetterUtil.get(
+			httpServletRequest.getParameter(param), defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as a short. If the parameter is
 	 * missing or not convertible to a short, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a short
 	 */
 	public static short get(
-		HttpServletRequest request, String param, short defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		short defaultValue) {
 
-		return GetterUtil.get(request.getParameter(param), defaultValue);
+		return GetterUtil.get(
+			httpServletRequest.getParameter(param), defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as a String. If the parameter is
 	 * missing or not convertible to a String, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a String
 	 */
 	public static String get(
-		HttpServletRequest request, String param, String defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		String defaultValue) {
 
 		String returnValue = GetterUtil.get(
-			request.getParameter(param), defaultValue);
+			httpServletRequest.getParameter(param), defaultValue);
 
 		if (returnValue != null) {
-			return returnValue.trim();
+			return _normalize(StringUtil.trim(returnValue));
 		}
 
 		return null;
@@ -215,7 +239,7 @@ public class ParamUtil {
 	 * @param  portletRequest the portlet request from which to read the
 	 *         parameter
 	 * @param  param the name of the parameter
-	 * @param  dateFormat the format used to parse date
+	 * @param  dateFormat the format used to parse the date
 	 * @param  defaultValue a default value
 	 * @return the portlet request parameter value as a Date
 	 */
@@ -341,7 +365,7 @@ public class ParamUtil {
 			portletRequest.getParameter(param), defaultValue);
 
 		if (returnValue != null) {
-			return returnValue.trim();
+			return _normalize(StringUtil.trim(returnValue));
 		}
 
 		return null;
@@ -375,7 +399,7 @@ public class ParamUtil {
 	 * @param  serviceContext the service context from which to read the
 	 *         parameter
 	 * @param  param the name of the parameter
-	 * @param  dateFormat the format used to parse date
+	 * @param  dateFormat the format used to parse the date
 	 * @param  defaultValue a default value
 	 * @return the service context parameter value as a Date
 	 */
@@ -501,7 +525,7 @@ public class ParamUtil {
 			serviceContext.getAttribute(param), defaultValue);
 
 		if (returnValue != null) {
-			return returnValue.trim();
+			return _normalize(StringUtil.trim(returnValue));
 		}
 
 		return null;
@@ -511,12 +535,15 @@ public class ParamUtil {
 	 * Returns the request parameter value as a boolean. If the parameter is
 	 * missing or not convertible to a boolean, <code>false</code> is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a boolean
 	 */
-	public static boolean getBoolean(HttpServletRequest request, String param) {
-		return GetterUtil.getBoolean(request.getParameter(param));
+	public static boolean getBoolean(
+		HttpServletRequest httpServletRequest, String param) {
+
+		return GetterUtil.getBoolean(httpServletRequest.getParameter(param));
 	}
 
 	/**
@@ -528,15 +555,17 @@ public class ParamUtil {
 	 * returned.
 	 * </p>
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a boolean
 	 */
 	public static boolean getBoolean(
-		HttpServletRequest request, String param, boolean defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		boolean defaultValue) {
 
-		return get(request, param, defaultValue);
+		return get(httpServletRequest, param, defaultValue);
 	}
 
 	/**
@@ -618,14 +647,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a boolean is replaced by
 	 * <code>false</code>.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a boolean array
 	 */
 	public static boolean[] getBooleanValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getBooleanValues(request, param, new boolean[0]);
+		return getBooleanValues(httpServletRequest, param, new boolean[0]);
 	}
 
 	/**
@@ -633,16 +663,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a boolean is replaced by
 	 * the default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a boolean array
 	 */
 	public static boolean[] getBooleanValues(
-		HttpServletRequest request, String param, boolean[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		boolean[] defaultValue) {
 
 		return GetterUtil.getBooleanValues(
-			getParameterValues(request, param, null), defaultValue);
+			getParameterValues(httpServletRequest, param, null), defaultValue);
 	}
 
 	/**
@@ -717,32 +749,36 @@ public class ParamUtil {
 	 * Returns the request parameter value as a Date. If the parameter is
 	 * missing or not convertible to a Date, the current date is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  dateFormat the format used to parse the date
 	 * @return the request parameter value as a Date
 	 */
 	public static Date getDate(
-		HttpServletRequest request, String param, DateFormat dateFormat) {
+		HttpServletRequest httpServletRequest, String param,
+		DateFormat dateFormat) {
 
-		return GetterUtil.getDate(request.getParameter(param), dateFormat);
+		return GetterUtil.getDate(
+			httpServletRequest.getParameter(param), dateFormat);
 	}
 
 	/**
 	 * Returns the request parameter value as a Date. If the parameter is
 	 * missing or not convertible to a Date, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  dateFormat the format used to parse the date
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a Date
 	 */
 	public static Date getDate(
-		HttpServletRequest request, String param, DateFormat dateFormat,
-		Date defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		DateFormat dateFormat, Date defaultValue) {
 
-		return get(request, param, dateFormat, defaultValue);
+		return get(httpServletRequest, param, dateFormat, defaultValue);
 	}
 
 	/**
@@ -820,15 +856,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a Date is replaced by the
 	 * current date.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  dateFormat the format used to parse the date
 	 * @return the request parameter value as a Date array
 	 */
 	public static Date[] getDateValues(
-		HttpServletRequest request, String param, DateFormat dateFormat) {
+		HttpServletRequest httpServletRequest, String param,
+		DateFormat dateFormat) {
 
-		return getDateValues(request, param, dateFormat, new Date[0]);
+		return getDateValues(
+			httpServletRequest, param, dateFormat, new Date[0]);
 	}
 
 	/**
@@ -836,18 +875,20 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a Date is replaced by the
 	 * default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  dateFormat the format used to parse the date
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a Date array
 	 */
 	public static Date[] getDateValues(
-		HttpServletRequest request, String param, DateFormat dateFormat,
-		Date[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		DateFormat dateFormat, Date[] defaultValue) {
 
 		return GetterUtil.getDateValues(
-			getParameterValues(request, param, null), dateFormat, defaultValue);
+			getParameterValues(httpServletRequest, param, null), dateFormat,
+			defaultValue);
 	}
 
 	/**
@@ -929,60 +970,68 @@ public class ParamUtil {
 	 * Returns the request parameter value as a double. If the parameter is
 	 * missing or not convertible to a double, <code>0</code> is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a double
 	 */
-	public static double getDouble(HttpServletRequest request, String param) {
-		return GetterUtil.getDouble(request.getParameter(param));
+	public static double getDouble(
+		HttpServletRequest httpServletRequest, String param) {
+
+		return GetterUtil.getDouble(httpServletRequest.getParameter(param));
 	}
 
 	/**
 	 * Returns the request parameter value as a double. If the parameter is
 	 * missing or not convertible to a double, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a double
 	 */
 	public static double getDouble(
-		HttpServletRequest request, String param, double defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		double defaultValue) {
 
-		return get(request, param, defaultValue);
+		return get(httpServletRequest, param, defaultValue);
 	}
 
 	/**
 	 * Returns the request parameter value as a double. If the parameter is
 	 * missing or not convertible to a double, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @param  locale the locale used to parse the double value
 	 * @return the request parameter value as a double
 	 */
 	public static double getDouble(
-		HttpServletRequest request, String param, double defaultValue,
-		Locale locale) {
+		HttpServletRequest httpServletRequest, String param,
+		double defaultValue, Locale locale) {
 
 		return GetterUtil.get(
-			request.getParameter(param), defaultValue, locale);
+			httpServletRequest.getParameter(param), defaultValue, locale);
 	}
 
 	/**
 	 * Returns the request parameter value as a double. If the parameter is
 	 * missing or not convertible to a double, <code>0</code> is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  locale the locale used to parse the double value
 	 * @return the request parameter value as a double
 	 */
 	public static double getDouble(
-		HttpServletRequest request, String param, Locale locale) {
+		HttpServletRequest httpServletRequest, String param, Locale locale) {
 
-		return GetterUtil.getDouble(request.getParameter(param), locale);
+		return GetterUtil.getDouble(
+			httpServletRequest.getParameter(param), locale);
 	}
 
 	/**
@@ -1087,14 +1136,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a double is replaced by
 	 * <code>0</code>.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a double array
 	 */
 	public static double[] getDoubleValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getDoubleValues(request, param, new double[0]);
+		return getDoubleValues(httpServletRequest, param, new double[0]);
 	}
 
 	/**
@@ -1102,16 +1152,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a double is replaced by
 	 * the default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a double array
 	 */
 	public static double[] getDoubleValues(
-		HttpServletRequest request, String param, double[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		double[] defaultValue) {
 
 		return GetterUtil.getDoubleValues(
-			getParameterValues(request, param, null), defaultValue);
+			getParameterValues(httpServletRequest, param, null), defaultValue);
 	}
 
 	/**
@@ -1186,27 +1238,32 @@ public class ParamUtil {
 	 * Returns the request parameter value as a float. If the parameter is
 	 * missing or not convertible to a float, <code>0</code> is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a float
 	 */
-	public static float getFloat(HttpServletRequest request, String param) {
-		return GetterUtil.getFloat(request.getParameter(param));
+	public static float getFloat(
+		HttpServletRequest httpServletRequest, String param) {
+
+		return GetterUtil.getFloat(httpServletRequest.getParameter(param));
 	}
 
 	/**
 	 * Returns the request parameter value as a float. If the parameter is
 	 * missing or not convertible to a float, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a float
 	 */
 	public static float getFloat(
-		HttpServletRequest request, String param, float defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		float defaultValue) {
 
-		return get(request, param, defaultValue);
+		return get(httpServletRequest, param, defaultValue);
 	}
 
 	/**
@@ -1272,14 +1329,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a float is replaced by
 	 * <code>0</code>.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a float array
 	 */
 	public static float[] getFloatValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getFloatValues(request, param, new float[0]);
+		return getFloatValues(httpServletRequest, param, new float[0]);
 	}
 
 	/**
@@ -1287,16 +1345,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a float is replaced by the
 	 * default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a float array
 	 */
 	public static float[] getFloatValues(
-		HttpServletRequest request, String param, float[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		float[] defaultValue) {
 
 		return GetterUtil.getFloatValues(
-			getParameterValues(request, param, null), defaultValue);
+			getParameterValues(httpServletRequest, param, null), defaultValue);
 	}
 
 	/**
@@ -1371,27 +1431,31 @@ public class ParamUtil {
 	 * Returns the request parameter value as an integer. If the parameter is
 	 * missing or not convertible to an integer, <code>0</code> is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as an integer
 	 */
-	public static int getInteger(HttpServletRequest request, String param) {
-		return GetterUtil.getInteger(request.getParameter(param));
+	public static int getInteger(
+		HttpServletRequest httpServletRequest, String param) {
+
+		return GetterUtil.getInteger(httpServletRequest.getParameter(param));
 	}
 
 	/**
 	 * Returns the request parameter value as an integer. If the parameter is
 	 * missing or not convertible to an integer, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as an integer
 	 */
 	public static int getInteger(
-		HttpServletRequest request, String param, int defaultValue) {
+		HttpServletRequest httpServletRequest, String param, int defaultValue) {
 
-		return get(request, param, defaultValue);
+		return get(httpServletRequest, param, defaultValue);
 	}
 
 	/**
@@ -1461,14 +1525,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to an integer is replaced by
 	 * <code>0</code>.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as an integer
 	 */
 	public static int[] getIntegerValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getIntegerValues(request, param, new int[0]);
+		return getIntegerValues(httpServletRequest, param, new int[0]);
 	}
 
 	/**
@@ -1476,16 +1541,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to an integer is replaced by
 	 * the default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as an integer
 	 */
 	public static int[] getIntegerValues(
-		HttpServletRequest request, String param, int[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		int[] defaultValue) {
 
 		return GetterUtil.getIntegerValues(
-			getParameterValues(request, param, null), defaultValue);
+			getParameterValues(httpServletRequest, param, null), defaultValue);
 	}
 
 	/**
@@ -1560,27 +1627,32 @@ public class ParamUtil {
 	 * Returns the request parameter value as a long. If the parameter is
 	 * missing or not convertible to a long, <code>0</code> is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a long
 	 */
-	public static long getLong(HttpServletRequest request, String param) {
-		return GetterUtil.getLong(request.getParameter(param));
+	public static long getLong(
+		HttpServletRequest httpServletRequest, String param) {
+
+		return GetterUtil.getLong(httpServletRequest.getParameter(param));
 	}
 
 	/**
 	 * Returns the request parameter value as a long. If the parameter is
 	 * missing or not convertible to a long, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a long
 	 */
 	public static long getLong(
-		HttpServletRequest request, String param, long defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		long defaultValue) {
 
-		return get(request, param, defaultValue);
+		return get(httpServletRequest, param, defaultValue);
 	}
 
 	/**
@@ -1646,14 +1718,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a long is replaced by
 	 * <code>0</code>.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a long array
 	 */
 	public static long[] getLongValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getLongValues(request, param, new long[0]);
+		return getLongValues(httpServletRequest, param, new long[0]);
 	}
 
 	/**
@@ -1661,16 +1734,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a long is replaced by the
 	 * default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a long array
 	 */
 	public static long[] getLongValues(
-		HttpServletRequest request, String param, long[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		long[] defaultValue) {
 
 		return GetterUtil.getLongValues(
-			getParameterValues(request, param, null), defaultValue);
+			getParameterValues(httpServletRequest, param, null), defaultValue);
 	}
 
 	/**
@@ -1745,27 +1820,32 @@ public class ParamUtil {
 	 * Returns the request parameter value as a Number. If the parameter is
 	 * missing or not convertible to a Number, <code>0</code> is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a Number
 	 */
-	public static Number getNumber(HttpServletRequest request, String param) {
-		return GetterUtil.getNumber(request.getParameter(param));
+	public static Number getNumber(
+		HttpServletRequest httpServletRequest, String param) {
+
+		return GetterUtil.getNumber(httpServletRequest.getParameter(param));
 	}
 
 	/**
 	 * Returns the request parameter value as a Number. If the parameter is
 	 * missing or not convertible to a Number, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a Number
 	 */
 	public static Number getNumber(
-		HttpServletRequest request, String param, Number defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		Number defaultValue) {
 
-		return get(request, param, defaultValue);
+		return get(httpServletRequest, param, defaultValue);
 	}
 
 	/**
@@ -1835,14 +1915,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a Number is replaced by
 	 * <code>0</code>.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a Number array
 	 */
 	public static Number[] getNumberValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getNumberValues(request, param, new Number[0]);
+		return getNumberValues(httpServletRequest, param, new Number[0]);
 	}
 
 	/**
@@ -1850,16 +1931,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a Number is replaced by
 	 * the default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a Number array
 	 */
 	public static Number[] getNumberValues(
-		HttpServletRequest request, String param, Number[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		Number[] defaultValue) {
 
 		return GetterUtil.getNumberValues(
-			getParameterValues(request, param, null), defaultValue);
+			getParameterValues(httpServletRequest, param, null), defaultValue);
 	}
 
 	/**
@@ -1935,14 +2018,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a String is replaced by a
 	 * blank string.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a String array
 	 */
 	public static String[] getParameterValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getParameterValues(request, param, new String[0]);
+		return getParameterValues(httpServletRequest, param, new String[0]);
 	}
 
 	/**
@@ -1950,15 +2034,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a String is replaced by
 	 * the default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a String array
 	 */
 	public static String[] getParameterValues(
-		HttpServletRequest request, String param, String[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		String[] defaultValue) {
 
-		return getParameterValues(request, param, defaultValue, true);
+		return getParameterValues(
+			httpServletRequest, param, defaultValue, true);
 	}
 
 	/**
@@ -1966,7 +2053,8 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a String is replaced by
 	 * the default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @param  split whether to split the single parameter value using comma
@@ -1974,20 +2062,20 @@ public class ParamUtil {
 	 * @return the request parameter value as a String array
 	 */
 	public static String[] getParameterValues(
-		HttpServletRequest request, String param, String[] defaultValue,
-		boolean split) {
+		HttpServletRequest httpServletRequest, String param,
+		String[] defaultValue, boolean split) {
 
-		String[] values = request.getParameterValues(param);
+		String[] values = httpServletRequest.getParameterValues(param);
 
 		if (values == null) {
-			return defaultValue;
+			return _normalize(defaultValue);
 		}
 
 		if (split && (values.length == 1)) {
-			return StringUtil.split(values[0]);
+			return _normalize(StringUtil.split(values[0]));
 		}
 
-		return values;
+		return _normalize(values);
 	}
 
 	/**
@@ -2040,37 +2128,43 @@ public class ParamUtil {
 		PortletRequest portletRequest, String param, String[] defaultValue,
 		boolean split) {
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			portletRequest);
+		HttpServletRequest httpServletRequest =
+			PortalUtil.getHttpServletRequest(portletRequest);
 
-		return getParameterValues(request, param, defaultValue, split);
+		return getParameterValues(
+			httpServletRequest, param, defaultValue, split);
 	}
 
 	/**
 	 * Returns the request parameter value as a short. If the parameter is
 	 * missing or not convertible to a short, <code>0</code> is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a short
 	 */
-	public static short getShort(HttpServletRequest request, String param) {
-		return GetterUtil.getShort(request.getParameter(param));
+	public static short getShort(
+		HttpServletRequest httpServletRequest, String param) {
+
+		return GetterUtil.getShort(httpServletRequest.getParameter(param));
 	}
 
 	/**
 	 * Returns the request parameter value as a short. If the parameter is
 	 * missing or not convertible to a short, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a short
 	 */
 	public static short getShort(
-		HttpServletRequest request, String param, short defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		short defaultValue) {
 
-		return get(request, param, defaultValue);
+		return get(httpServletRequest, param, defaultValue);
 	}
 
 	/**
@@ -2136,14 +2230,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a short is replaced by
 	 * <code>0</code>.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a short array
 	 */
 	public static short[] getShortValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getShortValues(request, param, new short[0]);
+		return getShortValues(httpServletRequest, param, new short[0]);
 	}
 
 	/**
@@ -2151,16 +2246,18 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a short is replaced by the
 	 * default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a short array
 	 */
 	public static short[] getShortValues(
-		HttpServletRequest request, String param, short[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		short[] defaultValue) {
 
 		return GetterUtil.getShortValues(
-			getParameterValues(request, param, null), defaultValue);
+			getParameterValues(httpServletRequest, param, null), defaultValue);
 	}
 
 	/**
@@ -2235,27 +2332,33 @@ public class ParamUtil {
 	 * Returns the request parameter value as a String. If the parameter is
 	 * missing or not convertible to a String, a blank string is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a String
 	 */
-	public static String getString(HttpServletRequest request, String param) {
-		return GetterUtil.getString(request.getParameter(param));
+	public static String getString(
+		HttpServletRequest httpServletRequest, String param) {
+
+		return _normalize(
+			GetterUtil.getString(httpServletRequest.getParameter(param)));
 	}
 
 	/**
 	 * Returns the request parameter value as a String. If the parameter is
 	 * missing or not convertible to a String, the default value is returned.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a String
 	 */
 	public static String getString(
-		HttpServletRequest request, String param, String defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		String defaultValue) {
 
-		return get(request, param, defaultValue);
+		return get(httpServletRequest, param, defaultValue);
 	}
 
 	/**
@@ -2270,7 +2373,8 @@ public class ParamUtil {
 	public static String getString(
 		PortletRequest portletRequest, String param) {
 
-		return GetterUtil.getString(portletRequest.getParameter(param));
+		return _normalize(
+			GetterUtil.getString(portletRequest.getParameter(param)));
 	}
 
 	/**
@@ -2301,7 +2405,8 @@ public class ParamUtil {
 	public static String getString(
 		ServiceContext serviceContext, String param) {
 
-		return GetterUtil.getString(serviceContext.getAttribute(param));
+		return _normalize(
+			GetterUtil.getString(serviceContext.getAttribute(param)));
 	}
 
 	/**
@@ -2325,14 +2430,15 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a String is replaced by a
 	 * blank string.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @return the request parameter value as a String array
 	 */
 	public static String[] getStringValues(
-		HttpServletRequest request, String param) {
+		HttpServletRequest httpServletRequest, String param) {
 
-		return getStringValues(request, param, new String[0]);
+		return getStringValues(httpServletRequest, param, new String[0]);
 	}
 
 	/**
@@ -2340,16 +2446,19 @@ public class ParamUtil {
 	 * array, each parameter value not convertible to a String is replaced by
 	 * the default value.
 	 *
-	 * @param  request the servlet request from which to read the parameter
+	 * @param  httpServletRequest the servlet request from which to read the
+	 *         parameter
 	 * @param  param the name of the parameter
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a String array
 	 */
 	public static String[] getStringValues(
-		HttpServletRequest request, String param, String[] defaultValue) {
+		HttpServletRequest httpServletRequest, String param,
+		String[] defaultValue) {
 
 		return GetterUtil.getStringValues(
-			getParameterValues(request, param, null), defaultValue);
+			getParameterValues(httpServletRequest, param, null),
+			() -> _normalize(defaultValue));
 	}
 
 	/**
@@ -2383,7 +2492,8 @@ public class ParamUtil {
 		PortletRequest portletRequest, String param, String[] defaultValue) {
 
 		return GetterUtil.getStringValues(
-			getParameterValues(portletRequest, param, null), defaultValue);
+			getParameterValues(portletRequest, param, null),
+			() -> _normalize(defaultValue));
 	}
 
 	/**
@@ -2417,23 +2527,26 @@ public class ParamUtil {
 		ServiceContext serviceContext, String param, String[] defaultValue) {
 
 		return GetterUtil.getStringValues(
-			serviceContext.getAttribute(param), defaultValue);
+			serviceContext.getAttribute(param), () -> _normalize(defaultValue));
 	}
 
 	/**
 	 * Prints all the request parameters as standard output.
 	 *
-	 * @param request the servlet request from which to read the parameters
+	 * @param httpServletRequest the servlet request from which to read the
+	 *        parameters
 	 */
-	public static void print(HttpServletRequest request) {
-		Map<String, String[]> parameters = request.getParameterMap();
+	public static void print(HttpServletRequest httpServletRequest) {
+		Map<String, String[]> parameters = httpServletRequest.getParameterMap();
 
 		for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
 			String name = entry.getKey();
 			String[] values = entry.getValue();
 
 			for (int i = 0; i < values.length; i++) {
-				System.out.println(name + "[" + i + "] = " + values[i]);
+				System.out.println(
+					StringBundler.concat(
+						name, "[", String.valueOf(i), "] = ", values[i]));
 			}
 		}
 	}
@@ -2453,7 +2566,9 @@ public class ParamUtil {
 			String[] values = portletRequest.getParameterValues(param);
 
 			for (int i = 0; i < values.length; i++) {
-				System.out.println(param + "[" + i + "] = " + values[i]);
+				System.out.println(
+					StringBundler.concat(
+						param, "[", String.valueOf(i), "] = ", values[i]));
 			}
 		}
 	}
@@ -2470,6 +2585,49 @@ public class ParamUtil {
 		for (Map.Entry<String, Serializable> entry : attributes.entrySet()) {
 			System.out.println(
 				entry.getKey() + " = " + String.valueOf(entry.getValue()));
+		}
+	}
+
+	private static String _normalize(String input) {
+		if ((_FORM == null) || Validator.isNull(input)) {
+			return input;
+		}
+
+		return Normalizer.normalize(input, _FORM);
+	}
+
+	private static String[] _normalize(String[] input) {
+		if ((_FORM == null) || ArrayUtil.isEmpty(input)) {
+			return input;
+		}
+
+		for (int i = 0; i < input.length; i++) {
+			input[i] = Normalizer.normalize(input[i], _FORM);
+		}
+
+		return input;
+	}
+
+	private static final Normalizer.Form _FORM;
+
+	static {
+		String formString = PropsUtil.get(
+			PropsKeys.UNICODE_TEXT_NORMALIZER_FORM);
+
+		if ((formString == null) || formString.isEmpty()) {
+			_FORM = null;
+		}
+		else {
+			Normalizer.Form form = null;
+
+			try {
+				form = Normalizer.Form.valueOf(formString);
+			}
+			catch (IllegalArgumentException iae) {
+				form = null;
+			}
+
+			_FORM = form;
 		}
 	}
 

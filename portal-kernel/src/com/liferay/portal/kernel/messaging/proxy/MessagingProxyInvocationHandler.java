@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.messaging.proxy;
 
 import com.liferay.portal.kernel.spring.aop.InvocationHandlerFactory;
+import com.liferay.portal.kernel.util.ProxyUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -23,6 +24,16 @@ import java.lang.reflect.Method;
  * @author Shuyang Zhou
  */
 public class MessagingProxyInvocationHandler implements InvocationHandler {
+
+	public static Object createProxy(BaseProxyBean baseProxyBean) {
+		Class<?> beanClass = baseProxyBean.getClass();
+
+		Thread currentThread = Thread.currentThread();
+
+		return ProxyUtil.newProxyInstance(
+			currentThread.getContextClassLoader(), beanClass.getInterfaces(),
+			new MessagingProxyInvocationHandler(baseProxyBean));
+	}
 
 	public static InvocationHandlerFactory getInvocationHandlerFactory() {
 		return _invocationHandlerFactory;
@@ -43,11 +54,10 @@ public class MessagingProxyInvocationHandler implements InvocationHandler {
 
 			return _baseProxyBean.synchronousSend(proxyRequest);
 		}
-		else {
-			_baseProxyBean.send(proxyRequest);
 
-			return null;
-		}
+		_baseProxyBean.send(proxyRequest);
+
+		return null;
 	}
 
 	private static final InvocationHandlerFactory _invocationHandlerFactory =

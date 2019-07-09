@@ -123,7 +123,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 					   (_poolSize < _corePoolSize) &&
 					   ((runnable = _taskQueue.poll()) != null)) {
 
-					_doAddWorkerThread(runnable);
+					_addWorkerThread(runnable);
 				}
 			}
 		}
@@ -297,9 +297,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 		if (_runState != _RUNNING) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -307,18 +306,16 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 		if (_runState == _TERMINATED) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public boolean isTerminating() {
 		if (_runState == _STOP) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public void setAllowCoreThreadTimeout(boolean allowCoreThreadTimeout) {
@@ -500,7 +497,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 					Runnable runnable = _taskQueue.poll();
 
 					if (runnable != null) {
-						_doAddWorkerThread(runnable);
+						_addWorkerThread(runnable);
 					}
 				}
 			}
@@ -510,7 +507,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 		}
 	}
 
-	private void _doAddWorkerThread(Runnable runnable) {
+	private void _addWorkerThread(Runnable runnable) {
 		WorkerTask workerTask = new WorkerTask(runnable);
 
 		_workerTasks.add(workerTask);
@@ -604,7 +601,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 			}
 
 			if (!_taskQueue.isEmpty()) {
-				_doAddWorkerThread(_taskQueue.poll());
+				_addWorkerThread(_taskQueue.poll());
 			}
 		}
 	}
@@ -698,9 +695,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 			if (getState() == 1) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		@Override

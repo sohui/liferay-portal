@@ -14,10 +14,10 @@
 
 package com.liferay.knowledge.base.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBFolderLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the KBFolder service. Represents a row in the &quot;KBFolder&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.knowledge.base.service.KBFolderLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class KBFolderBaseImpl extends KBFolderModelImpl
-	implements KBFolder {
+public abstract class KBFolderBaseImpl
+	extends KBFolderModelImpl implements KBFolder {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a k b folder model instance should use the {@link KBFolder} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a kb folder model instance should use the <code>KBFolder</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class KBFolderBaseImpl extends KBFolderModelImpl
 			KBFolderLocalServiceUtil.updateKBFolder(this);
 		}
 	}
+
 }

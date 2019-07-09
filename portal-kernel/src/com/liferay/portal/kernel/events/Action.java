@@ -35,19 +35,20 @@ public abstract class Action implements LifecycleAction {
 	}
 
 	public abstract void run(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws ActionException;
 
 	public void run(RenderRequest renderRequest, RenderResponse renderResponse)
 		throws ActionException {
 
 		try {
-			HttpServletRequest request = PortalUtil.getHttpServletRequest(
-				renderRequest);
-			HttpServletResponse response = PortalUtil.getHttpServletResponse(
-				renderResponse);
+			HttpServletRequest httpServletRequest =
+				PortalUtil.getHttpServletRequest(renderRequest);
+			HttpServletResponse httpServletResponse =
+				PortalUtil.getHttpServletResponse(renderResponse);
 
-			run(request, response);
+			run(httpServletRequest, httpServletResponse);
 		}
 		catch (ActionException ae) {
 			throw ae;

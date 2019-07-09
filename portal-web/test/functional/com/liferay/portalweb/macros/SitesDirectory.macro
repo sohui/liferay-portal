@@ -1,70 +1,112 @@
-<definition>
-	<command name="configureSetupPG">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="${portletName}" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+definition {
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
+	macro configureSetupPG {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
 
-		<if>
-			<isset var="directorySites" />
-			<then>
-				<execute function="Select" locator1="Select#SITES" value1="${directorySites}" />
-			</then>
-		</if>
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-		<if>
-			<isset var="directoryDisplayStyle" />
-			<then>
-				<execute function="Select" locator1="Select#DISPLAY_STYLE" value1="${directoryDisplayStyle}" />
-			</then>
-		</if>
+		if (isSet(directorySites)) {
+			Select(
+				locator1 = "Select#SITES",
+				value1 = "${directorySites}");
+		}
 
-		<execute macro="Button#clickSave" />
-		<execute function="SelectFrameTop" />
-	</command>
+		if (isSet(directoryDisplayStyle)) {
+			Select(
+				locator1 = "Select#DISPLAY_STYLE",
+				value1 = "${directoryDisplayStyle}");
+		}
 
-	<command name="viewDefaultConfigurationPG">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="${portletName}" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+		Button.clickSave();
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION" />
-		<execute function="AssertTextEquals" locator1="Select#SITES" value1="Top Level Parent Level Siblings Children" />
-		<execute function="AssertTextEquals" locator1="Select#DISPLAY_STYLE" value1="Icon Descriptive List List Hierarchy" />
-		<execute function="SelectFrameTop" />
-	</command>
+		SelectFrameTop();
+	}
 
-	<command name="viewDescriptivePG">
-		<var name="key_siteName" value="${siteName}" />
+	macro viewDefaultConfigurationPG {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="SitesDirectory#DESCRIPTIVE_SITE_ENTRY" value1="${siteName}" />
-	</command>
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
 
-	<command name="viewListHierarchyPG">
-		<var name="key_siteName" value="${availableSiteName}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Select#SITES",
+			value1 = "Top Level");
 
-		<execute function="AssertTextEquals" locator1="SitesDirectory#LIST_HIERARCHY_PARENT_SITE_AVAILABLE" value1="${availableSiteName}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Select#SITES",
+			value1 = "Parent Level");
 
-		<var name="key_siteName" value="${currentSiteName}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Select#SITES",
+			value1 = "Siblings");
 
-		<execute function="AssertTextEquals" locator1="SitesDirectory#LIST_HIERARCHY_PARENT_SITE_CURRENT" value1="${currentSiteName}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Select#SITES",
+			value1 = "Children");
 
-		<var name="key_childSiteName" value="${childSiteName1}" />
-		<var name="key_siteName" value="${currentSiteName}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Select#DISPLAY_STYLE",
+			value1 = "Icon");
 
-		<execute function="AssertTextEquals" locator1="SitesDirectory#LIST_HIERARCHY_CHILD_SITE" value1="${childSiteName1}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Select#DISPLAY_STYLE",
+			value1 = "Descriptive");
 
-		<var name="key_childSiteName" value="${childSiteName2}" />
-		<var name="key_siteName" value="${currentSiteName}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Select#DISPLAY_STYLE",
+			value1 = "List");
 
-		<execute function="AssertTextEquals" locator1="SitesDirectory#LIST_HIERARCHY_CHILD_SITE" value1="${childSiteName2}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Select#DISPLAY_STYLE",
+			value1 = "List Hierarchy");
 
-		<var name="key_childSiteName" value="${childSiteName3}" />
-		<var name="key_siteName" value="${currentSiteName}" />
+		SelectFrameTop();
+	}
 
-		<execute function="AssertTextEquals" locator1="SitesDirectory#LIST_HIERARCHY_CHILD_SITE" value1="${childSiteName3}" />
-	</command>
-</definition>
+	macro viewDescriptivePG {
+		var key_siteName = "${siteName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SitesDirectory#DESCRIPTIVE_SITE_ENTRY",
+			value1 = "${siteName}");
+	}
+
+	macro viewListHierarchyPG {
+		var key_siteName = "${availableSiteName}";
+
+		AssertTextEquals(
+			locator1 = "SitesDirectory#LIST_HIERARCHY_PARENT_SITE_AVAILABLE",
+			value1 = "${availableSiteName}");
+
+		var key_siteName = "${currentSiteName}";
+
+		AssertTextEquals(
+			locator1 = "SitesDirectory#LIST_HIERARCHY_PARENT_SITE_CURRENT",
+			value1 = "${currentSiteName}");
+
+		var key_childSiteName = "${childSiteName1}";
+		var key_siteName = "${currentSiteName}";
+
+		AssertTextEquals(
+			locator1 = "SitesDirectory#LIST_HIERARCHY_CHILD_SITE",
+			value1 = "${childSiteName1}");
+
+		var key_childSiteName = "${childSiteName2}";
+		var key_siteName = "${currentSiteName}";
+
+		AssertTextEquals(
+			locator1 = "SitesDirectory#LIST_HIERARCHY_CHILD_SITE",
+			value1 = "${childSiteName2}");
+
+		var key_childSiteName = "${childSiteName3}";
+		var key_siteName = "${currentSiteName}";
+
+		AssertTextEquals(
+			locator1 = "SitesDirectory#LIST_HIERARCHY_CHILD_SITE",
+			value1 = "${childSiteName3}");
+	}
+
+}

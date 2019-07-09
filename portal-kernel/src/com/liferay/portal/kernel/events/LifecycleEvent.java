@@ -28,9 +28,10 @@ public class LifecycleEvent {
 	}
 
 	public LifecycleEvent(
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
-		this(null, request, response, null);
+		this(null, httpServletRequest, httpServletResponse, null);
 	}
 
 	public LifecycleEvent(HttpSession session) {
@@ -42,12 +43,12 @@ public class LifecycleEvent {
 	}
 
 	public LifecycleEvent(
-		String[] ids, HttpServletRequest request, HttpServletResponse response,
-		HttpSession session) {
+		String[] ids, HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, HttpSession session) {
 
 		_ids = ids;
-		_request = request;
-		_response = response;
+		_httpServletRequest = httpServletRequest;
+		_httpServletResponse = httpServletResponse;
 		_session = session;
 	}
 
@@ -56,20 +57,20 @@ public class LifecycleEvent {
 	}
 
 	public HttpServletRequest getRequest() {
-		return _request;
+		return _httpServletRequest;
 	}
 
 	public HttpServletResponse getResponse() {
-		return _response;
+		return _httpServletResponse;
 	}
 
 	public HttpSession getSession() {
 		return _session;
 	}
 
+	private final HttpServletRequest _httpServletRequest;
+	private final HttpServletResponse _httpServletResponse;
 	private final String[] _ids;
-	private final HttpServletRequest _request;
-	private final HttpServletResponse _response;
 	private final HttpSession _session;
 
 }

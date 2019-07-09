@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.security.pacl.permission;
 
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -24,8 +24,10 @@ import java.lang.reflect.Method;
 import java.security.BasicPermission;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class PortalServicePermission extends BasicPermission {
 
 	public static void checkService(
@@ -107,8 +109,9 @@ public class PortalServicePermission extends BasicPermission {
 
 		if (nameParts.length != 3) {
 			throw new IllegalArgumentException(
-				"Name " + getName() + " does not follow the format " +
-					"[name]#[servletContextName]#[subject]");
+				StringBundler.concat(
+					"Name ", getName(), " does not follow the format ",
+					"[name]#[servletContextName]#[subject]"));
 		}
 
 		_shortName = nameParts[0];

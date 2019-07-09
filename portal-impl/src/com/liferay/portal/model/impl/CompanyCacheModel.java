@@ -14,30 +14,29 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing Company in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see Company
  * @generated
  */
 @ProviderType
-public class CompanyCacheModel implements CacheModel<Company>, Externalizable,
-	MVCCModel {
+public class CompanyCacheModel
+	implements CacheModel<Company>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -51,7 +50,8 @@ public class CompanyCacheModel implements CacheModel<Company>, Externalizable,
 		CompanyCacheModel companyCacheModel = (CompanyCacheModel)obj;
 
 		if ((companyId == companyCacheModel.companyId) &&
-				(mvccVersion == companyCacheModel.mvccVersion)) {
+			(mvccVersion == companyCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -115,28 +115,28 @@ public class CompanyCacheModel implements CacheModel<Company>, Externalizable,
 		companyImpl.setAccountId(accountId);
 
 		if (webId == null) {
-			companyImpl.setWebId(StringPool.BLANK);
+			companyImpl.setWebId("");
 		}
 		else {
 			companyImpl.setWebId(webId);
 		}
 
 		if (key == null) {
-			companyImpl.setKey(StringPool.BLANK);
+			companyImpl.setKey("");
 		}
 		else {
 			companyImpl.setKey(key);
 		}
 
 		if (mx == null) {
-			companyImpl.setMx(StringPool.BLANK);
+			companyImpl.setMx("");
 		}
 		else {
 			companyImpl.setMx(mx);
 		}
 
 		if (homeURL == null) {
-			companyImpl.setHomeURL(StringPool.BLANK);
+			companyImpl.setHomeURL("");
 		}
 		else {
 			companyImpl.setHomeURL(homeURL);
@@ -161,6 +161,7 @@ public class CompanyCacheModel implements CacheModel<Company>, Externalizable,
 	@Override
 	public void readExternal(ObjectInput objectInput)
 		throws ClassNotFoundException, IOException {
+
 		mvccVersion = objectInput.readLong();
 
 		companyId = objectInput.readLong();
@@ -179,14 +180,14 @@ public class CompanyCacheModel implements CacheModel<Company>, Externalizable,
 
 		active = objectInput.readBoolean();
 
-		_companySecurityBag = (CompanyImpl.CompanySecurityBag)objectInput.readObject();
+		_companySecurityBag =
+			(CompanyImpl.CompanySecurityBag)objectInput.readObject();
 		_keyObj = (java.security.Key)objectInput.readObject();
-		_virtualHostname = (java.lang.String)objectInput.readObject();
+		_virtualHostname = (String)objectInput.readObject();
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(companyId);
@@ -194,28 +195,28 @@ public class CompanyCacheModel implements CacheModel<Company>, Externalizable,
 		objectOutput.writeLong(accountId);
 
 		if (webId == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(webId);
 		}
 
 		if (key == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(key);
 		}
 
 		if (mx == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(mx);
 		}
 
 		if (homeURL == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(homeURL);
@@ -247,5 +248,6 @@ public class CompanyCacheModel implements CacheModel<Company>, Externalizable,
 	public boolean active;
 	public CompanyImpl.CompanySecurityBag _companySecurityBag;
 	public java.security.Key _keyObj;
-	public java.lang.String _virtualHostname;
+	public String _virtualHostname;
+
 }

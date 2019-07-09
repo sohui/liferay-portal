@@ -140,7 +140,9 @@ public class ChannelHubImpl implements ChannelHub {
 		Iterator<Map.Entry<Long, Channel>> itr = channels.iterator();
 
 		while (itr.hasNext()) {
-			Channel channel = itr.next().getValue();
+			Map.Entry<Long, Channel> entry = itr.next();
+
+			Channel channel = entry.getValue();
 
 			channel.close();
 
@@ -174,10 +176,8 @@ public class ChannelHubImpl implements ChannelHub {
 			synchronized (_channels) {
 				channel = _channels.get(userId);
 
-				if (channel == null) {
-					if (createIfAbsent) {
-						channel = createChannel(userId);
-					}
+				if ((channel == null) && createIfAbsent) {
+					channel = createChannel(userId);
 				}
 			}
 		}

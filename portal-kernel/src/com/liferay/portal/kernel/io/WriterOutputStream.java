@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.io;
 
-import com.liferay.portal.kernel.nio.charset.CharsetDecoderUtil;
-import com.liferay.portal.kernel.nio.charset.CharsetEncoderUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.nio.CharsetDecoderUtil;
+import com.liferay.petra.nio.CharsetEncoderUtil;
+import com.liferay.petra.string.StringPool;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -92,7 +92,7 @@ public class WriterOutputStream extends OutputStream {
 
 	@Override
 	public void close() throws IOException {
-		_doDecode(_inputByteBuffer, true);
+		_decode(_inputByteBuffer, true);
 
 		_flushBuffer();
 
@@ -125,7 +125,7 @@ public class WriterOutputStream extends OutputStream {
 
 		ByteBuffer inputByteBuffer = ByteBuffer.wrap(bytes, offset, length);
 
-		_doDecode(inputByteBuffer, false);
+		_decode(inputByteBuffer, false);
 
 		if (inputByteBuffer.hasRemaining()) {
 			_inputByteBuffer.limit(inputByteBuffer.remaining());
@@ -144,7 +144,7 @@ public class WriterOutputStream extends OutputStream {
 
 		_inputByteBuffer.put(limit, (byte)b);
 
-		_doDecode(_inputByteBuffer, false);
+		_decode(_inputByteBuffer, false);
 
 		if (!_inputByteBuffer.hasRemaining()) {
 			_inputByteBuffer.position(0);
@@ -153,7 +153,7 @@ public class WriterOutputStream extends OutputStream {
 		}
 	}
 
-	private void _doDecode(ByteBuffer inputByteBuffer, boolean endOfInput)
+	private void _decode(ByteBuffer inputByteBuffer, boolean endOfInput)
 		throws IOException {
 
 		while (true) {

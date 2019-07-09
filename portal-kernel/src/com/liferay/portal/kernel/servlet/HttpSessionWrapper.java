@@ -18,6 +18,7 @@ import java.util.Enumeration;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionContext;
 
 /**
  * @author Brian Wing Shun Chan
@@ -75,16 +76,16 @@ public class HttpSessionWrapper implements HttpSession {
 	}
 
 	/**
-	 * @deprecated As of 6.1.0
+	 * @deprecated As of Bunyan (6.0.x)
 	 */
 	@Deprecated
 	@Override
-	public javax.servlet.http.HttpSessionContext getSessionContext() {
+	public HttpSessionContext getSessionContext() {
 		return _session.getSessionContext();
 	}
 
 	/**
-	 * @deprecated As of 6.1.0
+	 * @deprecated As of Bunyan (6.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -93,7 +94,7 @@ public class HttpSessionWrapper implements HttpSession {
 	}
 
 	/**
-	 * @deprecated As of 6.1.0
+	 * @deprecated As of Bunyan (6.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -121,7 +122,7 @@ public class HttpSessionWrapper implements HttpSession {
 	}
 
 	/**
-	 * @deprecated As of 6.1.0
+	 * @deprecated As of Bunyan (6.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -135,7 +136,7 @@ public class HttpSessionWrapper implements HttpSession {
 	}
 
 	/**
-	 * @deprecated As of 6.1.0
+	 * @deprecated As of Bunyan (6.0.x)
 	 */
 	@Deprecated
 	@Override

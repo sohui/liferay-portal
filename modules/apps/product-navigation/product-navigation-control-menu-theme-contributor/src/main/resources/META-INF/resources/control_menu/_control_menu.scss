@@ -1,0 +1,375 @@
+.has-control-menu {
+	.affix,
+	#wrapper {
+		margin-top: $has-control-menu-margin-top-mobile;
+
+		.portlet-boundary > span:first-child {
+			display: block;
+			position: relative;
+			top: -$has-control-menu-margin-top-mobile;
+			visibility: hidden;
+		}
+
+		:not(.portlet):target::before {
+			content: '';
+			display: block;
+			height: $has-control-menu-margin-top-mobile;
+			margin-top: -$has-control-menu-margin-top-mobile;
+		}
+
+		@include sm() {
+			margin-top: $has-control-menu-margin-top-desktop;
+
+			.portlet-boundary > span:first-child {
+				top: -$has-control-menu-margin-top-desktop;
+			}
+
+			:not(.portlet):target::before {
+				height: $has-control-menu-margin-top-desktop;
+				margin-top: -$has-control-menu-margin-top-desktop;
+			}
+		}
+	}
+
+	&.has-customization-menu .affix,
+	&.has-customization-menu #wrapper {
+		margin-top: (
+			$has-control-menu-margin-top-mobile +
+				$has-customization-menu-margin-top-mobile
+		);
+
+		.portlet-boundary > span:first-child {
+			display: block;
+			position: relative;
+			top: -($has-control-menu-margin-top-mobile +
+						$has-customization-menu-margin-top-mobile);
+			visibility: hidden;
+		}
+
+		:target::before {
+			content: '';
+			display: block;
+			height: (
+				$has-control-menu-margin-top-mobile +
+					$has-customization-menu-margin-top-mobile
+			);
+			margin-top: -($has-control-menu-margin-top-mobile +
+						$has-customization-menu-margin-top-mobile);
+		}
+
+		@include sm() {
+			margin-top: (
+				$has-control-menu-margin-top-desktop +
+					$has-customization-menu-margin-top-desktop
+			);
+
+			.portlet-boundary > span:first-child {
+				top: -($has-control-menu-margin-top-desktop +
+							$has-customization-menu-margin-top-desktop);
+			}
+
+			:target::before {
+				height: (
+					$has-control-menu-margin-top-desktop +
+						$has-customization-menu-margin-top-desktop
+				);
+				margin-top: -($has-control-menu-margin-top-desktop +
+							$has-customization-menu-margin-top-desktop);
+			}
+		}
+	}
+}
+
+.affix,
+.control-menu {
+	left: 0;
+	position: fixed;
+	right: 0;
+	top: 0;
+	z-index: $control-menu-zindex;
+}
+
+.control-menu-icon {
+	display: inline-block;
+}
+
+a.control-menu-icon,
+.control-menu-icon .dropdown-toggle {
+	border-radius: 4px;
+	transition: box-shadow 0.15s ease-in-out;
+
+	&:focus {
+		box-shadow: $control-menu-focus-box-shadow;
+		outline: 0;
+	}
+}
+
+.control-menu-level-1 {
+	background-color: $control-menu-level-1-bg;
+	color: $control-menu-level-1-color;
+
+	> .container-fluid {
+		padding: 8px;
+
+		@include sm() {
+			padding: 12px;
+		}
+	}
+
+	a,
+	button {
+		color: $control-menu-level-1-link-color;
+
+		&:focus,
+		&:hover {
+			color: $control-menu-level-1-link-hover-color;
+			text-decoration: none;
+		}
+	}
+
+	.layout-finder a {
+		color: $control-menu-level-2-link-color;
+	}
+
+	.personal-menu-dropdown .dropdown-toggle {
+		margin-bottom: -2px;
+		margin-top: -2px;
+		padding: 2px;
+	}
+}
+
+.control-menu-level-1-heading {
+	color: #fff;
+	font-size: 1rem;
+	font-weight: bold;
+}
+
+.control-menu-level-1-nav {
+	@include display(flex);
+	@include flex-wrap(wrap);
+	@include justify-content(space-between);
+
+	> li > .control-menu-nav > .control-menu-nav-item {
+		@include xs {
+			margin-left: 4px;
+			margin-right: 4px;
+		}
+
+		@include sm {
+			margin-left: 8px;
+			margin-right: 8px;
+		}
+	}
+
+	> .control-menu-nav-item {
+		@include align-self(center);
+	}
+}
+
+.control-menu-level-2 {
+	background-color: $control-menu-level-2-bg;
+	border-bottom: 1px solid #e7e7ed;
+	color: $control-menu-level-2-color;
+	padding-bottom: 7px;
+	padding-top: 6px;
+
+	a,
+	a:focus,
+	a:hover {
+		color: $control-menu-level-2-link-color;
+	}
+
+	.container-fluid-max-xl {
+		padding-left: 20px;
+	}
+
+	.text-info {
+		font-size: 0.875rem;
+	}
+
+	.toggle-switch-bar .toggle-switch-handle {
+		font-size: 0.875rem;
+		text-transform: none;
+	}
+
+	@include sm() {
+		left: 0;
+		position: absolute;
+		right: 0;
+		top: 100%;
+
+		.control-menu-label {
+			color: $control-menu-level-2-label-color;
+		}
+	}
+
+	@include media-query(null, $screen-xs-max) {
+		bottom: 0;
+		display: none;
+		left: 0;
+		position: fixed;
+		right: 0;
+		top: 0;
+		z-index: 1;
+
+		&.open {
+			background-color: transparentize(#29343d, 0.1);
+			display: block;
+			overflow: auto;
+		}
+	}
+}
+
+.control-menu-level-2-heading {
+	font-size: 18px;
+	font-weight: 500;
+	padding: 20px 0;
+	text-align: center;
+
+	.close {
+		color: $control-menu-level-2-color;
+		opacity: 1;
+	}
+}
+
+.control-menu-level-2-nav {
+	@include display(flex);
+	@include flex-wrap(wrap);
+	@include justify-content(space-between);
+
+	@include media-query(null, $screen-xs-max) {
+		> .control-menu-nav-item {
+			margin-bottom: 55px;
+		}
+
+		.control-menu-nav-item,
+		.dropdown {
+			width: 100%;
+		}
+	}
+}
+
+.control-menu-link {
+	&.active {
+		&:after {
+			background-color: $control-menu-level-1-active-border;
+			height: $control-menu-level-1-active-border-width;
+		}
+	}
+}
+
+.control-menu-nav {
+	@include align-items(center);
+	@include display(flex);
+
+	font-size: 16px;
+	list-style: none;
+	margin-bottom: 0;
+	padding-left: 0;
+}
+
+.control-menu-nav-item {
+	display: inline-flex;
+}
+
+.control-menu-nav-item-content {
+	@include display(flex);
+	@include flex(1 1 0);
+	@include justify-content(center);
+
+	min-width: 64px;
+	width: 0;
+
+	.ie & {
+		width: auto;
+	}
+
+	.clamp-container {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		top: 50%;
+
+		@include transform(translateY(-50%));
+
+		white-space: nowrap;
+	}
+
+	span.text-muted {
+		font-size: 0.875rem;
+	}
+}
+
+.control-menu-nav-item-field {
+	@include flex(0 1 auto);
+}
+
+.live-link,
+.staging-link {
+	a,
+	a:focus {
+		color: #869cad;
+	}
+
+	&.active {
+		position: relative;
+
+		&:after {
+			bottom: -16px;
+			content: '';
+			left: 0;
+			position: absolute;
+			right: 0;
+		}
+
+		a {
+			color: #fff;
+		}
+	}
+}
+
+.sidenav-transition {
+	.affix,
+	.control-menu,
+	.control-menu-level-2 {
+		@include transition($control-menu-css-transition);
+	}
+}
+
+%control-menu-icon-monospaced {
+	height: 32px;
+	line-height: 34px;
+	text-align: center;
+	width: 32px;
+}
+
+.tools-control-group {
+	@include flex(1);
+	@include flex-wrap(wrap);
+
+	min-width: 50px;
+
+	> .control-menu-nav {
+		@include flex-wrap(wrap);
+		@include justify-content(center);
+
+		> li > .lfr-portal-tooltip > .control-menu-icon {
+			@extend %control-menu-icon-monospaced;
+		}
+	}
+
+	.taglib-icon-help {
+		margin-top: 1px;
+		min-width: 32px;
+		text-align: center;
+	}
+}
+
+.user-control-group {
+	> .control-menu-nav > li > .control-menu-icon {
+		@extend %control-menu-icon-monospaced;
+	}
+
+	.portlet-options {
+		margin-right: -1px;
+	}
+}

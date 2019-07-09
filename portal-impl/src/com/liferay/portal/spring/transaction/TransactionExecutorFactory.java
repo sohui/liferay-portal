@@ -30,22 +30,21 @@ public class TransactionExecutorFactory {
 			if (platformTransactionManager instanceof
 					CallbackPreferringPlatformTransactionManager) {
 
-				return new CounterCallbackPreferringTransactionExecutor();
+				return new CounterCallbackPreferringTransactionExecutor(
+					platformTransactionManager);
 			}
-			else {
-				return new CounterTransactionExecutor();
-			}
-		}
-		else {
-			if (platformTransactionManager instanceof
-					CallbackPreferringPlatformTransactionManager) {
 
-				return new CallbackPreferringTransactionExecutor();
-			}
-			else {
-				return new DefaultTransactionExecutor();
-			}
+			return new CounterTransactionExecutor(platformTransactionManager);
 		}
+
+		if (platformTransactionManager instanceof
+				CallbackPreferringPlatformTransactionManager) {
+
+			return new CallbackPreferringTransactionExecutor(
+				platformTransactionManager);
+		}
+
+		return new DefaultTransactionExecutor(platformTransactionManager);
 	}
 
 }

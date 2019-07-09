@@ -20,10 +20,10 @@ import com.liferay.asset.kernel.model.adapter.StagedAssetLink;
 import com.liferay.asset.kernel.service.AssetEntryLocalServiceUtil;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * @author Mate Thurzo
+ * @author Máté Thurzó
  */
 public class StagedAssetLinkImpl implements StagedAssetLink {
 
@@ -139,12 +139,12 @@ public class StagedAssetLinkImpl implements StagedAssetLink {
 
 	@Override
 	public Class<?> getModelClass() {
-		return StagedAssetLink.class;
+		return _assetLink.getModelClass();
 	}
 
 	@Override
 	public String getModelClassName() {
-		return StagedAssetLink.class.getName();
+		return _assetLink.getModelClassName();
 	}
 
 	@Override

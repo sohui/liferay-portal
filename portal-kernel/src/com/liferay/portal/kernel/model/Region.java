@@ -14,29 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the Region service. Represents a row in the &quot;Region&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see RegionModel
- * @see com.liferay.portal.model.impl.RegionImpl
- * @see com.liferay.portal.model.impl.RegionModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.RegionImpl")
 @ProviderType
 public interface Region extends RegionModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.RegionImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.RegionImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<Region, Long> REGION_ID_ACCESSOR = new Accessor<Region, Long>() {
+	public static final Accessor<Region, Long> REGION_ID_ACCESSOR =
+		new Accessor<Region, Long>() {
+
 			@Override
 			public Long get(Region region) {
 				return region.getRegionId();
@@ -51,5 +52,7 @@ public interface Region extends RegionModel {
 			public Class<Region> getTypeClass() {
 				return Region.class;
 			}
+
 		};
+
 }

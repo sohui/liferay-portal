@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.upload;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ProgressTracker;
@@ -142,7 +143,9 @@ public class ProgressInputStream extends InputStream {
 		}
 
 		if (_log.isDebugEnabled()) {
-			_log.debug(_totalRead + "/" + _totalSize + "=" + percent);
+			_log.debug(
+				StringBundler.concat(
+					_totalRead, "/", _totalSize, "=", percent));
 		}
 
 		ProgressTracker progressTracker =

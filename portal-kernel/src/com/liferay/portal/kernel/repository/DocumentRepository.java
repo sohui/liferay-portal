@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.repository;
 
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.capabilities.CapabilityProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -56,10 +57,32 @@ public interface DocumentRepository extends CapabilityProvider {
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #checkInFileEntry(long, long, DLVersionNumberIncrease,
+	 *             String, ServiceContext)}
+	 */
+	@Deprecated
 	public void checkInFileEntry(
 			long userId, long fileEntryId, boolean majorVersion,
 			String changeLog, ServiceContext serviceContext)
 		throws PortalException;
+
+	public default void checkInFileEntry(
+			long userId, long fileEntryId,
+			DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		boolean majorVersion = false;
+
+		if (dlVersionNumberIncrease == DLVersionNumberIncrease.MAJOR) {
+			majorVersion = true;
+		}
+
+		checkInFileEntry(
+			userId, fileEntryId, majorVersion, changeLog, serviceContext);
+	}
 
 	public void checkInFileEntry(
 			long userId, long fileEntryId, String lockUuid,
@@ -79,6 +102,8 @@ public interface DocumentRepository extends CapabilityProvider {
 
 	public void deleteFileShortcuts(long toFileEntryId) throws PortalException;
 
+	public void deleteFileVersion(long fileVersionId) throws PortalException;
+
 	public void deleteFolder(long folderId) throws PortalException;
 
 	public List<FileEntry> getFileEntries(
@@ -89,6 +114,14 @@ public interface DocumentRepository extends CapabilityProvider {
 	public List<FileEntry> getFileEntries(
 			long folderId, int start, int end, OrderByComparator<FileEntry> obc)
 		throws PortalException;
+
+	public default List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int status, int start, int end,
+			OrderByComparator<FileEntry> obc)
+		throws PortalException {
+
+		return getFileEntries(folderId, status, start, end, obc);
+	}
 
 	public List<RepositoryEntry> getFileEntriesAndFileShortcuts(
 			long folderId, int status, int start, int end)
@@ -101,6 +134,13 @@ public interface DocumentRepository extends CapabilityProvider {
 
 	public int getFileEntriesCount(long folderId, int status)
 		throws PortalException;
+
+	public default int getFileEntriesCount(
+			long folderId, String[] mimeTypes, int status)
+		throws PortalException {
+
+		return getFileEntriesCount(folderId, status);
+	}
 
 	public FileEntry getFileEntry(long fileEntryId) throws PortalException;
 
@@ -168,18 +208,67 @@ public interface DocumentRepository extends CapabilityProvider {
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #updateFileEntry(long, long, String, String, String, String,
+	 *             String, DLVersionNumberIncrease, File, ServiceContext)}
+	 */
+	@Deprecated
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
 			boolean majorVersion, File file, ServiceContext serviceContext)
 		throws PortalException;
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #updateFileEntry(long, long, String, String, String, String,
+	 *             String, DLVersionNumberIncrease, InputStream, long,
+	 *             ServiceContext)}
+	 */
+	@Deprecated
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
 			boolean majorVersion, InputStream is, long size,
 			ServiceContext serviceContext)
 		throws PortalException;
+
+	public default FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		boolean majorVersion = false;
+
+		if (dlVersionNumberIncrease == DLVersionNumberIncrease.MAJOR) {
+			majorVersion = true;
+		}
+
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, majorVersion, file, serviceContext);
+	}
+
+	public default FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
+		throws PortalException {
+
+		boolean majorVersion = false;
+
+		if (dlVersionNumberIncrease == DLVersionNumberIncrease.MAJOR) {
+			majorVersion = true;
+		}
+
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, majorVersion, is, size, serviceContext);
+	}
 
 	public FileShortcut updateFileShortcut(
 			long userId, long fileShortcutId, long folderId, long toFileEntryId,

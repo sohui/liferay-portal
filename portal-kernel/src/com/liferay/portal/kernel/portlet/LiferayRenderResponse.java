@@ -14,13 +14,25 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import javax.portlet.MimeResponse;
 import javax.portlet.RenderResponse;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Raymond Augé
+ * @author Neil Griffin
  */
-public interface LiferayRenderResponse extends RenderResponse {
+@ProviderType
+public interface LiferayRenderResponse
+	extends LiferayPortletResponse, MimeResponse, RenderResponse {
+
+	public String getTitle();
+
+	public boolean getUseDefaultTemplate();
 
 	public void setResourceName(String resourceName);
+
+	public void setUseDefaultTemplate(Boolean useDefaultTemplate);
 
 }

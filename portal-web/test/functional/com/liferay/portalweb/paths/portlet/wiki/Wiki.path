@@ -29,11 +29,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PAGE_TAG</td>
-	<td>//div[@class='page-tags']/span/a</td>
-	<td></td>
-</tr>
-<tr>
 	<td>PAGE_HEADER</td>
 	<td>//div//h2[contains(.,'${key_wikiPageTitle}')]</td>
 	<td></td>
@@ -41,11 +36,6 @@
 <tr>
 	<td>VIEW_COUNT</td>
 	<td>//div[@class='page-actions']/div[@class='stats']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>WORKFLOW_STATUS</td>
-	<td>//span[contains(@class,'workflow-status')]/strong</td>
 	<td></td>
 </tr>
 <tr>
@@ -76,8 +66,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ATTACHMENT_TABLE_MOVE_TO_THE_RECYCLE_BIN</td>
-	<td>//tr[contains(.,'${key_attachmentFileName}')]//span[contains(.,'Move to the Recycle Bin')]</td>
+	<td>ATTACHMENT_TABLE_MOVE_TO_RECYCLE_BIN</td>
+	<td>//tr[contains(.,'${key_attachmentFileName}')]//span[contains(.,'Move to Recycle Bin')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -88,38 +78,17 @@
 <!--CHILD_PAGE-->
 <tr>
 	<td>CHILD_PAGE_HEADER</td>
-	<td>//div[@class='child-pages']/h5</td>
+	<td>//div[@class='sidenav-content']/h4</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CHILD_PAGE_TITLE</td>
-	<td>//tr[@data-qa-id='row']//a[contains(.,'${key_wikiChildPageTitle}')]</td>
+	<td>//li[@class='list-group-item']//a[contains(.,'${key_wikiChildPageTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CHILD_PAGE_GENERIC</td>
-	<td>//div[@class='child-pages']/ul/li/a</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--COMMENTS-->
-<tr>
-	<td>COMMENT_EDIT_BODY_FIELD</td>
-	<td>//div[@class='lfr-discussion-message' and contains(.,'${key_commentBody}')]//..//..//..//textarea[contains(@id,'editReplyBody')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>COMMENT_DELETE_LINK</td>
-	<td>//div[@class='lfr-discussion-message' and contains(.,'${key_commentBody}')]//..//li/span/a/span[contains(.,'Delete')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>COMMENT_EDIT_LINK</td>
-	<td>//div[@class='lfr-discussion-message' and contains(.,'${key_commentBody}')]//..//li/span/a/span[contains(.,'Edit')]</td>
+	<td>//li[@class='list-group-item']//a</td>
 	<td></td>
 </tr>
 <tr>
@@ -170,39 +139,8 @@
 </tr>
 <!--DESCRIPTIVE_VIEW-->
 <tr>
-	<td>DESCRIPTIVE_VIEW_ENTRY_CHECKBOX</td>
-	<td>//input[@type='checkbox' and (@value='${key_wikiPageTitle}')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>DESCRIPTIVE_VIEW_ENTRY_TITLE</td>
-	<td>//li[@data-qa-id='row']/div[contains(@class,'content')]/h4[contains(.,'${key_wikiPageTitle}')]/a</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DESCRIPTIVE_VIEW_ACTIONS</td>
-	<td>//li[contains(.,'${key_wikiPageTitle}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--FILES_READY_TO_BE_SAVED-->
-<tr>
-	<td>FILES_READY_TO_BE_SAVED_TITLE</td>
-	<td>//div[@class='upload-list']//li[contains(@data-title,'${key_attachmentFileName}')]/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILES_READY_TO_BE_SAVED_CHECKBOX</td>
-	<td>//div[@class='upload-list']//li[contains(@data-title,'${key_attachmentFileName}')]/input</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILES_READY_TO_BE_SAVED_SUCCESS_MESSAGE</td>
-	<td>//div[@class='upload-list']//li[contains(@data-title,'${key_attachmentFileName}')]/span[contains(@class,'success-message')]</td>
+	<td>//li[@data-qa-id='row']/*[@data-qa-id='rowItemContent']/h4[contains(.,'${key_wikiPageTitle}')]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -212,38 +150,23 @@
 </tr>
 <!--HISTORY-->
 <tr>
-	<td>HISTORY_ACTIVITIES_ACTIONS</td>
-	<td>//tr[contains(.,'${key_wikiActivity}')]//td//div/a[contains(@class,'dropdown-toggle')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>HISTORY_ACTIVITIES_TAB</td>
-	<td>//li[@class='tab']//a[contains(.,'Activities')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>HISTORY_ACTIVITIES_TABLE_COMPARE_TO_LINK</td>
 	<td>//ul/li[contains(@class,'compare-to-link')]/a[contains(@class,' taglib-icon')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HISTORY_VERSIONS_ACTIONS</td>
-	<td>//tr[contains(.,'${key_wikiPageRevision}')]/td[8]//span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]</td>
+	<td>//tr[contains(.,'${key_wikiPageRevision}')]/td[8]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HISTORY_VERSIONS_TAB</td>
-	<td>//li[@class='tab']//a[contains(.,'Versions')]</td>
+	<td>//li[@class='nav-item']//a[contains(.,'Versions')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HISTORY_VERSIONS_SUMMARY</td>
 	<td>//tr[contains(.,'${key_wikiPageRevision}') and contains(.,'${key_wikiPageTitle}')]//td[contains(.,'${key_wikiVersionSummary}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>HISTORY_VERSIONS_REVERT_LINK</td>
-	<td>//tr[contains(.,'${key_wikiPageRevision}') and contains(.,'${key_wikiPageTitle}')]//a[contains(.,'Revert')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -289,7 +212,7 @@
 </tr>
 <tr>
 	<td>COMPARE_VERSIONS_VERSION_ACTIONS</td>
-	<td>//h4[contains(.,'${key_wikiPageVersion}')]/..//span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]</td>
+	<td>//li[@class='list-group-item']/div[contains(.,'${key_wikiPageVersion}')]/..//div//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -314,11 +237,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>NODE_TABLE_WIKI_GENERIC</td>
-	<td>//tr[1]/td[2]//a</td>
-	<td></td>
-</tr>
-<tr>
 	<td>NODE_TABLE_WIKI_GENERIC_2</td>
 	<td>//tr[2]/td[2]//a</td>
 	<td></td>
@@ -334,11 +252,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>NODE_TABLE_ACTIONS_GENERIC_DROPDOWN</td>
-	<td>//tr[1]/td[5]//div/a</td>
-	<td></td>
-</tr>
-<tr>
 	<td>NODE_TABLE_ACTIONS_GENERIC_DROPDOWN_2</td>
 	<td>//tr[2]/td[5]//div/a</td>
 	<td></td>
@@ -350,16 +263,6 @@
 </tr>
 <!--PAGE_TABS-->
 <tr>
-	<td>PAGE_TABS_CONTENT</td>
-	<td>//div[@class='portlet-body']/ul/li/a[contains(.,'Content')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PAGE_TABS_DETAILS</td>
-	<td>//div[@class='portlet-body']/ul/li/a[contains(.,'Details')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>PAGE_TABS_HISTORY</td>
 	<td>//div[@class='portlet-body']/ul/li/a[contains(.,'History')]</td>
 	<td></td>
@@ -370,28 +273,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PAGE_TABS_OUTGOING_LINKS</td>
-	<td>//div[@class='portlet-body']/ul/li/a[contains(.,'Outgoing Links')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PAGE_TABS_ATTACHMENTS</td>
-	<td>//div[@class='portlet-body']/ul/li/a[contains(.,'Attachments')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PAGE_TABS_RENAME</td>
-	<td>//ul[contains(@class,'nav nav-tabs')]//li/a[contains(.,'Rename')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>PAGE_TABS_CHANGE_PARENT</td>
-	<td>//ul[contains(@class,'nav nav-tabs')]//li/a[contains(.,'Change Parent')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>PAGE_TABS_CHANGE_NODE</td>
-	<td>//ul[contains(@class,'nav nav-tabs')]//li/a[contains(.,'Change Node')]</td>
+	<td>//ul[contains(@class,'nav nav-underline')]//li/a[contains(.,'Change Parent')]</td>
 	<td></td>
 </tr>
 <tr>

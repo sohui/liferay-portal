@@ -1,39 +1,44 @@
-<definition component-name="portal-test-plugins">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Test Plugins" />
-	<property name="portlet.plugins.includes" value="test-opensocial-pubsub-portlet" />
+@component-name = "portal-test-plugins"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Test Plugins";
+	property portlet.plugins.includes = "test-opensocial-pubsub-portlet";
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+	setUp {
+		User.firstLoginPG();
+	}
 
-	<command name="ViewPublisherSubscriber" priority="4">
-		<execute macro="Page#add">
-			<var name="pageName" value="Test Publisher Subscriber Page" />
-		</execute>
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Publisher Portlet" />
-		</execute>
+	@priority = "4"
+	test ViewPublisherSubscriber {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Publisher Subscriber Page" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Test Publisher Subscriber Page");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Subscriber Portlet" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Publisher Subscriber Page");
 
-		<execute function="Click" locator1="TestSubscriber#SUBSCRIBER_PORTLET_SUBSCRIBE_BUTTON" />
-		<execute function="Click" locator1="TestPublisher#PUBLISHER_PORTLET_PUBLISH_BUTTON" />
+		Portlet.addPG(portletName = "Publisher Portlet");
 
-	<!--<var name="randomNumber" path="PGTestPublisherPortlet" locator="PUBLISHER_PORTLET_MESSAGE" />
+		Navigator.gotoPage(pageName = "Test Publisher Subscriber Page");
+
+		Portlet.addPG(portletName = "Subscriber Portlet");
+
+		Click(locator1 = "TestSubscriber#SUBSCRIBER_PORTLET_SUBSCRIBE_BUTTON");
+
+		Click(locator1 = "TestPublisher#PUBLISHER_PORTLET_PUBLISH_BUTTON");
+
+		/*<var name="randomNumber" path="TestPublisher" locator="PUBLISHER_PORTLET_MESSAGE" />
 
 		<execute function="AssertTextEquals#assertPartialText" locator1="TestPublisher#PUBLISHER_PORTLET_MESSAGE" value1="${randomNumber}" />
-		<execute function="AssertTextEquals#assertPartialText" locator1=" TestSubscriber#SUBSCRIBER_PORTLET_MESSAGE" value1="${randomNumber}"/>-->
-	</command>
-</definition>
+		<execute function="AssertTextEquals#assertPartialText" locator1=" TestSubscriber#SUBSCRIBER_PORTLET_MESSAGE" value1="${randomNumber}" />*/
+	}
+
+}

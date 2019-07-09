@@ -17,11 +17,16 @@ package com.liferay.portal.kernel.comment;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.Function;
+
+import java.util.List;
+import java.util.function.Function;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author André de Oliveira
  */
+@ProviderType
 public interface CommentManager {
 
 	public long addComment(
@@ -56,6 +61,34 @@ public interface CommentManager {
 
 	public Comment fetchComment(long commentId);
 
+	public DiscussionComment fetchDiscussionComment(long userId, long commentId)
+		throws PortalException;
+
+	/**
+	 * Returns a range of all the comments which parent is identified by the
+	 * provided {@code parentCommentId} and with the given {@code status}.
+	 *
+	 * @param  parentCommentId the ID of the parent comment
+	 * @param  status the status of the comments
+	 * @param  start the lower bound of the range of comments
+	 * @param  end the upper bound of the range of comments (not inclusive)
+	 * @return the range of matching comments
+	 * @review
+	 */
+	public List<Comment> getChildComments(
+		long parentCommentId, int status, int start, int end);
+
+	/**
+	 * Returns the total count of comments which parent is identified by the
+	 * provided {@code parentCommentId} and with the given {@code status}.
+	 *
+	 * @param  parentCommentId the ID of the parent comment
+	 * @param  status the status of the comments
+	 * @return the count of matching comments
+	 * @review
+	 */
+	public int getChildCommentsCount(long parentCommentId, int status);
+
 	public int getCommentsCount(String className, long classPK);
 
 	public Discussion getDiscussion(
@@ -67,6 +100,38 @@ public interface CommentManager {
 		PermissionChecker permissionChecker);
 
 	public DiscussionStagingHandler getDiscussionStagingHandler();
+
+	/**
+	 * Returns a range of all the root comments of a model identified by the
+	 * provide combination of {@code className}-{@code classPK} and with the
+	 * given {@code status}. This count includes only direct comments to the
+	 * model, it does not include replies.
+	 *
+	 * @param  className the classname
+	 * @param  classPK the model classPK
+	 * @param  status the status of the comments
+	 * @param  start the lower bound of the range of comments
+	 * @param  end the upper bound of the range of comments (not inclusive)
+	 * @return the range of matching comments
+	 * @review
+	 */
+	public List<Comment> getRootComments(
+			String className, long classPK, int status, int start, int end)
+		throws PortalException;
+
+	/**
+	 * Returns the total count of root comments of a model identified by the
+	 * provide combination of {@code className}-{@code classPK} and with the
+	 * given {@code status}. This count includes only direct comments to the
+	 * model, it does not include replies.
+	 *
+	 * @param  className the classname
+	 * @param  classPK the model classPK
+	 * @param  status the status of the comments
+	 * @return the count of matching comments
+	 * @review
+	 */
+	public int getRootCommentsCount(String className, long classPK, int status);
 
 	public boolean hasDiscussion(String className, long classPK)
 		throws PortalException;

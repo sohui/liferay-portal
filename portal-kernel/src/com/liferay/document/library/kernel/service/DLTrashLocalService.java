@@ -14,8 +14,6 @@
 
 package com.liferay.document.library.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -23,6 +21,8 @@ import com.liferay.portal.kernel.service.BaseLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the local service interface for DLTrash. Methods of this
@@ -32,33 +32,39 @@ import com.liferay.portal.kernel.transaction.Transactional;
  *
  * @author Brian Wing Shun Chan
  * @see DLTrashLocalServiceUtil
- * @see com.liferay.portlet.documentlibrary.service.base.DLTrashLocalServiceBaseImpl
- * @see com.liferay.portlet.documentlibrary.service.impl.DLTrashLocalServiceImpl
  * @generated
  */
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface DLTrashLocalService extends BaseLocalService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link DLTrashLocalServiceUtil} to access the d l trash local service. Add custom service methods to {@link com.liferay.portlet.documentlibrary.service.impl.DLTrashLocalServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link DLTrashLocalServiceUtil} to access the dl trash local service. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLTrashLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public FileEntry moveFileEntryFromTrash(long userId, long repositoryId,
-		long fileEntryId, long newFolderId, ServiceContext serviceContext)
-		throws PortalException;
-
-	public FileEntry moveFileEntryToTrash(long userId, long repositoryId,
-		long fileEntryId) throws PortalException;
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
 
-	public void restoreFileEntryFromTrash(long userId, long repositoryId,
-		long fileEntryId) throws PortalException;
+	public FileEntry moveFileEntryFromTrash(
+			long userId, long repositoryId, long fileEntryId, long newFolderId,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	public FileEntry moveFileEntryToTrash(
+			long userId, long repositoryId, long fileEntryId)
+		throws PortalException;
+
+	public void restoreFileEntryFromTrash(
+			long userId, long repositoryId, long fileEntryId)
+		throws PortalException;
+
 }

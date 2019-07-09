@@ -14,10 +14,10 @@
 
 package com.liferay.portal.kernel.io;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -73,6 +73,7 @@ public class WriterOutputStreamTest {
 			dummyWriter);
 
 		Assert.assertSame(dummyWriter, _getWriter(writerOutputStream));
+
 		Assert.assertSame(
 			StringPool.DEFAULT_CHARSET_NAME, writerOutputStream.getEncoding());
 		Assert.assertEquals(

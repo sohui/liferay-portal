@@ -14,10 +14,11 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.memory.PoolAction;
+import com.liferay.petra.memory.SoftReferencePool;
 import com.liferay.portal.kernel.io.OutputStreamWriter;
 import com.liferay.portal.kernel.io.unsync.UnsyncPrintWriter;
-import com.liferay.portal.kernel.memory.PoolAction;
-import com.liferay.portal.kernel.memory.SoftReferencePool;
 
 import java.io.OutputStream;
 import java.io.Writer;
@@ -76,15 +77,14 @@ public class UnsyncPrintWriterPool {
 	}
 
 	private static final ThreadLocal<List<UnsyncPrintWriter>>
-		_borrowedUnsyncPrintWritersThreadLocal =
-			new AutoResetThreadLocal<List<UnsyncPrintWriter>>(
-				UnsyncPrintWriterPool.class.getName() +
-					"._borrowedUnsyncPrintWritersThreadLocal",
-				new ArrayList<UnsyncPrintWriter>());
+		_borrowedUnsyncPrintWritersThreadLocal = new CentralizedThreadLocal<>(
+			UnsyncPrintWriterPool.class.getName() +
+				"._borrowedUnsyncPrintWritersThreadLocal",
+			ArrayList::new);
 	private static final ThreadLocal<Boolean> _enabledThreadLocal =
-		new AutoResetThreadLocal<Boolean>(
+		new CentralizedThreadLocal<>(
 			UnsyncPrintWriterPool.class.getName() + "._enabledThreadLocal",
-			false);
+			() -> Boolean.FALSE);
 	private static final SoftReferencePool<UnsyncPrintWriter, Writer>
 		_unsyncPrintWriterSoftReferencePool = new SoftReferencePool<>(
 			new UnsyncPrintWriterPoolAction(), 8192);

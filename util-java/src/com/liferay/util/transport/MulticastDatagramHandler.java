@@ -14,9 +14,9 @@
 
 package com.liferay.util.transport;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.InputStream;
 
@@ -72,7 +72,7 @@ public class MulticastDatagramHandler implements DatagramHandler {
 		sb.append(new String(bytes));
 
 		if (_log.isInfoEnabled()) {
-			_log.info(sb);
+			_log.info(sb.toString());
 		}
 	}
 

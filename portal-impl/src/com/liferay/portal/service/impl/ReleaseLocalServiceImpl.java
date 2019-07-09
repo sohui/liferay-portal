@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -25,15 +26,18 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Release;
 import com.liferay.portal.kernel.model.ReleaseConstants;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.upgrade.OlderVersionException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.util.UpgradeProcessUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.version.Version;
 import com.liferay.portal.service.base.ReleaseLocalServiceBaseImpl;
+import com.liferay.portal.upgrade.PortalUpgradeProcess;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 
@@ -69,6 +73,7 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 
 		release.setCreateDate(now);
 		release.setModifiedDate(now);
+
 		release.setServletContextName(servletContextName);
 		release.setBuildNumber(buildNumber);
 
@@ -92,7 +97,6 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 
 			release = releasePersistence.create(ReleaseConstants.DEFAULT_ID);
 		}
-
 		else {
 			long releaseId = counterLocalService.increment();
 
@@ -103,6 +107,7 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 
 		release.setCreateDate(now);
 		release.setModifiedDate(now);
+
 		release.setServletContextName(servletContextName);
 		release.setSchemaVersion(schemaVersion);
 
@@ -129,9 +134,10 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 			db.runSQLTemplate("portal-tables.sql", false);
 			db.runSQLTemplate("portal-data-common.sql", false);
 			db.runSQLTemplate("portal-data-counter.sql", false);
-			db.runSQLTemplate("portal-data-release.sql", false);
 			db.runSQLTemplate("indexes.sql", false);
 			db.runSQLTemplate("sequences.sql", false);
+
+			addReleaseInfo();
 
 			StartupHelperUtil.setDbNew(true);
 		}
@@ -165,6 +171,7 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 	}
 
 	@Override
+	@Transactional
 	public int getBuildNumberOrCreate() throws PortalException {
 
 		// Gracefully add version column
@@ -192,34 +199,39 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 		try {
 			con = DataAccess.getConnection();
 
-			ps = con.prepareStatement(_GET_BUILD_NUMBER);
+			ps = con.prepareStatement(_SQL_GET_BUILD_NUMBER);
 
 			ps.setLong(1, ReleaseConstants.DEFAULT_ID);
 
 			rs = ps.executeQuery();
 
+			int buildNumber = 0;
+
 			if (rs.next()) {
-				int buildNumber = rs.getInt("buildNumber");
-
-				if (_log.isDebugEnabled()) {
-					_log.debug("Build number " + buildNumber);
-				}
-
-				// Gracefully add state_ column
-
-				try {
-					db.runSQL("alter table Release_ add state_ INTEGER");
-				}
-				catch (Exception e) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(e.getMessage());
-					}
-				}
-
-				testSupportsStringCaseSensitiveQuery();
-
-				return buildNumber;
+				buildNumber = rs.getInt("buildNumber");
 			}
+			else {
+				buildNumber = addReleaseInfo();
+			}
+
+			if (_log.isDebugEnabled()) {
+				_log.debug("Build number " + buildNumber);
+			}
+
+			// Gracefully add state_ column
+
+			try {
+				db.runSQL("alter table Release_ add state_ INTEGER");
+			}
+			catch (Exception e) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(e.getMessage());
+				}
+			}
+
+			testSupportsStringCaseSensitiveQuery();
+
+			return buildNumber;
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
@@ -244,10 +256,8 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 
 			return release.getBuildNumber();
 		}
-		else {
-			throw new NoSuchReleaseException(
-				"The database needs to be populated");
-		}
+
+		throw new NoSuchReleaseException("The database needs to be populated");
 	}
 
 	@Override
@@ -321,10 +331,12 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 		int buildNumber = GetterUtil.getInteger(
 			unfilteredPortalProperties.getProperty(
 				PropsKeys.RELEASE_INFO_BUILD_NUMBER));
+
 		int previousBuildNumber = GetterUtil.getInteger(
 			unfilteredPortalProperties.getProperty(
 				PropsKeys.RELEASE_INFO_PREVIOUS_BUILD_NUMBER),
 			buildNumber);
+
 		boolean indexOnUpgrade = GetterUtil.getBoolean(
 			unfilteredPortalProperties.getProperty(PropsKeys.INDEX_ON_UPGRADE),
 			PropsValues.INDEX_ON_UPGRADE);
@@ -373,6 +385,31 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 		release.setSchemaVersion(schemaVersion);
 
 		releasePersistence.update(release);
+	}
+
+	protected int addReleaseInfo() throws Exception {
+		try (Connection con = DataAccess.getConnection();
+			PreparedStatement ps = con.prepareStatement(_SQL_INSERT_RELEASE)) {
+
+			java.sql.Date now = new java.sql.Date(System.currentTimeMillis());
+
+			ps.setDate(1, now);
+			ps.setDate(2, now);
+
+			ps.setString(3, ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME);
+
+			Version latestSchemaVersion =
+				PortalUpgradeProcess.getLatestSchemaVersion();
+
+			ps.setString(4, latestSchemaVersion.toString());
+
+			ps.setInt(5, ReleaseInfo.getBuildNumber());
+			ps.setBoolean(6, false);
+
+			ps.executeUpdate();
+		}
+
+		return ReleaseInfo.getBuildNumber();
 	}
 
 	protected void populateVersion() {
@@ -440,7 +477,8 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 		try {
 			con = DataAccess.getConnection();
 
-			ps = con.prepareStatement(_TEST_DATABASE_STRING_CASE_SENSITIVITY);
+			ps = con.prepareStatement(
+				_SQL_TEST_DATABASE_STRING_CASE_SENSITIVITY);
 
 			ps.setLong(1, ReleaseConstants.DEFAULT_ID);
 			ps.setString(2, testString);
@@ -463,10 +501,15 @@ public class ReleaseLocalServiceImpl extends ReleaseLocalServiceBaseImpl {
 		return count;
 	}
 
-	private static final String _GET_BUILD_NUMBER =
+	private static final String _SQL_GET_BUILD_NUMBER =
 		"select buildNumber from Release_ where releaseId = ?";
 
-	private static final String _TEST_DATABASE_STRING_CASE_SENSITIVITY =
+	private static final String _SQL_INSERT_RELEASE =
+		"insert into Release_ (releaseId, createDate, modifiedDate, " +
+			"servletContextName, schemaVersion, buildNumber, verified) " +
+				"values (1, ?, ?, ?, ?, ?, ?)";
+
+	private static final String _SQL_TEST_DATABASE_STRING_CASE_SENSITIVITY =
 		"select count(*) from Release_ where releaseId = ? and testString = ?";
 
 	private static final Log _log = LogFactoryUtil.getLog(

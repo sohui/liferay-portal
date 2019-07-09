@@ -23,23 +23,39 @@ import org.gradle.internal.resource.transfer.ExternalResourceConnector;
  */
 public class LiferayHttpConnectorFactory extends HttpConnectorFactory {
 
+	public LiferayHttpConnectorFactory(SslContextFactory sslContextFactory) {
+		super(sslContextFactory);
+
+		_sslContextFactory = sslContextFactory;
+	}
+
 	@Override
 	public ExternalResourceConnector createResourceConnector(
 		ResourceConnectorSpecification resourceConnectorSpecification) {
 
-		HttpClientHelper httpClientHelper = new HttpClientHelper(
-			new DefaultHttpSettings(
-				resourceConnectorSpecification.getAuthentications()));
+		DefaultHttpSettings.Builder builder = DefaultHttpSettings.builder();
+
+		builder.withAuthenticationSettings(
+			resourceConnectorSpecification.getAuthentications());
+		builder.withSslContextFactory(_sslContextFactory);
+
+		HttpSettings httpSettings = builder.build();
+
+		HttpClientHelper httpClientHelper = new HttpClientHelper(httpSettings);
 
 		HttpResourceAccessor httpResourceAccessor =
 			new LiferayHttpResourceAccessor(httpClientHelper);
+
 		HttpResourceLister httpResourceLister = new HttpResourceLister(
 			httpResourceAccessor);
+
 		HttpResourceUploader httpResourceUploader = new HttpResourceUploader(
 			httpClientHelper);
 
 		return new DefaultExternalResourceConnector(
 			httpResourceAccessor, httpResourceLister, httpResourceUploader);
 	}
+
+	private final SslContextFactory _sslContextFactory;
 
 }

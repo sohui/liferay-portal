@@ -17,8 +17,6 @@
 <%@ include file="/admin/init.jsp" %>
 
 <%
-KBTemplate kbTemplate = (KBTemplate)request.getAttribute(KBWebKeys.KNOWLEDGE_BASE_KB_TEMPLATE);
-
 KBComment kbComment = (KBComment)request.getAttribute("template_comment.jsp-kb_comment");
 %>
 
@@ -49,7 +47,7 @@ KBComment kbComment = (KBComment)request.getAttribute("template_comment.jsp-kb_c
 				<br />
 
 				<div>
-					<%= kbComment.getContent() %>
+					<%= HtmlUtil.escape(kbComment.getContent()) %>
 				</div>
 
 				<br />

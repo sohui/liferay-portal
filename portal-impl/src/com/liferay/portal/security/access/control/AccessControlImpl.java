@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.security.auth.AuthException;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifierResult;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -39,13 +38,12 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author Raymond Augé
  */
-@DoPrivileged
 public class AccessControlImpl implements AccessControl {
 
 	@Override
 	public void initAccessControlContext(
-		HttpServletRequest request, HttpServletResponse response,
-		Map<String, Object> settings) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, Map<String, Object> settings) {
 
 		AccessControlContext accessControlContext =
 			AccessControlUtil.getAccessControlContext();
@@ -57,8 +55,8 @@ public class AccessControlImpl implements AccessControl {
 
 		accessControlContext = new AccessControlContext();
 
-		accessControlContext.setRequest(request);
-		accessControlContext.setResponse(response);
+		accessControlContext.setRequest(httpServletRequest);
+		accessControlContext.setResponse(httpServletResponse);
 
 		Map<String, Object> accessControlContextSettings =
 			accessControlContext.getSettings();

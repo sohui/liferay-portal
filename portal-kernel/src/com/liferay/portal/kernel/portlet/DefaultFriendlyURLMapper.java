@@ -14,12 +14,11 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.PortletConstants;
-import com.liferay.portal.kernel.model.PortletInstance;
+import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashMap;
@@ -54,9 +53,6 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 		defaultIgnoredParameters = new LinkedHashSet<>();
 
 		defaultIgnoredParameters.add("p_p_id");
-		defaultIgnoredParameters.add("p_p_col_id");
-		defaultIgnoredParameters.add("p_p_col_pos");
-		defaultIgnoredParameters.add("p_p_col_count");
 
 		defaultReservedParameters = new LinkedHashMap<>();
 
@@ -108,8 +104,11 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 
 		addParametersIncludedInPath(liferayPortletURL, routeParameters);
 
-		friendlyURLPath = StringPool.SLASH.concat(getMapping()).concat(
-			friendlyURLPath);
+		friendlyURLPath = StringPool.SLASH.concat(
+			getMapping()
+		).concat(
+			friendlyURLPath
+		);
 
 		return friendlyURLPath;
 	}
@@ -159,7 +158,7 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 
 		String namespace = null;
 
-		String portletInstanceKey = getPortletId(routeParameters);
+		String portletInstanceKey = getPortletInstanceKey(routeParameters);
 
 		if (Validator.isNotNull(portletInstanceKey)) {
 			namespace = PortalUtil.getPortletNamespace(portletInstanceKey);
@@ -219,19 +218,14 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 
 		// Hide reserved parameters removed by the router or set to the defaults
 
-		Map<String, String> reservedParameters =
-			liferayPortletURL.getReservedParameterMap();
+		liferayPortletURL.visitReservedParameters(
+			(key, value) -> {
+				if (!routeParameters.containsKey(key) ||
+					value.equals(defaultReservedParameters.get(key))) {
 
-		for (Map.Entry<String, String> entry : reservedParameters.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-
-			if (!routeParameters.containsKey(key) ||
-				value.equals(defaultReservedParameters.get(key))) {
-
-				liferayPortletURL.addParameterIncludedInPath(key);
-			}
-		}
+					liferayPortletURL.addParameterIncludedInPath(key);
+				}
+			});
 	}
 
 	/**
@@ -274,38 +268,22 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 		if (Validator.isNotNull(portletInstanceKey)) {
 			routeParameters.put("p_p_id", portletInstanceKey);
 
-			PortletInstance portletInstance =
-				PortletInstance.fromPortletInstanceKey(portletInstanceKey);
+			long userId = PortletIdCodec.decodeUserId(portletInstanceKey);
+			String instanceId = PortletIdCodec.decodeInstanceId(
+				portletInstanceKey);
 
 			routeParameters.put(
 				"userIdAndInstanceId",
-				portletInstance.getUserIdAndInstanceId());
+				PortletIdCodec.encodeUserIdAndInstanceId(userId, instanceId));
 
-			if (portletInstance.hasInstanceId()) {
-				routeParameters.put(
-					"instanceId", portletInstance.getInstanceId());
+			if (instanceId != null) {
+				routeParameters.put("instanceId", instanceId);
 			}
 		}
 
 		// Copy reserved parameters
 
-		routeParameters.putAll(liferayPortletURL.getReservedParameterMap());
-	}
-
-	/**
-	 * Returns the portlet ID, including the instance ID if applicable, from the
-	 * parameter map.
-	 *
-	 * @deprecated As of 7.0.0, replaced by {@link #getPortletInstanceKey(Map)}
-	 * @param  routeParameters the parameter map. For an instanceable portlet,
-	 *         this must contain either <code>p_p_id</code> or
-	 *         <code>instanceId</code>.
-	 * @return the portlet ID, including the instance ID if applicable, or
-	 *         <code>null</code> if it cannot be determined
-	 */
-	@Deprecated
-	protected String getPortletId(Map<String, String> routeParameters) {
-		return getPortletInstanceKey(routeParameters);
+		liferayPortletURL.visitReservedParameters(routeParameters::put);
 	}
 
 	/**
@@ -335,18 +313,22 @@ public class DefaultFriendlyURLMapper extends BaseFriendlyURLMapper {
 		}
 
 		if (Validator.isNotNull(userIdAndInstanceId)) {
-			PortletInstance portletInstance =
-				PortletInstance.fromPortletNameAndUserIdAndInstanceId(
-					getPortletId(), userIdAndInstanceId);
+			PortletIdCodec.validatePortletName(getPortletId());
 
-			return portletInstance.getPortletInstanceKey();
+			ObjectValuePair<Long, String> objectValuePair =
+				PortletIdCodec.decodeUserIdAndInstanceId(userIdAndInstanceId);
+
+			return PortletIdCodec.encode(
+				getPortletId(), objectValuePair.getKey(),
+				objectValuePair.getValue());
 		}
 
 		String instanceId = routeParameters.remove("instanceId");
 
 		if (Validator.isNotNull(instanceId)) {
-			return PortletConstants.assemblePortletId(
-				getPortletId(), instanceId);
+			PortletIdCodec.validatePortletName(getPortletId());
+
+			return PortletIdCodec.encode(getPortletId(), instanceId);
 		}
 
 		if (!isAllPublicRenderParameters(routeParameters)) {

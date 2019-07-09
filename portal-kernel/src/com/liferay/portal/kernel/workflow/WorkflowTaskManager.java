@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Micha Kiener
  * @author Shuyang Zhou
@@ -31,6 +33,7 @@ import java.util.Map;
  * @author Marcellus Tavares
  */
 @MessagingProxy(mode = ProxyMode.SYNC)
+@ProviderType
 public interface WorkflowTaskManager {
 
 	public WorkflowTask assignWorkflowTaskToRole(
@@ -84,6 +87,11 @@ public interface WorkflowTaskManager {
 			long companyId, long userId, Boolean completed)
 		throws WorkflowException;
 
+	public int getWorkflowTaskCountByUserRoles(
+			long companyId, long userId, long workflowInstanceId,
+			Boolean completed)
+		throws WorkflowException;
+
 	public int getWorkflowTaskCountByWorkflowInstance(
 			long companyId, Long userId, long workflowInstanceId,
 			Boolean completed)
@@ -118,6 +126,9 @@ public interface WorkflowTaskManager {
 			long companyId, Long userId, long workflowInstanceId,
 			Boolean completed, int start, int end,
 			OrderByComparator<WorkflowTask> orderByComparator)
+		throws WorkflowException;
+
+	public boolean hasOtherAssignees(long workflowTaskInstanceId, long userId)
 		throws WorkflowException;
 
 	public List<WorkflowTask> search(

@@ -101,8 +101,8 @@ public abstract class BaseSocialActivityManager
 				className, primaryKey, type);
 
 		if (lastSocialActivity != null) {
-			lastSocialActivity.setCreateDate(createDate.getTime());
 			lastSocialActivity.setUserId(userId);
+			lastSocialActivity.setCreateDate(createDate.getTime());
 
 			getSocialActivityLocalService().updateSocialActivity(
 				lastSocialActivity);
@@ -116,8 +116,8 @@ public abstract class BaseSocialActivityManager
 	protected long getPrimaryKey(T classedModel) {
 		if (!(classedModel.getPrimaryKeyObj() instanceof Long)) {
 			throw new IllegalArgumentException(
-				"Only models with a primary key of type Long can make use " +
-					"of SocialActivityManagers");
+				"Only models with a primary key of type Long can make use of " +
+					"SocialActivityManagers");
 		}
 
 		return (Long)classedModel.getPrimaryKeyObj();

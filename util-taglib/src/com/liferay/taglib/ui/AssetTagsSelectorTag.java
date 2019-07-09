@@ -14,11 +14,11 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
@@ -30,6 +30,50 @@ import javax.servlet.http.HttpServletRequest;
  * @author Jorge Ferrer
  */
 public class AssetTagsSelectorTag extends IncludeTag {
+
+	public String getAddCallback() {
+		return _addCallback;
+	}
+
+	public String getClassName() {
+		return _className;
+	}
+
+	public long getClassPK() {
+		return _classPK;
+	}
+
+	public String getCurTags() {
+		return _curTags;
+	}
+
+	public long[] getGroupIds() {
+		return _groupIds;
+	}
+
+	public String getHiddenInput() {
+		return _hiddenInput;
+	}
+
+	public String getId() {
+		return _id;
+	}
+
+	public String getRemoveCallback() {
+		return _removeCallback;
+	}
+
+	public boolean isAllowAddEntry() {
+		return _allowAddEntry;
+	}
+
+	public boolean isAutoFocus() {
+		return _autoFocus;
+	}
+
+	public boolean isIgnoreRequestValue() {
+		return _ignoreRequestValue;
+	}
 
 	public void setAddCallback(String addCallback) {
 		_addCallback = addCallback;
@@ -77,6 +121,8 @@ public class AssetTagsSelectorTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_addCallback = null;
 		_allowAddEntry = true;
 		_autoFocus = false;
@@ -96,37 +142,39 @@ public class AssetTagsSelectorTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
 		String id = _id;
 
 		if (Validator.isNull(id)) {
-			id = PortalUtil.generateRandomKey(
-				request,
-				"taglib_ui_asset_tags_selector_page") + StringPool.UNDERLINE;
+			String randomKey = PortalUtil.generateRandomKey(
+				httpServletRequest, "taglib_ui_asset_tags_selector_page");
+
+			id = randomKey + StringPool.UNDERLINE;
 		}
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:addCallback",
 			String.valueOf(_addCallback));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:allowAddEntry",
 			String.valueOf(_allowAddEntry));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:autoFocus",
 			String.valueOf(_autoFocus));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:className", _className);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:classPK", String.valueOf(_classPK));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:curTags", _curTags);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:removeCallback",
 			String.valueOf(_removeCallback));
 
 		if (_groupIds == null) {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
 			long[] groupIds = null;
 
@@ -147,13 +195,14 @@ public class AssetTagsSelectorTag extends IncludeTag {
 			_groupIds = groupIds;
 		}
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:groupIds", _groupIds);
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:hiddenInput", _hiddenInput);
-		request.setAttribute("liferay-ui:asset-tags-selector:id", id);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:asset-tags-selector:id", id);
+		httpServletRequest.setAttribute(
 			"liferay-ui:asset-tags-selector:ignoreRequestValue",
 			_ignoreRequestValue);
 	}

@@ -15,14 +15,14 @@
 package com.liferay.document.library.kernel.store;
 
 import com.liferay.document.library.kernel.exception.NoSuchFileException;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.File;
@@ -99,7 +99,7 @@ public abstract class BaseStore implements Store {
 			throw new SystemException(fnfe);
 		}
 		catch (IOException ioe) {
-			_log.error(ioe);
+			_log.error("Unable to add file", ioe);
 		}
 	}
 
@@ -118,13 +118,24 @@ public abstract class BaseStore implements Store {
 		throws PortalException;
 
 	/**
-	 * Ensures company's root directory exists. Only implemented by {@link
-	 * JCRStore#checkRoot(long)}.
+	 * Ensures company's root directory exists.
 	 *
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
 	 * @param companyId the primary key of the company
 	 */
+	@Deprecated
 	@Override
 	public abstract void checkRoot(long companyId);
+
+	@Override
+	public void copyFileToStore(
+		long companyId, long repositoryId, String fileName, String versionLabel,
+		Store targetStore) {
+
+		_transfer(
+			companyId, repositoryId, fileName, versionLabel, targetStore,
+			false);
+	}
 
 	/**
 	 * Creates a new copy of the file version.
@@ -412,14 +423,24 @@ public abstract class BaseStore implements Store {
 		String versionLabel);
 
 	/**
-	 * Moves an existing directory. Only implemented by {@link
-	 * JCRStore#move(String, String)}.
+	 * Moves an existing directory.
 	 *
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
 	 * @param srcDir the original directory's name
 	 * @param destDir the new directory's name
 	 */
+	@Deprecated
 	@Override
 	public void move(String srcDir, String destDir) {
+	}
+
+	@Override
+	public void moveFileToStore(
+		long companyId, long repositoryId, String fileName, String versionLabel,
+		Store targetStore) {
+
+		_transfer(
+			companyId, repositoryId, fileName, versionLabel, targetStore, true);
 	}
 
 	/**
@@ -488,7 +509,7 @@ public abstract class BaseStore implements Store {
 				companyId, repositoryId, fileName, versionLabel, fnfe);
 		}
 		catch (IOException ioe) {
-			_log.error(ioe);
+			_log.error("Unable to update file", ioe);
 		}
 	}
 
@@ -589,6 +610,30 @@ public abstract class BaseStore implements Store {
 			if (_log.isDebugEnabled() && (cause == null)) {
 				_log.debug(sb.toString());
 			}
+		}
+	}
+
+	private void _transfer(
+		long companyId, long repositoryId, String fileName, String versionLabel,
+		Store targetStore, boolean delete) {
+
+		try (InputStream is = getFileAsStream(
+				companyId, repositoryId, fileName, versionLabel)) {
+
+			if (versionLabel.equals(Store.VERSION_DEFAULT)) {
+				targetStore.addFile(companyId, repositoryId, fileName, is);
+			}
+			else {
+				targetStore.updateFile(
+					companyId, repositoryId, fileName, versionLabel, is);
+			}
+
+			if (delete) {
+				deleteFile(companyId, repositoryId, fileName, versionLabel);
+			}
+		}
+		catch (IOException | PortalException e) {
+			throw new SystemException(e);
 		}
 	}
 

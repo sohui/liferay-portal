@@ -29,23 +29,24 @@ import javax.servlet.http.HttpServletResponseWrapper;
 public class AbsoluteRedirectsResponse extends HttpServletResponseWrapper {
 
 	public AbsoluteRedirectsResponse(
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
-		super(response);
+		super(httpServletResponse);
 
-		_request = request;
+		_httpServletRequest = httpServletRequest;
 	}
 
 	@Override
 	public void sendRedirect(String redirect) throws IOException {
-		redirect = PortalUtil.getAbsoluteURL(_request, redirect);
+		redirect = PortalUtil.getAbsoluteURL(_httpServletRequest, redirect);
 
-		_request.setAttribute(
+		_httpServletRequest.setAttribute(
 			AbsoluteRedirectsResponse.class.getName(), redirect);
 
 		super.sendRedirect(redirect);
 	}
 
-	private final HttpServletRequest _request;
+	private final HttpServletRequest _httpServletRequest;
 
 }

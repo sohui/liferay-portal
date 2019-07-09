@@ -27,12 +27,23 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class UserGroupSearchContainerResultsTag<R> extends IncludeTag {
 
+	public DisplayTerms getSearchTerms() {
+		return _searchTerms;
+	}
+
+	public LinkedHashMap<String, Object> getUserGroupParams() {
+		return _userGroupParams;
+	}
+
 	public void setSearchTerms(DisplayTerms searchTerms) {
 		_searchTerms = searchTerms;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setUseIndexer(boolean useIndexer) {
-		_useIndexer = useIndexer;
 	}
 
 	public void setUserGroupParams(
@@ -43,8 +54,9 @@ public class UserGroupSearchContainerResultsTag<R> extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_searchTerms = null;
-		_useIndexer = false;
 		_userGroupParams = null;
 	}
 
@@ -54,7 +66,7 @@ public class UserGroupSearchContainerResultsTag<R> extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
 		SearchContainerTag<R> searchContainerTag =
 			(SearchContainerTag<R>)findAncestorWithClass(
 				this, SearchContainerTag.class);
@@ -62,16 +74,14 @@ public class UserGroupSearchContainerResultsTag<R> extends IncludeTag {
 		SearchContainer<R> searchContainer =
 			searchContainerTag.getSearchContainer();
 
-		request.setAttribute(
-			"liferay-ui:user-group-search-container-results:useIndexer",
-			_useIndexer);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:user-group-search-container-results:searchContainer",
 			searchContainer);
-		request.setAttribute(
+
+		httpServletRequest.setAttribute(
 			"liferay-ui:user-group-search-container-results:searchTerms",
 			_searchTerms);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:user-group-search-container-results:userGroupParams",
 			_userGroupParams);
 	}
@@ -80,7 +90,6 @@ public class UserGroupSearchContainerResultsTag<R> extends IncludeTag {
 		"/html/taglib/ui/user_group_search_container_results/page.jsp";
 
 	private DisplayTerms _searchTerms;
-	private boolean _useIndexer;
 	private LinkedHashMap<String, Object> _userGroupParams;
 
 }

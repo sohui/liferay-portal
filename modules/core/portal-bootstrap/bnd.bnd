@@ -1,4 +1,6 @@
 Bundle-Name: Liferay Portal Bootstrap
 Bundle-SymbolicName: com.liferay.portal.bootstrap
 Bundle-Version: 1.0.0
--includeresource: META-INF/system.packages.extra.mf=tmp/META-INF/MANIFEST.MF
+-includeresource:\
+	META-INF/system.packages.extra.mf=${system.packages.extra.manifest.file},\
+	@lib/biz.aQute.bnd.annotation.jar!/aQute/bnd/annotation/metatype/*

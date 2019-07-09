@@ -14,8 +14,6 @@
 
 package com.liferay.portlet.social.service.base;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -35,13 +33,11 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
-import com.liferay.portal.kernel.service.persistence.GroupFinder;
-import com.liferay.portal.kernel.service.persistence.GroupPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-
 import com.liferay.social.kernel.model.SocialActivityLimit;
 import com.liferay.social.kernel.service.SocialActivityLimitLocalService;
 import com.liferay.social.kernel.service.persistence.SocialActivityLimitPersistence;
@@ -52,6 +48,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the base implementation for the social activity limit local service.
  *
@@ -61,17 +59,17 @@ import javax.sql.DataSource;
  *
  * @author Brian Wing Shun Chan
  * @see com.liferay.portlet.social.service.impl.SocialActivityLimitLocalServiceImpl
- * @see com.liferay.social.kernel.service.SocialActivityLimitLocalServiceUtil
  * @generated
  */
 @ProviderType
 public abstract class SocialActivityLimitLocalServiceBaseImpl
-	extends BaseLocalServiceImpl implements SocialActivityLimitLocalService,
-		IdentifiableOSGiService {
+	extends BaseLocalServiceImpl
+	implements SocialActivityLimitLocalService, IdentifiableOSGiService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link com.liferay.social.kernel.service.SocialActivityLimitLocalServiceUtil} to access the social activity limit local service.
+	 * Never modify or reference this class directly. Use <code>SocialActivityLimitLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.social.kernel.service.SocialActivityLimitLocalServiceUtil</code>.
 	 */
 
 	/**
@@ -84,6 +82,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	@Override
 	public SocialActivityLimit addSocialActivityLimit(
 		SocialActivityLimit socialActivityLimit) {
+
 		socialActivityLimit.setNew(true);
 
 		return socialActivityLimitPersistence.update(socialActivityLimit);
@@ -96,6 +95,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 * @return the new social activity limit
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public SocialActivityLimit createSocialActivityLimit(long activityLimitId) {
 		return socialActivityLimitPersistence.create(activityLimitId);
 	}
@@ -111,6 +111,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	@Override
 	public SocialActivityLimit deleteSocialActivityLimit(long activityLimitId)
 		throws PortalException {
+
 		return socialActivityLimitPersistence.remove(activityLimitId);
 	}
 
@@ -124,6 +125,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	@Override
 	public SocialActivityLimit deleteSocialActivityLimit(
 		SocialActivityLimit socialActivityLimit) {
+
 		return socialActivityLimitPersistence.remove(socialActivityLimit);
 	}
 
@@ -131,8 +133,8 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	public DynamicQuery dynamicQuery() {
 		Class<?> clazz = getClass();
 
-		return DynamicQueryFactoryUtil.forClass(SocialActivityLimit.class,
-			clazz.getClassLoader());
+		return DynamicQueryFactoryUtil.forClass(
+			SocialActivityLimit.class, clazz.getClassLoader());
 	}
 
 	/**
@@ -143,14 +145,15 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 */
 	@Override
 	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery) {
-		return socialActivityLimitPersistence.findWithDynamicQuery(dynamicQuery);
+		return socialActivityLimitPersistence.findWithDynamicQuery(
+			dynamicQuery);
 	}
 
 	/**
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.social.model.impl.SocialActivityLimitModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityLimitModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -159,17 +162,18 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 * @return the range of matching rows
 	 */
 	@Override
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end) {
-		return socialActivityLimitPersistence.findWithDynamicQuery(dynamicQuery,
-			start, end);
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end) {
+
+		return socialActivityLimitPersistence.findWithDynamicQuery(
+			dynamicQuery, start, end);
 	}
 
 	/**
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.social.model.impl.SocialActivityLimitModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityLimitModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -179,10 +183,12 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 * @return the ordered range of matching rows
 	 */
 	@Override
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end, OrderByComparator<T> orderByComparator) {
-		return socialActivityLimitPersistence.findWithDynamicQuery(dynamicQuery,
-			start, end, orderByComparator);
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end,
+		OrderByComparator<T> orderByComparator) {
+
+		return socialActivityLimitPersistence.findWithDynamicQuery(
+			dynamicQuery, start, end, orderByComparator);
 	}
 
 	/**
@@ -193,7 +199,8 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 */
 	@Override
 	public long dynamicQueryCount(DynamicQuery dynamicQuery) {
-		return socialActivityLimitPersistence.countWithDynamicQuery(dynamicQuery);
+		return socialActivityLimitPersistence.countWithDynamicQuery(
+			dynamicQuery);
 	}
 
 	/**
@@ -204,15 +211,17 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 * @return the number of rows matching the dynamic query
 	 */
 	@Override
-	public long dynamicQueryCount(DynamicQuery dynamicQuery,
-		Projection projection) {
-		return socialActivityLimitPersistence.countWithDynamicQuery(dynamicQuery,
-			projection);
+	public long dynamicQueryCount(
+		DynamicQuery dynamicQuery, Projection projection) {
+
+		return socialActivityLimitPersistence.countWithDynamicQuery(
+			dynamicQuery, projection);
 	}
 
 	@Override
 	public SocialActivityLimit fetchSocialActivityLimit(long activityLimitId) {
-		return socialActivityLimitPersistence.fetchByPrimaryKey(activityLimitId);
+		return socialActivityLimitPersistence.fetchByPrimaryKey(
+			activityLimitId);
 	}
 
 	/**
@@ -225,14 +234,17 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	@Override
 	public SocialActivityLimit getSocialActivityLimit(long activityLimitId)
 		throws PortalException {
+
 		return socialActivityLimitPersistence.findByPrimaryKey(activityLimitId);
 	}
 
 	@Override
 	public ActionableDynamicQuery getActionableDynamicQuery() {
-		ActionableDynamicQuery actionableDynamicQuery = new DefaultActionableDynamicQuery();
+		ActionableDynamicQuery actionableDynamicQuery =
+			new DefaultActionableDynamicQuery();
 
-		actionableDynamicQuery.setBaseLocalService(socialActivityLimitLocalService);
+		actionableDynamicQuery.setBaseLocalService(
+			socialActivityLimitLocalService);
 		actionableDynamicQuery.setClassLoader(getClassLoader());
 		actionableDynamicQuery.setModelClass(SocialActivityLimit.class);
 
@@ -242,12 +254,17 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	}
 
 	@Override
-	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
-		IndexableActionableDynamicQuery indexableActionableDynamicQuery = new IndexableActionableDynamicQuery();
+	public IndexableActionableDynamicQuery
+		getIndexableActionableDynamicQuery() {
 
-		indexableActionableDynamicQuery.setBaseLocalService(socialActivityLimitLocalService);
+		IndexableActionableDynamicQuery indexableActionableDynamicQuery =
+			new IndexableActionableDynamicQuery();
+
+		indexableActionableDynamicQuery.setBaseLocalService(
+			socialActivityLimitLocalService);
 		indexableActionableDynamicQuery.setClassLoader(getClassLoader());
-		indexableActionableDynamicQuery.setModelClass(SocialActivityLimit.class);
+		indexableActionableDynamicQuery.setModelClass(
+			SocialActivityLimit.class);
 
 		indexableActionableDynamicQuery.setPrimaryKeyPropertyName(
 			"activityLimitId");
@@ -257,7 +274,9 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 
 	protected void initActionableDynamicQuery(
 		ActionableDynamicQuery actionableDynamicQuery) {
-		actionableDynamicQuery.setBaseLocalService(socialActivityLimitLocalService);
+
+		actionableDynamicQuery.setBaseLocalService(
+			socialActivityLimitLocalService);
 		actionableDynamicQuery.setClassLoader(getClassLoader());
 		actionableDynamicQuery.setModelClass(SocialActivityLimit.class);
 
@@ -270,12 +289,15 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
-		return socialActivityLimitLocalService.deleteSocialActivityLimit((SocialActivityLimit)persistedModel);
+
+		return socialActivityLimitLocalService.deleteSocialActivityLimit(
+			(SocialActivityLimit)persistedModel);
 	}
 
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
+
 		return socialActivityLimitPersistence.findByPrimaryKey(primaryKeyObj);
 	}
 
@@ -283,7 +305,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 * Returns a range of all the social activity limits.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.social.model.impl.SocialActivityLimitModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityLimitModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of social activity limits
@@ -291,7 +313,9 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 * @return the range of social activity limits
 	 */
 	@Override
-	public List<SocialActivityLimit> getSocialActivityLimits(int start, int end) {
+	public List<SocialActivityLimit> getSocialActivityLimits(
+		int start, int end) {
+
 		return socialActivityLimitPersistence.findAll(start, end);
 	}
 
@@ -315,6 +339,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	@Override
 	public SocialActivityLimit updateSocialActivityLimit(
 		SocialActivityLimit socialActivityLimit) {
+
 		return socialActivityLimitPersistence.update(socialActivityLimit);
 	}
 
@@ -323,7 +348,9 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 *
 	 * @return the social activity limit local service
 	 */
-	public SocialActivityLimitLocalService getSocialActivityLimitLocalService() {
+	public SocialActivityLimitLocalService
+		getSocialActivityLimitLocalService() {
+
 		return socialActivityLimitLocalService;
 	}
 
@@ -334,6 +361,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 */
 	public void setSocialActivityLimitLocalService(
 		SocialActivityLimitLocalService socialActivityLimitLocalService) {
+
 		this.socialActivityLimitLocalService = socialActivityLimitLocalService;
 	}
 
@@ -353,6 +381,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 */
 	public void setSocialActivityLimitPersistence(
 		SocialActivityLimitPersistence socialActivityLimitPersistence) {
+
 		this.socialActivityLimitPersistence = socialActivityLimitPersistence;
 	}
 
@@ -361,7 +390,9 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 *
 	 * @return the counter local service
 	 */
-	public com.liferay.counter.kernel.service.CounterLocalService getCounterLocalService() {
+	public com.liferay.counter.kernel.service.CounterLocalService
+		getCounterLocalService() {
+
 		return counterLocalService;
 	}
 
@@ -371,63 +402,10 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 * @param counterLocalService the counter local service
 	 */
 	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService counterLocalService) {
+		com.liferay.counter.kernel.service.CounterLocalService
+			counterLocalService) {
+
 		this.counterLocalService = counterLocalService;
-	}
-
-	/**
-	 * Returns the group local service.
-	 *
-	 * @return the group local service
-	 */
-	public com.liferay.portal.kernel.service.GroupLocalService getGroupLocalService() {
-		return groupLocalService;
-	}
-
-	/**
-	 * Sets the group local service.
-	 *
-	 * @param groupLocalService the group local service
-	 */
-	public void setGroupLocalService(
-		com.liferay.portal.kernel.service.GroupLocalService groupLocalService) {
-		this.groupLocalService = groupLocalService;
-	}
-
-	/**
-	 * Returns the group persistence.
-	 *
-	 * @return the group persistence
-	 */
-	public GroupPersistence getGroupPersistence() {
-		return groupPersistence;
-	}
-
-	/**
-	 * Sets the group persistence.
-	 *
-	 * @param groupPersistence the group persistence
-	 */
-	public void setGroupPersistence(GroupPersistence groupPersistence) {
-		this.groupPersistence = groupPersistence;
-	}
-
-	/**
-	 * Returns the group finder.
-	 *
-	 * @return the group finder
-	 */
-	public GroupFinder getGroupFinder() {
-		return groupFinder;
-	}
-
-	/**
-	 * Sets the group finder.
-	 *
-	 * @param groupFinder the group finder
-	 */
-	public void setGroupFinder(GroupFinder groupFinder) {
-		this.groupFinder = groupFinder;
 	}
 
 	/**
@@ -435,7 +413,9 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 *
 	 * @return the user local service
 	 */
-	public com.liferay.portal.kernel.service.UserLocalService getUserLocalService() {
+	public com.liferay.portal.kernel.service.UserLocalService
+		getUserLocalService() {
+
 		return userLocalService;
 	}
 
@@ -446,6 +426,7 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 */
 	public void setUserLocalService(
 		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
+
 		this.userLocalService = userLocalService;
 	}
 
@@ -486,7 +467,8 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register("com.liferay.social.kernel.model.SocialActivityLimit",
+		persistedModelLocalServiceRegistry.register(
+			"com.liferay.social.kernel.model.SocialActivityLimit",
 			socialActivityLimitLocalService);
 	}
 
@@ -520,15 +502,16 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 	 */
 	protected void runSQL(String sql) {
 		try {
-			DataSource dataSource = socialActivityLimitPersistence.getDataSource();
+			DataSource dataSource =
+				socialActivityLimitPersistence.getDataSource();
 
 			DB db = DBManagerUtil.getDB();
 
 			sql = db.buildSQL(sql);
 			sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource,
-					sql);
+			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(
+				dataSource, sql);
 
 			sqlUpdate.update();
 		}
@@ -539,22 +522,30 @@ public abstract class SocialActivityLimitLocalServiceBaseImpl
 
 	@BeanReference(type = SocialActivityLimitLocalService.class)
 	protected SocialActivityLimitLocalService socialActivityLimitLocalService;
+
 	@BeanReference(type = SocialActivityLimitPersistence.class)
 	protected SocialActivityLimitPersistence socialActivityLimitPersistence;
-	@BeanReference(type = com.liferay.counter.kernel.service.CounterLocalService.class)
-	protected com.liferay.counter.kernel.service.CounterLocalService counterLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.GroupLocalService.class)
-	protected com.liferay.portal.kernel.service.GroupLocalService groupLocalService;
-	@BeanReference(type = GroupPersistence.class)
-	protected GroupPersistence groupPersistence;
-	@BeanReference(type = GroupFinder.class)
-	protected GroupFinder groupFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserLocalService.class)
-	protected com.liferay.portal.kernel.service.UserLocalService userLocalService;
+
+	@BeanReference(
+		type = com.liferay.counter.kernel.service.CounterLocalService.class
+	)
+	protected com.liferay.counter.kernel.service.CounterLocalService
+		counterLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserLocalService
+		userLocalService;
+
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
+
 	@BeanReference(type = UserFinder.class)
 	protected UserFinder userFinder;
+
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
+	protected PersistedModelLocalServiceRegistry
+		persistedModelLocalServiceRegistry;
+
 }

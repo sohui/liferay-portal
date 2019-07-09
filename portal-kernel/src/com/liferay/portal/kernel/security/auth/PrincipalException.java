@@ -45,11 +45,19 @@ public class PrincipalException extends PortalException {
 	public static class MustBeAuthenticated extends PrincipalException {
 
 		public MustBeAuthenticated(long userId) {
-			this(String.valueOf(userId));
+			this(String.valueOf(userId), null);
+		}
+
+		public MustBeAuthenticated(long userId, Throwable cause) {
+			this(String.valueOf(userId), cause);
 		}
 
 		public MustBeAuthenticated(String login) {
-			super(String.format("User %s must be authenticated", login));
+			this(login, null);
+		}
+
+		public MustBeAuthenticated(String login, Throwable cause) {
+			super(String.format("User %s must be authenticated", login), cause);
 
 			this.login = login;
 		}
@@ -147,37 +155,44 @@ public class PrincipalException extends PortalException {
 	public static class MustHavePermission extends PrincipalException {
 
 		public MustHavePermission(long userId, String... actionIds) {
-			super(
-				String.format(
-					"User %s must have permission to perform action %s", userId,
-					StringUtil.merge(actionIds, ",")));
-
-			this.actionId = actionIds;
-			this.resourceId = 0;
-			this.resourceName = null;
-			this.userId = userId;
+			this(userId, null, 0, null, actionIds);
 		}
 
 		public MustHavePermission(
 			long userId, String resourceName, long resourceId,
 			String... actionIds) {
 
+			this(userId, resourceName, resourceId, null, actionIds);
+		}
+
+		public MustHavePermission(
+			long userId, String resourceName, long resourceId, Throwable cause,
+			String... actionIds) {
+
 			super(
 				String.format(
 					"User %s must have %s permission for %s %s", userId,
 					StringUtil.merge(actionIds, ","), resourceName,
-					resourceId));
+					(resourceId == 0) ? "" : resourceId),
+				cause);
 
-			this.actionId = actionIds;
+			this.userId = userId;
 			this.resourceName = resourceName;
 			this.resourceId = resourceId;
-			this.userId = userId;
+
+			actionId = actionIds;
+		}
+
+		public MustHavePermission(
+			long userId, Throwable cause, String... actionIds) {
+
+			this(userId, null, 0, cause, actionIds);
 		}
 
 		public MustHavePermission(
 			PermissionChecker permissionChecker, String... actionIds) {
 
-			this(permissionChecker.getUserId(), actionIds);
+			this(permissionChecker.getUserId(), null, 0, null, actionIds);
 		}
 
 		public MustHavePermission(
@@ -185,13 +200,53 @@ public class PrincipalException extends PortalException {
 			long resourceId, String... actionIds) {
 
 			this(
-				permissionChecker.getUserId(), resourceName, resourceId,
+				permissionChecker.getUserId(), resourceName, resourceId, null,
 				actionIds);
+		}
+
+		public MustHavePermission(
+			PermissionChecker permissionChecker, String resourceName,
+			long resourceId, Throwable cause, String... actionIds) {
+
+			this(
+				permissionChecker.getUserId(), resourceName, resourceId, cause,
+				actionIds);
+		}
+
+		public MustHavePermission(
+			PermissionChecker permissionChecker, Throwable cause,
+			String... actionIds) {
+
+			this(permissionChecker.getUserId(), null, 0, cause, actionIds);
 		}
 
 		public final String[] actionId;
 		public final long resourceId;
 		public final String resourceName;
+		public final long userId;
+
+	}
+
+	public static class MustHaveValidCSRFToken extends PrincipalException {
+
+		public MustHaveValidCSRFToken(long userId, String origin) {
+			this(userId, origin, null);
+		}
+
+		public MustHaveValidCSRFToken(
+			long userId, String origin, Throwable cause) {
+
+			super(
+				String.format(
+					"User %s did not provide a valid CSRF token for %s", userId,
+					origin),
+				cause);
+
+			this.origin = origin;
+			this.userId = userId;
+		}
+
+		public final String origin;
 		public final long userId;
 
 	}
@@ -203,7 +258,8 @@ public class PrincipalException extends PortalException {
 		PrincipalException.MustBeInvokedUsingPost.class,
 		PrincipalException.MustBeOmniadmin.class,
 		PrincipalException.MustBePortletStrutsPath.class,
-		PrincipalException.MustHavePermission.class
+		PrincipalException.MustHavePermission.class,
+		PrincipalException.MustHaveValidCSRFToken.class
 	};
 
 }

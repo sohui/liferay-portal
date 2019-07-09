@@ -14,13 +14,12 @@
 
 package com.liferay.portal.kernel.portlet;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
-import com.liferay.portal.kernel.util.ClassLoaderPool;
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.portal.kernel.servlet.ServletContextClassLoaderPool;
 
 import javax.servlet.ServletContext;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -29,12 +28,25 @@ import javax.servlet.ServletContext;
 public class PortletClassLoaderUtil {
 
 	public static ClassLoader getClassLoader() {
-		return ClassLoaderPool.getClassLoader(getServletContextName());
+		String servletContextName = getServletContextName();
+
+		ClassLoader classLoader = ServletContextClassLoaderPool.getClassLoader(
+			servletContextName);
+
+		if (classLoader == null) {
+			throw new IllegalStateException(
+				"Unable to find the class loader for servlet context " +
+					servletContextName);
+		}
+
+		return classLoader;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static ClassLoader getClassLoader(String portletId) {
-		PortalRuntimePermission.checkGetClassLoader(portletId);
-
 		PortletBag portletBag = PortletBagPool.get(portletId);
 
 		if (portletBag == null) {
@@ -58,14 +70,11 @@ public class PortletClassLoaderUtil {
 	}
 
 	public static void setServletContextName(String servletContextName) {
-		PortalRuntimePermission.checkSetBeanProperty(
-			PortletClassLoaderUtil.class);
-
 		_servletContextName.set(servletContextName);
 	}
 
 	private static final ThreadLocal<String> _servletContextName =
-		new AutoResetThreadLocal<>(
+		new CentralizedThreadLocal<>(
 			PortletClassLoaderUtil.class + "._servletContextName");
 
 }

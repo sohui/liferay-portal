@@ -1,9 +1,8 @@
 <#include "copyright.txt" parse="false">
 
-
 package ${apiPackagePath}.exception;
 
-import aQute.bnd.annotation.ProviderType;
+import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
 
 import com.liferay.portal.kernel.exception.PortalException;
 

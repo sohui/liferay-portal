@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -61,22 +60,20 @@ public abstract class BaseSocialActivityInterpreterTestCase {
 	public void setUp() throws Exception {
 		group = GroupTestUtil.addGroup();
 
-		HttpServletRequest request = new MockHttpServletRequest();
+		HttpServletRequest httpServletRequest = new MockHttpServletRequest();
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			WebKeys.COMPANY_ID, TestPropsValues.getCompanyId());
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			WebKeys.CURRENT_URL, "http://localhost:80/web/guest/home");
-		request.setAttribute(WebKeys.USER, TestPropsValues.getUser());
+		httpServletRequest.setAttribute(
+			WebKeys.USER, TestPropsValues.getUser());
 
 		ServicePreAction servicePreAction = new ServicePreAction();
 
-		ThemeDisplay themeDisplay = servicePreAction.initThemeDisplay(
-			request, new MockHttpServletResponse());
+		servicePreAction.run(httpServletRequest, new MockHttpServletResponse());
 
-		request.setAttribute(WebKeys.THEME_DISPLAY, themeDisplay);
-
-		serviceContext = ServiceContextFactory.getInstance(request);
+		serviceContext = ServiceContextFactory.getInstance(httpServletRequest);
 	}
 
 	@Test
@@ -103,7 +100,7 @@ public abstract class BaseSocialActivityInterpreterTestCase {
 	protected void checkInterpret(long time) throws Exception {
 		List<SocialActivity> activities = getActivities();
 
-		Assert.assertFalse(activities.isEmpty());
+		Assert.assertFalse(activities.toString(), activities.isEmpty());
 
 		Map<String, String> entryTitles = new HashMap<>();
 
@@ -148,7 +145,7 @@ public abstract class BaseSocialActivityInterpreterTestCase {
 	protected void checkLinks() throws Exception {
 		List<SocialActivity> activities = getActivities();
 
-		Assert.assertFalse(activities.isEmpty());
+		Assert.assertFalse(activities.toString(), activities.isEmpty());
 
 		SocialActivityInterpreter activityInterpreter =
 			getActivityInterpreter();
@@ -177,7 +174,7 @@ public abstract class BaseSocialActivityInterpreterTestCase {
 	}
 
 	protected List<SocialActivity> getActivities() throws Exception {
-		List<SocialActivity> activities = new ArrayList<SocialActivity>(
+		List<SocialActivity> activities = new ArrayList<>(
 			SocialActivityLocalServiceUtil.getGroupActivities(
 				group.getGroupId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS));
 

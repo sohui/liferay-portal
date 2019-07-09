@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search.generic;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.BaseQueryImpl;
 import com.liferay.portal.kernel.search.QueryTerm;
 import com.liferay.portal.kernel.search.WildcardQuery;
@@ -40,6 +41,23 @@ public class WildcardQueryImpl extends BaseQueryImpl implements WildcardQuery {
 	@Override
 	public QueryTerm getQueryTerm() {
 		return _queryTerm;
+	}
+
+	@Override
+	public String toString() {
+		StringBundler sb = new StringBundler(5);
+
+		sb.append("{className=");
+
+		Class<?> clazz = getClass();
+
+		sb.append(clazz.getSimpleName());
+
+		sb.append(", queryTerm=");
+		sb.append(_queryTerm);
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	private final QueryTerm _queryTerm;

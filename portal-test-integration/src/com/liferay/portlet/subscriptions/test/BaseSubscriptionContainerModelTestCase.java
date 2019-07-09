@@ -14,7 +14,7 @@
 
 package com.liferay.portlet.subscriptions.test;
 
-import com.liferay.portal.util.test.MailServiceTestUtil;
+import com.liferay.portal.test.mail.MailServiceTestUtil;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,8 +26,7 @@ public abstract class BaseSubscriptionContainerModelTestCase
 	extends BaseSubscriptionTestCase {
 
 	@Test
-	public void
-			testSubscriptionContainerModelWhenAddingBaseModelInContainerModel()
+	public void testSubscriptionContainerModelWhenAddingBaseModelInContainerModel()
 		throws Exception {
 
 		long containerModelId = addContainerModel(
@@ -42,8 +41,7 @@ public abstract class BaseSubscriptionContainerModelTestCase
 	}
 
 	@Test
-	public void
-			testSubscriptionContainerModelWhenAddingBaseModelInRootContainerModel()
+	public void testSubscriptionContainerModelWhenAddingBaseModelInRootContainerModel()
 		throws Exception {
 
 		long containerModelId = addContainerModel(
@@ -60,8 +58,7 @@ public abstract class BaseSubscriptionContainerModelTestCase
 	}
 
 	@Test
-	public void
-			testSubscriptionContainerModelWhenAddingBaseModelInSubcontainerModel()
+	public void testSubscriptionContainerModelWhenAddingBaseModelInSubcontainerModel()
 		throws Exception {
 
 		long containerModelId = addContainerModel(
@@ -79,8 +76,7 @@ public abstract class BaseSubscriptionContainerModelTestCase
 	}
 
 	@Test
-	public void
-			testSubscriptionContainerModelWhenUpdatingBaseModelInContainerModel()
+	public void testSubscriptionContainerModelWhenUpdatingBaseModelInContainerModel()
 		throws Exception {
 
 		long containerModelId = addContainerModel(
@@ -97,8 +93,7 @@ public abstract class BaseSubscriptionContainerModelTestCase
 	}
 
 	@Test
-	public void
-			testSubscriptionContainerModelWhenUpdatingBaseModelInRootContainerModel()
+	public void testSubscriptionContainerModelWhenUpdatingBaseModelInRootContainerModel()
 		throws Exception {
 
 		long containerModelId = addContainerModel(
@@ -115,8 +110,7 @@ public abstract class BaseSubscriptionContainerModelTestCase
 	}
 
 	@Test
-	public void
-			testSubscriptionContainerModelWhenUpdatingBaseModelInSubcontainerModel()
+	public void testSubscriptionContainerModelWhenUpdatingBaseModelInSubcontainerModel()
 		throws Exception {
 
 		long containerModelId = addContainerModel(

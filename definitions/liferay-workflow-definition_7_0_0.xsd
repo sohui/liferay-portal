@@ -7,7 +7,7 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
 	<xs:import namespace="http://www.w3.org/XML/1998/namespace" />
-	<xs:complexType name="abstract-notification-complex-type" abstract="true">
+	<xs:complexType abstract="true" name="abstract-notification-complex-type">
 		<xs:sequence>
 			<xs:element name="name" type="xs:string" />
 			<xs:element minOccurs="0" name="description" type="xs:string" />
@@ -178,6 +178,13 @@
 						<xs:element name="script" type="xs:string" />
 						<xs:element name="script-language" type="script-language-type" />
 						<xs:element minOccurs="0" name="script-required-contexts" type="xs:string" />
+						<xs:element minOccurs="0" name="task-timers">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element maxOccurs="unbounded" name="task-timer" type="task-timer-complex-type" />
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
 						<xs:element ref="transitions" />
 					</xs:sequence>
 				</xs:extension>
@@ -278,12 +285,12 @@
 	</xs:element>
 	<xs:element name="workflow-definition">
 		<xs:complexType>
-			<xs:choice maxOccurs="unbounded" minOccurs="0">
+			<xs:sequence>
 				<xs:element name="name" type="xs:string" />
 				<xs:element minOccurs="0" name="description" type="xs:string" />
 				<xs:element name="version" type="xs:int" />
-				<xs:group ref="nodes-group" />
-			</xs:choice>
+				<xs:group maxOccurs="unbounded" ref="nodes-group" />
+			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 	<xs:group name="actions-group">
@@ -329,7 +336,7 @@
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="scripted-assignment" type="script-complex-type" />
-			<xs:element name="user" type="user-complex-type" />
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="user" type="user-complex-type" />
 		</xs:choice>
 	</xs:group>
 	<xs:group name="nodes-group">
@@ -443,11 +450,6 @@
 			<xs:enumeration value="freemarker" />
 			<xs:enumeration value="text" />
 			<xs:enumeration value="velocity" />
-		</xs:restriction>
-	</xs:simpleType>
-	<xs:simpleType name="timer-execution-type">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="onTimer" />
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="time-scale-type">

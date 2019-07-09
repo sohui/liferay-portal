@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.ResourceBlockPermission;
 import com.liferay.portal.kernel.service.ResourceBlockPermissionLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the ResourceBlockPermission service. Represents a row in the &quot;ResourceBlockPermission&quot; database table, with each column mapped to a property of this class.
@@ -29,23 +29,30 @@ import com.liferay.portal.kernel.service.ResourceBlockPermissionLocalServiceUtil
  * @author Brian Wing Shun Chan
  * @see ResourceBlockPermissionImpl
  * @see ResourceBlockPermission
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public abstract class ResourceBlockPermissionBaseImpl
-	extends ResourceBlockPermissionModelImpl implements ResourceBlockPermission {
+	extends ResourceBlockPermissionModelImpl
+	implements ResourceBlockPermission {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a resource block permission model instance should use the {@link ResourceBlockPermission} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a resource block permission model instance should use the <code>ResourceBlockPermission</code> interface instead.
 	 */
 	@Override
 	public void persist() {
 		if (this.isNew()) {
-			ResourceBlockPermissionLocalServiceUtil.addResourceBlockPermission(this);
+			ResourceBlockPermissionLocalServiceUtil.addResourceBlockPermission(
+				this);
 		}
 		else {
-			ResourceBlockPermissionLocalServiceUtil.updateResourceBlockPermission(this);
+			ResourceBlockPermissionLocalServiceUtil.
+				updateResourceBlockPermission(this);
 		}
 	}
+
 }

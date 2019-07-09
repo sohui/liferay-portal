@@ -14,8 +14,8 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.ThemeSetting;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
@@ -30,7 +30,13 @@ public class ThemeSettingImpl implements Serializable, ThemeSetting {
 	}
 
 	public static String namespaceProperty(String device, String key) {
-		return namespaceProperty(device).concat(StringPool.COLON).concat(key);
+		return namespaceProperty(
+			device
+		).concat(
+			StringPool.COLON
+		).concat(
+			key
+		);
 	}
 
 	public ThemeSettingImpl(
@@ -71,7 +77,7 @@ public class ThemeSettingImpl implements Serializable, ThemeSetting {
 
 	@Override
 	public void setConfigurable(boolean configurable) {
-		this._configurable = configurable;
+		_configurable = configurable;
 	}
 
 	@Override

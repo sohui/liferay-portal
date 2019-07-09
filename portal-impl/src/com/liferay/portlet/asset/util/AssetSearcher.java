@@ -20,7 +20,6 @@ import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
 import com.liferay.portal.kernel.search.BaseSearcher;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
-import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.Query;
@@ -85,14 +84,14 @@ public class AssetSearcher extends BaseSearcher {
 	protected void addSearchAllCategories(BooleanFilter queryBooleanFilter)
 		throws Exception {
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		long[] allCategoryIds = _assetEntryQuery.getAllCategoryIds();
 
 		if (allCategoryIds.length == 0) {
 			return;
 		}
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		long[] filteredAllCategoryIds = AssetUtil.filterCategoryIds(
 			permissionChecker, allCategoryIds);
@@ -129,8 +128,7 @@ public class AssetSearcher extends BaseSearcher {
 				Field.ASSET_CATEGORY_IDS);
 
 			categoryIdTermsFilter.addValues(
-				ArrayUtil.toStringArray(
-					categoryIds.toArray(new Long[categoryIds.size()])));
+				ArrayUtil.toStringArray(categoryIds.toArray(new Long[0])));
 
 			categoryIdsBooleanFilter.add(
 				categoryIdTermsFilter, BooleanClauseOccur.MUST);
@@ -172,14 +170,14 @@ public class AssetSearcher extends BaseSearcher {
 	protected void addSearchAnyCategories(BooleanFilter queryBooleanFilter)
 		throws Exception {
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
 		long[] anyCategoryIds = _assetEntryQuery.getAnyCategoryIds();
 
 		if (anyCategoryIds.length == 0) {
 			return;
 		}
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		long[] filteredAnyCategoryIds = AssetUtil.filterCategoryIds(
 			permissionChecker, anyCategoryIds);
@@ -214,8 +212,7 @@ public class AssetSearcher extends BaseSearcher {
 			}
 
 			categoryIdsTermsFilter.addValues(
-				ArrayUtil.toStringArray(
-					categoryIds.toArray(new Long[categoryIds.size()])));
+				ArrayUtil.toStringArray(categoryIds.toArray(new Long[0])));
 		}
 
 		queryBooleanFilter.add(categoryIdsTermsFilter, BooleanClauseOccur.MUST);
@@ -273,7 +270,7 @@ public class AssetSearcher extends BaseSearcher {
 		Map<String, Query> queries = super.addSearchKeywords(
 			searchQuery, searchContext);
 
-		String field = DocumentImpl.getLocalizedName(
+		String field = Field.getLocalizedName(
 			searchContext.getLocale(), "localized_title");
 
 		Query query = searchQuery.addTerm(field, keywords, true);
@@ -332,8 +329,7 @@ public class AssetSearcher extends BaseSearcher {
 				Field.ASSET_CATEGORY_IDS);
 
 			categoryIdTermsFilter.addValues(
-				ArrayUtil.toStringArray(
-					categoryIds.toArray(new Long[categoryIds.size()])));
+				ArrayUtil.toStringArray(categoryIds.toArray(new Long[0])));
 
 			categoryIdsBooleanFilter.add(
 				categoryIdTermsFilter, BooleanClauseOccur.MUST);
@@ -406,8 +402,7 @@ public class AssetSearcher extends BaseSearcher {
 			}
 
 			categoryIdsTermsFilter.addValues(
-				ArrayUtil.toStringArray(
-					categoryIds.toArray(new Long[categoryIds.size()])));
+				ArrayUtil.toStringArray(categoryIds.toArray(new Long[0])));
 		}
 
 		queryBooleanFilter.add(

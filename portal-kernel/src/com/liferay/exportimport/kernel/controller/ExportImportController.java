@@ -14,8 +14,11 @@
 
 package com.liferay.exportimport.kernel.controller;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public interface ExportImportController {
 }

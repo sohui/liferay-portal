@@ -14,29 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the PortletItem service. Represents a row in the &quot;PortletItem&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see PortletItemModel
- * @see com.liferay.portal.model.impl.PortletItemImpl
- * @see com.liferay.portal.model.impl.PortletItemModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.PortletItemImpl")
 @ProviderType
-public interface PortletItem extends PortletItemModel, PersistedModel {
+public interface PortletItem extends PersistedModel, PortletItemModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.PortletItemImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.PortletItemImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<PortletItem, Long> PORTLET_ITEM_ID_ACCESSOR = new Accessor<PortletItem, Long>() {
+	public static final Accessor<PortletItem, Long> PORTLET_ITEM_ID_ACCESSOR =
+		new Accessor<PortletItem, Long>() {
+
 			@Override
 			public Long get(PortletItem portletItem) {
 				return portletItem.getPortletItemId();
@@ -51,5 +52,7 @@ public interface PortletItem extends PortletItemModel, PersistedModel {
 			public Class<PortletItem> getTypeClass() {
 				return PortletItem.class;
 			}
+
 		};
+
 }

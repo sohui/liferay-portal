@@ -14,13 +14,13 @@
 
 package com.liferay.portal.json.transformer;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONContext;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 /**
  * @author Igor Spasic
@@ -36,13 +36,12 @@ public class UserJSONTransformer extends ObjectTransformer {
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (permissionChecker != null) {
-			if ((user.getUserId() == permissionChecker.getUserId()) ||
-				UserPermissionUtil.contains(
-					permissionChecker, user.getUserId(), ActionKeys.VIEW)) {
+		if ((permissionChecker != null) && !user.isDefaultUser() &&
+			((user.getUserId() == permissionChecker.getUserId()) ||
+			 UserPermissionUtil.contains(
+				 permissionChecker, user.getUserId(), ActionKeys.VIEW))) {
 
-				hidePrivateUserData = false;
-			}
+			hidePrivateUserData = false;
 		}
 
 		if (hidePrivateUserData) {

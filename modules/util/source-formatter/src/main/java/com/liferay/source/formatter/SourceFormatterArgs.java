@@ -14,7 +14,11 @@
 
 package com.liferay.source.formatter;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Raymond Augé
@@ -25,13 +29,17 @@ public class SourceFormatterArgs {
 
 	public static final String BASE_DIR_NAME = "./";
 
-	public static final String COPYRIGHT_FILE_NAME = "copyright.txt";
-
 	public static final boolean FORMAT_CURRENT_BRANCH = false;
 
 	public static final boolean FORMAT_LATEST_AUTHOR = false;
 
 	public static final boolean FORMAT_LOCAL_CHANGES = false;
+
+	public static final String GIT_WORKING_BRANCH_NAME = "master";
+
+	public static final boolean INCLUDE_GENERATED_FILES = false;
+
+	public static final boolean INCLUDE_SUBREPOSITORIES = false;
 
 	public static final int MAX_LINE_LENGTH = 80;
 
@@ -42,20 +50,45 @@ public class SourceFormatterArgs {
 
 	public static final int PROCESSOR_THREAD_COUNT = 5;
 
+	public static final boolean SHOW_DEBUG_INFORMATION = false;
+
+	public static final boolean SHOW_DOCUMENTATION = false;
+
+	public static final boolean SHOW_STATUS_UPDATES = false;
+
 	public static final boolean THROW_EXCEPTION = false;
 
-	public static final boolean USE_PROPERTIES = false;
+	public void addRecentChangesFileNames(
+		Collection<String> fileNames, String baseDirName) {
+
+		for (String fileName : fileNames) {
+			if (baseDirName != null) {
+				_recentChangesFileNames.add(_baseDirName.concat(fileName));
+			}
+			else {
+				_recentChangesFileNames.add(fileName);
+			}
+		}
+	}
 
 	public String getBaseDirName() {
 		return _baseDirName;
 	}
 
-	public String getCopyrightFileName() {
-		return _copyrightFileName;
+	public String getCheckName() {
+		return _checkName;
+	}
+
+	public List<String> getFileExtensions() {
+		return _fileExtensions;
 	}
 
 	public List<String> getFileNames() {
 		return _fileNames;
+	}
+
+	public String getGitWorkingBranchName() {
+		return _gitWorkingBranchName;
 	}
 
 	public int getMaxLineLength() {
@@ -66,8 +99,12 @@ public class SourceFormatterArgs {
 		return _processorThreadCount;
 	}
 
-	public List<String> getRecentChangesFileNames() {
+	public Set<String> getRecentChangesFileNames() {
 		return _recentChangesFileNames;
+	}
+
+	public List<String> getSkipCheckNames() {
+		return _skipCheckNames;
 	}
 
 	public boolean isAutoFix() {
@@ -86,16 +123,32 @@ public class SourceFormatterArgs {
 		return _formatLocalChanges;
 	}
 
+	public boolean isIncludeGeneratedFiles() {
+		return _includeGeneratedFiles;
+	}
+
+	public boolean isIncludeSubrepositories() {
+		return _includeSubrepositories;
+	}
+
 	public boolean isPrintErrors() {
 		return _printErrors;
 	}
 
-	public boolean isThrowException() {
-		return _throwException;
+	public boolean isShowDebugInformation() {
+		return _showDebugInformation;
 	}
 
-	public boolean isUseProperties() {
-		return _useProperties;
+	public boolean isShowDocumentation() {
+		return _showDocumentation;
+	}
+
+	public boolean isShowStatusUpdates() {
+		return _showStatusUpdates;
+	}
+
+	public boolean isThrowException() {
+		return _throwException;
 	}
 
 	public void setAutoFix(boolean autoFix) {
@@ -114,8 +167,12 @@ public class SourceFormatterArgs {
 		_baseDirName = baseDirName;
 	}
 
-	public void setCopyrightFileName(String copyrightFileName) {
-		_copyrightFileName = copyrightFileName;
+	public void setCheckName(String checkName) {
+		_checkName = checkName;
+	}
+
+	public void setFileExtensions(List<String> fileExtensions) {
+		_fileExtensions = fileExtensions;
 	}
 
 	public void setFileNames(List<String> fileNames) {
@@ -143,6 +200,18 @@ public class SourceFormatterArgs {
 		_formatLocalChanges = formatLocalChanges;
 	}
 
+	public void setGitWorkingBranchName(String gitWorkingBranchName) {
+		_gitWorkingBranchName = gitWorkingBranchName;
+	}
+
+	public void setIncludeGeneratedFiles(boolean includeGeneratedFiles) {
+		_includeGeneratedFiles = includeGeneratedFiles;
+	}
+
+	public void setIncludeSubrepositories(boolean includeSubrepositories) {
+		_includeSubrepositories = includeSubrepositories;
+	}
+
 	public void setMaxLineLength(int maxLineLength) {
 		_maxLineLength = maxLineLength;
 	}
@@ -155,30 +224,45 @@ public class SourceFormatterArgs {
 		_processorThreadCount = processorThreadCount;
 	}
 
-	public void setRecentChangesFileNames(List<String> recentChangesFileNames) {
-		_recentChangesFileNames = recentChangesFileNames;
+	public void setShowDebugInformation(boolean showDebugInformation) {
+		_showDebugInformation = showDebugInformation;
+	}
+
+	public void setShowDocumentation(boolean showDocumentation) {
+		_showDocumentation = showDocumentation;
+	}
+
+	public void setShowStatusUpdates(boolean showStatusUpdates) {
+		_showStatusUpdates = showStatusUpdates;
+	}
+
+	public void setSkipCheckNames(List<String> skipCheckNames) {
+		_skipCheckNames = skipCheckNames;
 	}
 
 	public void setThrowException(boolean throwException) {
 		_throwException = throwException;
 	}
 
-	public void setUseProperties(boolean useProperties) {
-		_useProperties = useProperties;
-	}
-
 	private boolean _autoFix = AUTO_FIX;
 	private String _baseDirName = BASE_DIR_NAME;
-	private String _copyrightFileName = COPYRIGHT_FILE_NAME;
+	private String _checkName;
+	private List<String> _fileExtensions = new ArrayList<>();
 	private List<String> _fileNames;
 	private boolean _formatCurrentBranch = FORMAT_CURRENT_BRANCH;
 	private boolean _formatLatestAuthor = FORMAT_LATEST_AUTHOR;
 	private boolean _formatLocalChanges = FORMAT_LOCAL_CHANGES;
+	private String _gitWorkingBranchName = GIT_WORKING_BRANCH_NAME;
+	private boolean _includeGeneratedFiles = INCLUDE_GENERATED_FILES;
+	private boolean _includeSubrepositories = INCLUDE_SUBREPOSITORIES;
 	private int _maxLineLength = MAX_LINE_LENGTH;
 	private boolean _printErrors = PRINT_ERRORS;
 	private int _processorThreadCount = PROCESSOR_THREAD_COUNT;
-	private List<String> _recentChangesFileNames;
+	private final Set<String> _recentChangesFileNames = new HashSet<>();
+	private boolean _showDebugInformation = SHOW_DEBUG_INFORMATION;
+	private boolean _showDocumentation = SHOW_DOCUMENTATION;
+	private boolean _showStatusUpdates = SHOW_STATUS_UPDATES;
+	private List<String> _skipCheckNames = new ArrayList<>();
 	private boolean _throwException = THROW_EXCEPTION;
-	private boolean _useProperties = USE_PROPERTIES;
 
 }

@@ -14,33 +14,38 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceTypePermissionFinderUtil {
-	public static java.util.List<com.liferay.portal.kernel.model.ResourceTypePermission> findByEitherScopeC_G_N(
-		long companyId, long groupId, java.lang.String name) {
+
+	public static java.util.List
+		<com.liferay.portal.kernel.model.ResourceTypePermission>
+			findByEitherScopeC_G_N(long companyId, long groupId, String name) {
+
 		return getFinder().findByEitherScopeC_G_N(companyId, groupId, name);
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.ResourceTypePermission> findByGroupScopeC_N_R(
-		long companyId, java.lang.String name, long roleId) {
+	public static java.util.List
+		<com.liferay.portal.kernel.model.ResourceTypePermission>
+			findByGroupScopeC_N_R(long companyId, String name, long roleId) {
+
 		return getFinder().findByGroupScopeC_N_R(companyId, name, roleId);
 	}
 
 	public static ResourceTypePermissionFinder getFinder() {
 		if (_finder == null) {
-			_finder = (ResourceTypePermissionFinder)PortalBeanLocatorUtil.locate(ResourceTypePermissionFinder.class.getName());
-
-			ReferenceRegistry.registerReference(ResourceTypePermissionFinderUtil.class,
-				"_finder");
+			_finder =
+				(ResourceTypePermissionFinder)PortalBeanLocatorUtil.locate(
+					ResourceTypePermissionFinder.class.getName());
 		}
 
 		return _finder;
@@ -48,10 +53,8 @@ public class ResourceTypePermissionFinderUtil {
 
 	public void setFinder(ResourceTypePermissionFinder finder) {
 		_finder = finder;
-
-		ReferenceRegistry.registerReference(ResourceTypePermissionFinderUtil.class,
-			"_finder");
 	}
 
 	private static ResourceTypePermissionFinder _finder;
+
 }

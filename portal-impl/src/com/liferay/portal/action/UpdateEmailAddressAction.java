@@ -26,75 +26,80 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.struts.Action;
 import com.liferay.portal.struts.ActionConstants;
+import com.liferay.portal.struts.model.ActionForward;
+import com.liferay.portal.struts.model.ActionMapping;
 import com.liferay.portlet.admin.util.AdminUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 
 /**
  * @author Julio Camarero
  * @author Jorge Ferrer
  * @author Brian Wing Shun Chan
  */
-public class UpdateEmailAddressAction extends Action {
+public class UpdateEmailAddressAction implements Action {
 
 	@Override
 	public ActionForward execute(
-			ActionMapping actionMapping, ActionForm actionForm,
-			HttpServletRequest request, HttpServletResponse response)
+			ActionMapping actionMapping, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		String cmd = ParamUtil.getString(request, Constants.CMD);
+		String cmd = ParamUtil.getString(httpServletRequest, Constants.CMD);
 
 		if (Validator.isNull(cmd)) {
-			return actionMapping.findForward("portal.update_email_address");
+			return actionMapping.getActionForward(
+				"portal.update_email_address");
 		}
 
 		try {
-			updateEmailAddress(request);
+			updateEmailAddress(httpServletRequest);
 
-			return actionMapping.findForward(
+			return actionMapping.getActionForward(
 				ActionConstants.COMMON_REFERER_JSP);
 		}
 		catch (Exception e) {
 			if (e instanceof UserEmailAddressException) {
-				SessionErrors.add(request, e.getClass());
+				SessionErrors.add(httpServletRequest, e.getClass());
 
-				return actionMapping.findForward("portal.update_email_address");
+				return actionMapping.getActionForward(
+					"portal.update_email_address");
 			}
 			else if (e instanceof NoSuchUserException ||
 					 e instanceof PrincipalException) {
 
-				SessionErrors.add(request, e.getClass());
+				SessionErrors.add(httpServletRequest, e.getClass());
 
-				return actionMapping.findForward("portal.error");
+				return actionMapping.getActionForward("portal.error");
 			}
 
-			PortalUtil.sendError(e, request, response);
+			PortalUtil.sendError(e, httpServletRequest, httpServletResponse);
 
 			return null;
 		}
 	}
 
-	protected void updateEmailAddress(HttpServletRequest request)
+	protected void updateEmailAddress(HttpServletRequest httpServletRequest)
 		throws Exception {
 
 		AuthTokenUtil.checkCSRFToken(
-			request, UpdateEmailAddressAction.class.getName());
+			httpServletRequest, UpdateEmailAddressAction.class.getName());
 
-		long userId = PortalUtil.getUserId(request);
-		String password = AdminUtil.getUpdateUserPassword(request, userId);
-		String emailAddress1 = ParamUtil.getString(request, "emailAddress1");
-		String emailAddress2 = ParamUtil.getString(request, "emailAddress2");
+		long userId = PortalUtil.getUserId(httpServletRequest);
+
+		String password = AdminUtil.getUpdateUserPassword(
+			httpServletRequest, userId);
+
+		String emailAddress1 = ParamUtil.getString(
+			httpServletRequest, "emailAddress1");
+		String emailAddress2 = ParamUtil.getString(
+			httpServletRequest, "emailAddress2");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			request);
+			httpServletRequest);
 
 		UserServiceUtil.updateEmailAddress(
 			userId, password, emailAddress1, emailAddress2, serviceContext);

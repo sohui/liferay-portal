@@ -1,11 +1,16 @@
-<definition default="scrollWebElementIntoView">
-	<command name="scrollWebElementIntoView">
-		<execute function="WaitForSPARefresh" />
+@default = "scrollWebElementIntoView"
+definition {
 
-		<execute selenium="scrollWebElementIntoView" />
+	function scrollWebElementIntoView {
+		WaitForSPARefresh();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.waitForElementPresent();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.scrollWebElementIntoView();
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

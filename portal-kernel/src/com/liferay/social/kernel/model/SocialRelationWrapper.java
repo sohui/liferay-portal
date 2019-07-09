@@ -14,18 +14,13 @@
 
 package com.liferay.social.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.portal.kernel.model.ModelWrapper;
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -37,20 +32,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class SocialRelationWrapper implements SocialRelation,
-	ModelWrapper<SocialRelation> {
+public class SocialRelationWrapper
+	extends BaseModelWrapper<SocialRelation>
+	implements SocialRelation, ModelWrapper<SocialRelation> {
+
 	public SocialRelationWrapper(SocialRelation socialRelation) {
-		_socialRelation = socialRelation;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return SocialRelation.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return SocialRelation.class.getName();
+		super(socialRelation);
 	}
 
 	@Override
@@ -113,306 +100,174 @@ public class SocialRelationWrapper implements SocialRelation,
 		}
 	}
 
-	@Override
-	public SocialRelation toEscapedModel() {
-		return new SocialRelationWrapper(_socialRelation.toEscapedModel());
-	}
-
-	@Override
-	public SocialRelation toUnescapedModel() {
-		return new SocialRelationWrapper(_socialRelation.toUnescapedModel());
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _socialRelation.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _socialRelation.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _socialRelation.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _socialRelation.getExpandoBridge();
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.CacheModel<SocialRelation> toCacheModel() {
-		return _socialRelation.toCacheModel();
-	}
-
-	@Override
-	public int compareTo(SocialRelation socialRelation) {
-		return _socialRelation.compareTo(socialRelation);
-	}
-
 	/**
-	* Returns the type of this social relation.
-	*
-	* @return the type of this social relation
-	*/
-	@Override
-	public int getType() {
-		return _socialRelation.getType();
-	}
-
-	@Override
-	public int hashCode() {
-		return _socialRelation.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _socialRelation.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new SocialRelationWrapper((SocialRelation)_socialRelation.clone());
-	}
-
-	/**
-	* Returns the uuid of this social relation.
-	*
-	* @return the uuid of this social relation
-	*/
-	@Override
-	public java.lang.String getUuid() {
-		return _socialRelation.getUuid();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _socialRelation.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _socialRelation.toXmlString();
-	}
-
-	/**
-	* Returns the company ID of this social relation.
-	*
-	* @return the company ID of this social relation
-	*/
+	 * Returns the company ID of this social relation.
+	 *
+	 * @return the company ID of this social relation
+	 */
 	@Override
 	public long getCompanyId() {
-		return _socialRelation.getCompanyId();
+		return model.getCompanyId();
 	}
 
 	/**
-	* Returns the create date of this social relation.
-	*
-	* @return the create date of this social relation
-	*/
+	 * Returns the create date of this social relation.
+	 *
+	 * @return the create date of this social relation
+	 */
 	@Override
 	public long getCreateDate() {
-		return _socialRelation.getCreateDate();
+		return model.getCreateDate();
 	}
 
 	/**
-	* Returns the primary key of this social relation.
-	*
-	* @return the primary key of this social relation
-	*/
+	 * Returns the primary key of this social relation.
+	 *
+	 * @return the primary key of this social relation
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _socialRelation.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Returns the relation ID of this social relation.
-	*
-	* @return the relation ID of this social relation
-	*/
+	 * Returns the relation ID of this social relation.
+	 *
+	 * @return the relation ID of this social relation
+	 */
 	@Override
 	public long getRelationId() {
-		return _socialRelation.getRelationId();
+		return model.getRelationId();
 	}
 
 	/**
-	* Returns the user id1 of this social relation.
-	*
-	* @return the user id1 of this social relation
-	*/
+	 * Returns the type of this social relation.
+	 *
+	 * @return the type of this social relation
+	 */
+	@Override
+	public int getType() {
+		return model.getType();
+	}
+
+	/**
+	 * Returns the user id1 of this social relation.
+	 *
+	 * @return the user id1 of this social relation
+	 */
 	@Override
 	public long getUserId1() {
-		return _socialRelation.getUserId1();
+		return model.getUserId1();
 	}
 
 	/**
-	* Returns the user id2 of this social relation.
-	*
-	* @return the user id2 of this social relation
-	*/
+	 * Returns the user id2 of this social relation.
+	 *
+	 * @return the user id2 of this social relation
+	 */
 	@Override
 	public long getUserId2() {
-		return _socialRelation.getUserId2();
+		return model.getUserId2();
+	}
+
+	/**
+	 * Returns the uuid of this social relation.
+	 *
+	 * @return the uuid of this social relation
+	 */
+	@Override
+	public String getUuid() {
+		return model.getUuid();
 	}
 
 	@Override
 	public void persist() {
-		_socialRelation.persist();
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_socialRelation.setCachedModel(cachedModel);
+		model.persist();
 	}
 
 	/**
-	* Sets the company ID of this social relation.
-	*
-	* @param companyId the company ID of this social relation
-	*/
+	 * Sets the company ID of this social relation.
+	 *
+	 * @param companyId the company ID of this social relation
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_socialRelation.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this social relation.
-	*
-	* @param createDate the create date of this social relation
-	*/
+	 * Sets the create date of this social relation.
+	 *
+	 * @param createDate the create date of this social relation
+	 */
 	@Override
 	public void setCreateDate(long createDate) {
-		_socialRelation.setCreateDate(createDate);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_socialRelation.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(
-		com.liferay.portal.kernel.model.BaseModel<?> baseModel) {
-		_socialRelation.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_socialRelation.setExpandoBridgeAttributes(serviceContext);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_socialRelation.setNew(n);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the primary key of this social relation.
-	*
-	* @param primaryKey the primary key of this social relation
-	*/
+	 * Sets the primary key of this social relation.
+	 *
+	 * @param primaryKey the primary key of this social relation
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_socialRelation.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_socialRelation.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the relation ID of this social relation.
-	*
-	* @param relationId the relation ID of this social relation
-	*/
+	 * Sets the relation ID of this social relation.
+	 *
+	 * @param relationId the relation ID of this social relation
+	 */
 	@Override
 	public void setRelationId(long relationId) {
-		_socialRelation.setRelationId(relationId);
+		model.setRelationId(relationId);
 	}
 
 	/**
-	* Sets the type of this social relation.
-	*
-	* @param type the type of this social relation
-	*/
+	 * Sets the type of this social relation.
+	 *
+	 * @param type the type of this social relation
+	 */
 	@Override
 	public void setType(int type) {
-		_socialRelation.setType(type);
+		model.setType(type);
 	}
 
 	/**
-	* Sets the user id1 of this social relation.
-	*
-	* @param userId1 the user id1 of this social relation
-	*/
+	 * Sets the user id1 of this social relation.
+	 *
+	 * @param userId1 the user id1 of this social relation
+	 */
 	@Override
 	public void setUserId1(long userId1) {
-		_socialRelation.setUserId1(userId1);
+		model.setUserId1(userId1);
 	}
 
 	/**
-	* Sets the user id2 of this social relation.
-	*
-	* @param userId2 the user id2 of this social relation
-	*/
+	 * Sets the user id2 of this social relation.
+	 *
+	 * @param userId2 the user id2 of this social relation
+	 */
 	@Override
 	public void setUserId2(long userId2) {
-		_socialRelation.setUserId2(userId2);
+		model.setUserId2(userId2);
 	}
 
 	/**
-	* Sets the uuid of this social relation.
-	*
-	* @param uuid the uuid of this social relation
-	*/
+	 * Sets the uuid of this social relation.
+	 *
+	 * @param uuid the uuid of this social relation
+	 */
 	@Override
-	public void setUuid(java.lang.String uuid) {
-		_socialRelation.setUuid(uuid);
+	public void setUuid(String uuid) {
+		model.setUuid(uuid);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof SocialRelationWrapper)) {
-			return false;
-		}
-
-		SocialRelationWrapper socialRelationWrapper = (SocialRelationWrapper)obj;
-
-		if (Objects.equals(_socialRelation,
-					socialRelationWrapper._socialRelation)) {
-			return true;
-		}
-
-		return false;
+	protected SocialRelationWrapper wrap(SocialRelation socialRelation) {
+		return new SocialRelationWrapper(socialRelation);
 	}
 
-	@Override
-	public SocialRelation getWrappedModel() {
-		return _socialRelation;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _socialRelation.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _socialRelation.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_socialRelation.resetOriginalValues();
-	}
-
-	private final SocialRelation _socialRelation;
 }

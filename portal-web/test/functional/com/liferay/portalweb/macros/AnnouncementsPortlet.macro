@@ -1,24 +1,25 @@
-<definition>
-	<command name="configureDisplayCountPG">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="Announcements" />
-			<var name="portletName" value="${portletName}" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+definition {
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-		<execute function="Select" locator1="Configuration#MAXIMUM_ITEMS_TO_DISPLAY_SELECT" value1="5" />
-		<execute macro="Button#clickSave" />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="SelectFrameTop" />
-	</command>
+	macro configureDisplayCountPG {
+		Portlet.gotoPortletOptions(
+			portletName = "Announcements",
+			portletOption = "Configuration");
 
-	<command name="configurePaginationManageEntriesPG">
-		<execute function="Select#selectAndWait" locator1="AnnouncementsManageEntries#DISTRIBUTION_SCOPE_SELECT" value1="${distributionScope}" />
-		<execute function="Click" locator1="Button#ITEMS_PER_PAGE" />
+		SelectFrame(locator1 = "IFrame#DIALOG");
 
-		<var name="key_itemsPerPage" value="${itemsPerPage}" />
+		Select(
+			locator1 = "Select#PAGE_DELTA",
+			value1 = "5");
 
-		<execute function="AssertClick" locator1="MenuItem#ITEMS_PER_PAGE" value1="${itemsPerPage}" />
-	</command>
-</definition>
+		PortletEntry.save();
+
+		SelectFrameTop();
+	}
+
+	macro configurePaginationCP {
+		Click(locator1 = "Dropdown#ENTRIES");
+
+		MenuItem.click(menuItem = "${itemsPerPage}");
+	}
+
+}

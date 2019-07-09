@@ -16,9 +16,12 @@ package com.liferay.portal.kernel.repository.capabilities;
 
 import com.liferay.portal.kernel.repository.model.FileEntry;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Iván Zaera
  */
+@ProviderType
 public interface RelatedModelCapability extends Capability {
 
 	public String getClassName(FileEntry fileEntry);

@@ -14,9 +14,9 @@
 
 package com.liferay.portal.tools;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.FileImpl;
@@ -73,7 +73,6 @@ public class PluginsGitSvnSyncer {
 
 		Process process = runtime.exec(cmd);
 
-		String[] stdout = _getExecOutput(process.getInputStream());
 		String[] stderr = _getExecOutput(process.getErrorStream());
 
 		if (stderr.length > 0) {
@@ -92,7 +91,7 @@ public class PluginsGitSvnSyncer {
 			throw new Exception(sb.toString());
 		}
 
-		return stdout;
+		return _getExecOutput(process.getInputStream());
 	}
 
 	private String[] _getExecOutput(InputStream is) throws IOException {
@@ -126,7 +125,7 @@ public class PluginsGitSvnSyncer {
 			}
 		}
 
-		return list.toArray(new String[list.size()]);
+		return list.toArray(new String[0]);
 	}
 
 	private void _updateGitIgnores(String srcDirName, String destDirName)
@@ -185,7 +184,7 @@ public class PluginsGitSvnSyncer {
 		}
 
 		if (!ignores.isEmpty()) {
-			String[] ignoresArray = ignores.toArray(new String[ignores.size()]);
+			String[] ignoresArray = ignores.toArray(new String[0]);
 
 			for (int i = 0; i < ignoresArray.length; i++) {
 				String ignore = ignoresArray[i];
@@ -261,10 +260,10 @@ public class PluginsGitSvnSyncer {
 				ignores.set(i, ignore);
 			}
 
-			if (dirName.endsWith("/docroot/WEB-INF/")) {
-				if (!ignores.contains("classes")) {
-					ignores.add("classes");
-				}
+			if (dirName.endsWith("/docroot/WEB-INF/") &&
+				!ignores.contains("classes")) {
+
+				ignores.add("classes");
 			}
 		}
 
@@ -295,13 +294,14 @@ public class PluginsGitSvnSyncer {
 		File tempFile = _fileUtil.createTempFile("svn-ignores-", "tmp");
 
 		try {
-			String[] ignoresArray = ignores.toArray(new String[ignores.size()]);
+			String[] ignoresArray = ignores.toArray(new String[0]);
 
 			_fileUtil.write(tempFile, StringUtil.merge(ignoresArray, "\n"));
 
 			_exec(
-				_SVN_SET_IGNORES + "-F \"" + tempFile.getCanonicalPath() +
-					"\" \"" + destDirName + dirName + "\"");
+				StringBundler.concat(
+					_SVN_SET_IGNORES, "-F \"", tempFile.getCanonicalPath(),
+					"\" \"", destDirName, dirName, "\""));
 		}
 		finally {
 			_fileUtil.delete(tempFile);

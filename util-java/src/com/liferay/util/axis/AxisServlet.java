@@ -14,6 +14,8 @@
 
 package com.liferay.util.axis;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.LoggedExceptionInInitializerError;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -22,10 +24,8 @@ import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.servlet.UncommittedServletResponse;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
@@ -79,9 +79,8 @@ public class AxisServlet extends org.apache.axis.transport.http.AxisServlet {
 					if (e instanceof RuntimeException) {
 						throw (RuntimeException)e;
 					}
-					else {
-						throw new RuntimeException(e);
-					}
+
+					throw new RuntimeException(e);
 				}
 			}
 			finally {
@@ -149,7 +148,7 @@ public class AxisServlet extends org.apache.axis.transport.http.AxisServlet {
 
 		_incorrectStringArray = sb.toString();
 
-		if (ServerDetector.isResin() || ServerDetector.isWebLogic()) {
+		if (ServerDetector.isWebLogic()) {
 			doInit();
 		}
 		else {
@@ -170,16 +169,16 @@ public class AxisServlet extends org.apache.axis.transport.http.AxisServlet {
 				if (e instanceof ServletException) {
 					throw (ServletException)e;
 				}
-				else {
-					throw new ServletException(e);
-				}
+
+				throw new ServletException(e);
 			}
 		}
 	}
 
 	@Override
 	public void service(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
 		try {
@@ -188,20 +187,23 @@ public class AxisServlet extends org.apache.axis.transport.http.AxisServlet {
 			}
 
 			BufferCacheServletResponse bufferCacheServletResponse =
-				new BufferCacheServletResponse(response);
+				new BufferCacheServletResponse(httpServletResponse);
 
-			super.service(request, bufferCacheServletResponse);
+			super.service(httpServletRequest, bufferCacheServletResponse);
 
 			String contentType = bufferCacheServletResponse.getContentType();
 
-			response.setContentType(contentType);
+			httpServletResponse.setContentType(contentType);
 
 			String content = bufferCacheServletResponse.getString();
 
 			if (_fixContent) {
 				if (contentType.contains(ContentTypes.TEXT_HTML)) {
-					content = _HTML_TOP_WRAPPER.concat(content).concat(
-						_HTML_BOTTOM_WRAPPER);
+					content = _HTML_TOP_WRAPPER.concat(
+						content
+					).concat(
+						_HTML_BOTTOM_WRAPPER
+					);
 				}
 				else if (contentType.contains(ContentTypes.TEXT_XML)) {
 					content = fixXml(content);
@@ -209,7 +211,7 @@ public class AxisServlet extends org.apache.axis.transport.http.AxisServlet {
 			}
 
 			ServletResponseUtil.write(
-				new UncommittedServletResponse(response),
+				new UncommittedServletResponse(httpServletResponse),
 				content.getBytes(StringPool.UTF8));
 		}
 		catch (IOException ioe) {

@@ -14,29 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the LayoutBranch service. Represents a row in the &quot;LayoutBranch&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see LayoutBranchModel
- * @see com.liferay.portal.model.impl.LayoutBranchImpl
- * @see com.liferay.portal.model.impl.LayoutBranchModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.LayoutBranchImpl")
 @ProviderType
 public interface LayoutBranch extends LayoutBranchModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.LayoutBranchImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.LayoutBranchImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<LayoutBranch, Long> LAYOUT_BRANCH_ID_ACCESSOR = new Accessor<LayoutBranch, Long>() {
+	public static final Accessor<LayoutBranch, Long> LAYOUT_BRANCH_ID_ACCESSOR =
+		new Accessor<LayoutBranch, Long>() {
+
 			@Override
 			public Long get(LayoutBranch layoutBranch) {
 				return layoutBranch.getLayoutBranchId();
@@ -51,5 +52,7 @@ public interface LayoutBranch extends LayoutBranchModel, PersistedModel {
 			public Class<LayoutBranch> getTypeClass() {
 				return LayoutBranch.class;
 			}
+
 		};
+
 }

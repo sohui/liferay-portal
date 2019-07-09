@@ -14,33 +14,32 @@
 
 package com.liferay.portal.test.rule;
 
+import com.liferay.petra.log4j.Log4JUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.BaseTestRule;
-import com.liferay.portal.kernel.test.rule.BaseTestRule.StatementWrapper;
-import com.liferay.portal.kernel.test.rule.callback.CompanyProviderTestCallback;
-import com.liferay.portal.kernel.test.rule.callback.DeleteAfterTestRunTestCallback;
+import com.liferay.portal.kernel.test.rule.ClassTestRule;
+import com.liferay.portal.kernel.test.rule.CompanyProviderClassTestRule;
+import com.liferay.portal.kernel.test.rule.DeleteAfterTestRunMethodTestRule;
+import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.test.rule.TimeoutTestRule;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.SystemProperties;
-import com.liferay.portal.test.rule.callback.CITimeoutTestCallback;
-import com.liferay.portal.test.rule.callback.ClearThreadLocalTestCallback;
-import com.liferay.portal.test.rule.callback.LogAssertionTestCallback;
-import com.liferay.portal.test.rule.callback.MainServletTestCallback;
-import com.liferay.portal.test.rule.callback.SybaseDumpTransactionLogTestCallback;
-import com.liferay.portal.test.rule.callback.UniqueStringRandomizerBumperTestCallback;
+import com.liferay.portal.spring.hibernate.DialectDetector;
 import com.liferay.portal.util.InitUtil;
+import com.liferay.portal.util.PortalClassPathUtil;
 import com.liferay.portal.util.PropsUtil;
-import com.liferay.util.log4j.Log4JUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Level;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+
+import org.springframework.mock.web.MockServletContext;
 
 /**
  * @author Shuyang Zhou
@@ -55,93 +54,75 @@ public class LiferayIntegrationTestRule extends AggregateTestRule {
 		List<TestRule> testRules = new ArrayList<>();
 
 		if (System.getenv("JENKINS_HOME") != null) {
-			testRules.add(_ciTimeoutTestRule);
+			testRules.add(TimeoutTestRule.INSTANCE);
 		}
 
 		testRules.add(LogAssertionTestRule.INSTANCE);
-		testRules.add(_springInitializationTestRule);
-		testRules.add(_sybaseDumpTransactionLogTestRule);
-		testRules.add(_clearThreadLocalTestRule);
-		testRules.add(_uniqueStringRandomizerBumperTestRule);
-		testRules.add(_mainServletTestRule);
-		testRules.add(_companyProviderTestRule);
-		testRules.add(_deleteAfterTestRunTestRule);
+		testRules.add(_springInitializationClassTestRule);
+		testRules.add(SybaseDumpTransactionLogTestRule.INSTANCE);
+		testRules.add(ClearThreadLocalClassTestRule.INSTANCE);
+		testRules.add(UniqueStringRandomizerBumperClassTestRule.INSTANCE);
+		testRules.add(MainServletClassTestRule.INSTANCE);
+		testRules.add(DestinationAwaitClassTestRule.INSTANCE);
+		testRules.add(CompanyProviderClassTestRule.INSTANCE);
+		testRules.add(DeleteAfterTestRunMethodTestRule.INSTANCE);
+		testRules.add(SynchronousDestinationTestRule.INSTANCE);
+		testRules.add(InjectTestRule.INSTANCE);
 
-		return testRules.toArray(new TestRule[testRules.size()]);
+		return testRules.toArray(new TestRule[0]);
 	}
 
-	private static final TestRule _ciTimeoutTestRule = new BaseTestRule<>(
-		CITimeoutTestCallback.INSTANCE);
-	private static final TestRule _clearThreadLocalTestRule =
-		new BaseTestRule<>(ClearThreadLocalTestCallback.INSTANCE);
-	private static final TestRule _companyProviderTestRule = new BaseTestRule<>(
-		CompanyProviderTestCallback.INSTANCE);
-	private static final TestRule _deleteAfterTestRunTestRule =
-		new BaseTestRule<>(DeleteAfterTestRunTestCallback.INSTANCE);
-	private static final TestRule _mainServletTestRule = new BaseTestRule<>(
-		MainServletTestCallback.INSTANCE);
-
-	private static final TestRule _springInitializationTestRule =
-		new TestRule() {
+	private static final TestRule _springInitializationClassTestRule =
+		new ClassTestRule<Void>() {
 
 			@Override
-			public Statement apply(
-				Statement statement, Description description) {
+			protected void afterClass(Description description, Void v) {
+			}
 
-				return new StatementWrapper(statement) {
+			@Override
+			protected Void beforeClass(Description description) {
+				if (!InitUtil.isInitialized()) {
+					List<String> configLocations = ListUtil.fromArray(
+						PropsUtil.getArray(PropsKeys.SPRING_CONFIGS));
 
-					@Override
-					public void evaluate() throws Throwable {
-						if (!InitUtil.isInitialized()) {
-							ServerDetector.init(ServerDetector.TOMCAT_ID);
+					boolean configureLog4j = false;
 
-							List<String> configLocations = ListUtil.fromArray(
-								PropsUtil.getArray(PropsKeys.SPRING_CONFIGS));
+					if (GetterUtil.getBoolean(
+							SystemProperties.get("log4j.configure.on.startup"),
+							true)) {
 
-							boolean configureLog4j = false;
+						SystemProperties.set(
+							"log4j.configure.on.startup", "false");
 
-							if (GetterUtil.getBoolean(
-									SystemProperties.get(
-										"log4j.configure.on.startup"),
-									true)) {
-
-								SystemProperties.set(
-									"log4j.configure.on.startup", "false");
-
-								configureLog4j = true;
-							}
-
-							InitUtil.initWithSpring(
-								configLocations, true, true);
-
-							if (configureLog4j) {
-								Log4JUtil.configureLog4J(
-									InitUtil.class.getClassLoader());
-
-								LogAssertionTestCallback.startAssert(
-									Collections.<ExpectedLogs>emptyList());
-							}
-
-							if (System.getProperty("external-properties") ==
-									null) {
-
-								System.setProperty(
-									"external-properties",
-									"portal-test.properties");
-							}
-						}
-
-						statement.evaluate();
+						configureLog4j = true;
 					}
 
-				};
+					Log4JUtil.setLevel(
+						DialectDetector.class.getName(), Level.INFO.toString(),
+						false);
+
+					PortalClassPathUtil.initializeClassPaths(
+						new MockServletContext());
+
+					InitUtil.initWithSpring(configLocations, true, true);
+
+					if (configureLog4j) {
+						Log4JUtil.configureLog4J(
+							InitUtil.class.getClassLoader());
+
+						LogAssertionTestRule.startAssert(
+							Collections.<ExpectedLogs>emptyList());
+					}
+
+					if (System.getProperty("external-properties") == null) {
+						System.setProperty(
+							"external-properties", "portal-test.properties");
+					}
+				}
+
+				return null;
 			}
 
 		};
-
-	private static final TestRule _sybaseDumpTransactionLogTestRule =
-		new BaseTestRule<>(SybaseDumpTransactionLogTestCallback.INSTANCE);
-	private static final TestRule _uniqueStringRandomizerBumperTestRule =
-		new BaseTestRule<>(UniqueStringRandomizerBumperTestCallback.INSTANCE);
 
 }

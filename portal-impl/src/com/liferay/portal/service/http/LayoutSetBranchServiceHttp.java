@@ -14,8 +14,6 @@
 
 package com.liferay.portal.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
@@ -24,12 +22,15 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the HTTP utility for the
- * {@link LayoutSetBranchServiceUtil} service utility. The
+ * <code>LayoutSetBranchServiceUtil</code> service
+ * utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it requires an additional
- * {@link HttpPrincipal} parameter.
+ * <code>HttpPrincipal</code> parameter.
  *
  * <p>
  * The benefits of using the HTTP utility is that it is fast and allows for
@@ -48,25 +49,27 @@ import com.liferay.portal.kernel.util.MethodKey;
  *
  * @author Brian Wing Shun Chan
  * @see LayoutSetBranchServiceSoap
- * @see HttpPrincipal
- * @see LayoutSetBranchServiceUtil
  * @generated
  */
 @ProviderType
 public class LayoutSetBranchServiceHttp {
-	public static com.liferay.portal.kernel.model.LayoutSetBranch addLayoutSetBranch(
-		HttpPrincipal httpPrincipal, long groupId, boolean privateLayout,
-		java.lang.String name, java.lang.String description, boolean master,
-		long copyLayoutSetBranchId,
-		com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(LayoutSetBranchServiceUtil.class,
-					"addLayoutSetBranch", _addLayoutSetBranchParameterTypes0);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
-					privateLayout, name, description, master,
-					copyLayoutSetBranchId, serviceContext);
+	public static com.liferay.portal.kernel.model.LayoutSetBranch
+			addLayoutSetBranch(
+				HttpPrincipal httpPrincipal, long groupId,
+				boolean privateLayout, String name, String description,
+				boolean master, long copyLayoutSetBranchId,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				LayoutSetBranchServiceUtil.class, "addLayoutSetBranch",
+				_addLayoutSetBranchParameterTypes0);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, privateLayout, name, description, master,
+				copyLayoutSetBranchId, serviceContext);
 
 			Object returnObj = null;
 
@@ -74,11 +77,15 @@ public class LayoutSetBranchServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
 			return (com.liferay.portal.kernel.model.LayoutSetBranch)returnObj;
@@ -90,26 +97,31 @@ public class LayoutSetBranchServiceHttp {
 		}
 	}
 
-	public static void deleteLayoutSetBranch(HttpPrincipal httpPrincipal,
-		long layoutSetBranchId)
+	public static void deleteLayoutSetBranch(
+			HttpPrincipal httpPrincipal, long layoutSetBranchId)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(LayoutSetBranchServiceUtil.class,
-					"deleteLayoutSetBranch",
-					_deleteLayoutSetBranchParameterTypes1);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					layoutSetBranchId);
+		try {
+			MethodKey methodKey = new MethodKey(
+				LayoutSetBranchServiceUtil.class, "deleteLayoutSetBranch",
+				_deleteLayoutSetBranchParameterTypes1);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, layoutSetBranchId);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
@@ -119,14 +131,17 @@ public class LayoutSetBranchServiceHttp {
 		}
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.LayoutSetBranch> getLayoutSetBranches(
-		HttpPrincipal httpPrincipal, long groupId, boolean privateLayout) {
-		try {
-			MethodKey methodKey = new MethodKey(LayoutSetBranchServiceUtil.class,
-					"getLayoutSetBranches", _getLayoutSetBranchesParameterTypes2);
+	public static java.util.List
+		<com.liferay.portal.kernel.model.LayoutSetBranch> getLayoutSetBranches(
+			HttpPrincipal httpPrincipal, long groupId, boolean privateLayout) {
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
-					privateLayout);
+		try {
+			MethodKey methodKey = new MethodKey(
+				LayoutSetBranchServiceUtil.class, "getLayoutSetBranches",
+				_getLayoutSetBranchesParameterTypes2);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, privateLayout);
 
 			Object returnObj = null;
 
@@ -134,10 +149,12 @@ public class LayoutSetBranchServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
-			return (java.util.List<com.liferay.portal.kernel.model.LayoutSetBranch>)returnObj;
+			return (java.util.List
+				<com.liferay.portal.kernel.model.LayoutSetBranch>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -146,17 +163,21 @@ public class LayoutSetBranchServiceHttp {
 		}
 	}
 
-	public static com.liferay.portal.kernel.model.LayoutSetBranch mergeLayoutSetBranch(
-		HttpPrincipal httpPrincipal, long layoutSetBranchId,
-		long mergeLayoutSetBranchId,
-		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public static com.liferay.portal.kernel.model.LayoutSetBranch
+			mergeLayoutSetBranch(
+				HttpPrincipal httpPrincipal, long layoutSetBranchId,
+				long mergeLayoutSetBranchId,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(LayoutSetBranchServiceUtil.class,
-					"mergeLayoutSetBranch", _mergeLayoutSetBranchParameterTypes3);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					layoutSetBranchId, mergeLayoutSetBranchId, serviceContext);
+		try {
+			MethodKey methodKey = new MethodKey(
+				LayoutSetBranchServiceUtil.class, "mergeLayoutSetBranch",
+				_mergeLayoutSetBranchParameterTypes3);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, layoutSetBranchId, mergeLayoutSetBranchId,
+				serviceContext);
 
 			Object returnObj = null;
 
@@ -164,11 +185,15 @@ public class LayoutSetBranchServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
 			return (com.liferay.portal.kernel.model.LayoutSetBranch)returnObj;
@@ -180,18 +205,21 @@ public class LayoutSetBranchServiceHttp {
 		}
 	}
 
-	public static com.liferay.portal.kernel.model.LayoutSetBranch updateLayoutSetBranch(
-		HttpPrincipal httpPrincipal, long groupId, long layoutSetBranchId,
-		java.lang.String name, java.lang.String description,
-		com.liferay.portal.kernel.service.ServiceContext serviceContext)
+	public static com.liferay.portal.kernel.model.LayoutSetBranch
+			updateLayoutSetBranch(
+				HttpPrincipal httpPrincipal, long groupId,
+				long layoutSetBranchId, String name, String description,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(LayoutSetBranchServiceUtil.class,
-					"updateLayoutSetBranch",
-					_updateLayoutSetBranchParameterTypes4);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, groupId,
-					layoutSetBranchId, name, description, serviceContext);
+		try {
+			MethodKey methodKey = new MethodKey(
+				LayoutSetBranchServiceUtil.class, "updateLayoutSetBranch",
+				_updateLayoutSetBranchParameterTypes4);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, layoutSetBranchId, name, description,
+				serviceContext);
 
 			Object returnObj = null;
 
@@ -199,11 +227,15 @@ public class LayoutSetBranchServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
 			return (com.liferay.portal.kernel.model.LayoutSetBranch)returnObj;
@@ -215,25 +247,28 @@ public class LayoutSetBranchServiceHttp {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(LayoutSetBranchServiceHttp.class);
-	private static final Class<?>[] _addLayoutSetBranchParameterTypes0 = new Class[] {
-			long.class, boolean.class, java.lang.String.class,
-			java.lang.String.class, boolean.class, long.class,
+	private static Log _log = LogFactoryUtil.getLog(
+		LayoutSetBranchServiceHttp.class);
+
+	private static final Class<?>[] _addLayoutSetBranchParameterTypes0 =
+		new Class[] {
+			long.class, boolean.class, String.class, String.class,
+			boolean.class, long.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _deleteLayoutSetBranchParameterTypes1 = new Class[] {
-			long.class
-		};
-	private static final Class<?>[] _getLayoutSetBranchesParameterTypes2 = new Class[] {
-			long.class, boolean.class
-		};
-	private static final Class<?>[] _mergeLayoutSetBranchParameterTypes3 = new Class[] {
+	private static final Class<?>[] _deleteLayoutSetBranchParameterTypes1 =
+		new Class[] {long.class};
+	private static final Class<?>[] _getLayoutSetBranchesParameterTypes2 =
+		new Class[] {long.class, boolean.class};
+	private static final Class<?>[] _mergeLayoutSetBranchParameterTypes3 =
+		new Class[] {
 			long.class, long.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
-	private static final Class<?>[] _updateLayoutSetBranchParameterTypes4 = new Class[] {
-			long.class, long.class, java.lang.String.class,
-			java.lang.String.class,
+	private static final Class<?>[] _updateLayoutSetBranchParameterTypes4 =
+		new Class[] {
+			long.class, long.class, String.class, String.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
+
 }

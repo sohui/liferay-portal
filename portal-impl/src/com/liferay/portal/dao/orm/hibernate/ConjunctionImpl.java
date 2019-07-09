@@ -14,6 +14,7 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.Conjunction;
 import com.liferay.portal.kernel.dao.orm.Criterion;
 import com.liferay.portal.kernel.dao.orm.Junction;
@@ -40,6 +41,17 @@ public class ConjunctionImpl extends CriterionImpl implements Conjunction {
 
 	public org.hibernate.criterion.Conjunction getWrappedConjunction() {
 		return _conjunction;
+	}
+
+	@Override
+	public String toString() {
+		StringBundler sb = new StringBundler(3);
+
+		sb.append("{_conjunction=");
+		sb.append(String.valueOf(_conjunction));
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	private final org.hibernate.criterion.Conjunction _conjunction;

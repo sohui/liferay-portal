@@ -4,6 +4,8 @@
 	<import file="build-test.xml" />
 
 	<target name="run-selenium-tomcat">
+		<lstopwatch action="start" name="run.selenium.tomcat" />
+
 		<app-server-properties-update>
 			app.server.type=tomcat
 		</app-server-properties-update>
@@ -18,8 +20,6 @@
 				<ant antfile="build-dist.xml" target="build-dist-tomcat" />
 			</then>
 		</if>
-
-		<antcall target="revert-test-properties" />
 
 		<antcall target="record-test-generated-properties" />
 
@@ -50,9 +50,15 @@
 				</antcall>
 			</else>
 		</if>
+
+		<lstopwatch action="total" name="run.selenium.tomcat" />
 	</target>
 
 	<target name="run-tomcat">
+		<lstopwatch action="start" name="run.tomcat" />
+
 		<antcall target="run-simple-server" />
+
+		<lstopwatch action="total" name="run.tomcat" />
 	</target>
 </project>

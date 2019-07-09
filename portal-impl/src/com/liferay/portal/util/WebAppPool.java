@@ -24,37 +24,20 @@ import java.util.concurrent.ConcurrentMap;
 public class WebAppPool {
 
 	public static void clear() {
-		_instance._webAppPool.clear();
+		_webAppPool.clear();
 	}
 
 	public static Object get(Long webAppId, String key) {
-		return _instance._get(webAppId, key);
-	}
-
-	public static void put(Long webAppId, String key, Object obj) {
-		_instance._put(webAppId, key, obj);
-	}
-
-	public static Object remove(Long webAppId, String key) {
-		return _instance._remove(webAppId, key);
-	}
-
-	private WebAppPool() {
-		_webAppPool = new ConcurrentHashMap<>();
-	}
-
-	private Object _get(Long webAppId, String key) {
 		Map<String, Object> map = _webAppPool.get(webAppId);
 
 		if (map == null) {
 			return null;
 		}
-		else {
-			return map.get(key);
-		}
+
+		return map.get(key);
 	}
 
-	private void _put(Long webAppId, String key, Object obj) {
+	public static void put(Long webAppId, String key, Object obj) {
 		Map<String, Object> map = _webAppPool.get(webAppId);
 
 		if (map == null) {
@@ -71,19 +54,17 @@ public class WebAppPool {
 		map.put(key, obj);
 	}
 
-	private Object _remove(Long webAppId, String key) {
+	public static Object remove(Long webAppId, String key) {
 		Map<String, Object> map = _webAppPool.get(webAppId);
 
 		if (map == null) {
 			return null;
 		}
-		else {
-			return map.remove(key);
-		}
+
+		return map.remove(key);
 	}
 
-	private static final WebAppPool _instance = new WebAppPool();
-
-	private final ConcurrentMap<Long, Map<String, Object>> _webAppPool;
+	private static final ConcurrentMap<Long, Map<String, Object>> _webAppPool =
+		new ConcurrentHashMap<>();
 
 }

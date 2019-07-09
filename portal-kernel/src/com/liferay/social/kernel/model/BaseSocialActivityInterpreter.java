@@ -17,6 +17,8 @@ package com.liferay.social.kernel.model;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -37,9 +39,8 @@ import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.social.kernel.service.SocialActivityLocalServiceUtil;
@@ -131,8 +132,8 @@ public abstract class BaseSocialActivityInterpreter
 		String viewEntryURL = getViewEntryURL(
 			className, classPK, serviceContext);
 
-		if (Validator.isNotNull(viewEntryURL)) {
-			return viewEntryURL;
+		if (Validator.isNull(viewEntryURL)) {
+			return url;
 		}
 
 		return HttpUtil.setParameter(url, "noSuchEntryRedirect", viewEntryURL);
@@ -151,7 +152,7 @@ public abstract class BaseSocialActivityInterpreter
 	}
 
 	/**
-	 * @deprecated As of 6.2.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	protected String cleanContent(String content) {
@@ -163,15 +164,6 @@ public abstract class BaseSocialActivityInterpreter
 		throws Exception {
 
 		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
-
-		SocialActivityFeedEntry socialActivityFeedEntry = doInterpret(
-			activity, themeDisplay);
-
-		if (socialActivityFeedEntry !=
-				_deprecatedMarkerSocialActivityFeedEntry) {
-
-			return socialActivityFeedEntry;
-		}
 
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
@@ -196,7 +188,7 @@ public abstract class BaseSocialActivityInterpreter
 	}
 
 	/**
-	 * @deprecated As of 6.2.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	protected SocialActivityFeedEntry doInterpret(
@@ -269,9 +261,9 @@ public abstract class BaseSocialActivityInterpreter
 				return HtmlUtil.escape(groupName);
 			}
 
-			groupName =
-				"<a class=\"group\" href=\"" + groupDisplayURL + "\">" +
-					HtmlUtil.escape(groupName) + "</a>";
+			groupName = StringBundler.concat(
+				"<a class=\"group\" href=\"", groupDisplayURL, "\">",
+				HtmlUtil.escape(groupName), "</a>");
 
 			return groupName;
 		}
@@ -281,8 +273,8 @@ public abstract class BaseSocialActivityInterpreter
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link #getGroupName(long,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getGroupName(long, ServiceContext)}
 	 */
 	@Deprecated
 	protected String getGroupName(long groupId, ThemeDisplay themeDisplay) {
@@ -311,9 +303,9 @@ public abstract class BaseSocialActivityInterpreter
 				return HtmlUtil.escape(groupName);
 			}
 
-			groupName =
-				"<a class=\"group\" href=\"" + groupDisplayURL + "\">" +
-					HtmlUtil.escape(groupName) + "</a>";
+			groupName = StringBundler.concat(
+				"<a class=\"group\" href=\"", groupDisplayURL, "\">",
+				HtmlUtil.escape(groupName), "</a>");
 
 			return groupName;
 		}
@@ -344,7 +336,7 @@ public abstract class BaseSocialActivityInterpreter
 			}
 		}
 		catch (JSONException jsone) {
-			_log.error("Unable to create a JSON object from " + json);
+			_log.error("Unable to create a JSON object from " + json, jsone);
 		}
 
 		return defaultValue;
@@ -376,8 +368,21 @@ public abstract class BaseSocialActivityInterpreter
 			return path;
 		}
 
-		return serviceContext.getPortalURL() + serviceContext.getPathMain() +
-			path;
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(serviceContext.getPortalURL());
+
+		if (!path.startsWith(PortalUtil.getPathContext())) {
+			sb.append(PortalUtil.getPathContext());
+		}
+
+		if (!path.startsWith(serviceContext.getPathMain())) {
+			sb.append(serviceContext.getPathMain());
+		}
+
+		sb.append(path);
+
+		return sb.toString();
 	}
 
 	protected String getPath(
@@ -412,7 +417,17 @@ public abstract class BaseSocialActivityInterpreter
 		Object[] titleArguments = getTitleArguments(
 			groupName, activity, link, entryTitle, serviceContext);
 
-		return serviceContext.translate(titlePattern, titleArguments);
+		ResourceBundleLoader resourceBundleLoader = getResourceBundleLoader();
+
+		if (resourceBundleLoader == null) {
+			return serviceContext.translate(titlePattern, titleArguments);
+		}
+
+		ResourceBundle resourceBundle = resourceBundleLoader.loadResourceBundle(
+			serviceContext.getLocale());
+
+		return LanguageUtil.format(
+			resourceBundle, titlePattern, titleArguments);
 	}
 
 	protected Object[] getTitleArguments(
@@ -454,9 +469,9 @@ public abstract class BaseSocialActivityInterpreter
 			String userDisplayURL = user.getDisplayURL(
 				serviceContext.getThemeDisplay());
 
-			userName =
-				"<a class=\"user\" href=\"" + userDisplayURL + "\">" +
-					HtmlUtil.escape(userName) + "</a>";
+			userName = StringBundler.concat(
+				"<a class=\"user\" href=\"", userDisplayURL, "\">",
+				HtmlUtil.escape(userName), "</a>");
 
 			return userName;
 		}
@@ -466,8 +481,8 @@ public abstract class BaseSocialActivityInterpreter
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link #getUserName(long,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getUserName(long, ServiceContext)}
 	 */
 	@Deprecated
 	protected String getUserName(long userId, ThemeDisplay themeDisplay) {
@@ -492,9 +507,9 @@ public abstract class BaseSocialActivityInterpreter
 
 			String userDisplayURL = user.getDisplayURL(themeDisplay);
 
-			userName =
-				"<a class=\"user\" href=\"" + userDisplayURL + "\">" +
-					HtmlUtil.escape(userName) + "</a>";
+			userName = StringBundler.concat(
+				"<a class=\"user\" href=\"", userDisplayURL, "\">",
+				HtmlUtil.escape(userName), "</a>");
 
 			return userName;
 		}
@@ -504,8 +519,8 @@ public abstract class BaseSocialActivityInterpreter
 	}
 
 	/**
-	 * @deprecated As of 6.2.0, replaced by {@link #getJSONValue(String, String,
-	 *             String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getJSONValue(String, String, String)}
 	 */
 	@Deprecated
 	protected String getValue(String json, String key, String defaultValue) {
@@ -594,7 +609,7 @@ public abstract class BaseSocialActivityInterpreter
 		ResourceBundleLoader resourceBundleLoader = getResourceBundleLoader();
 
 		ResourceBundle resourceBundle = resourceBundleLoader.loadResourceBundle(
-			serviceContext.getLanguageId());
+			serviceContext.getLocale());
 
 		String title = LanguageUtil.get(resourceBundle, key);
 

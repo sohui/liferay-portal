@@ -14,11 +14,8 @@
 
 package com.liferay.portlet.social.service.base;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.service.persistence.AssetEntryFinder;
 import com.liferay.asset.kernel.service.persistence.AssetEntryPersistence;
-
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -45,9 +42,9 @@ import com.liferay.portal.kernel.service.persistence.LayoutFinder;
 import com.liferay.portal.kernel.service.persistence.LayoutPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
-
 import com.liferay.social.kernel.model.SocialActivity;
 import com.liferay.social.kernel.service.SocialActivityLocalService;
 import com.liferay.social.kernel.service.persistence.SocialActivityCounterFinder;
@@ -65,6 +62,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the base implementation for the social activity local service.
  *
@@ -74,17 +73,17 @@ import javax.sql.DataSource;
  *
  * @author Brian Wing Shun Chan
  * @see com.liferay.portlet.social.service.impl.SocialActivityLocalServiceImpl
- * @see com.liferay.social.kernel.service.SocialActivityLocalServiceUtil
  * @generated
  */
 @ProviderType
 public abstract class SocialActivityLocalServiceBaseImpl
-	extends BaseLocalServiceImpl implements SocialActivityLocalService,
-		IdentifiableOSGiService {
+	extends BaseLocalServiceImpl
+	implements SocialActivityLocalService, IdentifiableOSGiService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link com.liferay.social.kernel.service.SocialActivityLocalServiceUtil} to access the social activity local service.
+	 * Never modify or reference this class directly. Use <code>SocialActivityLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.social.kernel.service.SocialActivityLocalServiceUtil</code>.
 	 */
 
 	/**
@@ -108,6 +107,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @return the new social activity
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public SocialActivity createSocialActivity(long activityId) {
 		return socialActivityPersistence.create(activityId);
 	}
@@ -123,6 +123,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	@Override
 	public SocialActivity deleteSocialActivity(long activityId)
 		throws PortalException {
+
 		return socialActivityPersistence.remove(activityId);
 	}
 
@@ -142,8 +143,8 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	public DynamicQuery dynamicQuery() {
 		Class<?> clazz = getClass();
 
-		return DynamicQueryFactoryUtil.forClass(SocialActivity.class,
-			clazz.getClassLoader());
+		return DynamicQueryFactoryUtil.forClass(
+			SocialActivity.class, clazz.getClassLoader());
 	}
 
 	/**
@@ -161,7 +162,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.social.model.impl.SocialActivityModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -170,17 +171,18 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @return the range of matching rows
 	 */
 	@Override
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end) {
-		return socialActivityPersistence.findWithDynamicQuery(dynamicQuery,
-			start, end);
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end) {
+
+		return socialActivityPersistence.findWithDynamicQuery(
+			dynamicQuery, start, end);
 	}
 
 	/**
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.social.model.impl.SocialActivityModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -190,10 +192,12 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @return the ordered range of matching rows
 	 */
 	@Override
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end, OrderByComparator<T> orderByComparator) {
-		return socialActivityPersistence.findWithDynamicQuery(dynamicQuery,
-			start, end, orderByComparator);
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end,
+		OrderByComparator<T> orderByComparator) {
+
+		return socialActivityPersistence.findWithDynamicQuery(
+			dynamicQuery, start, end, orderByComparator);
 	}
 
 	/**
@@ -215,10 +219,11 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @return the number of rows matching the dynamic query
 	 */
 	@Override
-	public long dynamicQueryCount(DynamicQuery dynamicQuery,
-		Projection projection) {
-		return socialActivityPersistence.countWithDynamicQuery(dynamicQuery,
-			projection);
+	public long dynamicQueryCount(
+		DynamicQuery dynamicQuery, Projection projection) {
+
+		return socialActivityPersistence.countWithDynamicQuery(
+			dynamicQuery, projection);
 	}
 
 	@Override
@@ -236,12 +241,14 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	@Override
 	public SocialActivity getSocialActivity(long activityId)
 		throws PortalException {
+
 		return socialActivityPersistence.findByPrimaryKey(activityId);
 	}
 
 	@Override
 	public ActionableDynamicQuery getActionableDynamicQuery() {
-		ActionableDynamicQuery actionableDynamicQuery = new DefaultActionableDynamicQuery();
+		ActionableDynamicQuery actionableDynamicQuery =
+			new DefaultActionableDynamicQuery();
 
 		actionableDynamicQuery.setBaseLocalService(socialActivityLocalService);
 		actionableDynamicQuery.setClassLoader(getClassLoader());
@@ -253,10 +260,14 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	}
 
 	@Override
-	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
-		IndexableActionableDynamicQuery indexableActionableDynamicQuery = new IndexableActionableDynamicQuery();
+	public IndexableActionableDynamicQuery
+		getIndexableActionableDynamicQuery() {
 
-		indexableActionableDynamicQuery.setBaseLocalService(socialActivityLocalService);
+		IndexableActionableDynamicQuery indexableActionableDynamicQuery =
+			new IndexableActionableDynamicQuery();
+
+		indexableActionableDynamicQuery.setBaseLocalService(
+			socialActivityLocalService);
 		indexableActionableDynamicQuery.setClassLoader(getClassLoader());
 		indexableActionableDynamicQuery.setModelClass(SocialActivity.class);
 
@@ -267,6 +278,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 
 	protected void initActionableDynamicQuery(
 		ActionableDynamicQuery actionableDynamicQuery) {
+
 		actionableDynamicQuery.setBaseLocalService(socialActivityLocalService);
 		actionableDynamicQuery.setClassLoader(getClassLoader());
 		actionableDynamicQuery.setModelClass(SocialActivity.class);
@@ -280,12 +292,15 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
-		return socialActivityLocalService.deleteSocialActivity((SocialActivity)persistedModel);
+
+		return socialActivityLocalService.deleteSocialActivity(
+			(SocialActivity)persistedModel);
 	}
 
 	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
+
 		return socialActivityPersistence.findByPrimaryKey(primaryKeyObj);
 	}
 
@@ -293,7 +308,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * Returns a range of all the social activities.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.social.model.impl.SocialActivityModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code>), then the query will include the default ORDER BY logic from <code>com.liferay.portlet.social.model.impl.SocialActivityModelImpl</code>. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of social activities
@@ -343,6 +358,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivityLocalService(
 		SocialActivityLocalService socialActivityLocalService) {
+
 		this.socialActivityLocalService = socialActivityLocalService;
 	}
 
@@ -362,6 +378,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivityPersistence(
 		SocialActivityPersistence socialActivityPersistence) {
+
 		this.socialActivityPersistence = socialActivityPersistence;
 	}
 
@@ -381,6 +398,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivityFinder(
 		SocialActivityFinder socialActivityFinder) {
+
 		this.socialActivityFinder = socialActivityFinder;
 	}
 
@@ -389,7 +407,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the counter local service
 	 */
-	public com.liferay.counter.kernel.service.CounterLocalService getCounterLocalService() {
+	public com.liferay.counter.kernel.service.CounterLocalService
+		getCounterLocalService() {
+
 		return counterLocalService;
 	}
 
@@ -399,7 +419,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param counterLocalService the counter local service
 	 */
 	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService counterLocalService) {
+		com.liferay.counter.kernel.service.CounterLocalService
+			counterLocalService) {
+
 		this.counterLocalService = counterLocalService;
 	}
 
@@ -408,7 +430,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the class name local service
 	 */
-	public com.liferay.portal.kernel.service.ClassNameLocalService getClassNameLocalService() {
+	public com.liferay.portal.kernel.service.ClassNameLocalService
+		getClassNameLocalService() {
+
 		return classNameLocalService;
 	}
 
@@ -418,7 +442,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param classNameLocalService the class name local service
 	 */
 	public void setClassNameLocalService(
-		com.liferay.portal.kernel.service.ClassNameLocalService classNameLocalService) {
+		com.liferay.portal.kernel.service.ClassNameLocalService
+			classNameLocalService) {
+
 		this.classNameLocalService = classNameLocalService;
 	}
 
@@ -438,6 +464,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setClassNamePersistence(
 		ClassNamePersistence classNamePersistence) {
+
 		this.classNamePersistence = classNamePersistence;
 	}
 
@@ -446,7 +473,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the group local service
 	 */
-	public com.liferay.portal.kernel.service.GroupLocalService getGroupLocalService() {
+	public com.liferay.portal.kernel.service.GroupLocalService
+		getGroupLocalService() {
+
 		return groupLocalService;
 	}
 
@@ -457,6 +486,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setGroupLocalService(
 		com.liferay.portal.kernel.service.GroupLocalService groupLocalService) {
+
 		this.groupLocalService = groupLocalService;
 	}
 
@@ -501,7 +531,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the layout local service
 	 */
-	public com.liferay.portal.kernel.service.LayoutLocalService getLayoutLocalService() {
+	public com.liferay.portal.kernel.service.LayoutLocalService
+		getLayoutLocalService() {
+
 		return layoutLocalService;
 	}
 
@@ -511,7 +543,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param layoutLocalService the layout local service
 	 */
 	public void setLayoutLocalService(
-		com.liferay.portal.kernel.service.LayoutLocalService layoutLocalService) {
+		com.liferay.portal.kernel.service.LayoutLocalService
+			layoutLocalService) {
+
 		this.layoutLocalService = layoutLocalService;
 	}
 
@@ -556,7 +590,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the user local service
 	 */
-	public com.liferay.portal.kernel.service.UserLocalService getUserLocalService() {
+	public com.liferay.portal.kernel.service.UserLocalService
+		getUserLocalService() {
+
 		return userLocalService;
 	}
 
@@ -567,6 +603,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setUserLocalService(
 		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
+
 		this.userLocalService = userLocalService;
 	}
 
@@ -611,7 +648,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the asset entry local service
 	 */
-	public com.liferay.asset.kernel.service.AssetEntryLocalService getAssetEntryLocalService() {
+	public com.liferay.asset.kernel.service.AssetEntryLocalService
+		getAssetEntryLocalService() {
+
 		return assetEntryLocalService;
 	}
 
@@ -621,7 +660,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param assetEntryLocalService the asset entry local service
 	 */
 	public void setAssetEntryLocalService(
-		com.liferay.asset.kernel.service.AssetEntryLocalService assetEntryLocalService) {
+		com.liferay.asset.kernel.service.AssetEntryLocalService
+			assetEntryLocalService) {
+
 		this.assetEntryLocalService = assetEntryLocalService;
 	}
 
@@ -641,6 +682,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setAssetEntryPersistence(
 		AssetEntryPersistence assetEntryPersistence) {
+
 		this.assetEntryPersistence = assetEntryPersistence;
 	}
 
@@ -667,7 +709,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the social activity counter local service
 	 */
-	public com.liferay.social.kernel.service.SocialActivityCounterLocalService getSocialActivityCounterLocalService() {
+	public com.liferay.social.kernel.service.SocialActivityCounterLocalService
+		getSocialActivityCounterLocalService() {
+
 		return socialActivityCounterLocalService;
 	}
 
@@ -677,8 +721,11 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param socialActivityCounterLocalService the social activity counter local service
 	 */
 	public void setSocialActivityCounterLocalService(
-		com.liferay.social.kernel.service.SocialActivityCounterLocalService socialActivityCounterLocalService) {
-		this.socialActivityCounterLocalService = socialActivityCounterLocalService;
+		com.liferay.social.kernel.service.SocialActivityCounterLocalService
+			socialActivityCounterLocalService) {
+
+		this.socialActivityCounterLocalService =
+			socialActivityCounterLocalService;
 	}
 
 	/**
@@ -686,7 +733,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the social activity counter persistence
 	 */
-	public SocialActivityCounterPersistence getSocialActivityCounterPersistence() {
+	public SocialActivityCounterPersistence
+		getSocialActivityCounterPersistence() {
+
 		return socialActivityCounterPersistence;
 	}
 
@@ -697,7 +746,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivityCounterPersistence(
 		SocialActivityCounterPersistence socialActivityCounterPersistence) {
-		this.socialActivityCounterPersistence = socialActivityCounterPersistence;
+
+		this.socialActivityCounterPersistence =
+			socialActivityCounterPersistence;
 	}
 
 	/**
@@ -716,6 +767,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivityCounterFinder(
 		SocialActivityCounterFinder socialActivityCounterFinder) {
+
 		this.socialActivityCounterFinder = socialActivityCounterFinder;
 	}
 
@@ -724,7 +776,10 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the social activity interpreter local service
 	 */
-	public com.liferay.social.kernel.service.SocialActivityInterpreterLocalService getSocialActivityInterpreterLocalService() {
+	public
+		com.liferay.social.kernel.service.SocialActivityInterpreterLocalService
+			getSocialActivityInterpreterLocalService() {
+
 		return socialActivityInterpreterLocalService;
 	}
 
@@ -734,8 +789,11 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param socialActivityInterpreterLocalService the social activity interpreter local service
 	 */
 	public void setSocialActivityInterpreterLocalService(
-		com.liferay.social.kernel.service.SocialActivityInterpreterLocalService socialActivityInterpreterLocalService) {
-		this.socialActivityInterpreterLocalService = socialActivityInterpreterLocalService;
+		com.liferay.social.kernel.service.SocialActivityInterpreterLocalService
+			socialActivityInterpreterLocalService) {
+
+		this.socialActivityInterpreterLocalService =
+			socialActivityInterpreterLocalService;
 	}
 
 	/**
@@ -743,7 +801,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the social activity limit local service
 	 */
-	public com.liferay.social.kernel.service.SocialActivityLimitLocalService getSocialActivityLimitLocalService() {
+	public com.liferay.social.kernel.service.SocialActivityLimitLocalService
+		getSocialActivityLimitLocalService() {
+
 		return socialActivityLimitLocalService;
 	}
 
@@ -753,7 +813,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param socialActivityLimitLocalService the social activity limit local service
 	 */
 	public void setSocialActivityLimitLocalService(
-		com.liferay.social.kernel.service.SocialActivityLimitLocalService socialActivityLimitLocalService) {
+		com.liferay.social.kernel.service.SocialActivityLimitLocalService
+			socialActivityLimitLocalService) {
+
 		this.socialActivityLimitLocalService = socialActivityLimitLocalService;
 	}
 
@@ -773,6 +835,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivityLimitPersistence(
 		SocialActivityLimitPersistence socialActivityLimitPersistence) {
+
 		this.socialActivityLimitPersistence = socialActivityLimitPersistence;
 	}
 
@@ -781,7 +844,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the social activity set local service
 	 */
-	public com.liferay.social.kernel.service.SocialActivitySetLocalService getSocialActivitySetLocalService() {
+	public com.liferay.social.kernel.service.SocialActivitySetLocalService
+		getSocialActivitySetLocalService() {
+
 		return socialActivitySetLocalService;
 	}
 
@@ -791,7 +856,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param socialActivitySetLocalService the social activity set local service
 	 */
 	public void setSocialActivitySetLocalService(
-		com.liferay.social.kernel.service.SocialActivitySetLocalService socialActivitySetLocalService) {
+		com.liferay.social.kernel.service.SocialActivitySetLocalService
+			socialActivitySetLocalService) {
+
 		this.socialActivitySetLocalService = socialActivitySetLocalService;
 	}
 
@@ -811,6 +878,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivitySetPersistence(
 		SocialActivitySetPersistence socialActivitySetPersistence) {
+
 		this.socialActivitySetPersistence = socialActivitySetPersistence;
 	}
 
@@ -830,6 +898,7 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivitySetFinder(
 		SocialActivitySetFinder socialActivitySetFinder) {
+
 		this.socialActivitySetFinder = socialActivitySetFinder;
 	}
 
@@ -838,7 +907,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the social activity setting local service
 	 */
-	public com.liferay.social.kernel.service.SocialActivitySettingLocalService getSocialActivitySettingLocalService() {
+	public com.liferay.social.kernel.service.SocialActivitySettingLocalService
+		getSocialActivitySettingLocalService() {
+
 		return socialActivitySettingLocalService;
 	}
 
@@ -848,8 +919,11 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 * @param socialActivitySettingLocalService the social activity setting local service
 	 */
 	public void setSocialActivitySettingLocalService(
-		com.liferay.social.kernel.service.SocialActivitySettingLocalService socialActivitySettingLocalService) {
-		this.socialActivitySettingLocalService = socialActivitySettingLocalService;
+		com.liferay.social.kernel.service.SocialActivitySettingLocalService
+			socialActivitySettingLocalService) {
+
+		this.socialActivitySettingLocalService =
+			socialActivitySettingLocalService;
 	}
 
 	/**
@@ -857,7 +931,9 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 *
 	 * @return the social activity setting persistence
 	 */
-	public SocialActivitySettingPersistence getSocialActivitySettingPersistence() {
+	public SocialActivitySettingPersistence
+		getSocialActivitySettingPersistence() {
+
 		return socialActivitySettingPersistence;
 	}
 
@@ -868,11 +944,14 @@ public abstract class SocialActivityLocalServiceBaseImpl
 	 */
 	public void setSocialActivitySettingPersistence(
 		SocialActivitySettingPersistence socialActivitySettingPersistence) {
-		this.socialActivitySettingPersistence = socialActivitySettingPersistence;
+
+		this.socialActivitySettingPersistence =
+			socialActivitySettingPersistence;
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register("com.liferay.social.kernel.model.SocialActivity",
+		persistedModelLocalServiceRegistry.register(
+			"com.liferay.social.kernel.model.SocialActivity",
 			socialActivityLocalService);
 	}
 
@@ -913,8 +992,8 @@ public abstract class SocialActivityLocalServiceBaseImpl
 			sql = db.buildSQL(sql);
 			sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource,
-					sql);
+			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(
+				dataSource, sql);
 
 			sqlUpdate.update();
 		}
@@ -925,62 +1004,129 @@ public abstract class SocialActivityLocalServiceBaseImpl
 
 	@BeanReference(type = SocialActivityLocalService.class)
 	protected SocialActivityLocalService socialActivityLocalService;
+
 	@BeanReference(type = SocialActivityPersistence.class)
 	protected SocialActivityPersistence socialActivityPersistence;
+
 	@BeanReference(type = SocialActivityFinder.class)
 	protected SocialActivityFinder socialActivityFinder;
-	@BeanReference(type = com.liferay.counter.kernel.service.CounterLocalService.class)
-	protected com.liferay.counter.kernel.service.CounterLocalService counterLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.ClassNameLocalService.class)
-	protected com.liferay.portal.kernel.service.ClassNameLocalService classNameLocalService;
+
+	@BeanReference(
+		type = com.liferay.counter.kernel.service.CounterLocalService.class
+	)
+	protected com.liferay.counter.kernel.service.CounterLocalService
+		counterLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.ClassNameLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.ClassNameLocalService
+		classNameLocalService;
+
 	@BeanReference(type = ClassNamePersistence.class)
 	protected ClassNamePersistence classNamePersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.GroupLocalService.class)
-	protected com.liferay.portal.kernel.service.GroupLocalService groupLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.GroupLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.GroupLocalService
+		groupLocalService;
+
 	@BeanReference(type = GroupPersistence.class)
 	protected GroupPersistence groupPersistence;
+
 	@BeanReference(type = GroupFinder.class)
 	protected GroupFinder groupFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.LayoutLocalService.class)
-	protected com.liferay.portal.kernel.service.LayoutLocalService layoutLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.LayoutLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.LayoutLocalService
+		layoutLocalService;
+
 	@BeanReference(type = LayoutPersistence.class)
 	protected LayoutPersistence layoutPersistence;
+
 	@BeanReference(type = LayoutFinder.class)
 	protected LayoutFinder layoutFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserLocalService.class)
-	protected com.liferay.portal.kernel.service.UserLocalService userLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserLocalService
+		userLocalService;
+
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
+
 	@BeanReference(type = UserFinder.class)
 	protected UserFinder userFinder;
-	@BeanReference(type = com.liferay.asset.kernel.service.AssetEntryLocalService.class)
-	protected com.liferay.asset.kernel.service.AssetEntryLocalService assetEntryLocalService;
+
+	@BeanReference(
+		type = com.liferay.asset.kernel.service.AssetEntryLocalService.class
+	)
+	protected com.liferay.asset.kernel.service.AssetEntryLocalService
+		assetEntryLocalService;
+
 	@BeanReference(type = AssetEntryPersistence.class)
 	protected AssetEntryPersistence assetEntryPersistence;
+
 	@BeanReference(type = AssetEntryFinder.class)
 	protected AssetEntryFinder assetEntryFinder;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivityCounterLocalService.class)
-	protected com.liferay.social.kernel.service.SocialActivityCounterLocalService socialActivityCounterLocalService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivityCounterLocalService.class
+	)
+	protected
+		com.liferay.social.kernel.service.SocialActivityCounterLocalService
+			socialActivityCounterLocalService;
+
 	@BeanReference(type = SocialActivityCounterPersistence.class)
 	protected SocialActivityCounterPersistence socialActivityCounterPersistence;
+
 	@BeanReference(type = SocialActivityCounterFinder.class)
 	protected SocialActivityCounterFinder socialActivityCounterFinder;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivityInterpreterLocalService.class)
-	protected com.liferay.social.kernel.service.SocialActivityInterpreterLocalService socialActivityInterpreterLocalService;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivityLimitLocalService.class)
-	protected com.liferay.social.kernel.service.SocialActivityLimitLocalService socialActivityLimitLocalService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivityInterpreterLocalService.class
+	)
+	protected
+		com.liferay.social.kernel.service.SocialActivityInterpreterLocalService
+			socialActivityInterpreterLocalService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivityLimitLocalService.class
+	)
+	protected com.liferay.social.kernel.service.SocialActivityLimitLocalService
+		socialActivityLimitLocalService;
+
 	@BeanReference(type = SocialActivityLimitPersistence.class)
 	protected SocialActivityLimitPersistence socialActivityLimitPersistence;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivitySetLocalService.class)
-	protected com.liferay.social.kernel.service.SocialActivitySetLocalService socialActivitySetLocalService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivitySetLocalService.class
+	)
+	protected com.liferay.social.kernel.service.SocialActivitySetLocalService
+		socialActivitySetLocalService;
+
 	@BeanReference(type = SocialActivitySetPersistence.class)
 	protected SocialActivitySetPersistence socialActivitySetPersistence;
+
 	@BeanReference(type = SocialActivitySetFinder.class)
 	protected SocialActivitySetFinder socialActivitySetFinder;
-	@BeanReference(type = com.liferay.social.kernel.service.SocialActivitySettingLocalService.class)
-	protected com.liferay.social.kernel.service.SocialActivitySettingLocalService socialActivitySettingLocalService;
+
+	@BeanReference(
+		type = com.liferay.social.kernel.service.SocialActivitySettingLocalService.class
+	)
+	protected
+		com.liferay.social.kernel.service.SocialActivitySettingLocalService
+			socialActivitySettingLocalService;
+
 	@BeanReference(type = SocialActivitySettingPersistence.class)
 	protected SocialActivitySettingPersistence socialActivitySettingPersistence;
+
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
+	protected PersistedModelLocalServiceRegistry
+		persistedModelLocalServiceRegistry;
+
 }

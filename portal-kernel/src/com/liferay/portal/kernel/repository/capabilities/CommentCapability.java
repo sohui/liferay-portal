@@ -14,8 +14,11 @@
 
 package com.liferay.portal.kernel.repository.capabilities;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Adolfo Pérez
  */
+@ProviderType
 public interface CommentCapability extends Capability {
 }

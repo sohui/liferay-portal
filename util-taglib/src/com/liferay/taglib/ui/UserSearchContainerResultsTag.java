@@ -42,12 +42,18 @@ public class UserSearchContainerResultsTag<R> extends IncludeTag {
 		return super.doStartTag();
 	}
 
+	public LinkedHashMap<String, Object> getUserParams() {
+		return _userParams;
+	}
+
 	public void setUserParams(LinkedHashMap<String, Object> userParams) {
 		_userParams = userParams;
 	}
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_searchContainer = null;
 		_searchTerms = null;
 		_userParams = null;
@@ -59,7 +65,7 @@ public class UserSearchContainerResultsTag<R> extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
 		SearchContainerTag<R> searchContainerTag =
 			(SearchContainerTag<R>)findAncestorWithClass(
 				this, SearchContainerTag.class);
@@ -68,13 +74,14 @@ public class UserSearchContainerResultsTag<R> extends IncludeTag {
 
 		_searchTerms = _searchContainer.getSearchTerms();
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:user-search-container-results:searchContainer",
 			_searchContainer);
-		request.setAttribute(
+
+		httpServletRequest.setAttribute(
 			"liferay-ui:user-search-container-results:searchTerms",
 			_searchTerms);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:user-search-container-results:userParams", _userParams);
 	}
 

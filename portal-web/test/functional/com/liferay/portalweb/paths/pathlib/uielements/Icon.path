@@ -9,53 +9,38 @@
 </thead>
 <tbody>
 <tr>
+	<td>ADD_FAVORITE</td>
+	<td>//*[@data-qa-id='row'][contains(.,'${key_rowEntry}')]//a[span/*[name()='svg'][contains(@class,'lexicon-icon-star-o')]]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ADVANCED_SEARCH</td>
 	<td>//button[contains(@class,'toggle-advanced') and span[@class='caret']] | //a[contains(@id,'searchtoggleAdvanced')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ANGLE_LEFT_BACK</td>
-	<td>//div[contains(@class,'taglib-header')]//span[contains(.,'Back')]/a | //div[contains(@class,'toolbar-group-content')]//span[contains(@class,'icon-angle-left')]</td>
+	<td>//div[contains(@class,'taglib-header')]//span[contains(.,'Back')]/a | //a[span//*[name()='svg'][contains(@class,'icon-angle-left')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASTERISK</td>
-	<td>//span[contains(@class,'icon-asterisk')]</td>
+	<td>//span[*[name()='svg'][contains(@class,'icon-asterisk')]] | //span[contains(@class,'icon-asterisk')] | //label[*[name()='svg'][contains(@class,'icon-asterisk')] and not(contains(@class,'required-warning'))]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ASTERISK_DATE_FIELD</td>
+	<td>//label[contains(.,'${key_fieldFieldLabel}')]//span[*[name()='svg'][contains(@class,'icon-asterisk')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>BACK</td>
-	<td>//a[contains(@class,'icon-circle-arrow-left') and contains(@class,'previous-level')] | //span[contains(@class,'icon-angle-left')]</td>
+	<td>//a[span//*[name()='svg'][contains(@class,'icon-angle-left')]] | //a[contains(@class,'icon-circle-arrow-left') and contains(@class,'previous-level')] | //span[contains(@class,'icon-angle-left')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>BASIC_SEARCH</td>
-	<td>//button[contains(@type,'submit')]/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CARET_LEFT</td>
-	<td>//span[contains(@class,'icon-caret-left')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CARET_RIGHT</td>
-	<td>//span[contains(@class,'icon-caret-right')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CARET_ASCENDING</td>
-	<td>//*[@data-qa-id='ascendingButton']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CARET_DESCENDING</td>
-	<td>//*[@data-qa-id='descendingButton']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CLEAR_SEARCH</td>
-	<td>//input[@type='image' and @title='Clear Search']</td>
+	<td>//button[contains(@type,'submit')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -64,13 +49,28 @@
 	<td></td>
 </tr>
 <tr>
-	<td>COG</td>
-	<td>//div[@id='main-content']//i[contains(@class,'icon-cog') and contains(@class,'lfr-icon-menu-icon')]</td>
+	<td>COG_PAGE</td>
+	<td>//li/div[contains(.,'${key_pageName}')]/..//a[*[name()='svg'][contains(@class,'icon-cog')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CURRENT_DISPLAY_STYLE</td>
+	<td>//ul[@class='navbar-nav'][2]//li[contains(@class,'dropdown nav-item')]//button[contains(@class,'dropdown-toggle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CURRENT_DISPLAY_STYLE_ACTIVE</td>
+	<td>//ul[@class='navbar-nav'][2]//li[contains(@class,'dropdown nav-item')]//button[*[name()='svg'][contains(@class,'${key_displayStyle}')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>DELETE</td>
-	<td>//*[contains(@data-qa-id,'deleteButton')]</td>
+	<td>//*[*[name()='svg'][contains(@class,'icon-trash')]] | //button[@data-title='Delete' or @title='Delete'] | //*[*[name()='svg'][contains(@class,'times-circle')]] | //a[@data-title='Deactivate' or @title='Deactivate'] | //a[@data-title='Remove' or @title='Remove']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DELETE_NOT_FOCUSABLE</td>
+	<td>//button[@data-title='Delete' or @title='Delete']//*[contains(@focusable,'false')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -79,38 +79,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DISPLAY_STYLE_DESCRIPTIVE_ACTIVE</td>
-	<td>//*[@data-qa-id='descriptiveButton' and contains(@class,'active')]/span</td>
+	<td>DISPLAY_STYLE_ACTIVE</td>
+	<td>//*[@data-qa-id='${key_displayStyle}Button' and contains(@class,'active')]/span</td>
 	<td></td>
 </tr>
 <tr>
-	<td>DISPLAY_STYLE_ICON_ACTIVE</td>
-	<td>//*[@data-qa-id='iconButton' and contains(@class,'active')]/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DISPLAY_STYLE_LIST_ACTIVE</td>
-	<td>//*[@data-qa-id='listButton' and contains(@class,'active')]/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DISPLAY_STYLE_DESCRIPTIVE</td>
-	<td>//*[@data-qa-id='descriptiveButton']/span | //a[@title='Descriptive']/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DISPLAY_STYLE_ICON</td>
-	<td>//*[@data-qa-id='iconButton']/span | //a[@title='Icon']/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DISPLAY_STYLE_LIST</td>
-	<td>//*[@data-qa-id='listButton']/span | //a[@title='List']/span</td>
-	<td></td>
-</tr>
-<tr>
-	<td>EDIT</td>
-	<td>//span[contains(.,'${key_assetTitle}')]//*[name()='svg'][contains(@class,'icon-pencil')]</td>
+	<td>DISPLAY_STYLE</td>
+	<td>//*[@data-qa-id='${key_displayStyle}Button']/span</td>
 	<td></td>
 </tr>
 <tr>
@@ -119,23 +94,28 @@
 	<td></td>
 </tr>
 <tr>
-	<td>EDIT_CONTROLS</td>
-	<td>//li[contains(@id,'toggleControls')]/a[i[contains(@class,'icon-eye-close') or contains(@class,'icon-eye-open')]]</td>
+	<td>EDIT_CATEGORIES</td>
+	<td>//*[*[name()='svg'][contains(@class,'icon-categories')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>EDIT_PENCIL</td>
-	<td>//*[name()='svg'][contains(@class,'lexicon-icon-pencil')]</td>
+	<td>//a[span/*[name()='svg'][contains(@class,'lexicon-icon-pencil')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EDIT_TAGS</td>
+	<td>//*[*[name()='svg'][contains(@class,'icon-tag')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>EXPIRE</td>
-	<td>//*[@data-qa-id='expireButton'] | //a[contains(@id,'expireArticle') or contains(@href,'editEntry')]/span[contains(@class,'icon-time')]</td>
+	<td>//button[@data-title='Expire' or @title='Expire']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FLAG</td>
-	<td>//div[contains(@class,'asset-actions')]/div[@title='Flag']/span/a</td>
+	<td>//div[contains(@class,'taglib-flags')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -145,12 +125,12 @@
 </tr>
 <tr>
 	<td>GOOGLE_PLUS</td>
-	<td>//i[contains(@class,'icon-google-plus')]</td>
+	<td>//a[contains(@href,'google_login')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>INFO</td>
-	<td>//*[@data-qa-id='infoButton'] | //div[contains(@class,'management-bar-default')]//a[contains(@class,'infoPanelToggler')]</td>
+	<td>//*[@data-qa-id='infoButton'] | //div[contains(@class,'management-bar-default')]//a[contains(@class,'infoPanelToggler')] | //button[*[name()='svg'][contains(@class,'lexicon-icon-info')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -159,28 +139,33 @@
 	<td></td>
 </tr>
 <tr>
-	<td>INFO_ALL_ENTRIES</td>
-	<td>//div[contains(@class,'management-bar-no-collapse on')]//a[contains(@class,'infoPanelToggler')]</td>
+	<td>MARK_AS_READ</td>
+	<td>//nav[contains(@class,'management-bar')]//div[contains(@class,'container-fluid')]//button[contains(@aria-label,'envelope-open')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LOCALIZED_FLAG</td>
-	<td>//li[@role='menuitem' and @data-value='${key_localizationName}']/a</td>
-	<td></td>
-</tr>
-<tr>
-	<td>MERGE</td>
-	<td>//*[@data-qa-id='mergeButton'] | //a[contains(@id,'merge')]//span[contains(@class,'icon-random')]</td>
+	<td>MARK_AS_UNREAD</td>
+	<td>//nav[contains(@class,'management-bar')]//div[contains(@class,'container-fluid')]//button[contains(@aria-label,'envelope-closed')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MOVE</td>
-	<td>//*[@data-qa-id='moveButton'] | //a[contains(@href,'editEntry')]/span[contains(@class,'icon-move')]</td>
+	<td>//*[*[name()='svg'][contains(@class,'icon-move')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MOVE_TO_RECYCLE_BIN</td>
-	<td>//a[contains(@data-qa-id,'recycle-binButton')]/span[contains(@class,'icon-monospaced')]</td>
+	<td>//a[contains(@data-qa-id,'recycle-binButton')]/span[contains(@class,'icon-monospaced')] | //*[*[name()='svg'][contains(@class,'icon-trash')] | //a[@data-title='Deactivate']]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>OK</td>
+	<td>//span[contains(@class,'icon-ok')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>OPENID_CONNECT</td>
+	<td>//a[@role='menuitem']/span[contains(.,'OpenId Connect')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -189,38 +174,28 @@
 	<td></td>
 </tr>
 <tr>
-	<td>REMOVE</td>
-	<td>//a/i[@class='icon-remove']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>REORDER</td>
-	<td>//a/i[@class='icon-reorder']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>SHARE</td>
-	<td>//div[contains(@class,'dropdown-menu')]//a[@title='Share']</td>
+	<td>//button[*[name()='svg'][contains(@class,'lexicon-icon-share')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>STAR_UNSUBSCRIBED</td>
+	<td>//a[span/*[name()='svg'][contains(@class,'icon-star-o')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SUBSCRIBE</td>
-	<td>//span/*[name()='svg'][contains(@class,'icon-star')]</td>
+	<td>//a[span/*[name()='svg'][contains(@class,'icon-star')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TIMES</td>
+	<td>//*[*[name()='svg'][contains(@class,'icon-times')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TOOLTIP</td>
-	<td>//span/*[name()='svg'][contains(@class,'icon-question')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>INHERIT_CHANGES_TOOLTIP</td>
-	<td>//label[contains(.,'Inherit Changes')]//span/*[name()='svg'][contains(@class,'icon-question')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>TWITTER</td>
-	<td>//i[contains(@class,'icon-twitter')]</td>
+	<td>//span[*[name()='svg'][contains(@class,'icon-question')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -230,43 +205,83 @@
 </tr>
 <!--ELLIPSIS-->
 <tr>
+	<td>VERTICAL_ELLIPSIS_BUTTON</td>
+	<td>//div[contains(@class,'dropdown-action')]//button[contains(@class,'dropdown-toggle')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>BODY_VERTICAL_ELLIPSIS</td>
-	<td>//div[contains(@class,'portlet') and contains(@class,'container')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//div[contains(@class,'portlet') and contains(@class,'container')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>BODY_VERTICAL_ELLIPSIS_2</td>
-	<td>xpath=(//div[contains(@class,'portlet') and contains(@class,'container')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')])[2]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>DESCRIPTIVE_HEADER_VERTICAL_ELLIPSIS</td>
-	<td>//h2[contains(.,'${key_assetHeader}')]//..//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>xpath=(//div[contains(@class,'portlet') and contains(@class,'container')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]])[2]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HEADER_VERTICAL_ELLIPSIS</td>
-	<td>//*[@data-qa-id='header']//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//*[@data-qa-id='header']//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HISTORY_VERTICAL_ELLIPSIS</td>
-	<td>//*[contains(@class,'lexicon-icon-ellipsis-v')]</td>
+	<td>//a[span/*[contains(@class,'lexicon-icon-ellipsis-v')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_CUSTOMIZATION_ELLIPSIS</td>
+	<td>//*[@data-qa-id='controlMenu']//div[contains(@class,'icon-menu')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REMOVE_TAG</td>
+	<td>//span[contains(.,'${key_removeTag}')]//..//button[contains(@class,'close')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REMOVE_FAVORITE</td>
+	<td>//*[@data-qa-id='row'][contains(.,'${key_rowEntry}')]//a[span/*[name()='svg'][contains(@class,'lexicon-icon-star')][not(contains(@class,'-o'))]]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ROW_VERTICAL_ELLIPSIS</td>
-	<td>//*[@data-qa-id='row' and contains(.,'${key_rowEntry}')]//span/*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td>//*[@data-qa-id='row' and contains(.,'${key_rowEntry}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ROW_VERTICAL_ELLIPSIS_2</td>
+	<td>xPath=(//*[@data-qa-id='row' and contains(.,'${key_rowEntry}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]])[2]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ROW_VERTICAL_ELLIPSIS_N</td>
-	<td>xpath=(//*[@data-qa-id='row']//span/*[name()='svg'][contains(@class,'icon-ellipsis')])[${key_rowIndexNumber}]</td>
+	<td>xpath=(//*[@data-qa-id='row']//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]])[${key_rowIndexNumber}]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>STAGING</td>
+	<td>//a[contains(@id,'stagingBarButton')]/i</td>
 	<td></td>
 </tr>
 <tr>
 	<td>STAGING_BAR_VERTICAL_ELLIPSIS</td>
-	<td>//li[contains(@class,'control-menu-nav-item')]//*[contains(@class,'lexicon-icon-ellipsis-v')]</td>
+	<td>//li[contains(@class,'control-menu-nav-item')]//a[span/*[contains(@class,'lexicon-icon-ellipsis-v')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TABLE_VERTICAL_ELLIPSIS</td>
+	<td>//tr[contains(.,'${key_rowEntry}')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TOOLBAR_ELLIPSIS</td>
+	<td>//ul[@class='navbar-nav']/li[contains(@class,'nav-item')]//button[*[name()='svg'][contains(@class,'icon-ellipsis-v')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>VERTICAL_ELLIPSIS</td>
+	<td>//*[@data-qa-id='rowItemContent']/div[contains(@class,'dropdown')]/a</td>
 	<td></td>
 </tr>
 </tbody>

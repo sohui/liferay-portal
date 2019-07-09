@@ -22,13 +22,15 @@ import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portlet.documentlibrary.DLGroupServiceSettings;
 import com.liferay.portlet.documentlibrary.model.impl.DLFolderImpl;
 import com.liferay.portlet.documentlibrary.service.base.DLFolderServiceBaseImpl;
-import com.liferay.portlet.documentlibrary.service.permission.DLFolderPermission;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,9 +49,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), groupId, parentFolderId,
-			ActionKeys.ADD_FOLDER);
+		ModelResourcePermissionHelper.check(
+			_dlFolderModelResourcePermission, getPermissionChecker(), groupId,
+			parentFolderId, ActionKeys.ADD_FOLDER);
 
 		return dlFolderLocalService.addFolder(
 			getUserId(), groupId, repositoryId, mountPoint, parentFolderId,
@@ -67,7 +69,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 		DLFolder dlFolder = dlFolderLocalService.getFolder(folderId);
 
-		DLFolderPermission.check(
+		_dlFolderModelResourcePermission.check(
 			getPermissionChecker(), dlFolder, ActionKeys.DELETE);
 
 		dlFolderLocalService.deleteFolder(
@@ -88,8 +90,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			long groupId, long folderId, int status, int start, int end)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return Collections.emptyList();
 		}
@@ -106,8 +109,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			long groupId, long folderId, int status)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return 0;
 		}
@@ -123,8 +127,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			long groupId, long folderId, int status, String[] mimeTypes)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return 0;
 		}
@@ -139,7 +144,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 	public DLFolder getFolder(long folderId) throws PortalException {
 		DLFolder dlFolder = dlFolderLocalService.getFolder(folderId);
 
-		DLFolderPermission.check(
+		_dlFolderModelResourcePermission.check(
 			getPermissionChecker(), dlFolder, ActionKeys.VIEW);
 
 		return dlFolder;
@@ -152,7 +157,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 		DLFolder dlFolder = dlFolderLocalService.getFolder(
 			groupId, parentFolderId, name);
 
-		DLFolderPermission.check(
+		_dlFolderModelResourcePermission.check(
 			getPermissionChecker(), dlFolder, ActionKeys.VIEW);
 
 		return dlFolder;
@@ -162,8 +167,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 	public List<Long> getFolderIds(long groupId, long folderId)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return Collections.emptyList();
 		}
@@ -182,9 +188,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			OrderByComparator<DLFolder> obc)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, parentFolderId,
-				ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, parentFolderId, ActionKeys.VIEW)) {
 
 			return Collections.emptyList();
 		}
@@ -193,10 +199,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			return dlFolderPersistence.filterFindByG_P_H_S(
 				groupId, parentFolderId, false, status, start, end, obc);
 		}
-		else {
-			return dlFolderPersistence.filterFindByG_M_P_H_S(
-				groupId, false, parentFolderId, false, status, start, end, obc);
-		}
+
+		return dlFolderPersistence.filterFindByG_M_P_H_S(
+			groupId, false, parentFolderId, false, status, start, end, obc);
 	}
 
 	@Override
@@ -217,8 +222,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			OrderByComparator<?> obc)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return Collections.emptyList();
 		}
@@ -237,8 +243,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			OrderByComparator<?> obc)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return Collections.emptyList();
 		}
@@ -262,8 +269,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			queryDefinition.setOwnerUserId(getUserId());
 		}
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return Collections.emptyList();
 		}
@@ -278,8 +286,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			boolean includeMountFolders)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return 0;
 		}
@@ -296,8 +305,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			boolean includeMountFolders)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return 0;
 		}
@@ -314,8 +324,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			boolean includeMountFolders, QueryDefinition<?> queryDefinition)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return 0;
 		}
@@ -344,9 +355,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			boolean includeMountfolders)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, parentFolderId,
-				ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, parentFolderId, ActionKeys.VIEW)) {
 
 			return 0;
 		}
@@ -355,10 +366,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			return dlFolderPersistence.filterCountByG_P_H_S(
 				groupId, parentFolderId, false, status);
 		}
-		else {
-			return dlFolderPersistence.filterCountByG_M_P_H_S(
-				groupId, false, parentFolderId, false, status);
-		}
+
+		return dlFolderPersistence.filterCountByG_M_P_H_S(
+			groupId, false, parentFolderId, false, status);
 	}
 
 	@Override
@@ -367,9 +377,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			OrderByComparator<DLFolder> obc)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, parentFolderId,
-				ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, parentFolderId, ActionKeys.VIEW)) {
 
 			return Collections.emptyList();
 		}
@@ -381,19 +391,18 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			return dlFolderPersistence.filterFindByG_M_P(
 				groupId, true, parentFolderId, start, end, obc);
 		}
-		else {
-			return dlFolderPersistence.filterFindByG_M_P_H(
-				groupId, true, parentFolderId, false, start, end, obc);
-		}
+
+		return dlFolderPersistence.filterFindByG_M_P_H(
+			groupId, true, parentFolderId, false, start, end, obc);
 	}
 
 	@Override
 	public int getMountFoldersCount(long groupId, long parentFolderId)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, parentFolderId,
-				ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, parentFolderId, ActionKeys.VIEW)) {
 
 			return 0;
 		}
@@ -403,8 +412,8 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSubfolderIds(List, long,
-	 *             long, boolean)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getSubfolderIds(List, long, long, boolean)}
 	 */
 	@Deprecated
 	@Override
@@ -420,8 +429,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			List<Long> folderIds, long groupId, long folderId, boolean recurse)
 		throws PortalException {
 
-		if (!DLFolderPermission.contains(
-				getPermissionChecker(), groupId, folderId, ActionKeys.VIEW)) {
+		if (!ModelResourcePermissionHelper.contains(
+				_dlFolderModelResourcePermission, getPermissionChecker(),
+				groupId, folderId, ActionKeys.VIEW)) {
 
 			return;
 		}
@@ -486,7 +496,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 		DLFolder dlFolder = dlFolderLocalService.getFolder(folderId);
 
-		DLFolderPermission.check(
+		_dlFolderModelResourcePermission.check(
 			getPermissionChecker(), dlFolder, ActionKeys.UPDATE);
 
 		return dlFolderLocalService.lockFolder(
@@ -502,11 +512,12 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 		DLFolder dlFolder = dlFolderLocalService.getFolder(folderId);
 
-		DLFolderPermission.check(
+		_dlFolderModelResourcePermission.check(
 			permissionChecker, dlFolder, ActionKeys.UPDATE);
 
-		DLFolderPermission.check(
-			permissionChecker, serviceContext.getScopeGroupId(), parentFolderId,
+		ModelResourcePermissionHelper.check(
+			_dlFolderModelResourcePermission, permissionChecker,
+			serviceContext.getScopeGroupId(), parentFolderId,
 			ActionKeys.ADD_FOLDER);
 
 		return dlFolderLocalService.moveFolder(
@@ -538,7 +549,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 		DLFolder dlFolder = dlFolderLocalService.fetchFolder(folderId);
 
 		if (dlFolder != null) {
-			DLFolderPermission.check(
+			_dlFolderModelResourcePermission.check(
 				getPermissionChecker(), dlFolder, ActionKeys.UPDATE);
 		}
 
@@ -552,9 +563,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			int restrictionType, ServiceContext serviceContext)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), serviceContext.getScopeGroupId(), folderId,
-			ActionKeys.UPDATE);
+		ModelResourcePermissionHelper.check(
+			_dlFolderModelResourcePermission, getPermissionChecker(),
+			serviceContext.getScopeGroupId(), folderId, ActionKeys.UPDATE);
 
 		serviceContext.setUserId(getUserId());
 
@@ -564,7 +575,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by more general {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by more general {@link
 	 *             #updateFolder(long, String, String, long, List, int,
 	 *             ServiceContext)}
 	 */
@@ -596,9 +607,9 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			int restrictionType, ServiceContext serviceContext)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), serviceContext.getScopeGroupId(), folderId,
-			ActionKeys.UPDATE);
+		ModelResourcePermissionHelper.check(
+			_dlFolderModelResourcePermission, getPermissionChecker(),
+			serviceContext.getScopeGroupId(), folderId, ActionKeys.UPDATE);
 
 		serviceContext.setUserId(getUserId());
 
@@ -613,5 +624,11 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 		return dlFolderLocalService.verifyInheritableLock(folderId, lockUuid);
 	}
+
+	private static volatile ModelResourcePermission<DLFolder>
+		_dlFolderModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				DLFolderServiceImpl.class, "_dlFolderModelResourcePermission",
+				DLFolder.class);
 
 }

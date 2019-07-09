@@ -119,8 +119,8 @@ public class TruncateLongLines
 
 		if (StringUtil.isLowerCase(testString1) ||
 			(Validator.isNotNull(testString1) &&
-			 (StringUtil.toLowerCase(testString1) !=
-				 StringUtil.toLowerCase(testString2)))) {
+			 (StringUtil.toLowerCase(testString1) != StringUtil.toLowerCase(
+				 testString2)))) {
 
 			return;
 		}
@@ -150,8 +150,6 @@ public class TruncateLongLines
 		if ((thisIsAnIntegerWithARatherLongName1 ==
 				thisIsAnIntegerWithARatherLongName2) &&
 			testString1.equals(testString2)) {
-
-			return;
 		}
 	}
 

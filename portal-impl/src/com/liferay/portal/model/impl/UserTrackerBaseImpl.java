@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.UserTracker;
 import com.liferay.portal.kernel.service.UserTrackerLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the UserTracker service. Represents a row in the &quot;UserTracker&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.portal.kernel.service.UserTrackerLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class UserTrackerBaseImpl extends UserTrackerModelImpl
-	implements UserTracker {
+public abstract class UserTrackerBaseImpl
+	extends UserTrackerModelImpl implements UserTracker {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a user tracker model instance should use the {@link UserTracker} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a user tracker model instance should use the <code>UserTracker</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class UserTrackerBaseImpl extends UserTrackerModelImpl
 			UserTrackerLocalServiceUtil.updateUserTracker(this);
 		}
 	}
+
 }

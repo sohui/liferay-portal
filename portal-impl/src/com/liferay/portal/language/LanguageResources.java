@@ -14,18 +14,18 @@
 
 package com.liferay.portal.language;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.LangBuilder;
@@ -60,9 +60,18 @@ public class LanguageResources {
 		new ResourceBundleLoader() {
 
 			@Override
+			public ResourceBundle loadResourceBundle(Locale locale) {
+				return LanguageResources.getResourceBundle(locale);
+			}
+
+			/**
+			 * @deprecated As of Judson (7.1.x), replaced by {@link #loadResourceBundle(
+			 *             Locale)}
+			 */
+			@Deprecated
 			public ResourceBundle loadResourceBundle(String languageId) {
-				return LanguageResources.getResourceBundle(
-					LocaleUtil.fromLanguageId(languageId));
+				return ResourceBundleLoader.super.loadResourceBundle(
+					languageId);
 			}
 
 		};
@@ -86,6 +95,7 @@ public class LanguageResources {
 
 		for (Map.Entry<Object, Object> entry : properties.entrySet()) {
 			String key = (String)entry.getKey();
+
 			String value = (String)entry.getValue();
 
 			value = fixValue(value);
@@ -110,9 +120,8 @@ public class LanguageResources {
 		if (value == null) {
 			return getMessage(getSuperLocale(locale), key);
 		}
-		else {
-			return value;
-		}
+
+		return value;
 	}
 
 	public static ResourceBundle getResourceBundle(Locale locale) {
@@ -177,7 +186,13 @@ public class LanguageResources {
 			Locale priorityLocale = LanguageUtil.getLocale(
 				locale.getLanguage());
 
-			if ((priorityLocale != null) && !locale.equals(priorityLocale)) {
+			if (priorityLocale != null) {
+				variant = priorityLocale.getVariant();
+			}
+
+			if ((priorityLocale != null) && !locale.equals(priorityLocale) &&
+				(variant.length() <= 0)) {
+
 				return new Locale(
 					priorityLocale.getLanguage(), priorityLocale.getCountry());
 			}
@@ -244,7 +259,8 @@ public class LanguageResources {
 				URL url = enu.nextElement();
 
 				if (_log.isInfoEnabled()) {
-					_log.info("Loading " + name + " from " + url);
+					_log.info(
+						StringBundler.concat("Loading ", name, " from ", url));
 				}
 
 				try (InputStream inputStream = url.openStream()) {
@@ -255,8 +271,9 @@ public class LanguageResources {
 
 					if (_log.isInfoEnabled()) {
 						_log.info(
-							"Loading " + url + " with " +
-								inputStreamProperties.size() + " values");
+							StringBundler.concat(
+								"Loading ", url, " with ",
+								inputStreamProperties.size(), " values"));
 					}
 				}
 			}
@@ -287,11 +304,27 @@ public class LanguageResources {
 			newLanguageMap.putAll(oldLanguageMap);
 		}
 
-		newLanguageMap.putAll(languageMap);
+		Map<String, String> diffLanguageMap = new HashMap<>();
+
+		for (Map.Entry<String, String> entry : languageMap.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+
+			String oldValue = null;
+
+			if (value == null) {
+				oldValue = newLanguageMap.remove(key);
+			}
+			else {
+				oldValue = newLanguageMap.put(key, value);
+			}
+
+			diffLanguageMap.put(entry.getKey(), oldValue);
+		}
 
 		_languageMaps.put(locale, newLanguageMap);
 
-		return oldLanguageMap;
+		return diffLanguageMap;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -393,10 +426,10 @@ public class LanguageResources {
 				languageMap.put(key, value);
 			}
 
-			Map<String, String> oldLanguageMap = _putLanguageMap(
+			Map<String, String> diffLanguageMap = _putLanguageMap(
 				locale, languageMap);
 
-			_oldLanguageMaps.put(serviceReference, oldLanguageMap);
+			_diffLanguageMap.put(serviceReference, diffLanguageMap);
 
 			return resourceBundle;
 		}
@@ -427,14 +460,14 @@ public class LanguageResources {
 				locale = new Locale(StringPool.BLANK);
 			}
 
-			Map<String, String> languageMap = _oldLanguageMaps.get(
+			Map<String, String> languageMap = _diffLanguageMap.remove(
 				serviceReference);
 
 			_putLanguageMap(locale, languageMap);
 		}
 
 		private final Map<ServiceReference<?>, Map<String, String>>
-			_oldLanguageMaps = new HashMap<>();
+			_diffLanguageMap = new HashMap<>();
 
 	}
 

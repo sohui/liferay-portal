@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.model;
 
-import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -29,7 +28,6 @@ import com.liferay.portal.kernel.util.LayoutTypePortletFactoryUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
@@ -38,6 +36,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -66,16 +65,25 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 		throws Throwable {
 
 		try {
+			String methodName = method.getName();
+
+			if (methodName.equals("getWrappedModel")) {
+				return _layout;
+			}
+
 			if (_layoutRevision == null) {
 				return method.invoke(_layout, arguments);
 			}
 
-			String methodName = method.getName();
+			if (methodName.equals("clone")) {
+				return _clone();
+			}
 
 			if (methodName.equals("getLayoutType")) {
 				return _getLayoutType();
 			}
-			else if (methodName.equals("getRegularURL")) {
+
+			if (methodName.equals("getRegularURL")) {
 				Class<?> layoutRevisionClass = _layoutRevision.getClass();
 
 				method = layoutRevisionClass.getMethod(
@@ -83,16 +91,13 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 
 				return method.invoke(_layoutRevision, arguments);
 			}
-			else if (methodName.equals("toEscapedModel")) {
+
+			if (methodName.equals("toEscapedModel")) {
 				if (_layout.isEscapedModel()) {
 					return this;
 				}
 
 				return _toEscapedModel();
-			}
-
-			if (methodName.equals("clone")) {
-				return _clone();
 			}
 
 			Object bean = _layout;
@@ -102,8 +107,7 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 					Class<?> layoutRevisionClass = _layoutRevision.getClass();
 
 					method = layoutRevisionClass.getMethod(
-						methodName,
-						ReflectionUtil.getParameterTypes(arguments));
+						methodName, method.getParameterTypes());
 
 					bean = _layoutRevision;
 				}
@@ -138,8 +142,11 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 
 	private Object _clone() {
 		return ProxyUtil.newProxyInstance(
-			PortalClassLoaderUtil.getClassLoader(), new Class[] {Layout.class},
-			new LayoutStagingHandler(_layout, _layoutRevision));
+			PortalClassLoaderUtil.getClassLoader(),
+			new Class<?>[] {Layout.class},
+			new LayoutStagingHandler(
+				(Layout)_layout.clone(),
+				(LayoutRevision)_layoutRevision.clone()));
 	}
 
 	private LayoutRevision _getLayoutRevision(
@@ -154,9 +161,7 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 			ServiceContextThreadLocal.getServiceContext();
 
 		if ((serviceContext == null) || !serviceContext.isSignedIn()) {
-			LayoutRevision lastLayoutRevision = null;
-
-			lastLayoutRevision =
+			LayoutRevision lastLayoutRevision =
 				LayoutRevisionLocalServiceUtil.fetchLastLayoutRevision(
 					layout.getPlid(), true);
 
@@ -222,21 +227,27 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 			LayoutBranchLocalServiceUtil.getMasterLayoutBranch(
 				layoutSetBranchId, layout.getPlid(), serviceContext);
 
-		if (!MergeLayoutPrototypesThreadLocal.isInProgress()) {
+		int workflowAction = serviceContext.getWorkflowAction();
+
+		try {
 			serviceContext.setWorkflowAction(
 				WorkflowConstants.ACTION_SAVE_DRAFT);
-		}
 
-		layoutRevision = LayoutRevisionLocalServiceUtil.addLayoutRevision(
-			serviceContext.getUserId(), layoutSetBranchId,
-			layoutBranch.getLayoutBranchId(),
-			LayoutRevisionConstants.DEFAULT_PARENT_LAYOUT_REVISION_ID, false,
-			layout.getPlid(), LayoutConstants.DEFAULT_PLID,
-			layout.isPrivateLayout(), layout.getName(), layout.getTitle(),
-			layout.getDescription(), layout.getKeywords(), layout.getRobots(),
-			layout.getTypeSettings(), layout.getIconImage(),
-			layout.getIconImageId(), layout.getThemeId(),
-			layout.getColorSchemeId(), layout.getCss(), serviceContext);
+			layoutRevision = LayoutRevisionLocalServiceUtil.addLayoutRevision(
+				serviceContext.getUserId(), layoutSetBranchId,
+				layoutBranch.getLayoutBranchId(),
+				LayoutRevisionConstants.DEFAULT_PARENT_LAYOUT_REVISION_ID,
+				false, layout.getPlid(), LayoutConstants.DEFAULT_PLID,
+				layout.isPrivateLayout(), layout.getName(), layout.getTitle(),
+				layout.getDescription(), layout.getKeywords(),
+				layout.getRobots(), layout.getTypeSettings(),
+				layout.getIconImage(), layout.getIconImageId(),
+				layout.getThemeId(), layout.getColorSchemeId(), layout.getCss(),
+				serviceContext);
+		}
+		finally {
+			serviceContext.setWorkflowAction(workflowAction);
+		}
 
 		boolean explicitCreation = ParamUtil.getBoolean(
 			serviceContext, "explicitCreation");
@@ -255,7 +266,7 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 		return LayoutTypePortletFactoryUtil.create(
 			(Layout)ProxyUtil.newProxyInstance(
 				PortalClassLoaderUtil.getClassLoader(),
-				new Class[] {Layout.class},
+				new Class<?>[] {Layout.class},
 				new LayoutStagingHandler(_layout, _layoutRevision)));
 	}
 
@@ -275,7 +286,8 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 
 	private Object _toEscapedModel() {
 		return ProxyUtil.newProxyInstance(
-			PortalClassLoaderUtil.getClassLoader(), new Class[] {Layout.class},
+			PortalClassLoaderUtil.getClassLoader(),
+			new Class<?>[] {Layout.class},
 			new LayoutStagingHandler(
 				_layout.toEscapedModel(), _layoutRevision.toEscapedModel()));
 	}
@@ -283,54 +295,21 @@ public class LayoutStagingHandler implements InvocationHandler, Serializable {
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutStagingHandler.class);
 
-	private static final Set<String> _layoutRevisionMethodNames =
-		new HashSet<>();
-
-	static {
-		_layoutRevisionMethodNames.add("getColorScheme");
-		_layoutRevisionMethodNames.add("getColorSchemeId");
-		_layoutRevisionMethodNames.add("getCss");
-		_layoutRevisionMethodNames.add("getCssText");
-		_layoutRevisionMethodNames.add("getDescription");
-		_layoutRevisionMethodNames.add("getGroupId");
-		_layoutRevisionMethodNames.add("getHTMLTitle");
-		_layoutRevisionMethodNames.add("getIconImage");
-		_layoutRevisionMethodNames.add("getIconImageId");
-		_layoutRevisionMethodNames.add("getKeywords");
-		_layoutRevisionMethodNames.add("getLayoutSet");
-		_layoutRevisionMethodNames.add("getName");
-		_layoutRevisionMethodNames.add("getRobots");
-		_layoutRevisionMethodNames.add("getTheme");
-		_layoutRevisionMethodNames.add("getThemeId");
-		_layoutRevisionMethodNames.add("getThemeSetting");
-		_layoutRevisionMethodNames.add("getTitle");
-		_layoutRevisionMethodNames.add("getTypeSettings");
-		_layoutRevisionMethodNames.add("getTypeSettingsProperties");
-		_layoutRevisionMethodNames.add("getTypeSettingsProperty");
-		_layoutRevisionMethodNames.add("isContentDisplayPage");
-		_layoutRevisionMethodNames.add("isEscapedModel");
-		_layoutRevisionMethodNames.add("isIconImage");
-		_layoutRevisionMethodNames.add("isInheritLookAndFeel");
-		_layoutRevisionMethodNames.add("setColorSchemeId");
-		_layoutRevisionMethodNames.add("setCss");
-		_layoutRevisionMethodNames.add("setDescription");
-		_layoutRevisionMethodNames.add("setDescriptionMap");
-		_layoutRevisionMethodNames.add("setEscapedModel");
-		_layoutRevisionMethodNames.add("setGroupId");
-		_layoutRevisionMethodNames.add("setIconImage");
-		_layoutRevisionMethodNames.add("setIconImageId");
-		_layoutRevisionMethodNames.add("setKeywords");
-		_layoutRevisionMethodNames.add("setKeywordsMap");
-		_layoutRevisionMethodNames.add("setName");
-		_layoutRevisionMethodNames.add("setNameMap");
-		_layoutRevisionMethodNames.add("setRobots");
-		_layoutRevisionMethodNames.add("setRobotsMap");
-		_layoutRevisionMethodNames.add("setThemeId");
-		_layoutRevisionMethodNames.add("setTitle");
-		_layoutRevisionMethodNames.add("setTitleMap");
-		_layoutRevisionMethodNames.add("setTypeSettings");
-		_layoutRevisionMethodNames.add("setTypeSettingsProperties");
-	}
+	private static final Set<String> _layoutRevisionMethodNames = new HashSet<>(
+		Arrays.asList(
+			"getColorScheme", "getColorSchemeId", "getCss", "getCssText",
+			"getDescription", "getGroupId", "getHTMLTitle", "getIconImage",
+			"getIconImageId", "getKeywords", "getLayoutSet", "getModifiedDate",
+			"getName", "getRobots", "getTarget", "getTheme", "getThemeId",
+			"getThemeSetting", "getTitle", "getTypeSettings",
+			"getTypeSettingsProperties", "getTypeSettingsProperty",
+			"isContentDisplayPage", "isEscapedModel", "isIconImage",
+			"isInheritLookAndFeel", "setColorSchemeId", "setCss",
+			"setDescription", "setDescriptionMap", "setEscapedModel",
+			"setGroupId", "setIconImage", "setIconImageId", "setKeywords",
+			"setKeywordsMap", "setModifiedDate", "setName", "setNameMap",
+			"setRobots", "setRobotsMap", "setThemeId", "setTitle",
+			"setTitleMap", "setTypeSettings", "setTypeSettingsProperties"));
 
 	private final Layout _layout;
 	private LayoutRevision _layoutRevision;

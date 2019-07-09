@@ -14,22 +14,21 @@
 
 package com.liferay.screens.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-
 import com.liferay.screens.service.ScreensJournalArticleServiceUtil;
 
 import java.rmi.RemoteException;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the SOAP utility for the
- * {@link ScreensJournalArticleServiceUtil} service utility. The
- * static methods of this class calls the same methods of the service utility.
- * However, the signatures are different because it is difficult for SOAP to
- * support certain types.
+ * <code>ScreensJournalArticleServiceUtil</code> service
+ * utility. The static methods of this class call the same methods of the
+ * service utility. However, the signatures are different because it is
+ * difficult for SOAP to support certain types.
  *
  * <p>
  * The benefits of using the SOAP utility is that it is cross platform
@@ -50,15 +49,54 @@ import java.rmi.RemoteException;
  *
  * @author José Manuel Navarro
  * @see ScreensJournalArticleServiceHttp
- * @see ScreensJournalArticleServiceUtil
  * @generated
  */
 @ProviderType
 public class ScreensJournalArticleServiceSoap {
-	public static java.lang.String getJournalArticleContent(long classPK,
-		String locale) throws RemoteException {
+
+	public static String getJournalArticleContent(long classPK, String locale)
+		throws RemoteException {
+
 		try {
-			java.lang.String returnValue = ScreensJournalArticleServiceUtil.getJournalArticleContent(classPK,
+			String returnValue =
+				ScreensJournalArticleServiceUtil.getJournalArticleContent(
+					classPK, LocaleUtil.fromLanguageId(locale));
+
+			return returnValue;
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static String getJournalArticleContent(
+			long classPK, long ddmTemplateId, String locale)
+		throws RemoteException {
+
+		try {
+			String returnValue =
+				ScreensJournalArticleServiceUtil.getJournalArticleContent(
+					classPK, ddmTemplateId, LocaleUtil.fromLanguageId(locale));
+
+			return returnValue;
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static String getJournalArticleContent(
+			long groupId, String articleId, long ddmTemplateId, String locale)
+		throws RemoteException {
+
+		try {
+			String returnValue =
+				ScreensJournalArticleServiceUtil.getJournalArticleContent(
+					groupId, articleId, ddmTemplateId,
 					LocaleUtil.fromLanguageId(locale));
 
 			return returnValue;
@@ -70,36 +108,7 @@ public class ScreensJournalArticleServiceSoap {
 		}
 	}
 
-	public static java.lang.String getJournalArticleContent(long classPK,
-		long ddmTemplateId, String locale) throws RemoteException {
-		try {
-			java.lang.String returnValue = ScreensJournalArticleServiceUtil.getJournalArticleContent(classPK,
-					ddmTemplateId, LocaleUtil.fromLanguageId(locale));
+	private static Log _log = LogFactoryUtil.getLog(
+		ScreensJournalArticleServiceSoap.class);
 
-			return returnValue;
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			throw new RemoteException(e.getMessage());
-		}
-	}
-
-	public static java.lang.String getJournalArticleContent(long groupId,
-		java.lang.String articleId, long ddmTemplateId, String locale)
-		throws RemoteException {
-		try {
-			java.lang.String returnValue = ScreensJournalArticleServiceUtil.getJournalArticleContent(groupId,
-					articleId, ddmTemplateId, LocaleUtil.fromLanguageId(locale));
-
-			return returnValue;
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			throw new RemoteException(e.getMessage());
-		}
-	}
-
-	private static Log _log = LogFactoryUtil.getLog(ScreensJournalArticleServiceSoap.class);
 }

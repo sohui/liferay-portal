@@ -14,16 +14,15 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the Organization service. Represents a row in the &quot;Organization_&quot; database table, with each column mapped to a property of this class.
@@ -38,12 +37,13 @@ import java.util.List;
  * @generated
  */
 @ProviderType
-public abstract class OrganizationBaseImpl extends OrganizationModelImpl
-	implements Organization {
+public abstract class OrganizationBaseImpl
+	extends OrganizationModelImpl implements Organization {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a organization model instance should use the {@link Organization} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a organization model instance should use the <code>Organization</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -65,18 +65,19 @@ public abstract class OrganizationBaseImpl extends OrganizationModelImpl
 		while (organization != null) {
 			organizations.add(organization);
 
-			organization = OrganizationLocalServiceUtil.fetchOrganization(organization.getParentOrganizationId());
+			organization = OrganizationLocalServiceUtil.fetchOrganization(
+				organization.getParentOrganizationId());
 		}
 
-		StringBundler sb = new StringBundler((organizations.size() * 2) + 1);
+		StringBundler sb = new StringBundler(organizations.size() * 2 + 1);
 
-		sb.append(StringPool.SLASH);
+		sb.append("/");
 
 		for (int i = organizations.size() - 1; i >= 0; i--) {
 			organization = organizations.get(i);
 
 			sb.append(organization.getOrganizationId());
-			sb.append(StringPool.SLASH);
+			sb.append("/");
 		}
 
 		return sb.toString();
@@ -90,4 +91,5 @@ public abstract class OrganizationBaseImpl extends OrganizationModelImpl
 
 		OrganizationLocalServiceUtil.updateOrganization(organization);
 	}
+
 }

@@ -14,30 +14,30 @@
 
 package com.liferay.portlet.announcements.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.announcements.kernel.service.AnnouncementsFlagServiceUtil;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.rmi.RemoteException;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the SOAP utility for the
- * {@link AnnouncementsFlagServiceUtil} service utility. The
- * static methods of this class calls the same methods of the service utility.
- * However, the signatures are different because it is difficult for SOAP to
- * support certain types.
+ * <code>AnnouncementsFlagServiceUtil</code> service
+ * utility. The static methods of this class call the same methods of the
+ * service utility. However, the signatures are different because it is
+ * difficult for SOAP to support certain types.
  *
  * <p>
  * ServiceBuilder follows certain rules in translating the methods. For example,
- * if the method in the service utility returns a {@link java.util.List}, that
- * is translated to an array of {@link com.liferay.announcements.kernel.model.AnnouncementsFlagSoap}.
- * If the method in the service utility returns a
- * {@link com.liferay.announcements.kernel.model.AnnouncementsFlag}, that is translated to a
- * {@link com.liferay.announcements.kernel.model.AnnouncementsFlagSoap}. Methods that SOAP cannot
- * safely wire are skipped.
+ * if the method in the service utility returns a <code>java.util.List</code>,
+ * that is translated to an array of
+ * <code>com.liferay.announcements.kernel.model.AnnouncementsFlagSoap</code>. If the method in the
+ * service utility returns a
+ * <code>com.liferay.announcements.kernel.model.AnnouncementsFlag</code>, that is translated to a
+ * <code>com.liferay.announcements.kernel.model.AnnouncementsFlagSoap</code>. Methods that SOAP
+ * cannot safely wire are skipped.
  * </p>
  *
  * <p>
@@ -59,14 +59,12 @@ import java.rmi.RemoteException;
  *
  * @author Brian Wing Shun Chan
  * @see AnnouncementsFlagServiceHttp
- * @see com.liferay.announcements.kernel.model.AnnouncementsFlagSoap
- * @see AnnouncementsFlagServiceUtil
  * @generated
  */
 @ProviderType
 public class AnnouncementsFlagServiceSoap {
-	public static void addFlag(long entryId, int value)
-		throws RemoteException {
+
+	public static void addFlag(long entryId, int value) throws RemoteException {
 		try {
 			AnnouncementsFlagServiceUtil.addFlag(entryId, value);
 		}
@@ -88,13 +86,17 @@ public class AnnouncementsFlagServiceSoap {
 		}
 	}
 
-	public static com.liferay.announcements.kernel.model.AnnouncementsFlagSoap getFlag(
-		long entryId, int value) throws RemoteException {
-		try {
-			com.liferay.announcements.kernel.model.AnnouncementsFlag returnValue =
-				AnnouncementsFlagServiceUtil.getFlag(entryId, value);
+	public static com.liferay.announcements.kernel.model.AnnouncementsFlagSoap
+			getFlag(long entryId, int value)
+		throws RemoteException {
 
-			return com.liferay.announcements.kernel.model.AnnouncementsFlagSoap.toSoapModel(returnValue);
+		try {
+			com.liferay.announcements.kernel.model.AnnouncementsFlag
+				returnValue = AnnouncementsFlagServiceUtil.getFlag(
+					entryId, value);
+
+			return com.liferay.announcements.kernel.model.AnnouncementsFlagSoap.
+				toSoapModel(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -103,5 +105,7 @@ public class AnnouncementsFlagServiceSoap {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(AnnouncementsFlagServiceSoap.class);
+	private static Log _log = LogFactoryUtil.getLog(
+		AnnouncementsFlagServiceSoap.class);
+
 }

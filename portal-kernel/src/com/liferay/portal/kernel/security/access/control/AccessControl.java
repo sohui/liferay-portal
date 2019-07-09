@@ -31,13 +31,17 @@ import javax.servlet.http.HttpServletResponse;
 public interface AccessControl {
 
 	public void initAccessControlContext(
-		HttpServletRequest request, HttpServletResponse response,
-		Map<String, Object> settings);
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, Map<String, Object> settings);
 
 	public void initContextUser(long userId) throws AuthException;
 
 	public AuthVerifierResult.State verifyRequest() throws PortalException;
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public AccessControlled NULL_ACCESS_CONTROLLED = new AccessControlled() {
 
 		@Override

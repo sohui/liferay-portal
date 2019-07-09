@@ -14,23 +14,23 @@
 
 package com.liferay.portlet.ratings.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
-
 import com.liferay.ratings.kernel.service.RatingsEntryServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the HTTP utility for the
- * {@link RatingsEntryServiceUtil} service utility. The
+ * <code>RatingsEntryServiceUtil</code> service
+ * utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it requires an additional
- * {@link HttpPrincipal} parameter.
+ * <code>HttpPrincipal</code> parameter.
  *
  * <p>
  * The benefits of using the HTTP utility is that it is fast and allows for
@@ -49,31 +49,36 @@ import com.liferay.ratings.kernel.service.RatingsEntryServiceUtil;
  *
  * @author Brian Wing Shun Chan
  * @see RatingsEntryServiceSoap
- * @see HttpPrincipal
- * @see RatingsEntryServiceUtil
  * @generated
  */
 @ProviderType
 public class RatingsEntryServiceHttp {
-	public static void deleteEntry(HttpPrincipal httpPrincipal,
-		java.lang.String className, long classPK)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(RatingsEntryServiceUtil.class,
-					"deleteEntry", _deleteEntryParameterTypes0);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					className, classPK);
+	public static void deleteEntry(
+			HttpPrincipal httpPrincipal, String className, long classPK)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				RatingsEntryServiceUtil.class, "deleteEntry",
+				_deleteEntryParameterTypes0);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, className, classPK);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
@@ -84,15 +89,17 @@ public class RatingsEntryServiceHttp {
 	}
 
 	public static com.liferay.ratings.kernel.model.RatingsEntry updateEntry(
-		HttpPrincipal httpPrincipal, java.lang.String className, long classPK,
-		double score)
+			HttpPrincipal httpPrincipal, String className, long classPK,
+			double score)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(RatingsEntryServiceUtil.class,
-					"updateEntry", _updateEntryParameterTypes1);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					className, classPK, score);
+		try {
+			MethodKey methodKey = new MethodKey(
+				RatingsEntryServiceUtil.class, "updateEntry",
+				_updateEntryParameterTypes1);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, className, classPK, score);
 
 			Object returnObj = null;
 
@@ -100,11 +107,15 @@ public class RatingsEntryServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
 			return (com.liferay.ratings.kernel.model.RatingsEntry)returnObj;
@@ -116,11 +127,14 @@ public class RatingsEntryServiceHttp {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(RatingsEntryServiceHttp.class);
+	private static Log _log = LogFactoryUtil.getLog(
+		RatingsEntryServiceHttp.class);
+
 	private static final Class<?>[] _deleteEntryParameterTypes0 = new Class[] {
-			java.lang.String.class, long.class
-		};
+		String.class, long.class
+	};
 	private static final Class<?>[] _updateEntryParameterTypes1 = new Class[] {
-			java.lang.String.class, long.class, double.class
-		};
+		String.class, long.class, double.class
+	};
+
 }

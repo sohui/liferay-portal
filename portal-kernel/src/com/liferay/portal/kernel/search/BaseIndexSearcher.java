@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.suggest.QuerySuggester;
 import com.liferay.portal.kernel.search.suggest.Suggester;
 import com.liferay.portal.kernel.search.suggest.SuggesterResults;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Collections;
@@ -31,28 +31,6 @@ import java.util.Map;
  */
 public abstract class BaseIndexSearcher
 	implements IndexSearcher, QuerySuggester {
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #search(SearchContext,
-	 *             Query)}
-	 */
-	@Deprecated
-	@Override
-	public Hits search(
-			String searchEngineId, long companyId, Query query, Sort[] sorts,
-			int start, int end)
-		throws SearchException {
-
-		SearchContext searchContext = new SearchContext();
-
-		searchContext.setCompanyId(companyId);
-		searchContext.setEnd(end);
-		searchContext.setSearchEngineId(searchEngineId);
-		searchContext.setSorts(sorts);
-		searchContext.setStart(start);
-
-		return search(searchContext, query);
-	}
 
 	public void setQuerySuggester(QuerySuggester querySuggester) {
 		_querySuggester = querySuggester;

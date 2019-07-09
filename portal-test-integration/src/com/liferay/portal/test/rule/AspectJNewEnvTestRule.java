@@ -14,16 +14,16 @@
 
 package com.liferay.portal.test.rule;
 
+import com.liferay.petra.process.ClassPathUtil;
+import com.liferay.petra.process.ProcessCallable;
+import com.liferay.petra.process.ProcessException;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aspectj.WeavingClassLoader;
-import com.liferay.portal.kernel.process.ClassPathUtil;
-import com.liferay.portal.kernel.process.ProcessCallable;
-import com.liferay.portal.kernel.process.ProcessException;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.NewEnvTestRule;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.MethodKey;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.util.SerializableUtil;
 
@@ -112,8 +112,11 @@ public class AspectJNewEnvTestRule extends NewEnvTestRule {
 
 		File dumpDir = new File(
 			System.getProperty("junit.aspectj.dump"),
-			className.concat(StringPool.PERIOD).concat(
-				description.getMethodName()));
+			className.concat(
+				StringPool.PERIOD
+			).concat(
+				description.getMethodName()
+			));
 
 		try {
 			return new WeavingClassLoader(
@@ -135,8 +138,11 @@ public class AspectJNewEnvTestRule extends NewEnvTestRule {
 
 		File dumpDir = new File(
 			System.getProperty("junit.aspectj.dump"),
-			className.concat(StringPool.PERIOD).concat(
-				methodKey.getMethodName()));
+			className.concat(
+				StringPool.PERIOD
+			).concat(
+				methodKey.getMethodName()
+			));
 
 		return new SwitchClassLoaderProcessCallable(processCallable, dumpDir);
 	}

@@ -14,62 +14,61 @@
 
 package com.liferay.ratings.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the remote service utility for RatingsEntry. This utility wraps
- * {@link com.liferay.portlet.ratings.service.impl.RatingsEntryServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portlet.ratings.service.impl.RatingsEntryServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see RatingsEntryService
- * @see com.liferay.portlet.ratings.service.base.RatingsEntryServiceBaseImpl
- * @see com.liferay.portlet.ratings.service.impl.RatingsEntryServiceImpl
  * @generated
  */
 @ProviderType
 public class RatingsEntryServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portlet.ratings.service.impl.RatingsEntryServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.ratings.service.impl.RatingsEntryServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.ratings.kernel.model.RatingsEntry updateEntry(
-		java.lang.String className, long classPK, double score)
+	public static void deleteEntry(String className, long classPK)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().updateEntry(className, classPK, score);
+
+		getService().deleteEntry(className, classPK);
 	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static void deleteEntry(java.lang.String className, long classPK)
+	public static com.liferay.ratings.kernel.model.RatingsEntry updateEntry(
+			String className, long classPK, double score)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService().deleteEntry(className, classPK);
+
+		return getService().updateEntry(className, classPK, score);
 	}
 
 	public static RatingsEntryService getService() {
 		if (_service == null) {
-			_service = (RatingsEntryService)PortalBeanLocatorUtil.locate(RatingsEntryService.class.getName());
-
-			ReferenceRegistry.registerReference(RatingsEntryServiceUtil.class,
-				"_service");
+			_service = (RatingsEntryService)PortalBeanLocatorUtil.locate(
+				RatingsEntryService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static RatingsEntryService _service;
+
 }

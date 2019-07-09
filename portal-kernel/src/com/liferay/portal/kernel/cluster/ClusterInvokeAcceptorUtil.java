@@ -42,20 +42,9 @@ public class ClusterInvokeAcceptorUtil {
 	private static final ServiceTracker
 		<ClusterInvokeAcceptor, ClusterInvokeAcceptor> _serviceTracker;
 
-	static {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(
-			ClusterInvokeAcceptor.class,
-			new ClusterInvokeAcceptorServiceTrackerCustomizer());
-
-		_serviceTracker.open();
-	}
-
 	private static class ClusterInvokeAcceptorServiceTrackerCustomizer
-		implements
-			ServiceTrackerCustomizer
-				<ClusterInvokeAcceptor, ClusterInvokeAcceptor> {
+		implements ServiceTrackerCustomizer
+			<ClusterInvokeAcceptor, ClusterInvokeAcceptor> {
 
 		@Override
 		public ClusterInvokeAcceptor addingService(
@@ -97,6 +86,16 @@ public class ClusterInvokeAcceptorUtil {
 			_clusterInvokeAcceptors.remove(clazz.getName());
 		}
 
+	}
+
+	static {
+		Registry registry = RegistryUtil.getRegistry();
+
+		_serviceTracker = registry.trackServices(
+			ClusterInvokeAcceptor.class,
+			new ClusterInvokeAcceptorServiceTrackerCustomizer());
+
+		_serviceTracker.open();
 	}
 
 }

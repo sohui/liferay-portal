@@ -14,6 +14,8 @@
 
 package com.liferay.portal.security.lang;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
@@ -21,7 +23,6 @@ import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -35,8 +36,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class DoPrivilegedFactory
 	extends InstantiationAwareBeanPostProcessorAdapter
 	implements ApplicationContextAware {
@@ -107,8 +110,9 @@ public class DoPrivilegedFactory
 			Class<?> clazz = bean.getClass();
 
 			_log.debug(
-				"Wrapping calls to bean " + beanName + " of type " + clazz +
-					" with access controller checking");
+				StringBundler.concat(
+					"Wrapping calls to bean ", beanName, " of type ", clazz,
+					" with access controller checking"));
 		}
 
 		return wrap(bean);
@@ -134,7 +138,7 @@ public class DoPrivilegedFactory
 		DoPrivileged doPrivileged = beanClass.getAnnotation(DoPrivileged.class);
 
 		while ((doPrivileged == null) &&
-			   (beanClass = beanClass.getSuperclass()) != null) {
+			   ((beanClass = beanClass.getSuperclass()) != null)) {
 
 			doPrivileged = beanClass.getAnnotation(DoPrivileged.class);
 		}
@@ -177,11 +181,12 @@ public class DoPrivilegedFactory
 		DoPrivilegedFactory.class.getClassLoader();
 	private static final Set<String> _earlyBeanReferenceNames = new HashSet<>();
 
-	private static class BeanPrivilegedAction <T>
+	private static class BeanPrivilegedAction<T>
 		implements PrivilegedAction<T> {
 
 		public BeanPrivilegedAction(T bean, Class<?>[] interfaces) {
 			_bean = bean;
+
 			_interfaces = ArrayUtil.append(interfaces, DoPrivilegedBean.class);
 		}
 

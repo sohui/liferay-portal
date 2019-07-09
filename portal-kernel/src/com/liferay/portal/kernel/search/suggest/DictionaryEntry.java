@@ -14,13 +14,16 @@
 
 package com.liferay.portal.kernel.search.suggest;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Judson (7.1.x), moved to {@link
+ *             com.liferay.portal.search.suggest.DictionaryEntry}
  */
+@Deprecated
 public class DictionaryEntry {
 
 	public DictionaryEntry(String line) {

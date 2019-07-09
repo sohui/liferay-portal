@@ -61,14 +61,6 @@ public class MethodHandler implements Serializable {
 		return method.invoke(targetObject, _arguments);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #invoke}
-	 */
-	@Deprecated
-	public Object invoke(boolean newInstance) throws Exception {
-		return invoke();
-	}
-
 	public Object invoke(Object target) throws Exception {
 		Method method = _methodKey.getMethod();
 

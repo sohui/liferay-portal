@@ -25,6 +25,13 @@ import java.util.Map;
  */
 public class HashMapDictionary<K, V> extends Dictionary<K, V> {
 
+	public HashMapDictionary() {
+	}
+
+	public HashMapDictionary(Map<K, V> map) {
+		_map.putAll(map);
+	}
+
 	@Override
 	public Enumeration<V> elements() {
 		return Collections.enumeration(_map.values());
@@ -62,6 +69,11 @@ public class HashMapDictionary<K, V> extends Dictionary<K, V> {
 	@Override
 	public int size() {
 		return _map.size();
+	}
+
+	@Override
+	public String toString() {
+		return _map.toString();
 	}
 
 	private final Map<K, V> _map = new HashMap<>();

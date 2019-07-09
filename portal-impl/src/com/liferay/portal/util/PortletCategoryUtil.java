@@ -27,6 +27,8 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -35,6 +37,30 @@ import java.util.Set;
  * @author Eudaldo Alonso
  */
 public class PortletCategoryUtil {
+
+	public static Set<String> getFirstChildPortletIds(
+		PortletCategory portletCategory) {
+
+		Set<String> portletIds = portletCategory.getPortletIds();
+
+		if (!portletIds.isEmpty()) {
+			return portletIds;
+		}
+
+		for (PortletCategory curPortletCategory :
+				portletCategory.getCategories()) {
+
+			portletIds = curPortletCategory.getPortletIds();
+
+			if (!portletIds.isEmpty()) {
+				return portletIds;
+			}
+
+			getFirstChildPortletIds(curPortletCategory);
+		}
+
+		return Collections.emptySet();
+	}
 
 	public static String getPortletCategoryKey(
 		String legacyPortletCategoryKey) {
@@ -97,18 +123,18 @@ public class PortletCategoryUtil {
 		for (PortletCategory curPortletCategory :
 				portletCategory.getCategories()) {
 
-			Set<String> portletIds = new HashSet<>();
-
 			if (curPortletCategory.isHidden()) {
 				continue;
 			}
+
+			Set<String> portletIds = new HashSet<>();
 
 			for (String portletId : curPortletCategory.getPortletIds()) {
 				Portlet portlet = PortletLocalServiceUtil.getPortletById(
 					companyId, portletId);
 
 				if (portlet != null) {
-					if (portlet.isSystem()) {
+					if (portlet.isSystem() || !portlet.isInclude()) {
 					}
 					else if (!portlet.isActive() ||
 							 portlet.isUndeployedPortlet()) {
@@ -146,9 +172,10 @@ public class PortletCategoryUtil {
 
 			curRelevantPortletCategory.setPortletIds(portletIds);
 
-			if (!curRelevantPortletCategory.getCategories().isEmpty() ||
-				!portletIds.isEmpty()) {
+			Collection<PortletCategory> categories =
+				curRelevantPortletCategory.getCategories();
 
+			if (!categories.isEmpty() || !portletIds.isEmpty()) {
 				relevantPortletCategory.addCategory(curRelevantPortletCategory);
 			}
 		}

@@ -14,7 +14,7 @@
 
 package com.liferay.trash.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -37,8 +37,11 @@ import java.util.List;
  * @author Brian Wing Shun Chan
  * @see TrashEntryPersistence
  * @see com.liferay.portlet.trash.service.persistence.impl.TrashEntryPersistenceImpl
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+com.liferay.trash.model.impl.TrashEntryImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 public class TrashEntryUtil {
 	/*
@@ -776,7 +779,7 @@ public class TrashEntryUtil {
 	* Returns the trash entry where classNameId = &#63; and classPK = &#63; or throws a {@link NoSuchEntryException} if it could not be found.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @return the matching trash entry
 	* @throws NoSuchEntryException if a matching trash entry could not be found
 	*/
@@ -789,7 +792,7 @@ public class TrashEntryUtil {
 	* Returns the trash entry where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @return the matching trash entry, or <code>null</code> if a matching trash entry could not be found
 	*/
 	public static TrashEntry fetchByC_C(long classNameId, long classPK) {
@@ -800,7 +803,7 @@ public class TrashEntryUtil {
 	* Returns the trash entry where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching trash entry, or <code>null</code> if a matching trash entry could not be found
 	*/
@@ -814,7 +817,7 @@ public class TrashEntryUtil {
 	* Removes the trash entry where classNameId = &#63; and classPK = &#63; from the database.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @return the trash entry that was removed
 	*/
 	public static TrashEntry removeByC_C(long classNameId, long classPK)
@@ -826,7 +829,7 @@ public class TrashEntryUtil {
 	* Returns the number of trash entries where classNameId = &#63; and classPK = &#63;.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @return the number of matching trash entries
 	*/
 	public static int countByC_C(long classNameId, long classPK) {

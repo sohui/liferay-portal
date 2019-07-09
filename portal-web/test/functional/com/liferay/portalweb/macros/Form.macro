@@ -1,184 +1,476 @@
-<definition>
-	<var name="columnSize" value="12" />
-	<var name="formDescription" value="Created Form Description" />
-	<var name="formName" value="Created Form Name" />
-	<var name="rowNumber" value="1" />
+definition {
 
-	<command name="addColumn">
-		<var name="key_columnLineNumber" value="${columnLineNumber}" />
-		<var name="key_rowNumber" value="${rowNumber}" />
+	var formDescription = "Created Form Description";
+	var formName = "Created Form Name";
+	var rowNumber = "1";
 
-		<execute function="MouseOver#mouseOverNotVisible" locator1="Form#ADD_COLUMN_RIGHT" />
+	macro _addField {
+		if (IsElementNotPresent(locator1 = "Form#SIDEBAR_ELEMENTS_TAB")) {
+			MouseOver.mouseOverNotVisible(locator1 = "Form#ADD_FIELD");
 
-		<execute function="DragAndDrop#dragAndDropToObjectNotVisible" locator1="Form#ADD_COLUMN_RIGHT" locator2="Form#ADD_COLUMN_LINE" value1="" />
-	</command>
+			Click(locator1 = "Form#ADD_FIELD");
+		}
+	}
 
-	<command name="addPage">
-		<execute function="Click" locator1="Form#PAGE_CONTROLS_ELLIPSIS_ICON" />
+	macro addPage {
+		Click(locator1 = "Form#PAGE_CONTROLS_ELLIPSIS_ICON");
 
-		<execute function="AssertClick" locator1="Form#PAGE_CONTROLS_ADD_NEW_PAGE" value1="Add New Page" />
-	</command>
+		AssertClick(
+			locator1 = "Form#PAGE_CONTROLS_ADD_NEW_PAGE",
+			value1 = "Add New Page");
+	}
 
-	<command name="clickPublishSwitcher">
-		<execute function="Click" locator1="Form#PUBLISH_FORM_SWITCHER" />
-	</command>
+	macro addSuccessPage {
+		Click(locator1 = "Form#PAGE_CONTROLS_ELLIPSIS_ICON");
 
-	<command name="configureWorkflow">
-		<execute function="Select" locator1="AssetWorkflow#ALL_STRUCTURES_WORKFLOW_SELECT" value1="${workflowDefinition}" />
+		AssertClick(
+			locator1 = "Form#PAGE_CONTROLS_ADD_SUCCESS_PAGE",
+			value1 = "Add Success Page");
+	}
 
-		<execute macro="Button#clickDone" />
-	</command>
+	macro addTranslation {
+		Click(locator1 = "Translation#ADD");
 
-	<command name="editDescription">
-		<execute function="Type#typeAceEditor" locator1="Form#DESCRIPTION_FIELD" value1="${formDescription}" />
-	</command>
+		var key_localizedLanguage = "${localizedLanguage}";
 
-	<command name="editFieldDataProvider">
-		<execute macro="FormFields#selectRadioOption">
-			<var name="fieldName" value="dataSourceType" />
-			<var name="radioOption" value="From Data Provider" />
-		</execute>
+		AssertClick(
+			locator1 = "Translation#ADD_MENULIST_LANGUAGE",
+			value1 = "${localizedLanguage}");
+	}
 
-		<execute macro="FormFields#selectSelectOption">
-			<var name="fieldName" value="ddmDataProviderInstanceId" />
-			<var name="selectOption" value="${dataProvider}" />
-		</execute>
-	</command>
+	macro assertFormWasPublished {
+		AssertVisible(locator1 = "Form#PUBLISH_URL_ICON");
+	}
 
-	<command name="editFieldLabel">
-		<execute macro="FormFields#editText">
-			<var name="fieldName" value="label" />
-			<var name="fieldValue" value="${fieldValue}" />
-		</execute>
+	macro closeSidebar {
+		Pause(locator1 = "1000");
 
-		<var method="StringUtil#replace('${fieldValue}', ' ', '')" name="fieldName" />
+		Click(locator1 = "Form#SIDEBAR_CLOSE");
 
-		<execute macro="FormFields#viewFormName">
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
-	</command>
+		Pause(locator1 = "1000");
 
-	<command name="editName">
-		<var name="key_columnSize" value="${columnSize}" />
+		AssertElementNotPresent(locator1 = "Form#SIDEBAR_CLOSE");
+	}
 
-		<execute function="AssertVisible" locator1="Form#ADD_FIRST_FIELD" />
-		<execute function="AssertVisible" locator1="Form#NAME_FIELD" />
-		<execute function="AssertVisible" locator1="Form#DESCRIPTION_FIELD" />
+	macro configureEmailNotifications {
+		AssertClick(
+			locator1 = "Form#SETTINGS_TAB_EMAIL_NOTIFICATIONS",
+			value1 = "Email Notifications");
 
-		<execute function="Pause" locator1="5000" />
+		FormFields.enableSwitcher(fieldName = "sendEmailNotification");
 
-		<execute function="Click" locator1="Form#NAME_FIELD" />
+		FormFields.editText(
+			fieldName = "emailFromName",
+			fieldValue = "${fromName}");
 
-		<execute function="Type#typeEditor" locator1="AlloyEditor#NAME_FIELD" value1="${formName}" />
-	</command>
+		FormFields.editText(
+			fieldName = "emailFromAddress",
+			fieldValue = "${fromAddress}");
 
-	<command name="editPageDescription">
-		<execute function="Type" locator1="Form#PAGE_DESCRIPTION_FIELD" value1="${formPageDescription}" />
-	</command>
+		FormFields.editText(
+			fieldName = "emailToAddress",
+			fieldValue = "${toAddress}");
 
-	<command name="editPageTitle">
-		<execute function="Type" locator1="Form#PAGE_TITLE_FIELD" value1="${formPageName}" />
-	</command>
+		FormFields.editText(
+			fieldName = "emailSubject",
+			fieldValue = "${subject}");
 
-	<command name="gotoAddAdditionalField">
-		<var name="key_columnSize" value="${columnSize}" />
-		<var name="key_previousFieldLabel" value="${previousFieldLabel}" />
+		Button.clickDone();
+	}
 
-		<execute function="Click#makeVisibleClickAt" locator1="Form#ADD_ADDITIONAL_FIELD" />
+	macro configureRequireCaptcha {
+		FormFields.enableSwitcher(fieldName = "requireCaptcha");
 
-		<var name="key_fieldType" value="${fieldType}" />
+		Button.clickDone();
+	}
 
-		<execute function="AssertClick" locator1="Form#ADD_FIELD_TYPE" value1="${fieldType}" />
-	</command>
+	macro configureWorkflow {
+		Click(locator1 = "Form#SETTINGS_TAB_WORKFLOW_CONFIGURATION_FIELD");
 
-	<command name="gotoAddFirstField">
-		<var name="key_columnSize" value="${columnSize}" />
+		var key_workflowDefinition = "${workflowDefinition}";
 
-		<execute function="Click" locator1="Form#ADD_FIRST_FIELD" />
+		AssertClick(
+			locator1 = "Form#SETTINGS_TAB_WORKFLOW_CONFIGURATION",
+			value1 = "${workflowDefinition}");
 
-		<var name="key_fieldType" value="${fieldType}" />
+		Button.clickDone();
+	}
 
-		<execute function="AssertClick" locator1="Form#ADD_FIELD_TYPE" value1="${fieldType}" />
-	</command>
+	macro deleteCurrentPage {
+		var key_formPageName = "${formPageName}";
 
-	<command name="previewForm">
-		<execute macro="Navigator#selectSpecificWindow">
-			<var name="windowTitle" value="Form - Forms" />
-		</execute>
+		AssertElementPresent(locator1 = "FormPortlet#FORM_PAGE_ACTIVE");
 
-		<var name="key_formName" value="${formName}" />
+		Click(locator1 = "Form#PAGE_CONTROLS_ELLIPSIS_ICON");
 
-		<execute function="AssertTextEquals" locator1="Form#PUBLISH_FORM_NAME_FIELD" value1="${formName}" />
+		AssertClick(
+			locator1 = "Form#PAGE_CONTROLS_DELETE_CURRENT_PAGE",
+			value1 = "Delete Current Page");
 
-		<execute macro="FormFields#viewTextLabel">
-			<var name="fieldLabel" value="${fieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		AssertElementNotPresent(locator1 = "FormPortlet#FORM_PAGE");
+	}
 
-		<execute macro="FormFields#editText">
-			<var name="fieldName" value="${fieldName}" />
-			<var name="fieldValue" value="${fieldValue}" />
-		</execute>
+	macro disableAutocompleteConfiguration {
+		FormFields.disableSwitcher(fieldName = "Autocomplete");
+	}
 
-		<execute macro="FormFields#viewTextValue">
-			<var name="fieldName" value="${fieldName}" />
-			<var name="fieldValue" value="${fieldValue}" />
-		</execute>
+	macro duplicate {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Duplicate",
+			rowEntry = "${formName}");
+	}
 
-		<execute function="AssertElementNotPresent" locator1="Button#SUBMIT" value1="Submit" />
-	</command>
+	macro editDescription {
+		Click(locator1 = "Form#DESCRIPTION_FIELD");
 
-	<command name="save">
-		<execute function="AssertClick" locator1="Form#SAVE_BUTTON" value1="Save" />
+		Type(
+			locator1 = "Form#DESCRIPTION_FIELD",
+			value1 = "${formDescription}");
+	}
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+	macro editFieldDataProvider {
+		FormFields.selectRadioOption(
+			fieldName = "dataSourceType",
+			radioOption = "From Data Provider");
 
-	<command name="saveAndPublish">
-		<execute function="Click" locator1="Form#SAVE_BUTTON_DROPDOWN" />
+		Pause(locator1 = "2000");
 
-		<execute function="AssertClick" locator1="Form#SAVE_BUTTON_DROPDOWN_SAVE_AND_PUBLISH_LIVE_PAGE" value1="Save and Publish Live Page" />
+		FormFields.selectSelectOption(
+			fieldName = "Choose a Data Provider",
+			selectOption = "${dataProvider}");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		FormFields.selectSelectOption(
+			fieldName = "Output Parameter",
+			selectOption = "${dataProviderOutput}");
+	}
 
-	<command name="submitFormPublish">
-		<execute macro="Form#viewFormPublish">
-			<var name="fieldLabel" value="${fieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+	macro editFieldLabel {
+		FormFields.editText(
+			fieldName = "label",
+			fieldValue = "${fieldValue}");
 
-		<execute macro="FormFields#editText">
-			<var name="fieldLabel" value="${fieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-			<var name="fieldValue" value="${fieldValue}" />
-		</execute>
+		if (!(isSet(fieldName))) {
+			var fieldName = StringUtil.replace("${fieldValue}", " ", "");
+		}
 
-		<execute function="AssertClick" locator1="Button#SUBMIT" value1="Submit" />
+		FormFields.viewFieldName(fieldName = "${fieldName}");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		var key_fieldName = "${fieldName}";
 
-	<command name="viewFormName">
-		<execute function="AssertTextEquals" locator1="Form#NAME_FIELD" value1="${formName}" />
-	</command>
+		AssertTextEquals(
+			locator1 = "Form#FIELD_LABEL",
+			value1 = "${fieldValue}");
+	}
 
-	<command name="viewFormNotPublished">
-		<execute macro="FormsAdminNavigator#openPublishURL" />
+	macro editFieldLabelMetal {
+		FormFields.editText(
+			fieldName = "label",
+			fieldValue = "${fieldValue}");
 
-		<execute function="AssertTextEquals" locator1="Message#ERROR_3_ALT" value1="This form is not available or it was not published." />
-	</command>
+		var key_fieldName = "${fieldValue}";
 
-	<command name="viewFormPublish">
-		<execute macro="FormsAdminNavigator#openPublishURL" />
+		if (!(isSet(fieldName))) {
+			var fieldName = StringUtil.replace("${fieldValue}", " ", "");
+		}
 
-		<var name="key_formName" value="${formName}" />
+		//TODO: adding it to test, remove this line after this bug (LPS-87612) is fixed
+		//Type(locator1 = "FormFields#FIELD_NAME_EDIT", value1 = "${fieldName}");
 
-		<execute function="AssertTextEquals" locator1="Form#PUBLISH_FORM_NAME_FIELD" value1="${formName}" />
+		FormFields.viewFieldName(fieldName = "${fieldName}");
 
-		<execute macro="FormFields#viewTextLabel">
-			<var name="fieldLabel" value="${fieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
-	</command>
-</definition>
+		AssertTextEquals(
+			locator1 = "Form#FIELD_LABEL",
+			value1 = "${fieldValue}");
+
+	}
+
+	macro editName {
+		AssertVisible(locator1 = "Form#ADD_FIELD");
+
+		AssertVisible(locator1 = "Form#NAME_FIELD");
+
+		AssertVisible(locator1 = "Form#DESCRIPTION_FIELD");
+
+		Click(locator1 = "Form#NAME_FIELD");
+
+		AlloyEditor.typeEditor(
+			content = "${formName}",
+			editor = "name");
+	}
+
+	macro editNameLocalized {
+		AssertVisible(locator1 = "Form#ADD_FIELD");
+
+		AssertVisible(locator1 = "Form#NAME_FIELD");
+
+		AssertVisible(locator1 = "Form#DESCRIPTION_FIELD");
+
+		Click(locator1 = "Form#NAME_FIELD");
+
+		AlloyEditor.typeEditor(
+			content = "${formName}",
+			editor = "name");
+	}
+
+	macro editPageTitle {
+		Type(
+			locator1 = "Form#PAGE_TITLE_FIELD",
+			value1 = "${formPageName}");
+	}
+
+	macro editSuccessPage {
+		Type(
+			locator1 = "Form#SUCCESS_PAGE_TITLE_FIELD",
+			value1 = "${successPageTitle}");
+
+		Type(
+			locator1 = "Form#SUCCESS_PAGE_DESCRIPTION_FIELD",
+			value1 = "${successPageDescription}");
+	}
+
+	macro enableAutocompleteConfiguration {
+		FormFields.enableSwitcher(fieldName = "Autocomplete");
+	}
+
+	macro getPublishedFormPublicURL {
+		var publicURL = selenium.getElementValue("Form#PUBLISH_FORM_PUBLIC_URL");
+
+		return "${publicURL}";
+	}
+
+	macro gotoAddElementSet {
+		Form._addField();
+
+		Form.gotoElementSetsTab();
+
+		var key_fieldType = "${elementSetTitle}";
+
+		DragAndDrop(
+			locator1 = "Form#ADD_FIELD_TYPE",
+			locator2 = "Form#ADD_FIELD_POSITION",
+			value1 = "${elementSetTitle}");
+	}
+
+	macro gotoAddField {
+		Form._addField();
+
+		Form.gotoElementsTab();
+
+		var key_fieldType = "${fieldType}";
+
+		DragAndDrop(
+			locator1 = "Form#ADD_FIELD_TYPE",
+			locator2 = "Form#ADD_FIELD_POSITION",
+			value1 = "${fieldType}");
+
+		AssertElementPresent(locator1 = "Form#SIDEBAR_BASIC_TAB");
+	}
+
+	macro gotoAdvancedTab {
+		AssertClick(
+			locator1 = "Form#SIDEBAR_PROPERTIES_TAB",
+			value1 = "Properties");
+		Pause(locator1 = "1000");
+	}
+
+	macro gotoBasicTab {
+		AssertClick(
+			locator1 = "Form#SIDEBAR_BASIC_TAB",
+			value1 = "Basic");
+		Pause(locator1 = "1000");
+	}
+
+	macro gotoElementSetsTab {
+		AssertClick(
+			locator1 = "Form#SIDEBAR_ELEMENT_SETS_TAB",
+			value1 = "Element Sets");
+	}
+
+	macro gotoElementsTab {
+		AssertClick(
+			locator1 = "Form#SIDEBAR_ELEMENTS_TAB",
+			value1 = "Elements");
+	}
+
+	macro gotoFormPage {
+		var key_formPageName = "${formPageName}";
+
+		Click(locator1 = "Form#FORM_PAGE");
+	}
+
+	macro gotoPageAltPagination {
+		var key_page = "${page}";
+
+		Click(locator1 = "Form#ALT_PAGINATION_PAGE");
+	}
+
+	macro previewForm {
+		Navigator.selectSpecificWindow(windowTitle = "Form - Forms");
+
+		var key_formName = "${formName}";
+
+		AssertTextEquals(
+			locator1 = "Form#PUBLISH_FORM_NAME_FIELD",
+			value1 = "${formName}");
+
+		FormFields.viewTextLabel(
+			fieldLabel = "${fieldLabel}",
+			fieldName = "${fieldName}");
+
+		FormFields.editText(
+			fieldName = "${fieldName}",
+			fieldValue = "${fieldValue}");
+
+		FormFields.viewTextValue(
+			fieldName = "${fieldName}",
+			fieldValue = "${fieldValue}");
+
+		AssertElementNotPresent(locator1 = "Button#SUBMIT");
+	}
+
+	macro publishForm {
+		AssertElementPresent(locator1 = "Form#NAME_FIELD");
+
+		Click(locator1 = "Button#PUBLISH");
+
+		Form.assertFormWasPublished();
+	}
+
+	macro save {
+		AssertClick(
+			locator1 = "Form#SAVE_FORM_BUTTON",
+			value1 = "Save Form");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro saveElementSet {
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro saveLocalized {
+		var key_saveButton = "${saveButton}";
+
+		AssertClick(
+			locator1 = "Form#SAVE_FORM_BUTTON_LOCALIZED",
+			value1 = "${saveButton}");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro selectTranslation {
+		var key_localizedLanguage = "${localizedLanguage}";
+
+		Click(locator1 = "Translation#UNSELECTED_LOCALE_ICON");
+	}
+
+	macro submitFormPublish {
+		Form.viewFormPublish(
+			fieldLabel = "${fieldLabel}",
+			fieldName = "${fieldName}");
+
+		FormFields.editText(
+			fieldLabel = "${fieldLabel}",
+			fieldName = "${fieldName}",
+			fieldValue = "${fieldValue}");
+
+		AssertClick(
+			locator1 = "Button#MAIN_CONTENT_SUBMIT",
+			value1 = "Submit");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro switchPaginationMode {
+		Click(locator1 = "Form#PAGE_CONTROLS_ELLIPSIS_ICON");
+
+		AssertClick(
+			locator1 = "Form#PAGE_CONTROLS_SWITCH_PAGINATION_MODE",
+			value1 = "Switch Pagination");
+	}
+
+	macro switchPaginationModeToBottom {
+		Click(locator1 = "Form#PAGE_CONTROLS_ELLIPSIS_ICON");
+
+		AssertClick(
+			locator1 = "Form#PAGE_CONTROLS_SWITCH_PAGINATION_MODE_TO_BOTTOM",
+			value1 = "Switch Pagination to Bottom");
+	}
+
+	macro switchPaginationModeToTop {
+		Click(locator1 = "Form#PAGE_CONTROLS_ELLIPSIS_ICON");
+
+		AssertClick(
+			locator1 = "Form#PAGE_CONTROLS_SWITCH_PAGINATION_MODE_TO_TOP",
+			value1 = "Switch Pagination to Top");
+	}
+
+	macro unpublishForm {
+		AssertElementPresent(locator1 = "Form#NAME_FIELD");
+
+		Click(locator1 = "Button#UNPUBLISH");
+
+		var key_uniqueSuccess = "The form was unpublished successfully!";
+
+		AssertElementPresent(locator1 = "Message#UNIQUE_SUCCESS");
+	}
+
+	macro viewAltPagePagination {
+		var key_page = "${page}";
+
+		AssertElementPresent(locator1 = "Form#ALT_PAGINATION_PAGE");
+	}
+
+	macro viewAltSuccessPagePagination {
+		AssertElementPresent(locator1 = "Form#ALT_PAGINATION_SUCCESS_PAGE");
+	}
+
+	macro viewFormName {
+		AssertTextEquals(
+			locator1 = "Form#NAME_FIELD",
+			value1 = "${formName}");
+	}
+
+	macro viewFormNotPublished {
+		Click(locator1 = "Form#PUBLISH_ICON");
+
+		var publishFormURL = selenium.getElementValue("Form#PUBLISH_FORM_PUBLIC_URL");
+
+		Form.unpublishForm();
+
+		Navigator.openSpecificURL(url = "${publishFormURL}");
+
+		AssertTextEquals(
+			locator1 = "Message#ERROR_3_ALT",
+			value1 = "This form is not available or it was not published.");
+	}
+
+	macro viewFormPublish {
+		FormsAdminNavigator.openPublishURL();
+
+		var key_formName = "${formName}";
+
+		AssertTextEquals(
+			locator1 = "Form#PUBLISH_FORM_NAME_FIELD",
+			value1 = "${formName}");
+
+		FormFields.viewTextLabel(
+			fieldLabel = "${fieldLabel}",
+			fieldName = "${fieldName}");
+	}
+
+	macro viewPublishFormSuccessMessage {
+		var key_alertMessage = "The form was published successfully! Access it with this URL";
+
+		AssertVisible(locator1 = "Form#PUBLISH_UNPUBLISH_ICON_CLOSE");
+	}
+
+	macro viewSaveNotification {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Form#SAVE_NOTIFICATION",
+			value1 = "Draft");
+	}
+
+}

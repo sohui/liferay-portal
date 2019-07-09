@@ -14,14 +14,11 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.Ticket;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,16 +27,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing Ticket in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see Ticket
  * @generated
  */
 @ProviderType
-public class TicketCacheModel implements CacheModel<Ticket>, Externalizable,
-	MVCCModel {
+public class TicketCacheModel
+	implements CacheModel<Ticket>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -53,7 +52,8 @@ public class TicketCacheModel implements CacheModel<Ticket>, Externalizable,
 		TicketCacheModel ticketCacheModel = (TicketCacheModel)obj;
 
 		if ((ticketId == ticketCacheModel.ticketId) &&
-				(mvccVersion == ticketCacheModel.mvccVersion)) {
+			(mvccVersion == ticketCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -125,7 +125,7 @@ public class TicketCacheModel implements CacheModel<Ticket>, Externalizable,
 		ticketImpl.setClassPK(classPK);
 
 		if (key == null) {
-			ticketImpl.setKey(StringPool.BLANK);
+			ticketImpl.setKey("");
 		}
 		else {
 			ticketImpl.setKey(key);
@@ -134,7 +134,7 @@ public class TicketCacheModel implements CacheModel<Ticket>, Externalizable,
 		ticketImpl.setType(type);
 
 		if (extraInfo == null) {
-			ticketImpl.setExtraInfo(StringPool.BLANK);
+			ticketImpl.setExtraInfo("");
 		}
 		else {
 			ticketImpl.setExtraInfo(extraInfo);
@@ -172,8 +172,7 @@ public class TicketCacheModel implements CacheModel<Ticket>, Externalizable,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(ticketId);
@@ -186,7 +185,7 @@ public class TicketCacheModel implements CacheModel<Ticket>, Externalizable,
 		objectOutput.writeLong(classPK);
 
 		if (key == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(key);
@@ -195,7 +194,7 @@ public class TicketCacheModel implements CacheModel<Ticket>, Externalizable,
 		objectOutput.writeInt(type);
 
 		if (extraInfo == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(extraInfo);
@@ -214,4 +213,5 @@ public class TicketCacheModel implements CacheModel<Ticket>, Externalizable,
 	public int type;
 	public String extraInfo;
 	public long expirationDate;
+
 }

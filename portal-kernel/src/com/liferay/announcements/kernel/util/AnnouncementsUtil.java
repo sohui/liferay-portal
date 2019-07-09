@@ -18,30 +18,39 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.Team;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
+import com.liferay.portal.kernel.model.UserGroupGroupRole;
+import com.liferay.portal.kernel.model.UserGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.UserBag;
+import com.liferay.portal.kernel.security.permission.UserBagFactoryUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.TeamLocalServiceUtil;
+import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
+import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.permission.RolePermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -50,14 +59,27 @@ import java.util.Set;
  */
 public class AnnouncementsUtil {
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getAnnouncementScopes(User)}
+	 */
+	@Deprecated
 	public static LinkedHashMap<Long, long[]> getAnnouncementScopes(long userId)
 		throws PortalException {
+
+		return getAnnouncementScopes(UserLocalServiceUtil.getUserById(userId));
+	}
+
+	public static LinkedHashMap<Long, long[]> getAnnouncementScopes(User user)
+		throws PortalException {
+
+		long userId = user.getUserId();
 
 		LinkedHashMap<Long, long[]> scopes = new LinkedHashMap<>();
 
 		// General announcements
 
-		scopes.put(Long.valueOf(0), new long[] {0});
+		scopes.put(0L, new long[] {0});
 
 		// Personal announcements
 
@@ -65,42 +87,20 @@ public class AnnouncementsUtil {
 
 		// Organization announcements
 
-		List<Group> groupsList = new ArrayList<>();
+		UserBag userBag = UserBagFactoryUtil.create(userId);
 
-		List<Organization> organizations =
-			OrganizationLocalServiceUtil.getUserOrganizations(userId);
+		long[] organizationIds = userBag.getUserOrgIds();
 
-		if (!organizations.isEmpty()) {
-			List<Organization> organizationsList = new ArrayList<>();
-
-			organizationsList.addAll(organizations);
-
-			for (Organization organization : organizations) {
-				groupsList.add(organization.getGroup());
-
-				List<Organization> parentOrganizations =
-					OrganizationLocalServiceUtil.getParentOrganizations(
-						organization.getOrganizationId());
-
-				for (Organization parentOrganization : parentOrganizations) {
-					organizationsList.add(parentOrganization);
-					groupsList.add(parentOrganization.getGroup());
-				}
-			}
-
-			scopes.put(
-				_ORGANIZATION_CLASS_NAME_ID,
-				_getOrganizationIds(organizationsList));
+		if (organizationIds.length > 0) {
+			scopes.put(_ORGANIZATION_CLASS_NAME_ID, organizationIds);
 		}
 
 		// Site announcements
 
-		List<Group> groups = GroupLocalServiceUtil.getUserGroups(userId, true);
+		long[] groupIds = userBag.getUserGroupIds();
 
-		if (!groups.isEmpty()) {
-			scopes.put(_GROUP_CLASS_NAME_ID, _getGroupIds(groups));
-
-			groupsList.addAll(groups);
+		if (groupIds.length > 0) {
+			scopes.put(_GROUP_CLASS_NAME_ID, groupIds);
 		}
 
 		// User group announcements
@@ -109,58 +109,66 @@ public class AnnouncementsUtil {
 			UserGroupLocalServiceUtil.getUserUserGroups(userId);
 
 		if (!userGroups.isEmpty()) {
-			scopes.put(_USER_GROUP_CLASS_NAME_ID, _getUserGroupIds(userGroups));
+			long[] userGroupIds = ListUtil.toLongArray(
+				userGroups, UserGroup.USER_GROUP_ID_ACCESSOR);
 
-			for (UserGroup userGroup : userGroups) {
-				groupsList.add(userGroup.getGroup());
-			}
+			scopes.put(_USER_GROUP_CLASS_NAME_ID, userGroupIds);
 		}
 
 		// Role announcements
 
-		Set<Role> roles = new LinkedHashSet<>();
+		Set<Long> roleIds = SetUtil.fromArray(userBag.getRoleIds());
 
-		if (!groupsList.isEmpty()) {
-			roles.addAll(
-				RoleLocalServiceUtil.getUserRelatedRoles(userId, groupsList));
+		if ((groupIds.length > 0) || (organizationIds.length > 0)) {
+			List<UserGroupRole> userGroupRoles =
+				UserGroupRoleLocalServiceUtil.getUserGroupRoles(userId);
 
-			for (Group group : groupsList) {
-				roles.addAll(
-					RoleLocalServiceUtil.getUserGroupRoles(
-						userId, group.getGroupId()));
-				roles.addAll(
-					RoleLocalServiceUtil.getUserGroupGroupRoles(
-						userId, group.getGroupId()));
+			for (UserGroupRole userGroupRole : userGroupRoles) {
+				roleIds.add(userGroupRole.getRoleId());
 			}
 		}
-		else {
-			roles.addAll(RoleLocalServiceUtil.getUserRoles(userId));
+
+		if (!userGroups.isEmpty()) {
+			List<UserGroupGroupRole> userGroupGroupRoles =
+				UserGroupGroupRoleLocalServiceUtil.getUserGroupGroupRolesByUser(
+					userId);
+
+			for (UserGroupGroupRole userGroupGroupRole : userGroupGroupRoles) {
+				roleIds.add(userGroupGroupRole.getRoleId());
+			}
 		}
 
 		List<Team> teams = TeamLocalServiceUtil.getUserTeams(userId);
 
-		for (Team team : teams) {
-			roles.add(team.getRole());
+		long[] teamIds = ListUtil.toLongArray(teams, Team.TEAM_ID_ACCESSOR);
+
+		long companyId = user.getCompanyId();
+
+		if (teamIds.length > 0) {
+			List<Role> teamsRoles = RoleLocalServiceUtil.getTeamsRoles(
+				companyId, teamIds);
+
+			for (Role teamRole : teamsRoles) {
+				roleIds.add(teamRole.getRoleId());
+			}
 		}
 
 		if (_PERMISSIONS_CHECK_GUEST_ENABLED) {
-			User user = UserLocalServiceUtil.getUserById(userId);
-
 			Role guestRole = RoleLocalServiceUtil.getRole(
-				user.getCompanyId(), RoleConstants.GUEST);
+				companyId, RoleConstants.GUEST);
 
-			roles.add(guestRole);
+			roleIds.add(guestRole.getRoleId());
 		}
 
-		if (!roles.isEmpty()) {
-			scopes.put(_ROLE_CLASS_NAME_ID, _getRoleIds(roles));
+		if (!roleIds.isEmpty()) {
+			scopes.put(_ROLE_CLASS_NAME_ID, ArrayUtil.toLongArray(roleIds));
 		}
 
 		return scopes;
 	}
 
 	public static List<Group> getGroups(ThemeDisplay themeDisplay)
-		throws Exception {
+		throws PortalException {
 
 		List<Group> filteredGroups = new ArrayList<>();
 
@@ -182,7 +190,7 @@ public class AnnouncementsUtil {
 	}
 
 	public static List<Organization> getOrganizations(ThemeDisplay themeDisplay)
-		throws Exception {
+		throws PortalException {
 
 		List<Organization> filteredOrganizations = new ArrayList<>();
 
@@ -204,7 +212,7 @@ public class AnnouncementsUtil {
 	}
 
 	public static List<Role> getRoles(ThemeDisplay themeDisplay)
-		throws Exception {
+		throws PortalException {
 
 		List<Role> filteredRoles = new ArrayList<>();
 
@@ -212,23 +220,8 @@ public class AnnouncementsUtil {
 			themeDisplay.getCompanyId());
 
 		for (Role role : roles) {
-			if (role.isTeam()) {
-				Team team = TeamLocalServiceUtil.getTeam(role.getClassPK());
-
-				if (GroupPermissionUtil.contains(
-						themeDisplay.getPermissionChecker(), team.getGroupId(),
-						ActionKeys.MANAGE_ANNOUNCEMENTS) ||
-					RolePermissionUtil.contains(
-						themeDisplay.getPermissionChecker(),
-						themeDisplay.getScopeGroupId(), role.getRoleId(),
-						ActionKeys.MANAGE_ANNOUNCEMENTS)) {
-
-					filteredRoles.add(role);
-				}
-			}
-			else if (RolePermissionUtil.contains(
-						themeDisplay.getPermissionChecker(), role.getRoleId(),
-						ActionKeys.MANAGE_ANNOUNCEMENTS)) {
+			if (hasManageAnnouncementsPermission(
+					role, themeDisplay.getPermissionChecker())) {
 
 				filteredRoles.add(role);
 			}
@@ -237,9 +230,7 @@ public class AnnouncementsUtil {
 		return filteredRoles;
 	}
 
-	public static List<UserGroup> getUserGroups(ThemeDisplay themeDisplay)
-		throws Exception {
-
+	public static List<UserGroup> getUserGroups(ThemeDisplay themeDisplay) {
 		List<UserGroup> filteredUserGroups = new ArrayList<>();
 
 		List<UserGroup> userGroups = UserGroupLocalServiceUtil.getUserGroups(
@@ -258,54 +249,31 @@ public class AnnouncementsUtil {
 		return filteredUserGroups;
 	}
 
-	private static long[] _getGroupIds(List<Group> groups) {
-		long[] groupIds = new long[groups.size()];
+	public static boolean hasManageAnnouncementsPermission(
+			Role role, PermissionChecker permissionChecker)
+		throws PortalException {
 
-		int i = 0;
+		if (role.isTeam()) {
+			Team team = TeamLocalServiceUtil.getTeam(role.getClassPK());
 
-		for (Group group : groups) {
-			groupIds[i++] = group.getGroupId();
+			if (GroupPermissionUtil.contains(
+					permissionChecker, team.getGroupId(),
+					ActionKeys.MANAGE_ANNOUNCEMENTS) &&
+				RolePermissionUtil.contains(
+					permissionChecker, team.getGroupId(), role.getRoleId(),
+					ActionKeys.MANAGE_ANNOUNCEMENTS)) {
+
+				return true;
+			}
+		}
+		else if (RolePermissionUtil.contains(
+					permissionChecker, role.getRoleId(),
+					ActionKeys.MANAGE_ANNOUNCEMENTS)) {
+
+			return true;
 		}
 
-		return groupIds;
-	}
-
-	private static long[] _getOrganizationIds(
-		List<Organization> organizations) {
-
-		long[] organizationIds = new long[organizations.size()];
-
-		int i = 0;
-
-		for (Organization organization : organizations) {
-			organizationIds[i++] = organization.getOrganizationId();
-		}
-
-		return organizationIds;
-	}
-
-	private static long[] _getRoleIds(Set<Role> roles) {
-		long[] roleIds = new long[roles.size()];
-
-		int i = 0;
-
-		for (Role role : roles) {
-			roleIds[i++] = role.getRoleId();
-		}
-
-		return roleIds;
-	}
-
-	private static long[] _getUserGroupIds(List<UserGroup> userGroups) {
-		long[] userGroupIds = new long[userGroups.size()];
-
-		int i = 0;
-
-		for (UserGroup userGroup : userGroups) {
-			userGroupIds[i++] = userGroup.getUserGroupId();
-		}
-
-		return userGroupIds;
+		return false;
 	}
 
 	private static final long _GROUP_CLASS_NAME_ID = PortalUtil.getClassNameId(

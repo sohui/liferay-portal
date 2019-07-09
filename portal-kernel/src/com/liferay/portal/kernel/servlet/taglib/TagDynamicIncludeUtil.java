@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.servlet.taglib;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
@@ -60,9 +60,9 @@ public class TagDynamicIncludeUtil {
 	}
 
 	public static void include(
-		HttpServletRequest request, HttpServletResponse response,
-		String tagClassName, String tagDynamicId, String tagPoint,
-		boolean ascendingPriority) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, String tagClassName,
+		String tagDynamicId, String tagPoint, boolean ascendingPriority) {
 
 		List<TagDynamicInclude> tagDynamicIncludes = getTagDynamicIncludes(
 			tagClassName, tagDynamicId, tagPoint);
@@ -85,7 +85,8 @@ public class TagDynamicIncludeUtil {
 
 			try {
 				tagDynamicInclude.include(
-					request, response, tagClassName, tagDynamicId, tagPoint);
+					httpServletRequest, httpServletResponse, tagClassName,
+					tagDynamicId, tagPoint);
 			}
 			catch (Exception e) {
 				_log.error(e, e);

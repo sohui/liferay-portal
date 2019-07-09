@@ -14,25 +14,25 @@
 
 package com.liferay.portal.dao.db;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.dao.jdbc.util.DBInfo;
+import com.liferay.portal.dao.jdbc.util.DBInfoUtil;
 import com.liferay.portal.dao.orm.hibernate.DialectImpl;
+import com.liferay.portal.dao.orm.hibernate.MariaDBDialect;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBFactory;
 import com.liferay.portal.kernel.dao.db.DBManager;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.InstanceFactory;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.util.PropsValues;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-
 import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -53,7 +53,6 @@ import org.hibernate.dialect.SybaseDialect;
  * @author Alexander Chow
  * @author Brian Wing Shun Chan
  */
-@DoPrivileged
 @SuppressWarnings("deprecation")
 public class DBManagerImpl implements DBManager {
 
@@ -92,21 +91,6 @@ public class DBManagerImpl implements DBManager {
 
 	@Override
 	public DB getDB(DBType dbType, DataSource dataSource) {
-		int dbMajorVersion = 0;
-		int dbMinorVersion = 0;
-
-		if (dataSource != null) {
-			try (Connection connection = dataSource.getConnection()) {
-				DatabaseMetaData databaseMetaData = connection.getMetaData();
-
-				dbMajorVersion = databaseMetaData.getDatabaseMajorVersion();
-				dbMinorVersion = databaseMetaData.getDatabaseMinorVersion();
-			}
-			catch (SQLException sqle) {
-				return ReflectionUtil.throwException(sqle);
-			}
-		}
-
 		DBFactory dbCreator = _dbFactories.get(dbType);
 
 		if (dbCreator == null) {
@@ -114,7 +98,14 @@ public class DBManagerImpl implements DBManager {
 				"Unsupported database type " + dbType);
 		}
 
-		return dbCreator.create(dbMajorVersion, dbMinorVersion);
+		if (dataSource == null) {
+			return dbCreator.create(0, 0);
+		}
+
+		DBInfo dbInfo = DBInfoUtil.getDBInfo(dataSource);
+
+		return dbCreator.create(
+			dbInfo.getMajorVersion(), dbInfo.getMinorVersion());
 	}
 
 	@Override
@@ -131,6 +122,10 @@ public class DBManagerImpl implements DBManager {
 
 		if (dialect instanceof HSQLDialect) {
 			return DBType.HYPERSONIC;
+		}
+
+		if (dialect instanceof MariaDBDialect) {
+			return DBType.MARIADB;
 		}
 
 		if (dialect instanceof MySQLDialect) {
@@ -151,15 +146,20 @@ public class DBManagerImpl implements DBManager {
 			return DBType.SQLSERVER;
 		}
 
-		if (dialect instanceof SybaseDialect ||
-			dialect instanceof Sybase11Dialect ||
+		if (dialect instanceof Sybase11Dialect ||
 			dialect instanceof SybaseAnywhereDialect ||
-			dialect instanceof SybaseASE15Dialect) {
+			dialect instanceof SybaseASE15Dialect ||
+			dialect instanceof SybaseDialect) {
 
 			return DBType.SYBASE;
 		}
 
 		throw new IllegalArgumentException("Unknown dialect type " + dialect);
+	}
+
+	@Override
+	public Set<DBType> getDBTypes() {
+		return new LinkedHashSet<>(_dbFactories.keySet());
 	}
 
 	@Override
@@ -170,8 +170,9 @@ public class DBManagerImpl implements DBManager {
 			Class<?> clazz = _db.getClass();
 
 			_log.debug(
-				"Using DB implementation " + clazz.getName() + " for " +
-					db.getDBType());
+				StringBundler.concat(
+					"Using DB implementation ", clazz.getName(), " for ",
+					db.getDBType()));
 		}
 	}
 

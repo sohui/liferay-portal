@@ -18,8 +18,11 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.portal.kernel.model.BaseModelListener;
 
 /**
- * @author Bryan Engler
+ * @author     Bryan Engler
+ * @deprecated As of Judson (7.1.x), moved to {@link
+ *             com.liferay.asset.internal.model.listener.AssetEntryModelListener}
  */
+@Deprecated
 public class AssetEntryModelListener extends BaseModelListener<AssetEntry> {
 
 	@Override

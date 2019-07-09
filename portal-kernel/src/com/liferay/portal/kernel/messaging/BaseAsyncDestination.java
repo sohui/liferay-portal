@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.messaging;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.cluster.ClusterInvokeThreadLocal;
 import com.liferay.portal.kernel.concurrent.RejectedExecutionHandler;
 import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
@@ -64,18 +65,15 @@ public abstract class BaseAsyncDestination extends BaseDestination {
 
 	@Override
 	public void close(boolean force) {
-		if (portalExecutorManager == null) {
+		if ((_threadPoolExecutor == null) || _threadPoolExecutor.isShutdown()) {
 			return;
 		}
 
-		ThreadPoolExecutor threadPoolExecutor =
-			portalExecutorManager.getPortalExecutor(getName());
-
 		if (force) {
-			threadPoolExecutor.shutdownNow();
+			_threadPoolExecutor.shutdownNow();
 		}
 		else {
-			threadPoolExecutor.shutdown();
+			_threadPoolExecutor.shutdown();
 		}
 	}
 
@@ -132,7 +130,7 @@ public abstract class BaseAsyncDestination extends BaseDestination {
 		ClassLoader classLoader = PortalClassLoaderUtil.getClassLoader();
 
 		if (_rejectedExecutionHandler == null) {
-			_rejectedExecutionHandler = createRejectionExecutionHandler();
+			_rejectedExecutionHandler = _createRejectionExecutionHandler();
 		}
 
 		ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
@@ -171,20 +169,22 @@ public abstract class BaseAsyncDestination extends BaseDestination {
 			return;
 		}
 
-		ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
+		ThreadPoolExecutor threadPoolExecutor = _threadPoolExecutor;
 
 		if (threadPoolExecutor.isShutdown()) {
 			throw new IllegalStateException(
-				"Destination " + getName() + " is shutdown and cannot " +
-					"receive more messages");
+				StringBundler.concat(
+					"Destination ", getName(), " is shutdown and cannot ",
+					"receive more messages"));
 		}
 
 		populateMessageFromThreadLocals(message);
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Sending message " + message + " from destination " +
-					getName() + " to message listeners " + messageListeners);
+				StringBundler.concat(
+					"Sending message ", message, " from destination ",
+					getName(), " to message listeners ", messageListeners));
 		}
 
 		dispatch(messageListeners, message);
@@ -194,6 +194,10 @@ public abstract class BaseAsyncDestination extends BaseDestination {
 		_maximumQueueSize = maximumQueueSize;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setRejectedExecutionHandler(
 		RejectedExecutionHandler rejectedExecutionHandler) {
 
@@ -202,37 +206,37 @@ public abstract class BaseAsyncDestination extends BaseDestination {
 
 	public void setWorkersCoreSize(int workersCoreSize) {
 		_workersCoreSize = workersCoreSize;
+
+		if (_threadPoolExecutor != null) {
+			_threadPoolExecutor.adjustPoolSize(
+				workersCoreSize, _workersMaxSize);
+		}
 	}
 
 	public void setWorkersMaxSize(int workersMaxSize) {
 		_workersMaxSize = workersMaxSize;
+
+		if (_threadPoolExecutor != null) {
+			_threadPoolExecutor.adjustPoolSize(
+				_workersCoreSize, workersMaxSize);
+		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected RejectedExecutionHandler createRejectionExecutionHandler() {
-		return new RejectedExecutionHandler() {
-
-			@Override
-			public void rejectedExecution(
-				Runnable runnable, ThreadPoolExecutor threadPoolExecutor) {
-
-				if (!_log.isWarnEnabled()) {
-					return;
-				}
-
-				MessageRunnable messageRunnable = (MessageRunnable)runnable;
-
-				_log.warn(
-					"Discarding message " + messageRunnable.getMessage() +
-						" because it exceeds the maximum queue size of " +
-							_maximumQueueSize);
-			}
-
-		};
+		return _createRejectionExecutionHandler();
 	}
 
 	protected abstract void dispatch(
 		Set<MessageListener> messageListeners, Message message);
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected ThreadPoolExecutor getThreadPoolExecutor() {
 		return _threadPoolExecutor;
 	}
@@ -353,6 +357,29 @@ public abstract class BaseAsyncDestination extends BaseDestination {
 	protected volatile PortalExecutorManager portalExecutorManager;
 	protected ServiceTracker<PortalExecutorManager, PortalExecutorManager>
 		serviceTracker;
+
+	private RejectedExecutionHandler _createRejectionExecutionHandler() {
+		return new RejectedExecutionHandler() {
+
+			@Override
+			public void rejectedExecution(
+				Runnable runnable, ThreadPoolExecutor threadPoolExecutor) {
+
+				if (!_log.isWarnEnabled()) {
+					return;
+				}
+
+				MessageRunnable messageRunnable = (MessageRunnable)runnable;
+
+				_log.warn(
+					StringBundler.concat(
+						"Discarding message ", messageRunnable.getMessage(),
+						" because it exceeds the maximum queue size of ",
+						_maximumQueueSize));
+			}
+
+		};
+	}
 
 	private static final int _WORKERS_CORE_SIZE = 2;
 

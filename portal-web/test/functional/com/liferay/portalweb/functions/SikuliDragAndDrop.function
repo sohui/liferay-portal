@@ -1,11 +1,14 @@
-<definition default="sikuliDragAndDrop">
-	<command name="sikuliDragAndDrop">
-		<execute function="WaitForSPARefresh" />
+@default = "sikuliDragAndDrop"
+definition {
 
-		<execute selenium="sikuliDragAndDrop" />
+	function sikuliDragAndDrop {
+		WaitForSPARefresh();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.sikuliDragAndDrop();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

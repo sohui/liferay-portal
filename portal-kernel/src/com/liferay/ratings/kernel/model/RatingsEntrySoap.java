@@ -14,23 +14,23 @@
 
 package com.liferay.ratings.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.ratings.service.http.RatingsEntryServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portlet.ratings.service.http.RatingsEntryServiceSoap
  * @generated
  */
 @ProviderType
 public class RatingsEntrySoap implements Serializable {
+
 	public static RatingsEntrySoap toSoapModel(RatingsEntry model) {
 		RatingsEntrySoap soapModel = new RatingsEntrySoap();
 
@@ -76,7 +76,8 @@ public class RatingsEntrySoap implements Serializable {
 	}
 
 	public static RatingsEntrySoap[] toSoapModels(List<RatingsEntry> models) {
-		List<RatingsEntrySoap> soapModels = new ArrayList<RatingsEntrySoap>(models.size());
+		List<RatingsEntrySoap> soapModels = new ArrayList<RatingsEntrySoap>(
+			models.size());
 
 		for (RatingsEntry model : models) {
 			soapModels.add(toSoapModel(model));
@@ -186,4 +187,5 @@ public class RatingsEntrySoap implements Serializable {
 	private long _classNameId;
 	private long _classPK;
 	private double _score;
+
 }

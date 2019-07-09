@@ -14,11 +14,13 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchPasswordPolicyRelException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.PasswordPolicyRel;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.service.base.PasswordPolicyRelLocalServiceBaseImpl;
 
 import java.util.List;
@@ -65,8 +67,8 @@ public class PasswordPolicyRelLocalServiceImpl
 	public void addPasswordPolicyRels(
 		long passwordPolicyId, String className, long[] classPKs) {
 
-		for (int i = 0; i < classPKs.length; i++) {
-			addPasswordPolicyRel(passwordPolicyId, className, classPKs[i]);
+		for (long classPK : classPKs) {
+			addPasswordPolicyRel(passwordPolicyId, className, classPK);
 		}
 	}
 
@@ -97,6 +99,12 @@ public class PasswordPolicyRelLocalServiceImpl
 			deletePasswordPolicyRel(passwordPolicyRel);
 		}
 		catch (NoSuchPasswordPolicyRelException nsppre) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(nsppre, nsppre);
+			}
 		}
 	}
 
@@ -115,8 +123,8 @@ public class PasswordPolicyRelLocalServiceImpl
 	public void deletePasswordPolicyRels(
 		long passwordPolicyId, String className, long[] classPKs) {
 
-		for (int i = 0; i < classPKs.length; i++) {
-			deletePasswordPolicyRel(passwordPolicyId, className, classPKs[i]);
+		for (long classPK : classPKs) {
+			deletePasswordPolicyRel(passwordPolicyId, className, classPK);
 		}
 	}
 
@@ -183,9 +191,11 @@ public class PasswordPolicyRelLocalServiceImpl
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		PasswordPolicyRelLocalServiceImpl.class);
 
 }

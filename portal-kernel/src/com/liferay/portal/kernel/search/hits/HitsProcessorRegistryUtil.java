@@ -17,13 +17,17 @@ package com.liferay.portal.kernel.search.hits;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Michael C. Han
  */
 public class HitsProcessorRegistryUtil {
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static HitsProcessorRegistry getHitsProcessorRegistry() {
 		return _hitsProcessorRegistry;
 	}
@@ -31,10 +35,12 @@ public class HitsProcessorRegistryUtil {
 	public static boolean process(SearchContext searchContext, Hits hits)
 		throws SearchException {
 
-		return getHitsProcessorRegistry().process(searchContext, hits);
+		return _hitsProcessorRegistry.process(searchContext, hits);
 	}
 
-	private static final HitsProcessorRegistry _hitsProcessorRegistry =
-		ProxyFactory.newServiceTrackedInstance(HitsProcessorRegistry.class);
+	private static volatile HitsProcessorRegistry _hitsProcessorRegistry =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			HitsProcessorRegistry.class, HitsProcessorRegistryUtil.class,
+			"_hitsProcessorRegistry", false);
 
 }

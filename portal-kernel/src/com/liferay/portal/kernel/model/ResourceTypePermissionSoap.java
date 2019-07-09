@@ -14,27 +14,32 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ResourceTypePermissionSoap implements Serializable {
+
 	public static ResourceTypePermissionSoap toSoapModel(
 		ResourceTypePermission model) {
+
 		ResourceTypePermissionSoap soapModel = new ResourceTypePermissionSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
-		soapModel.setResourceTypePermissionId(model.getResourceTypePermissionId());
+		soapModel.setResourceTypePermissionId(
+			model.getResourceTypePermissionId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setName(model.getName());
@@ -46,7 +51,9 @@ public class ResourceTypePermissionSoap implements Serializable {
 
 	public static ResourceTypePermissionSoap[] toSoapModels(
 		ResourceTypePermission[] models) {
-		ResourceTypePermissionSoap[] soapModels = new ResourceTypePermissionSoap[models.length];
+
+		ResourceTypePermissionSoap[] soapModels =
+			new ResourceTypePermissionSoap[models.length];
 
 		for (int i = 0; i < models.length; i++) {
 			soapModels[i] = toSoapModel(models[i]);
@@ -57,10 +64,12 @@ public class ResourceTypePermissionSoap implements Serializable {
 
 	public static ResourceTypePermissionSoap[][] toSoapModels(
 		ResourceTypePermission[][] models) {
+
 		ResourceTypePermissionSoap[][] soapModels = null;
 
 		if (models.length > 0) {
-			soapModels = new ResourceTypePermissionSoap[models.length][models[0].length];
+			soapModels =
+				new ResourceTypePermissionSoap[models.length][models[0].length];
 		}
 		else {
 			soapModels = new ResourceTypePermissionSoap[0][0];
@@ -75,13 +84,16 @@ public class ResourceTypePermissionSoap implements Serializable {
 
 	public static ResourceTypePermissionSoap[] toSoapModels(
 		List<ResourceTypePermission> models) {
-		List<ResourceTypePermissionSoap> soapModels = new ArrayList<ResourceTypePermissionSoap>(models.size());
+
+		List<ResourceTypePermissionSoap> soapModels =
+			new ArrayList<ResourceTypePermissionSoap>(models.size());
 
 		for (ResourceTypePermission model : models) {
 			soapModels.add(toSoapModel(model));
 		}
 
-		return soapModels.toArray(new ResourceTypePermissionSoap[soapModels.size()]);
+		return soapModels.toArray(
+			new ResourceTypePermissionSoap[soapModels.size()]);
 	}
 
 	public ResourceTypePermissionSoap() {
@@ -158,4 +170,5 @@ public class ResourceTypePermissionSoap implements Serializable {
 	private String _name;
 	private long _roleId;
 	private long _actionIds;
+
 }

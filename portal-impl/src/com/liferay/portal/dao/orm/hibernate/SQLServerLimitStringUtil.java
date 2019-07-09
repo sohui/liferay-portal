@@ -14,9 +14,9 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -86,8 +86,11 @@ public class SQLServerLimitStringUtil {
 			Matcher matcher = _selectPattern.matcher(innerSelectFrom);
 
 			innerSelectFrom = matcher.replaceAll(
-				"select top ".concat(String.valueOf(limit)).concat(
-					StringPool.SPACE));
+				"select top ".concat(
+					String.valueOf(limit)
+				).concat(
+					StringPool.SPACE
+				));
 		}
 
 		return innerSelectFrom;
@@ -105,6 +108,7 @@ public class SQLServerLimitStringUtil {
 			orderByColumn = orderByColumn.trim();
 
 			String orderByColumnName = orderByColumn;
+
 			String orderByType = "ASC";
 
 			int spacePos = orderByColumn.lastIndexOf(CharPool.SPACE);
@@ -119,8 +123,11 @@ public class SQLServerLimitStringUtil {
 				}
 			}
 
-			String patternString = "\\Q".concat(orderByColumnName).concat(
-				"\\E as (\\w+)");
+			String patternString = "\\Q".concat(
+				orderByColumnName
+			).concat(
+				"\\E as (\\w+)"
+			);
 
 			Pattern pattern = Pattern.compile(
 				patternString, Pattern.CASE_INSENSITIVE);
@@ -144,6 +151,7 @@ public class SQLServerLimitStringUtil {
 				orderByColumnName = matcher.replaceAll("$1");
 
 				outerOrderBySB.append(orderByColumnName);
+
 				outerOrderBySB.append(StringPool.SPACE);
 				outerOrderBySB.append(orderByType);
 			}

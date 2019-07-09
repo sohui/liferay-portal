@@ -14,17 +14,17 @@
 
 package com.liferay.portal.fabric.netty.rpc;
 
+import com.liferay.petra.concurrent.AsyncBroker;
+import com.liferay.petra.concurrent.DefaultNoticeableFuture;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.process.ProcessException;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.fabric.netty.handlers.NettyChannelAttributes;
 import com.liferay.portal.fabric.netty.rpc.handlers.NettyRPCChannelHandler;
-import com.liferay.portal.kernel.concurrent.AsyncBroker;
-import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
-import com.liferay.portal.kernel.process.ProcessException;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.StringPool;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -104,8 +104,8 @@ public class RPCUtilTest {
 		Future<Serializable> future = RPCUtil.execute(
 			_embeddedChannel, new ExceptionRPCCallable(testException));
 
-		_embeddedChannel.writeInbound(_embeddedChannel.readOutbound());
-		_embeddedChannel.writeInbound(_embeddedChannel.readOutbound());
+		_embeddedChannel.writeOneInbound(_embeddedChannel.readOutbound());
+		_embeddedChannel.writeOneInbound(_embeddedChannel.readOutbound());
 
 		try {
 			future.get();
@@ -167,7 +167,7 @@ public class RPCUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -190,8 +190,8 @@ public class RPCUtilTest {
 		Future<String> future = RPCUtil.execute(
 			_embeddedChannel, new ResultRPCCallable(result));
 
-		_embeddedChannel.writeInbound(_embeddedChannel.readOutbound());
-		_embeddedChannel.writeInbound(_embeddedChannel.readOutbound());
+		_embeddedChannel.writeOneInbound(_embeddedChannel.readOutbound());
+		_embeddedChannel.writeOneInbound(_embeddedChannel.readOutbound());
 
 		Assert.assertEquals(result, future.get());
 	}

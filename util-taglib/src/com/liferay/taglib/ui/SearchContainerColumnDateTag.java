@@ -17,7 +17,6 @@ package com.liferay.taglib.ui;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.dao.search.ResultRow;
 import com.liferay.portal.kernel.dao.search.SearchEntry;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.search.DateSearchEntry;
 
@@ -66,6 +65,7 @@ public class SearchContainerColumnDateTag<R> extends SearchContainerColumnTag {
 			dateSearchEntry.setCssClass(getCssClass());
 			dateSearchEntry.setDate(_value);
 			dateSearchEntry.setHref(String.valueOf(getHref()));
+			dateSearchEntry.setUserName(_userName);
 			dateSearchEntry.setValign(getValign());
 
 			resultRow.addSearchEntry(index, dateSearchEntry);
@@ -76,17 +76,15 @@ public class SearchContainerColumnDateTag<R> extends SearchContainerColumnTag {
 			index = -1;
 			_value = null;
 
-			if (!ServerDetector.isResin()) {
-				align = SearchEntry.DEFAULT_ALIGN;
-				colspan = SearchEntry.DEFAULT_COLSPAN;
-				cssClass = SearchEntry.DEFAULT_CSS_CLASS;
-				_href = null;
-				name = null;
-				_orderable = false;
-				_orderableProperty = null;
-				_property = null;
-				valign = SearchEntry.DEFAULT_VALIGN;
-			}
+			align = SearchEntry.DEFAULT_ALIGN;
+			colspan = SearchEntry.DEFAULT_COLSPAN;
+			cssClass = SearchEntry.DEFAULT_CSS_CLASS;
+			_href = null;
+			name = null;
+			_orderable = false;
+			_orderableProperty = null;
+			_property = null;
+			valign = SearchEntry.DEFAULT_VALIGN;
 		}
 	}
 
@@ -151,6 +149,10 @@ public class SearchContainerColumnDateTag<R> extends SearchContainerColumnTag {
 		return _property;
 	}
 
+	public String getUserName() {
+		return _userName;
+	}
+
 	public Date getValue() {
 		return _value;
 	}
@@ -175,6 +177,10 @@ public class SearchContainerColumnDateTag<R> extends SearchContainerColumnTag {
 		_property = property;
 	}
 
+	public void setUserName(String userName) {
+		_userName = userName;
+	}
+
 	public void setValue(Date value) {
 		_value = value;
 	}
@@ -183,6 +189,7 @@ public class SearchContainerColumnDateTag<R> extends SearchContainerColumnTag {
 	private boolean _orderable;
 	private String _orderableProperty;
 	private String _property;
+	private String _userName;
 	private Date _value;
 
 }

@@ -1,0 +1,64 @@
+{
+	"csfConfig": {
+		"path:**/*.js": {
+			"js": {
+				"lint": {
+					"env": {
+						"browser": true,
+						"jest": true
+					},
+					"extends": "liferay",
+					"parser": "babel-eslint",
+					"parserOptions": {
+						"ecmaVersion": 7
+					},
+					"rules": {
+						"no-unknown-property": [
+							2,
+							{
+								"ignore": [
+									"class",
+									"xlink:href"
+								]
+							}
+						]
+					}
+				}
+			}
+		},
+		"path:**/*.jsp": {
+			"js": {
+				"lint": {
+					"env": {
+						"browser": true,
+						"jest": true,
+						"mocha": true
+					},
+					"extends": "liferay",
+					"globals": {
+						"$": true,
+						"AlloyEditor": true,
+						"CKEDITOR": true,
+						"LayoutBuilder": true,
+						"MODULE_PATH": true,
+						"main": true
+					}
+				}
+			}
+		}
+	},
+	"dependencies": {
+		"metal": "2.16.8",
+		"metal-dom": "2.16.8",
+		"metal-jsx": "2.16.8"
+	},
+	"name": "data-engine-taglib",
+	"private": true,
+	"scripts": {
+		"build": "liferay-npm-scripts build",
+		"checkFormat": "liferay-npm-scripts check",
+		"format": "liferay-npm-scripts fix",
+		"test_DISABLED": "liferay-npm-scripts test"
+	},
+	"version": "2.0.0"
+}

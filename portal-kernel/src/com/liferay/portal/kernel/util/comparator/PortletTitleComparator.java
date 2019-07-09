@@ -14,9 +14,10 @@
 
 package com.liferay.portal.kernel.util.comparator;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.util.CollatorUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -41,8 +42,17 @@ public class PortletTitleComparator
 	public PortletTitleComparator(
 		ServletContext servletContext, Locale locale) {
 
+		this(servletContext, locale, true);
+	}
+
+	public PortletTitleComparator(
+		ServletContext servletContext, Locale locale, boolean ascending) {
+
 		_servletContext = servletContext;
 		_locale = locale;
+		_ascending = ascending;
+
+		_collator = CollatorUtil.getInstance(_locale);
 	}
 
 	@Override
@@ -75,11 +85,17 @@ public class PortletTitleComparator
 			return -1;
 		}
 
-		Collator collator = Collator.getInstance(_locale);
+		int value = _collator.compare(portletTitle1, portletTitle2);
 
-		return collator.compare(portletTitle1, portletTitle2);
+		if (_ascending) {
+			return value;
+		}
+
+		return -value;
 	}
 
+	private final boolean _ascending;
+	private final Collator _collator;
 	private final Locale _locale;
 	private final ServletContext _servletContext;
 

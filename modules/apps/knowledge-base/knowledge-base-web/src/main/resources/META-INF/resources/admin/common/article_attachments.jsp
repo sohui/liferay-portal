@@ -26,27 +26,28 @@ if (kbArticle != null) {
 }
 %>
 
-<div class="kb-attachments">
-	<c:if test="<%= !attachmentsFileEntries.isEmpty() %>">
-		<div id="<portlet:namespace />existingAttachmentsContainer">
+<c:if test="<%= !attachmentsFileEntries.isEmpty() %>">
+	<div class="kb-attachments">
+		<h5><liferay-ui:message key="attachments" /></h5>
+
+		<div class="row">
 
 			<%
 			for (FileEntry fileEntry : attachmentsFileEntries) {
+				String rowURL = PortletFileRepositoryUtil.getDownloadPortletFileEntryURL(themeDisplay, fileEntry, "status=" + WorkflowConstants.STATUS_APPROVED);
 			%>
 
-				<div id="<portlet:namespace />fileEntryIdWrapper<%= fileEntry.getFileEntryId() %>">
-
-					<%
-					String clipURL = DLUtil.getPreviewURL(fileEntry, fileEntry.getFileVersion(), themeDisplay, StringPool.BLANK);
-					%>
-
-					<liferay-ui:icon
-						iconCssClass="icon-paper-clip"
-						label="<%= true %>"
-						message='<%= HtmlUtil.escape(fileEntry.getTitle() + " (" + TextFormatter.formatStorageSize(fileEntry.getSize(), locale) + ")") %>'
-						method="get"
-						url="<%= clipURL %>"
-					/>
+				<div class="col-md-4">
+					<liferay-frontend:horizontal-card
+						text="<%= fileEntry.getTitle() %>"
+						url="<%= rowURL %>"
+					>
+						<liferay-frontend:horizontal-card-col>
+							<liferay-document-library:mime-type-sticker
+								fileVersion="<%= fileEntry.getFileVersion() %>"
+							/>
+						</liferay-frontend:horizontal-card-col>
+					</liferay-frontend:horizontal-card>
 				</div>
 
 			<%
@@ -54,5 +55,5 @@ if (kbArticle != null) {
 			%>
 
 		</div>
-	</c:if>
-</div>
+	</div>
+</c:if>

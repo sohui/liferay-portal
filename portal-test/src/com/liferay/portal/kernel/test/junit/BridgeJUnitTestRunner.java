@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.test.junit;
 
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceKeyHashMap;
-import com.liferay.portal.kernel.memory.FinalizeManager;
+import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
+import com.liferay.petra.memory.FinalizeManager;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 
 import java.io.Serializable;
@@ -44,11 +44,11 @@ public class BridgeJUnitTestRunner extends BlockJUnit4ClassRunner {
 	public static Result runBridgeTests(
 		BridgeRunListener bridgeRunListener, Class<?>... testClasses) {
 
-		JUnitCore junitCore = new JUnitCore();
+		JUnitCore jUnitCore = new JUnitCore();
 
-		junitCore.addListener(bridgeRunListener);
+		jUnitCore.addListener(bridgeRunListener);
 
-		return junitCore.run(testClasses);
+		return jUnitCore.run(testClasses);
 	}
 
 	public BridgeJUnitTestRunner(Class<?> clazz) throws InitializationError {

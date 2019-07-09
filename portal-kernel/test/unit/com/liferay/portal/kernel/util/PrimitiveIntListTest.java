@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,19 +26,20 @@ public class PrimitiveIntListTest {
 
 	@Test
 	public void testAdd() {
-		int[] expected = new int[] {10, 11, 12};
+		int[] expected = {10, 11, 12};
 
 		PrimitiveIntList primitiveIntList = new PrimitiveIntList();
 
-		for (int i = 0; i < expected.length; i++) {
-			primitiveIntList.add(expected[i]);
+		for (int i : expected) {
+			primitiveIntList.add(i);
 		}
 
 		Assert.assertEquals(expected.length, primitiveIntList.size());
 
 		int[] actual = primitiveIntList.getArray();
 
-		Assert.assertEquals(expected.length, actual.length);
+		Assert.assertEquals(
+			Arrays.toString(actual), expected.length, actual.length);
 
 		for (int i = 0; i < actual.length; i++) {
 			Assert.assertEquals(expected[i], actual[i]);
@@ -45,7 +48,7 @@ public class PrimitiveIntListTest {
 
 	@Test
 	public void testAddAll() {
-		int[] expected = new int[] {10, 11, 12};
+		int[] expected = {10, 11, 12};
 
 		PrimitiveIntList primitiveIntList = new PrimitiveIntList();
 
@@ -55,7 +58,8 @@ public class PrimitiveIntListTest {
 
 		int[] actual = primitiveIntList.getArray();
 
-		Assert.assertEquals(expected.length, actual.length);
+		Assert.assertEquals(
+			Arrays.toString(actual), expected.length, actual.length);
 
 		for (int i = 0; i < actual.length; i++) {
 			Assert.assertEquals(expected[i], actual[i]);

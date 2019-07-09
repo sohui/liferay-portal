@@ -14,13 +14,11 @@
 
 package com.liferay.portal.kernel.trash;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.ClassedModel;
 import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.model.SystemEvent;
 import com.liferay.portal.kernel.model.TrashedModel;
-import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
@@ -28,9 +26,13 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.trash.kernel.model.TrashEntry;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.portlet.PortletRequest;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The interface for managing the basic trash operations of the Recycle Bin,
@@ -99,38 +101,6 @@ public interface TrashHandler {
 			String referrerClassName)
 		throws PortalException;
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #checkRestorableEntry(long,
-	 *             long, String)}
-	 */
-	@Deprecated
-	public void checkDuplicateEntry(
-			long classPK, long containerModelId, String newName)
-		throws PortalException;
-
-	/**
-	 * Checks if a duplicate trash entry already exists in the destination
-	 * container.
-	 *
-	 * <p>
-	 * This method is used to check for duplicates when a trash entry is being
-	 * restored or moved out of the Recycle Bin.
-	 * </p>
-	 *
-	 * @param      trashEntry the trash entry to check
-	 * @param      containerModelId the primary key of the destination (e.g.
-	 *             folder)
-	 * @param      newName the new name to be assigned to the trash entry
-	 *             (optionally <code>null</code> to forego renaming the trash
-	 *             entry)
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #checkRestorableEntry(TrashEntry, long, String)}
-	 */
-	@Deprecated
-	public void checkDuplicateTrashEntry(
-			TrashEntry trashEntry, long containerModelId, String newName)
-		throws PortalException;
-
 	public void checkRestorableEntry(
 			long classPK, long containerModelId, String newName)
 		throws PortalException;
@@ -175,15 +145,6 @@ public interface TrashHandler {
 	 */
 	public ContainerModel getContainerModel(long containerModelId)
 		throws PortalException;
-
-	/**
-	 * Returns the parent container model's class name.
-	 *
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getContainerModelClassName(long)}
-	 */
-	@Deprecated
-	public String getContainerModelClassName();
 
 	public String getContainerModelClassName(long classPK);
 
@@ -266,13 +227,6 @@ public interface TrashHandler {
 		long classPK, long destinationContainerModelId);
 
 	public Filter getExcludeFilter(SearchContext searchContext);
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getExcludeFilter(SearchContext)}
-	 */
-	@Deprecated
-	public Query getExcludeQuery(SearchContext searchContext);
 
 	/**
 	 * Returns the parent container model of the model entity with the primary
@@ -400,13 +354,15 @@ public interface TrashHandler {
 	 * result set.
 	 * </p>
 	 *
-	 * @param  classPK the primary key of a container model
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of trash renderers of model entities (excluding
-	 *         container models) that are children of the parent container model
-	 *         identified by the primary key
+	 * @param      classPK the primary key of a container model
+	 * @param      start the lower bound of the range of results
+	 * @param      end the upper bound of the range of results (not inclusive)
+	 * @return     the range of trash renderers of model entities (excluding
+	 *             container models) that are children of the parent container
+	 *             model identified by the primary key
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
+	@Deprecated
 	public List<TrashRenderer> getTrashContainedModelTrashRenderers(
 			long classPK, int start, int end)
 		throws PortalException;
@@ -459,22 +415,71 @@ public interface TrashHandler {
 	 * result set.
 	 * </p>
 	 *
-	 * @param  classPK the primary key of a container model
-	 * @param  start the lower bound of the range of results
-	 * @param  end the upper bound of the range of results (not inclusive)
-	 * @return the range of matching trash renderers of model entities
+	 * @param      classPK the primary key of a container model
+	 * @param      start the lower bound of the range of results
+	 * @param      end the upper bound of the range of results (not inclusive)
+	 * @return     the range of matching trash renderers of model entities
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
+	@Deprecated
 	public List<TrashRenderer> getTrashContainerModelTrashRenderers(
 			long classPK, int start, int end)
 		throws PortalException;
 
-	public TrashEntry getTrashEntry(long classPK) throws PortalException;
+	public TrashedModel getTrashedModel(long classPK);
+
+	public default TrashEntry getTrashEntry(long classPK)
+		throws PortalException {
+
+		TrashedModel trashedModel = getTrashedModel(classPK);
+
+		if (trashedModel != null) {
+			return trashedModel.getTrashEntry();
+		}
+
+		return null;
+	}
 
 	public int getTrashModelsCount(long classPK) throws PortalException;
 
-	public List<TrashRenderer> getTrashModelTrashRenderers(
+	public default List<TrashedModel> getTrashModelTrashedModels(
 			long classPK, int start, int end, OrderByComparator<?> obc)
-		throws PortalException;
+		throws PortalException {
+
+		return Collections.emptyList();
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getTrashModelTrashedModels(long, int, int,
+	 *             OrderByComparator)}
+	 */
+	@Deprecated
+	public default List<TrashRenderer> getTrashModelTrashRenderers(
+			long classPK, int start, int end, OrderByComparator<?> obc)
+		throws PortalException {
+
+		List<TrashedModel> trashedModels = getTrashModelTrashedModels(
+			classPK, start, end, obc);
+
+		List<TrashRenderer> trashRenderers = new ArrayList<>();
+
+		for (TrashedModel trashedModel : trashedModels) {
+			ClassedModel classedModel = (ClassedModel)trashedModel;
+
+			String modelClassName = classedModel.getModelClassName();
+
+			TrashHandler trashHandler =
+				TrashHandlerRegistryUtil.getTrashHandler(modelClassName);
+
+			TrashRenderer trashRenderer = trashHandler.getTrashRenderer(
+				trashedModel.getTrashEntryClassPK());
+
+			trashRenderers.add(trashRenderer);
+		}
+
+		return trashRenderers;
+	}
 
 	/**
 	 * Returns the trash renderer associated to the model entity with the
@@ -521,8 +526,20 @@ public interface TrashHandler {
 	 *
 	 * @return <code>true</code> if the entity can be deleted from the Recycle
 	 *         Bin.
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #isDeletable(long)}
 	 */
+	@Deprecated
 	public boolean isDeletable();
+
+	/**
+	 * Returns <code>true</code> if the entity can be deleted from the Recycle
+	 * Bin.
+	 *
+	 * @return <code>true</code> if the entity can be deleted from the Recycle
+	 *         Bin.
+	 */
+	public boolean isDeletable(long classPK) throws PortalException;
 
 	/**
 	 * Returns <code>true</code> if the model entity with the primary key is in
@@ -532,7 +549,15 @@ public interface TrashHandler {
 	 * @return <code>true</code> if the model entity is in the Recycle Bin;
 	 *         <code>false</code> otherwise
 	 */
-	public boolean isInTrash(long classPK) throws PortalException;
+	public default boolean isInTrash(long classPK) throws PortalException {
+		TrashedModel trashedModel = getTrashedModel(classPK);
+
+		if (trashedModel != null) {
+			return trashedModel.isInTrash();
+		}
+
+		return false;
+	}
 
 	/**
 	 * Returns <code>true</code> if the model entity with the primary key is in
@@ -543,7 +568,17 @@ public interface TrashHandler {
 	 *         a container that is in the Recycle Bin; <code>false</code>
 	 *         otherwise
 	 */
-	public boolean isInTrashContainer(long classPK) throws PortalException;
+	public default boolean isInTrashContainer(long classPK)
+		throws PortalException {
+
+		TrashedModel trashedModel = getTrashedModel(classPK);
+
+		if (trashedModel != null) {
+			return trashedModel.isInTrashContainer();
+		}
+
+		return false;
+	}
 
 	/**
 	 * Returns <code>true</code> if the entity can be moved from one container
@@ -551,8 +586,21 @@ public interface TrashHandler {
 	 *
 	 * @return <code>true</code> if the entity can be moved from one container
 	 *         model to another; <code>false</code> otherwise
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #isMovable(long)}
 	 */
+	@Deprecated
 	public boolean isMovable();
+
+	/**
+	 * Returns <code>true</code> if the entity can be moved from one container
+	 * model (such as a folder) to another.
+	 *
+	 * @param  classPK the primary key of the model entity
+	 * @return <code>true</code> if the entity can be moved from one container
+	 *         model to another; <code>false</code> otherwise
+	 */
+	public boolean isMovable(long classPK) throws PortalException;
 
 	/**
 	 * Returns <code>true</code> if the model entity can be restored to its

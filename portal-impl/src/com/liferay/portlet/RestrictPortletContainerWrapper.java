@@ -32,9 +32,12 @@ import javax.portlet.Event;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Shuyang Zhou
  */
+@ProviderType
 public class RestrictPortletContainerWrapper implements PortletContainer {
 
 	public static PortletContainer createRestrictPortletContainerWrapper(
@@ -56,23 +59,25 @@ public class RestrictPortletContainerWrapper implements PortletContainer {
 	}
 
 	@Override
-	public void preparePortlet(HttpServletRequest request, Portlet portlet)
+	public void preparePortlet(
+			HttpServletRequest httpServletRequest, Portlet portlet)
 		throws PortletContainerException {
 
-		_portletContainer.preparePortlet(request, portlet);
+		_portletContainer.preparePortlet(httpServletRequest, portlet);
 	}
 
 	@Override
 	public ActionResult processAction(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet)
 		throws PortletContainerException {
 
 		RestrictPortletServletRequest restrictPortletServletRequest =
-			new RestrictPortletServletRequest(request);
+			new RestrictPortletServletRequest(httpServletRequest);
 
 		try {
-			return _portletContainer.processAction(request, response, portlet);
+			return _portletContainer.processAction(
+				httpServletRequest, httpServletResponse, portlet);
 		}
 		finally {
 			restrictPortletServletRequest.mergeSharedAttributes();
@@ -81,16 +86,18 @@ public class RestrictPortletContainerWrapper implements PortletContainer {
 
 	@Override
 	public List<Event> processEvent(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet, Layout layout, Event event)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet,
+			Layout layout, Event event)
 		throws PortletContainerException {
 
 		RestrictPortletServletRequest restrictPortletServletRequest =
-			new RestrictPortletServletRequest(request);
+			new RestrictPortletServletRequest(httpServletRequest);
 
 		try {
 			return _portletContainer.processEvent(
-				request, response, portlet, layout, event);
+				httpServletRequest, httpServletResponse, portlet, layout,
+				event);
 		}
 		finally {
 			restrictPortletServletRequest.mergeSharedAttributes();
@@ -98,35 +105,91 @@ public class RestrictPortletContainerWrapper implements PortletContainer {
 	}
 
 	@Override
+	public void processPublicRenderParameters(
+		HttpServletRequest httpServletRequest, Layout layout) {
+
+		_portletContainer.processPublicRenderParameters(
+			httpServletRequest, layout);
+	}
+
+	@Override
+	public void processPublicRenderParameters(
+		HttpServletRequest httpServletRequest, Layout layout, Portlet portlet) {
+
+		_portletContainer.processPublicRenderParameters(
+			httpServletRequest, layout, portlet);
+	}
+
+	@Override
 	public void render(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet)
+		throws PortletContainerException {
+
+		_render(
+			httpServletRequest,
+			() -> _portletContainer.render(
+				httpServletRequest, httpServletResponse, portlet));
+	}
+
+	@Override
+	public void renderHeaders(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet)
+		throws PortletContainerException {
+
+		_render(
+			httpServletRequest,
+			() -> _portletContainer.renderHeaders(
+				httpServletRequest, httpServletResponse, portlet));
+	}
+
+	@Override
+	public void serveResource(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Portlet portlet)
+		throws PortletContainerException {
+
+		RestrictPortletServletRequest restrictPortletServletRequest =
+			new RestrictPortletServletRequest(httpServletRequest);
+
+		try {
+			_portletContainer.serveResource(
+				httpServletRequest, httpServletResponse, portlet);
+		}
+		catch (Exception e) {
+			throw new PortletContainerException(e);
+		}
+		finally {
+			restrictPortletServletRequest.mergeSharedAttributes();
+		}
+	}
+
+	private void _render(
+			HttpServletRequest httpServletRequest, Renderable renderable)
 		throws PortletContainerException {
 
 		RestrictPortletServletRequest restrictPortletServletRequest = null;
 
-		if (request instanceof RestrictPortletServletRequest) {
+		if (httpServletRequest instanceof RestrictPortletServletRequest) {
 			restrictPortletServletRequest =
-				(RestrictPortletServletRequest)request;
+				(RestrictPortletServletRequest)httpServletRequest;
 
 			Map<String, Object> attributes =
 				restrictPortletServletRequest.getAttributes();
 
 			if (attributes.containsKey(WebKeys.RENDER_PORTLET)) {
 				restrictPortletServletRequest =
-					new RestrictPortletServletRequest(request);
+					new RestrictPortletServletRequest(httpServletRequest);
 			}
 		}
 		else {
 			restrictPortletServletRequest = new RestrictPortletServletRequest(
-				request);
+				httpServletRequest);
 		}
 
 		try {
-			_portletContainer.render(request, response, portlet);
-		}
-		catch (Exception e) {
-			throw new PortletContainerException(e);
+			renderable.render();
 		}
 		finally {
 			restrictPortletServletRequest.removeAttribute(WebKeys.RENDER_PATH);
@@ -144,7 +207,7 @@ public class RestrictPortletContainerWrapper implements PortletContainer {
 			// attributes. The only safe way to merge shared attributes is for
 			// the caller to merge after it has the render result.
 
-			Object lock = request.getAttribute(
+			Object lock = httpServletRequest.getAttribute(
 				WebKeys.PARALLEL_RENDERING_MERGE_LOCK);
 
 			if (lock == null) {
@@ -153,26 +216,13 @@ public class RestrictPortletContainerWrapper implements PortletContainer {
 		}
 	}
 
-	@Override
-	public void serveResource(
-			HttpServletRequest request, HttpServletResponse response,
-			Portlet portlet)
-		throws PortletContainerException {
-
-		RestrictPortletServletRequest restrictPortletServletRequest =
-			new RestrictPortletServletRequest(request);
-
-		try {
-			_portletContainer.serveResource(request, response, portlet);
-		}
-		catch (Exception e) {
-			throw new PortletContainerException(e);
-		}
-		finally {
-			restrictPortletServletRequest.mergeSharedAttributes();
-		}
-	}
-
 	private final PortletContainer _portletContainer;
+
+	@FunctionalInterface
+	private interface Renderable {
+
+		public void render() throws PortletContainerException;
+
+	}
 
 }

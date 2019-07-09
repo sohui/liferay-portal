@@ -14,11 +14,10 @@
 
 package com.liferay.portal.kernel.json;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
+import java.util.Collection;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -53,8 +52,16 @@ public class JSONFactoryUtil {
 		return getJSONFactory().createJSONArray();
 	}
 
+	public static JSONArray createJSONArray(Collection<?> collection) {
+		return getJSONFactory().createJSONArray(collection);
+	}
+
 	public static JSONArray createJSONArray(String json) throws JSONException {
 		return getJSONFactory().createJSONArray(json);
+	}
+
+	public static <T> JSONArray createJSONArray(T[] array) {
+		return getJSONFactory().createJSONArray(array);
 	}
 
 	public static <T> JSONDeserializer<T> createJSONDeserializer() {
@@ -75,12 +82,6 @@ public class JSONFactoryUtil {
 		return getJSONFactory().createJSONSerializer();
 	}
 
-	public static JSONValidator createJSONValidator(String jsonSchema)
-		throws JSONException {
-
-		return getJSONFactory().createJSONValidator(jsonSchema);
-	}
-
 	public static Object deserialize(JSONObject jsonObj) {
 		return getJSONFactory().deserialize(jsonObj);
 	}
@@ -90,8 +91,6 @@ public class JSONFactoryUtil {
 	}
 
 	public static JSONFactory getJSONFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(JSONFactoryUtil.class);
-
 		return _jsonFactory;
 	}
 
@@ -145,8 +144,6 @@ public class JSONFactoryUtil {
 	}
 
 	public void setJSONFactory(JSONFactory jsonFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_jsonFactory = jsonFactory;
 	}
 

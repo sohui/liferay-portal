@@ -1,11 +1,14 @@
-<definition default="sikuliAssertElementPresent">
-	<command name="sikuliAssertElementPresent">
-		<execute function="WaitForSPARefresh" />
+@default = "sikuliAssertElementPresent"
+definition {
 
-		<execute selenium="sikuliAssertElementPresent" />
+	function sikuliAssertElementPresent {
+		WaitForSPARefresh();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.sikuliAssertElementPresent();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

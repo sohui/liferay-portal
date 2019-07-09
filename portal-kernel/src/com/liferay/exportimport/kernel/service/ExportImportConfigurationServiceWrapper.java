@@ -14,9 +14,9 @@
 
 package com.liferay.exportimport.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.service.ServiceWrapper;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides a wrapper for {@link ExportImportConfigurationService}.
@@ -28,41 +28,52 @@ import com.liferay.portal.kernel.service.ServiceWrapper;
 @ProviderType
 public class ExportImportConfigurationServiceWrapper
 	implements ExportImportConfigurationService,
-		ServiceWrapper<ExportImportConfigurationService> {
+			   ServiceWrapper<ExportImportConfigurationService> {
+
 	public ExportImportConfigurationServiceWrapper(
 		ExportImportConfigurationService exportImportConfigurationService) {
+
 		_exportImportConfigurationService = exportImportConfigurationService;
 	}
 
 	@Override
-	public com.liferay.exportimport.kernel.model.ExportImportConfiguration moveExportImportConfigurationToTrash(
-		long exportImportConfigurationId)
+	public void deleteExportImportConfiguration(
+			long exportImportConfigurationId)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _exportImportConfigurationService.moveExportImportConfigurationToTrash(exportImportConfigurationId);
-	}
 
-	@Override
-	public com.liferay.exportimport.kernel.model.ExportImportConfiguration restoreExportImportConfigurationFromTrash(
-		long exportImportConfigurationId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _exportImportConfigurationService.restoreExportImportConfigurationFromTrash(exportImportConfigurationId);
+		_exportImportConfigurationService.deleteExportImportConfiguration(
+			exportImportConfigurationId);
 	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
+	public String getOSGiServiceIdentifier() {
 		return _exportImportConfigurationService.getOSGiServiceIdentifier();
 	}
 
 	@Override
-	public void deleteExportImportConfiguration(
-		long exportImportConfigurationId)
+	public com.liferay.exportimport.kernel.model.ExportImportConfiguration
+			moveExportImportConfigurationToTrash(
+				long exportImportConfigurationId)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		_exportImportConfigurationService.deleteExportImportConfiguration(exportImportConfigurationId);
+
+		return _exportImportConfigurationService.
+			moveExportImportConfigurationToTrash(exportImportConfigurationId);
+	}
+
+	@Override
+	public com.liferay.exportimport.kernel.model.ExportImportConfiguration
+			restoreExportImportConfigurationFromTrash(
+				long exportImportConfigurationId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _exportImportConfigurationService.
+			restoreExportImportConfigurationFromTrash(
+				exportImportConfigurationId);
 	}
 
 	@Override
@@ -73,8 +84,10 @@ public class ExportImportConfigurationServiceWrapper
 	@Override
 	public void setWrappedService(
 		ExportImportConfigurationService exportImportConfigurationService) {
+
 		_exportImportConfigurationService = exportImportConfigurationService;
 	}
 
 	private ExportImportConfigurationService _exportImportConfigurationService;
+
 }

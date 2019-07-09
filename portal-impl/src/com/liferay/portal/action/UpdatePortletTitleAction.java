@@ -16,7 +16,6 @@ package com.liferay.portal.action;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
@@ -24,16 +23,13 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.struts.JSONAction;
-import com.liferay.portlet.InvokerPortletImpl;
+import com.liferay.portlet.InvokerPortletUtil;
 
 import javax.portlet.PortletPreferences;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
 
 /**
  * @author Ming-Gih Lam
@@ -42,21 +38,22 @@ public class UpdatePortletTitleAction extends JSONAction {
 
 	@Override
 	public String getJSON(
-			ActionMapping actionMapping, ActionForm actionForm,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		HttpSession session = request.getSession();
+		HttpSession session = httpServletRequest.getSession();
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		Layout layout = themeDisplay.getLayout();
 
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
 
-		String portletId = ParamUtil.getString(request, "portletId");
+		String portletId = ParamUtil.getString(httpServletRequest, "portletId");
 
 		if (!PortletPermissionUtil.contains(
 				permissionChecker, layout, portletId,
@@ -65,21 +62,20 @@ public class UpdatePortletTitleAction extends JSONAction {
 			return null;
 		}
 
-		String languageId = LanguageUtil.getLanguageId(request);
-		String title = ParamUtil.getString(request, "title");
+		String languageId = LanguageUtil.getLanguageId(httpServletRequest);
+		String title = ParamUtil.getString(httpServletRequest, "title");
 
 		PortletPreferences portletSetup =
-			PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-				layout, portletId);
+			themeDisplay.getStrictLayoutPortletSetup(layout, portletId);
 
 		portletSetup.setValue("portletSetupTitle_" + languageId, title);
 		portletSetup.setValue("portletSetupUseCustomTitle", "true");
 
 		portletSetup.store();
 
-		InvokerPortletImpl.clearResponse(
+		InvokerPortletUtil.clearResponse(
 			session, layout.getPrimaryKey(), portletId,
-			LanguageUtil.getLanguageId(request));
+			LanguageUtil.getLanguageId(httpServletRequest));
 
 		return null;
 	}

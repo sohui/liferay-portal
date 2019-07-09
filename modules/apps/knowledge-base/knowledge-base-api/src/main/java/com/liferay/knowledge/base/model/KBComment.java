@@ -14,30 +14,31 @@
 
 package com.liferay.knowledge.base.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the KBComment service. Represents a row in the &quot;KBComment&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see KBCommentModel
- * @see com.liferay.knowledge.base.model.impl.KBCommentImpl
- * @see com.liferay.knowledge.base.model.impl.KBCommentModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.knowledge.base.model.impl.KBCommentImpl")
 @ProviderType
 public interface KBComment extends KBCommentModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.knowledge.base.model.impl.KBCommentImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.knowledge.base.model.impl.KBCommentImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<KBComment, Long> KB_COMMENT_ID_ACCESSOR = new Accessor<KBComment, Long>() {
+	public static final Accessor<KBComment, Long> KB_COMMENT_ID_ACCESSOR =
+		new Accessor<KBComment, Long>() {
+
 			@Override
 			public Long get(KBComment kbComment) {
 				return kbComment.getKbCommentId();
@@ -52,5 +53,7 @@ public interface KBComment extends KBCommentModel, PersistedModel {
 			public Class<KBComment> getTypeClass() {
 				return KBComment.class;
 			}
+
 		};
+
 }

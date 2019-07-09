@@ -14,6 +14,7 @@
 
 package com.liferay.portal.events;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.events.Action;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -28,13 +29,17 @@ import javax.servlet.http.HttpSession;
 public class LogSessionIdAction extends Action {
 
 	@Override
-	public void run(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession();
+	public void run(
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		if (_log.isDebugEnabled()) {
+			HttpSession session = httpServletRequest.getSession();
+
 			_log.debug(
-				"Session id " + session.getId() + " is " +
-					(!session.isNew() ? "not " : "") + "new");
+				StringBundler.concat(
+					"Session id ", session.getId(), " is ",
+					!session.isNew() ? "not " : "", "new"));
 		}
 	}
 

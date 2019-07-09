@@ -14,29 +14,32 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the ClusterGroup service. Represents a row in the &quot;ClusterGroup&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see ClusterGroupModel
- * @see com.liferay.portal.model.impl.ClusterGroupImpl
- * @see com.liferay.portal.model.impl.ClusterGroupModelImpl
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ImplementationClassName("com.liferay.portal.model.impl.ClusterGroupImpl")
 @ProviderType
 public interface ClusterGroup extends ClusterGroupModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.ClusterGroupImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.ClusterGroupImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<ClusterGroup, Long> CLUSTER_GROUP_ID_ACCESSOR = new Accessor<ClusterGroup, Long>() {
+	public static final Accessor<ClusterGroup, Long> CLUSTER_GROUP_ID_ACCESSOR =
+		new Accessor<ClusterGroup, Long>() {
+
 			@Override
 			public Long get(ClusterGroup clusterGroup) {
 				return clusterGroup.getClusterGroupId();
@@ -51,7 +54,9 @@ public interface ClusterGroup extends ClusterGroupModel, PersistedModel {
 			public Class<ClusterGroup> getTypeClass() {
 				return ClusterGroup.class;
 			}
+
 		};
 
-	public java.lang.String[] getClusterNodeIdsArray();
+	public String[] getClusterNodeIdsArray();
+
 }

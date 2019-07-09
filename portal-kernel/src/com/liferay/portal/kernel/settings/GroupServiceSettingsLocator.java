@@ -19,16 +19,13 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 
 /**
- * @author Ivan Zaera
+ * @author Iván Zaera
  * @author Jorge Ferrer
  */
 public class GroupServiceSettingsLocator implements SettingsLocator {
 
 	public GroupServiceSettingsLocator(long groupId, String settingsId) {
-		_groupId = groupId;
-		_settingsId = settingsId;
-
-		_configurationPid = settingsId;
+		this(groupId, settingsId, settingsId);
 	}
 
 	public GroupServiceSettingsLocator(
@@ -41,25 +38,17 @@ public class GroupServiceSettingsLocator implements SettingsLocator {
 
 	@Override
 	public Settings getSettings() throws SettingsException {
-		long companyId = getCompanyId(_groupId);
+		CompanyServiceSettingsLocator companyServiceSettingsLocator =
+			new CompanyServiceSettingsLocator(
+				getCompanyId(_groupId), _settingsId, _configurationPid);
 
-		Settings portalPropertiesSettings =
-			_settingsLocatorHelper.getPortalPropertiesSettings();
-
-		Settings configurationBeanSettings =
-			_settingsLocatorHelper.getConfigurationBeanSettings(
-				_configurationPid, portalPropertiesSettings);
-
-		Settings portalPreferencesSettings =
-			_settingsLocatorHelper.getPortalPreferencesSettings(
-				companyId, configurationBeanSettings);
-
-		Settings companyPortletPreferencesSettings =
-			_settingsLocatorHelper.getCompanyPortletPreferencesSettings(
-				companyId, _settingsId, portalPreferencesSettings);
+		Settings groupConfigurationBeanSettings =
+			_settingsLocatorHelper.getGroupConfigurationBeanSettings(
+				_groupId, _configurationPid,
+				companyServiceSettingsLocator.getSettings());
 
 		return _settingsLocatorHelper.getGroupPortletPreferencesSettings(
-			_groupId, _settingsId, companyPortletPreferencesSettings);
+			_groupId, _settingsId, groupConfigurationBeanSettings);
 	}
 
 	@Override

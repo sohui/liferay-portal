@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.Ticket;
 import com.liferay.portal.kernel.service.TicketLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the Ticket service. Represents a row in the &quot;Ticket&quot; database table, with each column mapped to a property of this class.
@@ -33,10 +33,11 @@ import com.liferay.portal.kernel.service.TicketLocalServiceUtil;
  */
 @ProviderType
 public abstract class TicketBaseImpl extends TicketModelImpl implements Ticket {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a ticket model instance should use the {@link Ticket} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a ticket model instance should use the <code>Ticket</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -47,4 +48,5 @@ public abstract class TicketBaseImpl extends TicketModelImpl implements Ticket {
 			TicketLocalServiceUtil.updateTicket(this);
 		}
 	}
+
 }

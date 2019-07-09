@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Locale;
@@ -60,7 +60,7 @@ public class PortletSetupUtil {
 			css = null;
 
 			if (_log.isWarnEnabled()) {
-				_log.warn(e);
+				_log.warn(e, e);
 			}
 		}
 
@@ -97,23 +97,22 @@ public class PortletSetupUtil {
 		for (Locale locale : LanguageUtil.getAvailableLocales()) {
 			String languageId = LocaleUtil.toLanguageId(locale);
 
-			String title = portletSetup.getValue(
-				"portletSetupTitle_" + languageId, null);
-
 			if (Validator.isNotNull(languageId)) {
+				String title = portletSetup.getValue(
+					"portletSetupTitle_" + languageId, null);
+
 				titlesJSONObject.put(languageId, title);
 			}
 		}
 
-		String linkToLayoutUuid = GetterUtil.getString(
-			portletSetup.getValue("portletSetupLinkToLayoutUuid", null));
-		boolean useCustomTitle = GetterUtil.getBoolean(
-			portletSetup.getValue("portletSetupUseCustomTitle", null));
 		String portletDecoratorId = GetterUtil.getString(
 			portletSetup.getValue("portletSetupPortletDecoratorId", null));
 
 		portletDataJSONObject.put("portletDecoratorId", portletDecoratorId);
-		portletDataJSONObject.put("portletLinksTarget", linkToLayoutUuid);
+
+		boolean useCustomTitle = GetterUtil.getBoolean(
+			portletSetup.getValue("portletSetupUseCustomTitle", null));
+
 		portletDataJSONObject.put("useCustomTitle", useCustomTitle);
 
 		return cssJSONObject;

@@ -22,9 +22,16 @@ import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTableConstants;
 import com.liferay.expando.kernel.model.ExpandoValue;
+import com.liferay.expando.kernel.model.adapter.StagedExpandoColumn;
+import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.model.SystemEventConstants;
+import com.liferay.portal.kernel.model.adapter.ModelAdapterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.expando.model.impl.ExpandoValueImpl;
 import com.liferay.portlet.expando.service.base.ExpandoColumnLocalServiceBaseImpl;
@@ -84,6 +91,7 @@ public class ExpandoColumnLocalServiceImpl
 
 	@Override
 	public void deleteColumn(ExpandoColumn column) {
+		addDeletionSystemEvent(column);
 
 		// Column
 
@@ -119,7 +127,7 @@ public class ExpandoColumnLocalServiceImpl
 			tableId, name);
 
 		if (column != null) {
-			expandoColumnPersistence.remove(column);
+			deleteColumn(column);
 		}
 	}
 
@@ -207,7 +215,7 @@ public class ExpandoColumnLocalServiceImpl
 		long tableId, Collection<String> names) {
 
 		return expandoColumnPersistence.findByT_N(
-			tableId, names.toArray(new String[names.size()]));
+			tableId, names.toArray(new String[0]));
 	}
 
 	@Override
@@ -237,7 +245,7 @@ public class ExpandoColumnLocalServiceImpl
 		}
 
 		return expandoColumnPersistence.findByT_N(
-			table.getTableId(), names.toArray(new String[names.size()]));
+			table.getTableId(), names.toArray(new String[0]));
 	}
 
 	@Override
@@ -393,6 +401,32 @@ public class ExpandoColumnLocalServiceImpl
 		return column;
 	}
 
+	protected void addDeletionSystemEvent(ExpandoColumn expandoColumn) {
+		StagedExpandoColumn stagedExpandoColumn = ModelAdapterUtil.adapt(
+			expandoColumn, ExpandoColumn.class, StagedExpandoColumn.class);
+
+		StagedModelType stagedModelType =
+			stagedExpandoColumn.getStagedModelType();
+
+		JSONObject extraDataJSONObject = JSONUtil.put(
+			"companyId", stagedExpandoColumn.getCompanyId()
+		).put(
+			"uuid", stagedExpandoColumn.getUuid()
+		);
+
+		try {
+			systemEventLocalService.addSystemEvent(
+				stagedExpandoColumn.getCompanyId(),
+				stagedModelType.getClassName(),
+				stagedExpandoColumn.getPrimaryKey(), StringPool.BLANK, null,
+				SystemEventConstants.TYPE_DELETE,
+				extraDataJSONObject.toString());
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
+	}
+
 	protected ExpandoValue validate(
 			long columnId, long tableId, String name, int type,
 			Object defaultData)
@@ -427,6 +461,7 @@ public class ExpandoColumnLocalServiceImpl
 			(type != ExpandoColumnConstants.DOUBLE_ARRAY) &&
 			(type != ExpandoColumnConstants.FLOAT) &&
 			(type != ExpandoColumnConstants.FLOAT_ARRAY) &&
+			(type != ExpandoColumnConstants.GEOLOCATION) &&
 			(type != ExpandoColumnConstants.INTEGER) &&
 			(type != ExpandoColumnConstants.INTEGER_ARRAY) &&
 			(type != ExpandoColumnConstants.LONG) &&
@@ -474,6 +509,9 @@ public class ExpandoColumnLocalServiceImpl
 		}
 		else if (type == ExpandoColumnConstants.FLOAT_ARRAY) {
 			value.setFloatArray((float[])defaultData);
+		}
+		else if (type == ExpandoColumnConstants.GEOLOCATION) {
+			value.setGeolocationJSONObject((JSONObject)defaultData);
 		}
 		else if (type == ExpandoColumnConstants.INTEGER) {
 			value.setInteger((Integer)defaultData);

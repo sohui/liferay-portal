@@ -14,22 +14,25 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public class SubscriptionSoap implements Serializable {
+
 	public static SubscriptionSoap toSoapModel(Subscription model) {
 		SubscriptionSoap soapModel = new SubscriptionSoap();
 
@@ -76,7 +79,8 @@ public class SubscriptionSoap implements Serializable {
 	}
 
 	public static SubscriptionSoap[] toSoapModels(List<Subscription> models) {
-		List<SubscriptionSoap> soapModels = new ArrayList<SubscriptionSoap>(models.size());
+		List<SubscriptionSoap> soapModels = new ArrayList<SubscriptionSoap>(
+			models.size());
 
 		for (Subscription model : models) {
 			soapModels.add(toSoapModel(model));
@@ -195,4 +199,5 @@ public class SubscriptionSoap implements Serializable {
 	private long _classNameId;
 	private long _classPK;
 	private String _frequency;
+
 }

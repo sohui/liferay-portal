@@ -14,22 +14,22 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.ListTypeServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portal.service.http.ListTypeServiceSoap
  * @generated
  */
 @ProviderType
 public class ListTypeSoap implements Serializable {
+
 	public static ListTypeSoap toSoapModel(ListType model) {
 		ListTypeSoap soapModel = new ListTypeSoap();
 
@@ -69,7 +69,8 @@ public class ListTypeSoap implements Serializable {
 	}
 
 	public static ListTypeSoap[] toSoapModels(List<ListType> models) {
-		List<ListTypeSoap> soapModels = new ArrayList<ListTypeSoap>(models.size());
+		List<ListTypeSoap> soapModels = new ArrayList<ListTypeSoap>(
+			models.size());
 
 		for (ListType model : models) {
 			soapModels.add(toSoapModel(model));
@@ -125,4 +126,5 @@ public class ListTypeSoap implements Serializable {
 	private long _listTypeId;
 	private String _name;
 	private String _type;
+
 }

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
@@ -25,8 +27,6 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionFinder;
 import com.liferay.portal.kernel.service.persistence.ResourcePermissionUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.ResourcePermissionImpl;
 import com.liferay.portal.model.impl.ResourcePermissionModelImpl;
@@ -116,7 +116,7 @@ public class ResourcePermissionFinderImpl
 		long companyId, String name, int scope, String primKey, long[] roleIds,
 		long actionId) {
 
-		Object[] finderArgs = new Object[] {
+		Object[] finderArgs = {
 			companyId, name, scope, primKey, StringUtil.merge(roleIds), actionId
 		};
 
@@ -183,6 +183,13 @@ public class ResourcePermissionFinderImpl
 	}
 
 	@Override
+	public Map<Serializable, ResourcePermission> fetchByPrimaryKeys(
+		Set<Serializable> primaryKeys) {
+
+		return ResourcePermissionUtil.fetchByPrimaryKeys(primaryKeys);
+	}
+
+	@Override
 	public List<ResourcePermission> findByResource(
 		long companyId, long groupId, String name, String primKey) {
 
@@ -213,13 +220,6 @@ public class ResourcePermissionFinderImpl
 		finally {
 			closeSession(session);
 		}
-	}
-
-	@Override
-	public Map<Serializable, ResourcePermission> fetchByPrimaryKeys(
-		Set<Serializable> primaryKeys) {
-
-		return ResourcePermissionUtil.fetchByPrimaryKeys(primaryKeys);
 	}
 
 	@Override

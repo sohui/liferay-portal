@@ -15,7 +15,7 @@
 </tr>
 <tr>
 	<td>ATTACHMENT_FILE_NAME</td>
-	<td>//div[contains(@class,'clamp-container')]/span/a[contains(@title,'${key_attachmentFileName}')]</td>
+	<td>//div[contains(@class,'page-attachments')]//a[contains(@title,'${key_attachmentFileName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -24,18 +24,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>BODY_ASSET</td>
-	<td>//div[@class='portlet-body']/p[contains(.,'${key_wikiPageContent}')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>BODY_GENERIC</td>
 	<td>//div[@class='wiki-body']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>BODY_HEADER</td>
-	<td>//div[@class='wiki-body']/h1</td>
 	<td></td>
 </tr>
 <tr>

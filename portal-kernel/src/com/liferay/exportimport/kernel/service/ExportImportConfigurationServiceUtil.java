@@ -14,71 +14,77 @@
 
 package com.liferay.exportimport.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the remote service utility for ExportImportConfiguration. This utility wraps
- * {@link com.liferay.portlet.exportimport.service.impl.ExportImportConfigurationServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portlet.exportimport.service.impl.ExportImportConfigurationServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see ExportImportConfigurationService
- * @see com.liferay.portlet.exportimport.service.base.ExportImportConfigurationServiceBaseImpl
- * @see com.liferay.portlet.exportimport.service.impl.ExportImportConfigurationServiceImpl
  * @generated
  */
 @ProviderType
 public class ExportImportConfigurationServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portlet.exportimport.service.impl.ExportImportConfigurationServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.ExportImportConfigurationServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.exportimport.kernel.model.ExportImportConfiguration moveExportImportConfigurationToTrash(
-		long exportImportConfigurationId)
+	public static void deleteExportImportConfiguration(
+			long exportImportConfigurationId)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .moveExportImportConfigurationToTrash(exportImportConfigurationId);
-	}
 
-	public static com.liferay.exportimport.kernel.model.ExportImportConfiguration restoreExportImportConfigurationFromTrash(
-		long exportImportConfigurationId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .restoreExportImportConfigurationFromTrash(exportImportConfigurationId);
+		getService().deleteExportImportConfiguration(
+			exportImportConfigurationId);
 	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static void deleteExportImportConfiguration(
-		long exportImportConfigurationId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		getService().deleteExportImportConfiguration(exportImportConfigurationId);
+	public static
+		com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				moveExportImportConfigurationToTrash(
+					long exportImportConfigurationId)
+			throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().moveExportImportConfigurationToTrash(
+			exportImportConfigurationId);
+	}
+
+	public static
+		com.liferay.exportimport.kernel.model.ExportImportConfiguration
+				restoreExportImportConfigurationFromTrash(
+					long exportImportConfigurationId)
+			throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().restoreExportImportConfigurationFromTrash(
+			exportImportConfigurationId);
 	}
 
 	public static ExportImportConfigurationService getService() {
 		if (_service == null) {
-			_service = (ExportImportConfigurationService)PortalBeanLocatorUtil.locate(ExportImportConfigurationService.class.getName());
-
-			ReferenceRegistry.registerReference(ExportImportConfigurationServiceUtil.class,
-				"_service");
+			_service =
+				(ExportImportConfigurationService)PortalBeanLocatorUtil.locate(
+					ExportImportConfigurationService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static ExportImportConfigurationService _service;
+
 }

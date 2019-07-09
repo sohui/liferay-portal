@@ -14,10 +14,11 @@
 
 package com.liferay.portal.kernel.security.auth;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -33,7 +34,7 @@ public class DefaultScreenNameValidator implements ScreenNameValidator {
 	@Override
 	public String getAUIValidatorJS() {
 		return "function(val) {var pattern = new RegExp('[^A-Za-z0-9" +
-			getSpecialChars() +
+			getJSEscapedSpecialChars() +
 				"]');if (val.match(pattern)) {return false;}return true;}";
 	}
 
@@ -57,13 +58,20 @@ public class DefaultScreenNameValidator implements ScreenNameValidator {
 		return true;
 	}
 
+	protected String getJSEscapedSpecialChars() {
+		if (_jsEscapedSpecialChars == null) {
+			_jsEscapedSpecialChars = HtmlUtil.escapeJS(getSpecialChars());
+		}
+
+		return _jsEscapedSpecialChars;
+	}
+
 	protected String getSpecialChars() {
 		if (_specialChars == null) {
 			String specialChars = PropsUtil.get(
 				PropsKeys.USERS_SCREEN_NAME_SPECIAL_CHARACTERS);
 
-			_specialChars = specialChars.replaceAll(
-				StringPool.SLASH, StringPool.BLANK);
+			_specialChars = StringUtil.removeChar(specialChars, CharPool.SLASH);
 		}
 
 		return _specialChars;
@@ -73,6 +81,7 @@ public class DefaultScreenNameValidator implements ScreenNameValidator {
 		return !screenName.matches("[A-Za-z0-9" + getSpecialChars() + "]+");
 	}
 
+	private String _jsEscapedSpecialChars;
 	private String _specialChars;
 
 }

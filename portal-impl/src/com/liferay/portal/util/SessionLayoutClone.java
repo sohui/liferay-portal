@@ -14,7 +14,7 @@
 
 package com.liferay.portal.util;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.servlet.SharedSessionServletRequest;
 
@@ -28,43 +28,55 @@ import javax.servlet.http.HttpSession;
 public class SessionLayoutClone implements LayoutClone {
 
 	@Override
-	public String get(HttpServletRequest request, long plid) {
-		HttpSession session = getPortalSession(request);
+	public String get(HttpServletRequest httpServletRequest, long plid) {
+		HttpSession session = getPortalSession(httpServletRequest);
 
 		return (String)session.getAttribute(encodeKey(plid));
 	}
 
 	@Override
 	public void update(
-		HttpServletRequest request, long plid, String typeSettings) {
+		HttpServletRequest httpServletRequest, long plid, String typeSettings) {
 
-		HttpSession session = getPortalSession(request);
+		HttpSession session = getPortalSession(httpServletRequest);
 
 		session.setAttribute(encodeKey(plid), typeSettings);
 	}
 
 	protected String encodeKey(long plid) {
-		return SessionLayoutClone.class.getName().concat(
-			StringPool.POUND).concat(StringUtil.toHexString(plid));
+		return SessionLayoutClone.class.getName(
+		).concat(
+			StringPool.POUND
+		).concat(
+			StringUtil.toHexString(plid)
+		);
 	}
 
-	protected HttpSession getPortalSession(HttpServletRequest request) {
-		HttpServletRequest originalRequest = request;
+	protected HttpSession getPortalSession(
+		HttpServletRequest httpServletRequest) {
 
-		while (originalRequest instanceof HttpServletRequestWrapper) {
-			if (originalRequest instanceof SharedSessionServletRequest) {
+		HttpServletRequest originalHttpServletRequest = httpServletRequest;
+
+		while (originalHttpServletRequest instanceof
+					HttpServletRequestWrapper) {
+
+			if (originalHttpServletRequest instanceof
+					SharedSessionServletRequest) {
+
 				SharedSessionServletRequest sharedSessionServletRequest =
-					(SharedSessionServletRequest)originalRequest;
+					(SharedSessionServletRequest)originalHttpServletRequest;
 
 				return sharedSessionServletRequest.getSharedSession();
 			}
 
-			originalRequest =
-				(HttpServletRequest)
-					((HttpServletRequestWrapper)originalRequest).getRequest();
+			HttpServletRequestWrapper httpServletRequestWrapper =
+				(HttpServletRequestWrapper)originalHttpServletRequest;
+
+			originalHttpServletRequest =
+				(HttpServletRequest)httpServletRequestWrapper.getRequest();
 		}
 
-		return request.getSession();
+		return httpServletRequest.getSession();
 	}
 
 }

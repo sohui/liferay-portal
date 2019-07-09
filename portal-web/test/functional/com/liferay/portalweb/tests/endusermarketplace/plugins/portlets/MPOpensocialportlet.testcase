@@ -1,55 +1,57 @@
-<definition component-name="portal-plugins-deployment">
-	<property name="testray.main.component.name" value="Plugin Installer" />
+@component-name = "portal-plugins-deployment"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
+	property testray.main.component.name = "Plugin Installer";
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Test Page" />
-		</execute>
-	</set-up>
+	setUp {
+		User.firstLoginPG();
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-	<command name="OpenSocialPortletSmoke" priority="4">
-		<property name="portlet.plugins.includes" value="opensocial-portlet" />
+		SitePages.addPublicPage(pageName = "Test Page");
+	}
 
-		<var name="appName" value="OpenSocial Gadget" />
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Page" />
-		</execute>
+	@priority = "4"
+	test OpenSocialPortletSmoke {
+		property portlet.plugins.includes = "opensocial-portlet";
+		var appName = "OpenSocial Gadget";
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="OpenSocial Gadget" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Page");
 
-		<execute macro="Navigator#openURL" />
+		Portlet.addPG(portletName = "OpenSocial Gadget");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="OpenSocial Gadget Editor" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="OpenSocial Gadget Publisher" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "OpenSocial Gadget Editor");
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="App Manager" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "OpenSocial Gadget Publisher");
 
-		<execute macro="AppManager#uninstallAppCP">
-			<var name="appName" value="${appName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "App Manager");
 
-		<execute macro="ProductMenu#gotoControlPanelApps">
-			<var name="portlet" value="App Manager" />
-		</execute>
+		AppManager.uninstallAppCP(appName = "${appName}");
 
-		<execute macro="AppManager#viewUninstallAppCP">
-			<var name="appName" value="${appName}" />
-		</execute>
-	</command>
-</definition>
+		ProductMenu.gotoPortlet(
+			category = "Apps",
+			panel = "Control Panel",
+			portlet = "App Manager");
+
+		AppManager.viewUninstallAppCP(appName = "${appName}");
+	}
+
+}

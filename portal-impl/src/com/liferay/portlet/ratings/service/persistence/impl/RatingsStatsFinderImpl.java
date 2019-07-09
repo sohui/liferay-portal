@@ -35,9 +35,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author Shuyang Zhou
- * @author Brian Wing Shun Chan
+ * @author     Shuyang Zhou
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class RatingsStatsFinderImpl
 	extends RatingsStatsFinderBaseImpl implements RatingsStatsFinder {
 
@@ -48,8 +50,7 @@ public class RatingsStatsFinderImpl
 		RatingsStatsModelImpl.ENTITY_CACHE_ENABLED,
 		RatingsStatsModelImpl.FINDER_CACHE_ENABLED, RatingsStatsImpl.class,
 		RatingsStatsPersistenceImpl.FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
-		"findByC_C",
-		new String[] {Long.class.getName(), List.class.getName()});
+		"findByC_C", new String[] {Long.class.getName(), List.class.getName()});
 
 	@Override
 	public Map<Serializable, RatingsStats> fetchByPrimaryKeys(
@@ -60,9 +61,8 @@ public class RatingsStatsFinderImpl
 
 	@Override
 	public List<RatingsStats> findByC_C(long classNameId, List<Long> classPKs) {
-		Object[] finderArgs = new Object[] {
-			classNameId,
-			StringUtil.merge(classPKs.toArray(new Long[classPKs.size()]))
+		Object[] finderArgs = {
+			classNameId, StringUtil.merge(classPKs.toArray(new Long[0]))
 		};
 
 		List<RatingsStats> list = (List<RatingsStats>)FinderCacheUtil.getResult(

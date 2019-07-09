@@ -26,7 +26,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Builds upgrade table files.
  *
  * @author Andrea Di Giorgi
- * @goal build-upgrade-table
+ * @goal build
  */
 public class BuildUpgradeTableMojo extends AbstractMojo {
 
@@ -53,6 +53,13 @@ public class BuildUpgradeTableMojo extends AbstractMojo {
 	 */
 	public void setOsgiModule(boolean osgiModule) {
 		_upgradeTableBuilderArgs.setOsgiModule(osgiModule);
+	}
+
+	/**
+	 * @parameter
+	 */
+	public void setReleaseInfoFileName(String releaseInfoFileName) {
+		_upgradeTableBuilderArgs.setReleaseInfoFileName(releaseInfoFileName);
 	}
 
 	/**

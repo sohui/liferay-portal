@@ -19,14 +19,16 @@
 <%
 String randomNamespace = PortalUtil.generateRandomKey(request, "taglib_ui_logo_selector") + StringPool.UNDERLINE;
 
+int aspectRatio = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:logo-selector:aspectRatio"));
 String currentLogoURL = (String)request.getAttribute("liferay-ui:logo-selector:currentLogoURL");
 boolean defaultLogo = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:logo-selector:defaultLogo"));
 String defaultLogoURL = (String)request.getAttribute("liferay-ui:logo-selector:defaultLogoURL");
 String editLogoFn = GetterUtil.getString((String)request.getAttribute("liferay-ui:logo-selector:editLogoFn"));
 String logoDisplaySelector = (String)request.getAttribute("liferay-ui:logo-selector:logoDisplaySelector");
 long maxFileSize = GetterUtil.getLong((String)request.getAttribute("liferay-ui:logo-selector:maxFileSize"));
+boolean preserveRatio = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:logo-selector:preserveRatio"));
 boolean showBackground = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:logo-selector:showBackground"));
-boolean showButtons = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:form-navigator:showButtons"));
+boolean showButtons = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:logo-selector:showButtons"));
 String tempImageFileName = (String)request.getAttribute("liferay-ui:logo-selector:tempImageFileName");
 
 boolean deleteLogo = ParamUtil.getBoolean(request, "deleteLogo");
@@ -38,7 +40,7 @@ if (deleteLogo) {
 	imageURL = defaultLogoURL;
 }
 else if (fileEntryId > 0) {
-	ResourceURL previewURL = PortletURLFactoryUtil.create(portletRequest, PortletKeys.IMAGE_UPLOADER, plid, PortletRequest.RESOURCE_PHASE);
+	ResourceURL previewURL = PortletURLFactoryUtil.create(portletRequest, PortletKeys.IMAGE_UPLOADER, PortletRequest.RESOURCE_PHASE);
 
 	previewURL.setParameter("mvcRenderCommandName", "/image_uploader/view");
 	previewURL.setParameter(Constants.CMD, Constants.GET_TEMP);
@@ -81,9 +83,11 @@ else {
 
 		<liferay-portlet:renderURL portletName="<%= PortletKeys.IMAGE_UPLOADER %>" var="uploadImageURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
 			<liferay-portlet:param name="mvcRenderCommandName" value="/image_uploader/view" />
+			<liferay-portlet:param name="randomNamespace" value="<%= randomNamespace %>" />
+			<liferay-portlet:param name="aspectRatio" value="<%= String.valueOf(aspectRatio) %>" />
 			<liferay-portlet:param name="currentLogoURL" value="<%= currentLogoURL %>" />
 			<liferay-portlet:param name="maxFileSize" value="<%= String.valueOf(maxFileSize) %>" />
-			<liferay-portlet:param name="randomNamespace" value="<%= randomNamespace %>" />
+			<liferay-portlet:param name="preserveRatio" value="<%= String.valueOf(preserveRatio) %>" />
 			<liferay-portlet:param name="tempImageFileName" value="<%= tempImageFileName %>" />
 		</liferay-portlet:renderURL>
 

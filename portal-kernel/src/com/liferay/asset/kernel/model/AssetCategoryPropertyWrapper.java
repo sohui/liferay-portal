@@ -14,19 +14,14 @@
 
 package com.liferay.asset.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
 import com.liferay.portal.kernel.model.ModelWrapper;
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -35,24 +30,19 @@ import java.util.Objects;
  *
  * @author Brian Wing Shun Chan
  * @see AssetCategoryProperty
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
-public class AssetCategoryPropertyWrapper implements AssetCategoryProperty,
-	ModelWrapper<AssetCategoryProperty> {
+public class AssetCategoryPropertyWrapper
+	extends BaseModelWrapper<AssetCategoryProperty>
+	implements AssetCategoryProperty, ModelWrapper<AssetCategoryProperty> {
+
 	public AssetCategoryPropertyWrapper(
 		AssetCategoryProperty assetCategoryProperty) {
-		_assetCategoryProperty = assetCategoryProperty;
-	}
 
-	@Override
-	public Class<?> getModelClass() {
-		return AssetCategoryProperty.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return AssetCategoryProperty.class.getName();
+		super(assetCategoryProperty);
 	}
 
 	@Override
@@ -129,366 +119,236 @@ public class AssetCategoryPropertyWrapper implements AssetCategoryProperty,
 		}
 	}
 
-	@Override
-	public AssetCategoryProperty toEscapedModel() {
-		return new AssetCategoryPropertyWrapper(_assetCategoryProperty.toEscapedModel());
-	}
-
-	@Override
-	public AssetCategoryProperty toUnescapedModel() {
-		return new AssetCategoryPropertyWrapper(_assetCategoryProperty.toUnescapedModel());
-	}
-
-	@Override
-	public boolean isCachedModel() {
-		return _assetCategoryProperty.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _assetCategoryProperty.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _assetCategoryProperty.isNew();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _assetCategoryProperty.getExpandoBridge();
-	}
-
-	@Override
-	public com.liferay.portal.kernel.model.CacheModel<AssetCategoryProperty> toCacheModel() {
-		return _assetCategoryProperty.toCacheModel();
-	}
-
-	@Override
-	public int compareTo(AssetCategoryProperty assetCategoryProperty) {
-		return _assetCategoryProperty.compareTo(assetCategoryProperty);
-	}
-
-	@Override
-	public int hashCode() {
-		return _assetCategoryProperty.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _assetCategoryProperty.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new AssetCategoryPropertyWrapper((AssetCategoryProperty)_assetCategoryProperty.clone());
-	}
-
 	/**
-	* Returns the key of this asset category property.
-	*
-	* @return the key of this asset category property
-	*/
-	@Override
-	public java.lang.String getKey() {
-		return _assetCategoryProperty.getKey();
-	}
-
-	/**
-	* Returns the user name of this asset category property.
-	*
-	* @return the user name of this asset category property
-	*/
-	@Override
-	public java.lang.String getUserName() {
-		return _assetCategoryProperty.getUserName();
-	}
-
-	/**
-	* Returns the user uuid of this asset category property.
-	*
-	* @return the user uuid of this asset category property
-	*/
-	@Override
-	public java.lang.String getUserUuid() {
-		return _assetCategoryProperty.getUserUuid();
-	}
-
-	/**
-	* Returns the value of this asset category property.
-	*
-	* @return the value of this asset category property
-	*/
-	@Override
-	public java.lang.String getValue() {
-		return _assetCategoryProperty.getValue();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _assetCategoryProperty.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _assetCategoryProperty.toXmlString();
-	}
-
-	/**
-	* Returns the create date of this asset category property.
-	*
-	* @return the create date of this asset category property
-	*/
-	@Override
-	public Date getCreateDate() {
-		return _assetCategoryProperty.getCreateDate();
-	}
-
-	/**
-	* Returns the modified date of this asset category property.
-	*
-	* @return the modified date of this asset category property
-	*/
-	@Override
-	public Date getModifiedDate() {
-		return _assetCategoryProperty.getModifiedDate();
-	}
-
-	/**
-	* Returns the category ID of this asset category property.
-	*
-	* @return the category ID of this asset category property
-	*/
+	 * Returns the category ID of this asset category property.
+	 *
+	 * @return the category ID of this asset category property
+	 */
 	@Override
 	public long getCategoryId() {
-		return _assetCategoryProperty.getCategoryId();
+		return model.getCategoryId();
 	}
 
 	/**
-	* Returns the category property ID of this asset category property.
-	*
-	* @return the category property ID of this asset category property
-	*/
+	 * Returns the category property ID of this asset category property.
+	 *
+	 * @return the category property ID of this asset category property
+	 */
 	@Override
 	public long getCategoryPropertyId() {
-		return _assetCategoryProperty.getCategoryPropertyId();
+		return model.getCategoryPropertyId();
 	}
 
 	/**
-	* Returns the company ID of this asset category property.
-	*
-	* @return the company ID of this asset category property
-	*/
+	 * Returns the company ID of this asset category property.
+	 *
+	 * @return the company ID of this asset category property
+	 */
 	@Override
 	public long getCompanyId() {
-		return _assetCategoryProperty.getCompanyId();
+		return model.getCompanyId();
 	}
 
 	/**
-	* Returns the primary key of this asset category property.
-	*
-	* @return the primary key of this asset category property
-	*/
+	 * Returns the create date of this asset category property.
+	 *
+	 * @return the create date of this asset category property
+	 */
+	@Override
+	public Date getCreateDate() {
+		return model.getCreateDate();
+	}
+
+	/**
+	 * Returns the key of this asset category property.
+	 *
+	 * @return the key of this asset category property
+	 */
+	@Override
+	public String getKey() {
+		return model.getKey();
+	}
+
+	/**
+	 * Returns the modified date of this asset category property.
+	 *
+	 * @return the modified date of this asset category property
+	 */
+	@Override
+	public Date getModifiedDate() {
+		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the primary key of this asset category property.
+	 *
+	 * @return the primary key of this asset category property
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _assetCategoryProperty.getPrimaryKey();
+		return model.getPrimaryKey();
 	}
 
 	/**
-	* Returns the user ID of this asset category property.
-	*
-	* @return the user ID of this asset category property
-	*/
+	 * Returns the user ID of this asset category property.
+	 *
+	 * @return the user ID of this asset category property
+	 */
 	@Override
 	public long getUserId() {
-		return _assetCategoryProperty.getUserId();
+		return model.getUserId();
+	}
+
+	/**
+	 * Returns the user name of this asset category property.
+	 *
+	 * @return the user name of this asset category property
+	 */
+	@Override
+	public String getUserName() {
+		return model.getUserName();
+	}
+
+	/**
+	 * Returns the user uuid of this asset category property.
+	 *
+	 * @return the user uuid of this asset category property
+	 */
+	@Override
+	public String getUserUuid() {
+		return model.getUserUuid();
+	}
+
+	/**
+	 * Returns the value of this asset category property.
+	 *
+	 * @return the value of this asset category property
+	 */
+	@Override
+	public String getValue() {
+		return model.getValue();
 	}
 
 	@Override
 	public void persist() {
-		_assetCategoryProperty.persist();
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_assetCategoryProperty.setCachedModel(cachedModel);
+		model.persist();
 	}
 
 	/**
-	* Sets the category ID of this asset category property.
-	*
-	* @param categoryId the category ID of this asset category property
-	*/
+	 * Sets the category ID of this asset category property.
+	 *
+	 * @param categoryId the category ID of this asset category property
+	 */
 	@Override
 	public void setCategoryId(long categoryId) {
-		_assetCategoryProperty.setCategoryId(categoryId);
+		model.setCategoryId(categoryId);
 	}
 
 	/**
-	* Sets the category property ID of this asset category property.
-	*
-	* @param categoryPropertyId the category property ID of this asset category property
-	*/
+	 * Sets the category property ID of this asset category property.
+	 *
+	 * @param categoryPropertyId the category property ID of this asset category property
+	 */
 	@Override
 	public void setCategoryPropertyId(long categoryPropertyId) {
-		_assetCategoryProperty.setCategoryPropertyId(categoryPropertyId);
+		model.setCategoryPropertyId(categoryPropertyId);
 	}
 
 	/**
-	* Sets the company ID of this asset category property.
-	*
-	* @param companyId the company ID of this asset category property
-	*/
+	 * Sets the company ID of this asset category property.
+	 *
+	 * @param companyId the company ID of this asset category property
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_assetCategoryProperty.setCompanyId(companyId);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the create date of this asset category property.
-	*
-	* @param createDate the create date of this asset category property
-	*/
+	 * Sets the create date of this asset category property.
+	 *
+	 * @param createDate the create date of this asset category property
+	 */
 	@Override
 	public void setCreateDate(Date createDate) {
-		_assetCategoryProperty.setCreateDate(createDate);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_assetCategoryProperty.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(
-		com.liferay.portal.kernel.model.BaseModel<?> baseModel) {
-		_assetCategoryProperty.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_assetCategoryProperty.setExpandoBridgeAttributes(serviceContext);
+		model.setCreateDate(createDate);
 	}
 
 	/**
-	* Sets the key of this asset category property.
-	*
-	* @param key the key of this asset category property
-	*/
+	 * Sets the key of this asset category property.
+	 *
+	 * @param key the key of this asset category property
+	 */
 	@Override
-	public void setKey(java.lang.String key) {
-		_assetCategoryProperty.setKey(key);
+	public void setKey(String key) {
+		model.setKey(key);
 	}
 
 	/**
-	* Sets the modified date of this asset category property.
-	*
-	* @param modifiedDate the modified date of this asset category property
-	*/
+	 * Sets the modified date of this asset category property.
+	 *
+	 * @param modifiedDate the modified date of this asset category property
+	 */
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
-		_assetCategoryProperty.setModifiedDate(modifiedDate);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_assetCategoryProperty.setNew(n);
+		model.setModifiedDate(modifiedDate);
 	}
 
 	/**
-	* Sets the primary key of this asset category property.
-	*
-	* @param primaryKey the primary key of this asset category property
-	*/
+	 * Sets the primary key of this asset category property.
+	 *
+	 * @param primaryKey the primary key of this asset category property
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_assetCategoryProperty.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_assetCategoryProperty.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets the user ID of this asset category property.
-	*
-	* @param userId the user ID of this asset category property
-	*/
+	 * Sets the user ID of this asset category property.
+	 *
+	 * @param userId the user ID of this asset category property
+	 */
 	@Override
 	public void setUserId(long userId) {
-		_assetCategoryProperty.setUserId(userId);
+		model.setUserId(userId);
 	}
 
 	/**
-	* Sets the user name of this asset category property.
-	*
-	* @param userName the user name of this asset category property
-	*/
+	 * Sets the user name of this asset category property.
+	 *
+	 * @param userName the user name of this asset category property
+	 */
 	@Override
-	public void setUserName(java.lang.String userName) {
-		_assetCategoryProperty.setUserName(userName);
+	public void setUserName(String userName) {
+		model.setUserName(userName);
 	}
 
 	/**
-	* Sets the user uuid of this asset category property.
-	*
-	* @param userUuid the user uuid of this asset category property
-	*/
+	 * Sets the user uuid of this asset category property.
+	 *
+	 * @param userUuid the user uuid of this asset category property
+	 */
 	@Override
-	public void setUserUuid(java.lang.String userUuid) {
-		_assetCategoryProperty.setUserUuid(userUuid);
+	public void setUserUuid(String userUuid) {
+		model.setUserUuid(userUuid);
 	}
 
 	/**
-	* Sets the value of this asset category property.
-	*
-	* @param value the value of this asset category property
-	*/
+	 * Sets the value of this asset category property.
+	 *
+	 * @param value the value of this asset category property
+	 */
 	@Override
-	public void setValue(java.lang.String value) {
-		_assetCategoryProperty.setValue(value);
+	public void setValue(String value) {
+		model.setValue(value);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
+	protected AssetCategoryPropertyWrapper wrap(
+		AssetCategoryProperty assetCategoryProperty) {
 
-		if (!(obj instanceof AssetCategoryPropertyWrapper)) {
-			return false;
-		}
-
-		AssetCategoryPropertyWrapper assetCategoryPropertyWrapper = (AssetCategoryPropertyWrapper)obj;
-
-		if (Objects.equals(_assetCategoryProperty,
-					assetCategoryPropertyWrapper._assetCategoryProperty)) {
-			return true;
-		}
-
-		return false;
+		return new AssetCategoryPropertyWrapper(assetCategoryProperty);
 	}
 
-	@Override
-	public AssetCategoryProperty getWrappedModel() {
-		return _assetCategoryProperty;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _assetCategoryProperty.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _assetCategoryProperty.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_assetCategoryProperty.resetOriginalValues();
-	}
-
-	private final AssetCategoryProperty _assetCategoryProperty;
 }

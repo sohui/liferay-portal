@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.image;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.ImageResolutionException;
 import com.liferay.portal.kernel.model.Image;
 
@@ -29,12 +27,32 @@ import java.io.OutputStream;
 
 import java.util.concurrent.Future;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Alexander Chow
  */
 @ProviderType
 public interface ImageTool {
+
+	public static final String ORIENTATION_VALUE_HORIZONTAL_NORMAL = "1";
+
+	public static final String ORIENTATION_VALUE_MIRROR_HORIZONTAL = "2";
+
+	public static final String
+		ORIENTATION_VALUE_MIRROR_HORIZONTAL_ROTATE_90_CW = "7";
+
+	public static final String
+		ORIENTATION_VALUE_MIRROR_HORIZONTAL_ROTATE_270_CW = "5";
+
+	public static final String ORIENTATION_VALUE_MIRROR_VERTICAL = "4";
+
+	public static final String ORIENTATION_VALUE_ROTATE_90_CW = "6";
+
+	public static final String ORIENTATION_VALUE_ROTATE_180 = "3";
+
+	public static final String ORIENTATION_VALUE_ROTATE_270_CW = "8";
 
 	public static final String TYPE_BMP = "bmp";
 
@@ -61,6 +79,10 @@ public interface ImageTool {
 	public void encodeWBMP(RenderedImage renderedImage, OutputStream os)
 		throws IOException;
 
+	public RenderedImage flipHorizontal(RenderedImage renderedImage);
+
+	public RenderedImage flipVertical(RenderedImage renderedImage);
+
 	public BufferedImage getBufferedImage(RenderedImage renderedImage);
 
 	public byte[] getBytes(RenderedImage renderedImage, String contentType)
@@ -75,6 +97,8 @@ public interface ImageTool {
 	public Image getDefaultUserFemalePortrait();
 
 	public Image getDefaultUserMalePortrait();
+
+	public Image getDefaultUserPortrait();
 
 	public Image getImage(byte[] bytes)
 		throws ImageResolutionException, IOException;
@@ -98,6 +122,8 @@ public interface ImageTool {
 
 	public ImageBag read(InputStream inputStream)
 		throws ImageResolutionException, IOException;
+
+	public RenderedImage rotate(RenderedImage renderedImage, int degrees);
 
 	public RenderedImage scale(RenderedImage renderedImage, int width);
 

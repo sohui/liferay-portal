@@ -34,7 +34,7 @@ import org.junit.Test;
  * @author Akos Thurzo
  * @author Manuel de la Peña
  */
-public class PortalImplLayoutRelativeURLTest extends PortalImplBaseURLTestCase {
+public class PortalImplLayoutRelativeURLTest extends BasePortalImplURLTestCase {
 
 	@ClassRule
 	@Rule
@@ -100,7 +100,7 @@ public class PortalImplLayoutRelativeURLTest extends PortalImplBaseURLTestCase {
 			layoutRelativeURL,
 			PortalUtil.getLayoutRelativeURL(layout, themeDisplay));
 
-		themeDisplay.setRefererPlid(1);
+		themeDisplay.setRefererPlid(Long.MAX_VALUE);
 
 		try {
 			PortalUtil.getLayoutRelativeURL(privateLayout, themeDisplay);

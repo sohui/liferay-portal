@@ -7,6 +7,7 @@
 		<author>Nathan Cavanaugh</author>
 		<author>Julio Camarero</author>
 	</authors>
+	<description>Provides the AUI component tags, prefixed with <![CDATA[<code>aui:</code>]]>.</description>
 	<component bodyContent="true" name="A" writeJSP="false">
 		<description>Creates an anchor (or link) that offers custom configuration and localization.</description>
 		<attributes>
@@ -91,7 +92,6 @@
 				<name>animated</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
-				<defaultValue>false</defaultValue>
 			</attribute>
 			<attribute>
 				<name>closeable</name>
@@ -108,7 +108,6 @@
 				<name>destroyOnHide</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
-				<defaultValue>false</defaultValue>
 			</attribute>
 			<attribute>
 				<name>duration</name>
@@ -206,7 +205,6 @@
 				<name>useDialog</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
-				<defaultValue>false</defaultValue>
 			</attribute>
 			<attribute>
 				<description>Whether to use the default portlet namespace, to avoid name conflicts. The default value is <![CDATA[<code>true</code>]]>.</description>
@@ -291,6 +289,7 @@
 		</attributes>
 	</component>
 	<component name="Component">
+		<description>Deprecated as of 7.0.0, with no direct replacement.</description>
 		<attributes>
 			<attribute>
 				<name>defineVar</name>
@@ -386,6 +385,13 @@
 				<name>data</name>
 				<inputType>java.lang.Object</inputType>
 				<outputType>java.util.Map</outputType>
+			</attribute>
+			<attribute>
+				<description>Whether the component is disabled. The default value is <![CDATA[<code>false</code>]]>.</description>
+				<name>disabled</name>
+				<required>false</required>
+				<rtexprvalue>true</rtexprvalue>
+				<type>boolean</type>
 			</attribute>
 			<attribute>
 				<description>Whether the wrapper should be the first element of the form. The default value is <![CDATA[<code>false</code>]]>.</description>
@@ -569,6 +575,13 @@
 			<attribute>
 				<description>Whether to use the default portlet namespace, to avoid name conflicts. The default value is <![CDATA[<code>true</code>]]>.</description>
 				<name>useNamespace</name>
+				<inputType>boolean</inputType>
+				<outputType>boolean</outputType>
+				<defaultValue>true</defaultValue>
+			</attribute>
+			<attribute>
+				<description>Whether to validate fields when they lose focus. The default value is <![CDATA[<code>true</code>]]>.</description>
+				<name>validateOnBlur</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
 				<defaultValue>true</defaultValue>
@@ -774,13 +787,6 @@
 				<outputType>java.lang.String</outputType>
 			</attribute>
 			<attribute>
-				<description>Whether to translate the label's text into the user's language. The default value is <![CDATA[<code>true</code>]]>.</description>
-				<name>localizeLabel</name>
-				<inputType>boolean</inputType>
-				<outputType>boolean</outputType>
-				<defaultValue>true</defaultValue>
-			</attribute>
-			<attribute>
 				<name>languageId</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
@@ -798,8 +804,22 @@
 				<outputType>boolean</outputType>
 			</attribute>
 			<attribute>
+				<description>Whether to translate the label's text into the user's language. The default value is <![CDATA[<code>true</code>]]>.</description>
+				<name>localizeLabel</name>
+				<inputType>boolean</inputType>
+				<outputType>boolean</outputType>
+				<defaultValue>true</defaultValue>
+			</attribute>
+			<attribute>
 				<description>The maximum value for the input if its <![CDATA[<code>type</code>]]> is <![CDATA[<code>number</code>]]> or <![CDATA[<code>range</code>]]>. Note that the max value is inclusive if the input's <![CDATA[<code>type</code>]]> is <![CDATA[<code>range</code>]]>.</description>
 				<name>max</name>
+				<inputType>java.lang.Object</inputType>
+				<outputType>java.lang.Number</outputType>
+				<defaultValue>null</defaultValue>
+			</attribute>
+			<attribute>
+				<description>The minimum value for the input if its <![CDATA[<code>type</code>]]> is <![CDATA[<code>number</code>]]> or <![CDATA[<code>range</code>]]>. Note that the min value is inclusive if the input's <![CDATA[<code>type</code>]]> is <![CDATA[<code>range</code>]]>.</description>
+				<name>min</name>
 				<inputType>java.lang.Object</inputType>
 				<outputType>java.lang.Number</outputType>
 				<defaultValue>null</defaultValue>
@@ -811,19 +831,12 @@
 				<outputType><![CDATA[java.lang.Class<?>]]></outputType>
 			</attribute>
 			<attribute>
-				<description>The minimum value for the input if its <![CDATA[<code>type</code>]]> is <![CDATA[<code>number</code>]]> or <![CDATA[<code>range</code>]]>. Note that the min value is inclusive if the input's <![CDATA[<code>type</code>]]> is <![CDATA[<code>range</code>]]>.</description>
-				<name>min</name>
-				<inputType>java.lang.Object</inputType>
-				<outputType>java.lang.Number</outputType>
-				<defaultValue>null</defaultValue>
-			</attribute>
-			<attribute>
 				<name>multiple</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
 			</attribute>
 			<attribute>
-				<description>A name for the component.</description>
+				<description>A name for the component. If the name contains <![CDATA[<code>--</code>]]>, the generated name will be the substring following the <![CDATA[<code>--</code>]]>, excluding the last two characters and any prefixes. For example, the pattern <![CDATA[<code>prefix--customName--</code>]]> would result in the name <![CDATA[<code>customName</code>]]>. If the <![CDATA[<code>id</code>]]> is not provided and the <![CDATA[<code>type</code>]]> is given, the name is used as the <![CDATA[<code>id</code>]]>.</description>
 				<name>name</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
@@ -908,7 +921,6 @@
 				<name>wrappedField</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
-				<defaultValue>false</defaultValue>
 			</attribute>
 			<attribute>
 				<description>A CSS class for styling the <![CDATA[<code>div</code>]]> that wraps the input component.</description>
@@ -1032,13 +1044,13 @@
 				<outputType>java.lang.String</outputType>
 			</attribute>
 			<attribute>
-				<description>An ID for the component instance.</description>
-				<name>id</name>
+				<name>file</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
 			</attribute>
 			<attribute>
-				<name>file</name>
+				<description>An ID for the component instance.</description>
+				<name>id</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
 			</attribute>
@@ -1176,7 +1188,6 @@
 				<name>useDialog</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
-				<defaultValue>false</defaultValue>
 			</attribute>
 			<attribute>
 				<description>Whether to wrap the navigation item's dropdown menu in an unordered list with the <![CDATA[<code>drop-down-menu</code>]]> class. The default value is <![CDATA[<code>true</code>]]>.</description>
@@ -1249,6 +1260,7 @@
 		</attributes>
 	</component>
 	<component bodyContent="true" dynamicAttributes="false" name="Panel">
+		<description>Deprecated as of 7.0.0, with no direct replacement.</description>
 		<attributes>
 			<attribute>
 				<name>collapsed</name>
@@ -1307,15 +1319,14 @@
 				<settable>false</settable>
 			</attribute>
 			<attribute>
-				<name>sandbox</name>
-				<inputType>boolean</inputType>
-				<outputType>boolean</outputType>
-				<defaultValue>false</defaultValue>
-			</attribute>
-			<attribute>
 				<name>require</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
+			</attribute>
+			<attribute>
+				<name>sandbox</name>
+				<inputType>boolean</inputType>
+				<outputType>boolean</outputType>
 			</attribute>
 			<attribute>
 				<description>AlloyUI modules to be used in the script. Names of multiple modules must be separated by commas.</description>
@@ -1325,7 +1336,7 @@
 			</attribute>
 		</attributes>
 	</component>
-	<component bodyContent="true" name="Select">
+	<component bodyContent="true" name="Select" parentClass="com.liferay.taglib.BaseValidatorTagSupport">
 		<description>Creates a select field (or combo box) for holding <![CDATA[<code>&lt;aui:option&gt;</code>]]> components.</description>
 		<attributes>
 			<attribute>
@@ -1357,6 +1368,11 @@
 				<name>disabled</name>
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
+			</attribute>
+			<attribute>
+				<name>field</name>
+				<inputType>java.lang.String</inputType>
+				<outputType>java.lang.String</outputType>
 			</attribute>
 			<attribute>
 				<description>Whether the component should be the first element of the form. The default value is <![CDATA[<code>false</code>]]>.</description>
@@ -1422,6 +1438,12 @@
 				<inputType>boolean</inputType>
 				<outputType>boolean</outputType>
 				<defaultValue>true</defaultValue>
+			</attribute>
+			<attribute>
+				<description>Sets the class for the bean object.</description>
+				<name>model</name>
+				<inputType><![CDATA[java.lang.Class<?>]]></inputType>
+				<outputType><![CDATA[java.lang.Class<?>]]></outputType>
 			</attribute>
 			<attribute>
 				<description>Whether multiple options can be selected. If set to <![CDATA[<code>true</code>]]>, the select field expands to allow for multiple selections. The default value is <![CDATA[<code>false</code>]]>.</description>
@@ -1506,7 +1528,7 @@
 		</attributes>
 	</component>
 	<component dynamicAttributes="false" name="Spacer" parentClass="com.liferay.taglib.TagSupport" writeBaseClass="false" writeJSP="false">
-		<description>Creates a spacer component that enables JSP 2.1 server-side trimming of white spaces.</description>
+		<description>Deprecated as of 7.0.0, with no direct replacement. Creates a spacer component that enables JSP 2.1 server-side trimming of white spaces.</description>
 	</component>
 	<component dynamicAttributes="false" name="TranslationManager">
 		<description>Creates a UI component for managing translation of associated content.</description>
@@ -1534,6 +1556,12 @@
 				<name>editingLanguageId</name>
 				<inputType>java.lang.String</inputType>
 				<outputType>java.lang.String</outputType>
+			</attribute>
+			<attribute>
+				<description>The group ID of the site.</description>
+				<name>groupId</name>
+				<inputType>long</inputType>
+				<outputType>long</outputType>
 			</attribute>
 			<attribute>
 				<description>An ID for the component instance.</description>
@@ -1607,6 +1635,7 @@
 				<outputType><![CDATA[java.lang.Class<?>]]></outputType>
 			</attribute>
 			<attribute>
+				<description>Whether to show the workflow status help message. The default value is <![CDATA[<code>true</code>]]>.</description>
 				<name>showHelpMessage</name>
 				<required>false</required>
 				<rtexprvalue>true</rtexprvalue>

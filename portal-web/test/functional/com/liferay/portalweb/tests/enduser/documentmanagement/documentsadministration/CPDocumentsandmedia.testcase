@@ -1,0 +1,584 @@
+@component-name = "portal-document-management"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property test.assert.warning.exceptions = "true";
+	property testray.main.component.name = "Documents Management";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			DMDocument.tearDownCP();
+
+			DMFolder.tearDownCP();
+
+			User.logoutPG();
+		}
+	}
+
+	@description = "This is a use case for LPS-82073."
+	@priority = "5"
+	test AddShortcutToSiteDocument {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		Navigator.openURL();
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Document_1.txt",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addDMShortcutCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document Title",
+			siteName = "Site Name");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(
+			dmDocumentSize = "259 B",
+			dmDocumentTitle = "DM Document Title");
+	}
+
+	@description = "This test ensures that a user can check in a document without changing versions."
+	@priority = "5"
+	test CheckInDocumentAsCurrentVersion {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.addCP(
+			dmDocumentFile = "Document_1.doc",
+			dmDocumentTitle = "Check in as current version");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in as current version");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in as current version",
+			revision = "Current");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		AssertElementNotPresent(
+			key_dmDocumentTitle = "Check in as current version",
+			locator1 = "DocumentsAndMedia#ICON_DOCUMENT_ICON_LOCKED");
+
+		DMDocument.checkDocumentCheckboxCP(dmDocumentTitle = "Check in as current version");
+
+		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.0");
+	}
+
+	@description = "This test ensures that a user can check in a document as a major version."
+	@priority = "5"
+	test CheckInDocumentAsMajorVersion {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentFile = "Document_1.doc",
+			dmDocumentTitle = "Check in as major version");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in as major version");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in as major version",
+			revision = "Major");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		AssertElementNotPresent(
+			key_dmDocumentTitle = "Check in as major version",
+			locator1 = "DocumentsAndMedia#ICON_DOCUMENT_ICON_LOCKED");
+
+		DMDocument.checkDocumentCheckboxCP(dmDocumentTitle = "Check in as major version");
+
+		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "2.0");
+	}
+
+	@description = "This test ensures that a user can check in a document as a minor version."
+	@priority = "5"
+	test CheckInDocumentAsMinorVersion {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentFile = "Document_1.doc",
+			dmDocumentTitle = "Check in as minor version");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in as minor version");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in as minor version",
+			revision = "Minor");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		AssertElementNotPresent(
+			key_dmDocumentTitle = "Check in as minor version",
+			locator1 = "DocumentsAndMedia#ICON_DOCUMENT_ICON_LOCKED");
+
+		DMDocument.checkDocumentCheckboxCP(dmDocumentTitle = "Check in as minor version");
+
+		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.1");
+	}
+
+	@description = "This test covers LPS-82306. It ensures that a user can check in a document through Management bar and allow to select the change version."
+	@priority = "4"
+	test CheckInDocumentAtManagementBar {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.addCP(
+			dmDocumentFile = "Document_1.doc",
+			dmDocumentTitle = "Check in as current version");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in as current version");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.checkinManagementBar(
+			dmDocumentTitle = "Check in as current version",
+			revision = "Current");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		AssertElementNotPresent(
+			key_dmDocumentTitle = "Check in as current version",
+			locator1 = "DocumentsAndMedia#ICON_DOCUMENT_ICON_LOCKED");
+
+		DMDocument.checkDocumentCheckboxCP(dmDocumentTitle = "Check in as current version");
+
+		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.0");
+	}
+
+	@description = "This test asserts that major version increment will occur even if only metadata was changed if version increment was selected manually."
+	@priority = "4"
+	test CustomizeVersionNumberMajor {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Document_1.txt",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(
+			dmDocumentSize = "259 B",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.editCP(
+			dmDocumentDescription = "DM Document Description1",
+			dmDocumentDescriptionEdit = "DM Document Description Edit",
+			dmDocumentTitle = "DM Document Title",
+			dmDocumentTitleEdit = "DM Document Title Edit",
+			revision = "Major",
+			versioning = "true");
+
+		DMDocument.viewEditCP(
+			dmDocumentTitleEdit = "DM Document Title Edit",
+			dmDocumentVersionNumber = "2.0");
+	}
+
+	@description = "This test asserts that minor version increment will occur even if the actual file was changed if version increment was selected manually."
+	@priority = "4"
+	test CustomizeVersionNumberMinor {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Document_1.txt",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(
+			dmDocumentSize = "259 B",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.editCP(
+			dmDocumentFileEdit = "Document_2.doc",
+			dmDocumentTitle = "DM Document Title",
+			revision = "Minor",
+			versioning = "true");
+
+		DMDocument.viewEditCP(
+			dmDocumentTitleEdit = "DM Document Title",
+			dmDocumentVersionNumber = "1.1");
+	}
+
+	@description = "This test edits the title and description of a document. It asserts minor version increment because only its metadata was updated."
+	@priority = "5"
+	test EditDocument {
+		property app.server.types = "jboss,tcserver,tomcat,weblogic,websphere,wildfly";
+		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
+		property environment.acceptance = "true";
+		property portal.acceptance = "true";
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Document_1.txt",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(
+			dmDocumentSize = "259 B",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.editCP(
+			dmDocumentDescription = "DM Document Description1",
+			dmDocumentDescriptionEdit = "DM Document Description Edit",
+			dmDocumentTitle = "DM Document Title",
+			dmDocumentTitleEdit = "DM Document Title Edit");
+
+		DMDocument.viewEditCP(
+			dmDocumentTitleEdit = "DM Document Title Edit",
+			dmDocumentVersionNumber = "1.1");
+	}
+
+	@priority = "5"
+	test EditFolder {
+		property portal.acceptance = "true";
+		property testray.component.names = "Training";
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.addCP(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderName = "DM Folder Name");
+
+		DMFolder.viewCP(dmFolderName = "DM Folder Name");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.editCP(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderDescriptionEdit = "DM Folder Description Edit",
+			dmFolderName = "DM Folder Name",
+			dmFolderNameEdit = "DM Folder Name Name");
+
+		DMFolder.viewCP(dmFolderName = "DM Folder Name Name");
+	}
+
+	@description = "This test ensures that only the last two versions of a file are kept when the max version limit is set."
+	@priority = "5"
+	test LimitMaxFileVersion {
+		property test.name.skip.portal.instance = "CPDocumentsandmedia#LimitMaxFileVersion";
+
+		SystemSettings.openSystemSettingsAdmin();
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Documents and Media",
+			configurationName = "Service",
+			configurationScope = "System Scope");
+
+		Type(
+			key_fieldLabel = "Maximum Number Of Versions",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "2");
+
+		ScrollWebElementIntoView(locator1 = "Button#SAVE");
+
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Edit this document two times",
+			groupName = "Guest");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.editCP(
+			dmDocumentTitle = "Edit this document two times",
+			dmDocumentTitleEdit = "First edit");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.editCP(
+			dmDocumentTitle = "First edit",
+			dmDocumentTitleEdit = "Second edit");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Second edit");
+
+		for (var versionNumber : list "1.2,1.1") {
+			AssertElementPresent(
+				key_dmDocumentVersionNumber = "${versionNumber}",
+				locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_ANY");
+		}
+
+		AssertElementNotPresent(
+			key_dmDocumentVersionNumber = "1.0",
+			locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_ANY");
+	}
+
+	@priority = "5"
+	test MoveDocumentToFolder {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description1",
+			dmDocumentFile = "Document_1.txt",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(
+			dmDocumentSize = "259 B",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.addCP(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderName = "DM Folder Name");
+
+		DMFolder.viewCP(dmFolderName = "DM Folder Name");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.moveToFolderCP(
+			dmDocumentTitle = "DM Document Title",
+			dmFolderName = "DM Folder Name");
+
+		DMDocument.viewMovedToFolderCP(
+			dmDocumentTitle = "DM Document Title",
+			dmFolderName = "DM Folder Name");
+	}
+
+	@description = "This is a use case for LPS-60405."
+	@priority = "5"
+	test MoveDocumentToSameFolder {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Document_1.txt",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.moveToFolderCP(
+			dmDocumentTitle = "DM Document Title",
+			dmFolderName = "Home");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(
+			dmDocumentSize = "259 B",
+			dmDocumentTitle = "DM Document Title");
+	}
+
+	@priority = "4"
+	test MoveFolderToFolder {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.addCP(
+			dmFolderDescription = "DM Folder1 Description",
+			dmFolderName = "DM Folder1 Name");
+
+		DMFolder.addCP(
+			dmFolderDescription = "DM Folder2 Description",
+			dmFolderName = "DM Folder2 Name");
+
+		DMFolder.moveToFolderCP(
+			dmFolderName = "DM Folder2 Name",
+			dmFolderName1 = "DM Folder1 Name",
+			dmFolderName2 = "DM Folder2 Name");
+	}
+
+	@priority = "5"
+	test MoveToRecycleBinDocument {
+		property portal.acceptance = "true";
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description1",
+			dmDocumentFile = "Document_1.txt",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.moveToRecycleBinCP(
+			assetType = "Document",
+			dmDocumentTitle = "DM Document Title");
+	}
+
+	@priority = "5"
+	test MoveToRecycleBinFolder {
+		property portal.acceptance = "true";
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.addCP(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderName = "DM Folder Name");
+
+		DMFolder.viewCP(dmFolderName = "DM Folder Name");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.moveToRecycleBinCP(
+			assetType = "Documents Folder",
+			dmFolderName = "DM Folder Name");
+	}
+
+	@description = "This is a use case for LPS-88785."
+	@priority = "5"
+	test PreviewPDF {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentFile = "large_file.pdf",
+			dmDocumentTitle = "large_file.pdf");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "large_file.pdf");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#INFO",
+			value1 = "Generating preview will take a few minutes.");
+
+		Pause(locator1 = "60000");
+
+		Refresh();
+
+		AssertVisible(locator1 = "DocumentsAndMediaDocument#DOCUMENT_DETAILS_IMAGE_PREVIEW");
+	}
+
+	@priority = "4"
+	test RotateImageViaDMSiteAdmin {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Document_2.jpg",
+			dmDocumentTitle = "Document_2.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		AssertVisible(
+			locator1 = "Portlet#HEADER",
+			value1 = "Documents and Media");
+
+		ImageEditor.gotoImageEditorViaDM(dmDocumentTitle = "Document_2.jpg");
+
+		ImageEditor.rotateImage(rotateDirection = "left");
+
+		Pause(locator1 = "3000");
+
+		ImageEditor.applyChangesAndSaveFile();
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Document_2.jpg");
+
+		DMDocument.viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = "1.1");
+	}
+
+	@priority = "4"
+	test SearchForDocumentInHomeFolder {
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		Search.searchCP(searchTerm = "DM Document Title");
+
+		DMDocument.viewSearchResultsCP(dmDocumentTitle = "DM Document Title");
+	}
+
+	@description = "This test makes sure that all files are deleted when user selects all"
+	@priority = "4"
+	test SelectAllAndDelete {
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addMultipleCP(dmDocumentFileList = "Document_1.doc,Document_2.jpg,Document_3.xls,Document_4.txt,Document_1.txt,Document_2.xls,Document_3.jpg,Document_4.jpg,Document_1.xls,Document_2.doc");
+
+		Pagination.changePagination(itemsPerPage = "5");
+
+		Pagination.viewResults(results = "Showing 1 to 5 of 10 entries.");
+
+		PortletEntry.selectAll();
+
+		AssertClick(
+			locator1 = "Button#SELECT_ALL",
+			value1 = "Select All");
+
+		Click(locator1 = "Icon#DELETE");
+
+		Alert.viewSuccessMessage();
+
+		DMDocument.viewDefaultCP();
+	}
+
+	@priority = "5"
+	test ViewImageEditorControls {
+		property portal.acceptance = "true";
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Document_1.jpg",
+			dmDocumentTitle = "Document_1.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		ImageEditor.gotoImageEditorViaDM(dmDocumentTitle = "Document_1.jpg");
+
+		ImageEditor.viewBaseControls();
+	}
+
+}

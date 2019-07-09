@@ -1,26 +1,35 @@
-<definition component-name="portal-test-plugins">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Test Plugins" />
-	<property name="portlet.plugins.includes" value="test-log-portlet" />
+@component-name = "portal-test-plugins"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Test Plugins";
+	property portlet.plugins.includes = "test-log-portlet";
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+	setUp {
+		User.firstLoginPG();
+	}
 
-	<command name="ViewLog" priority="4">
-		<execute macro="Page#add">
-			<var name="pageName" value="Test Log Page" />
-		</execute>
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Test Log" />
-		</execute>
+	@priority = "4"
+	test ViewLog {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute function="AssertVisible" locator1="TestBlob#TEST_PORTLET_BODY_PASSED" />
-		<execute function="AssertTextNotPresent" value1="FAILED" />
-	</command>
-</definition>
+		SitePages.addPublicPage(pageName = "Test Log Page");
+
+		Navigator.gotoPage(pageName = "Test Log Page");
+
+		Portlet.addPG(portletName = "Test Log");
+
+		AssertVisible(locator1 = "TestBlob#TEST_PORTLET_BODY_PASSED");
+
+		AssertTextNotPresent(value1 = "FAILED");
+	}
+
+}

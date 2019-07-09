@@ -14,12 +14,12 @@
 
 package com.liferay.marketplace.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * This class is used by SOAP remote services.
@@ -29,11 +29,13 @@ import java.util.List;
  */
 @ProviderType
 public class ModuleSoap implements Serializable {
+
 	public static ModuleSoap toSoapModel(Module model) {
 		ModuleSoap soapModel = new ModuleSoap();
 
 		soapModel.setUuid(model.getUuid());
 		soapModel.setModuleId(model.getModuleId());
+		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setAppId(model.getAppId());
 		soapModel.setBundleSymbolicName(model.getBundleSymbolicName());
 		soapModel.setBundleVersion(model.getBundleVersion());
@@ -106,6 +108,14 @@ public class ModuleSoap implements Serializable {
 		_moduleId = moduleId;
 	}
 
+	public long getCompanyId() {
+		return _companyId;
+	}
+
+	public void setCompanyId(long companyId) {
+		_companyId = companyId;
+	}
+
 	public long getAppId() {
 		return _appId;
 	}
@@ -140,8 +150,10 @@ public class ModuleSoap implements Serializable {
 
 	private String _uuid;
 	private long _moduleId;
+	private long _companyId;
 	private long _appId;
 	private String _bundleSymbolicName;
 	private String _bundleVersion;
 	private String _contextName;
+
 }

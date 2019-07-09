@@ -1,0 +1,65 @@
+@component-name = "portal-util-misc"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Nested Portlets";
+	property testray.main.component.name = "Nested Portlets";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "5"
+	test ViewWCDNestedPortlets {
+		property testray.component.names = "Training";
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Nested Portlets Page");
+
+		Navigator.gotoPage(pageName = "Nested Portlets Page");
+
+		Portlet.addPG(portletName = "Web Content Display");
+
+		Portlet.dragAndDropPortletToColumnPG(
+			columnNumberFrom = "1",
+			columnNumberTo = "2",
+			portletName = "Web Content Display");
+
+		Navigator.gotoPage(pageName = "Nested Portlets Page");
+
+		Portlet.addPG(portletName = "Nested Applications");
+
+		NestedPortlets.viewConfigurationDefaultLayoutTemplate(
+			defaultColumnName = "2 Columns (50/50)",
+			portletName = "Nested Applications");
+
+		Navigator.gotoPage(pageName = "Nested Portlets Page");
+
+		NestedPortlets.dragAndDropPortletToPortletColumnPG(
+			columnNumberFrom = "2",
+			portletColumnNumberTo = "1",
+			portletName = "Web Content Display");
+
+		Navigator.gotoPage(pageName = "Nested Portlets Page");
+
+		NestedPortlets.viewPG(
+			portletColumnNumberTo = "1",
+			portletName = "Web Content Display");
+	}
+
+}

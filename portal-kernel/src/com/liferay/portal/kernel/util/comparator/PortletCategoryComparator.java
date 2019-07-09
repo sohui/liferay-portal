@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.util.comparator;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.PortletCategory;
+import com.liferay.portal.kernel.util.CollatorUtil;
 
 import java.io.Serializable;
 
@@ -32,6 +33,8 @@ public class PortletCategoryComparator
 
 	public PortletCategoryComparator(Locale locale) {
 		_locale = locale;
+
+		_collator = CollatorUtil.getInstance(_locale);
 	}
 
 	@Override
@@ -50,14 +53,13 @@ public class PortletCategoryComparator
 			return 1;
 		}
 
-		Collator collator = Collator.getInstance(_locale);
-
 		name1 = LanguageUtil.get(_locale, name1);
 		name2 = LanguageUtil.get(_locale, name2);
 
-		return collator.compare(name1, name2);
+		return _collator.compare(name1, name2);
 	}
 
+	private final Collator _collator;
 	private final Locale _locale;
 
 }

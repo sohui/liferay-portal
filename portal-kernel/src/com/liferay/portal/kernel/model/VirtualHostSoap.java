@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * This class is used by SOAP remote services.
@@ -29,6 +29,7 @@ import java.util.List;
  */
 @ProviderType
 public class VirtualHostSoap implements Serializable {
+
 	public static VirtualHostSoap toSoapModel(VirtualHost model) {
 		VirtualHostSoap soapModel = new VirtualHostSoap();
 
@@ -69,7 +70,8 @@ public class VirtualHostSoap implements Serializable {
 	}
 
 	public static VirtualHostSoap[] toSoapModels(List<VirtualHost> models) {
-		List<VirtualHostSoap> soapModels = new ArrayList<VirtualHostSoap>(models.size());
+		List<VirtualHostSoap> soapModels = new ArrayList<VirtualHostSoap>(
+			models.size());
 
 		for (VirtualHost model : models) {
 			soapModels.add(toSoapModel(model));
@@ -134,4 +136,5 @@ public class VirtualHostSoap implements Serializable {
 	private long _companyId;
 	private long _layoutSetId;
 	private String _hostname;
+
 }

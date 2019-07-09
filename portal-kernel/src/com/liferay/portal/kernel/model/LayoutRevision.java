@@ -14,30 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the LayoutRevision service. Represents a row in the &quot;LayoutRevision&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see LayoutRevisionModel
- * @see com.liferay.portal.model.impl.LayoutRevisionImpl
- * @see com.liferay.portal.model.impl.LayoutRevisionModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.LayoutRevisionImpl")
 @ProviderType
 public interface LayoutRevision extends LayoutRevisionModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.LayoutRevisionImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.LayoutRevisionImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<LayoutRevision, Long> LAYOUT_REVISION_ID_ACCESSOR =
-		new Accessor<LayoutRevision, Long>() {
+	public static final Accessor<LayoutRevision, Long>
+		LAYOUT_REVISION_ID_ACCESSOR = new Accessor<LayoutRevision, Long>() {
+
 			@Override
 			public Long get(LayoutRevision layoutRevision) {
 				return layoutRevision.getLayoutRevisionId();
@@ -52,6 +52,7 @@ public interface LayoutRevision extends LayoutRevisionModel, PersistedModel {
 			public Class<LayoutRevision> getTypeClass() {
 				return LayoutRevision.class;
 			}
+
 		};
 
 	public java.util.List<LayoutRevision> getChildren();
@@ -59,12 +60,12 @@ public interface LayoutRevision extends LayoutRevisionModel, PersistedModel {
 	public ColorScheme getColorScheme()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getCssText()
+	public String getCssText()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getHTMLTitle(java.util.Locale locale);
+	public String getHTMLTitle(java.util.Locale locale);
 
-	public java.lang.String getHTMLTitle(java.lang.String localeLanguageId);
+	public String getHTMLTitle(String localeLanguageId);
 
 	public boolean getIconImage();
 
@@ -74,22 +75,23 @@ public interface LayoutRevision extends LayoutRevisionModel, PersistedModel {
 	public LayoutSet getLayoutSet()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getRegularURL(
-		javax.servlet.http.HttpServletRequest request)
+	public String getRegularURL(
+			javax.servlet.http.HttpServletRequest httpServletRequest)
 		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public String getTarget();
 
 	public Theme getTheme()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getThemeSetting(java.lang.String key,
-		java.lang.String device);
+	public String getThemeSetting(String key, String device);
 
-	public com.liferay.portal.kernel.util.UnicodeProperties getTypeSettingsProperties();
+	public com.liferay.portal.kernel.util.UnicodeProperties
+		getTypeSettingsProperties();
 
-	public java.lang.String getTypeSettingsProperty(java.lang.String key);
+	public String getTypeSettingsProperty(String key);
 
-	public java.lang.String getTypeSettingsProperty(java.lang.String key,
-		java.lang.String defaultValue);
+	public String getTypeSettingsProperty(String key, String defaultValue);
 
 	public boolean hasChildren();
 
@@ -100,5 +102,7 @@ public interface LayoutRevision extends LayoutRevisionModel, PersistedModel {
 	public boolean isInheritLookAndFeel();
 
 	public void setTypeSettingsProperties(
-		com.liferay.portal.kernel.util.UnicodeProperties typeSettingsProperties);
+		com.liferay.portal.kernel.util.UnicodeProperties
+			typeSettingsProperties);
+
 }

@@ -15,7 +15,6 @@
 package com.liferay.portal.module.framework;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.util.ClassLoaderUtil;
 
 import java.io.InputStream;
 
@@ -54,16 +53,18 @@ public class ModuleFrameworkUtilAdapter {
 	}
 
 	public static void initFramework() throws Exception {
-		ClassLoader classLoader = ClassLoaderUtil.getContextClassLoader();
+		Thread currentThread = Thread.currentThread();
 
-		ClassLoaderUtil.setContextClassLoader(
+		ClassLoader classLoader = currentThread.getContextClassLoader();
+
+		currentThread.setContextClassLoader(
 			ModuleFrameworkAdapterHelper.getClassLoader());
 
 		try {
 			_moduleFramework.initFramework();
 		}
 		finally {
-			ClassLoaderUtil.setContextClassLoader(classLoader);
+			currentThread.setContextClassLoader(classLoader);
 		}
 	}
 
@@ -81,7 +82,7 @@ public class ModuleFrameworkUtilAdapter {
 		_moduleFramework = moduleFramework;
 
 		_moduleFrameworkAdapterHelper.exec(
-			"setModuleFramework", new Class[] {ModuleFramework.class},
+			"setModuleFramework", new Class<?>[] {ModuleFramework.class},
 			_moduleFramework);
 	}
 
@@ -145,9 +146,8 @@ public class ModuleFrameworkUtilAdapter {
 			"com.liferay.portal.bootstrap.ModuleFrameworkUtil");
 
 	static {
-		_moduleFramework =
-			(ModuleFramework)_moduleFrameworkAdapterHelper.execute(
-				"getModuleFramework");
+		_moduleFramework = (ModuleFramework)_moduleFrameworkAdapterHelper.exec(
+			"getModuleFramework", new Class<?>[0]);
 	}
 
 }

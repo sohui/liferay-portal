@@ -14,14 +14,11 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,16 +27,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing Image in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see Image
  * @generated
  */
 @ProviderType
-public class ImageCacheModel implements CacheModel<Image>, Externalizable,
-	MVCCModel {
+public class ImageCacheModel
+	implements CacheModel<Image>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -53,7 +52,8 @@ public class ImageCacheModel implements CacheModel<Image>, Externalizable,
 		ImageCacheModel imageCacheModel = (ImageCacheModel)obj;
 
 		if ((imageId == imageCacheModel.imageId) &&
-				(mvccVersion == imageCacheModel.mvccVersion)) {
+			(mvccVersion == imageCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -118,7 +118,7 @@ public class ImageCacheModel implements CacheModel<Image>, Externalizable,
 		}
 
 		if (type == null) {
-			imageImpl.setType(StringPool.BLANK);
+			imageImpl.setType("");
 		}
 		else {
 			imageImpl.setType(type);
@@ -151,8 +151,7 @@ public class ImageCacheModel implements CacheModel<Image>, Externalizable,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(imageId);
@@ -161,7 +160,7 @@ public class ImageCacheModel implements CacheModel<Image>, Externalizable,
 		objectOutput.writeLong(modifiedDate);
 
 		if (type == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(type);
@@ -182,4 +181,5 @@ public class ImageCacheModel implements CacheModel<Image>, Externalizable,
 	public int height;
 	public int width;
 	public int size;
+
 }

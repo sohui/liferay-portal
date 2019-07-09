@@ -1,0 +1,43 @@
+@component-name = "portal-util-misc"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "IFrame Portlet";
+	property testray.main.component.name = "IFrame Portlet";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "IFrame Page");
+
+		Navigator.gotoPage(pageName = "IFrame Page");
+
+		Portlet.addPG(portletName = "IFrame");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
+
+	@priority = "3"
+	test ViewIFramePortlet {
+		Navigator.gotoPage(pageName = "IFrame Page");
+
+		Portlet.viewPG(
+			portletBody = "Please configure this portlet to make it visible to all users.",
+			portletName = "IFrame");
+	}
+
+}

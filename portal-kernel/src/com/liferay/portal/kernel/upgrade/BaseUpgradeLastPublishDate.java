@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.upgrade;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutConstants;
@@ -31,7 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @author Mate Thurzo
+ * @author Máté Thurzó
  */
 public abstract class BaseUpgradeLastPublishDate extends UpgradeProcess {
 
@@ -168,8 +169,9 @@ public abstract class BaseUpgradeLastPublishDate extends UpgradeProcess {
 		throws Exception {
 
 		try (PreparedStatement ps = connection.prepareStatement(
-				"update " + tableName + " set lastPublishDate = ? where " +
-					"groupId = ?")) {
+				StringBundler.concat(
+					"update ", tableName, " set lastPublishDate = ? where ",
+					"groupId = ?"))) {
 
 			ps.setDate(1, new java.sql.Date(lastPublishDate.getTime()));
 			ps.setLong(2, groupId);

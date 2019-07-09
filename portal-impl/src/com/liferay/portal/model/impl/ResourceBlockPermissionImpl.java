@@ -23,8 +23,10 @@ package com.liferay.portal.model.impl;
  * actions allowed by this permission.
  * </p>
  *
- * @author Connor McKay
+ * @author     Connor McKay
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class ResourceBlockPermissionImpl
 	extends ResourceBlockPermissionBaseImpl {
 }

@@ -15,7 +15,7 @@
 package com.liferay.portal.kernel.lock;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Tina Tian
@@ -30,6 +30,14 @@ public class LockManagerUtil {
 		long lockId, long companyId, long userId, String userName) {
 
 		return _lockManager.createLock(lockId, companyId, userId, userName);
+	}
+
+	public static Lock fetchLock(String className, long key) {
+		return _lockManager.fetchLock(className, key);
+	}
+
+	public static Lock fetchLock(String className, String key) {
+		return _lockManager.fetchLock(className, key);
 	}
 
 	public static Lock getLock(String className, long key)
@@ -76,12 +84,30 @@ public class LockManagerUtil {
 	}
 
 	public static Lock lock(
+			long userId, String className, long key, String owner,
+			boolean inheritable, long expirationTime, boolean renew)
+		throws PortalException {
+
+		return _lockManager.lock(
+			userId, className, key, owner, inheritable, expirationTime, renew);
+	}
+
+	public static Lock lock(
 			long userId, String className, String key, String owner,
 			boolean inheritable, long expirationTime)
 		throws PortalException {
 
 		return _lockManager.lock(
 			userId, className, key, owner, inheritable, expirationTime);
+	}
+
+	public static Lock lock(
+			long userId, String className, String key, String owner,
+			boolean inheritable, long expirationTime, boolean renew)
+		throws PortalException {
+
+		return _lockManager.lock(
+			userId, className, key, owner, inheritable, expirationTime, renew);
 	}
 
 	public static Lock lock(String className, String key, String owner) {
@@ -113,7 +139,8 @@ public class LockManagerUtil {
 		_lockManager.unlock(className, key, owner);
 	}
 
-	private static final LockManager _lockManager =
-		ProxyFactory.newServiceTrackedInstance(LockManager.class);
+	private static volatile LockManager _lockManager =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			LockManager.class, LockManagerUtil.class, "_lockManager", false);
 
 }

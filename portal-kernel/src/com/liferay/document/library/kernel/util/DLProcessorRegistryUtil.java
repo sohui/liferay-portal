@@ -17,7 +17,7 @@ package com.liferay.document.library.kernel.util;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.xml.Element;
 
 /**
@@ -26,11 +26,11 @@ import com.liferay.portal.kernel.xml.Element;
 public class DLProcessorRegistryUtil {
 
 	public static void cleanUp(FileEntry fileEntry) {
-		getDLProcessorRegistry().cleanUp(fileEntry);
+		_dlProcessorRegistry.cleanUp(fileEntry);
 	}
 
 	public static void cleanUp(FileVersion fileVersion) {
-		getDLProcessorRegistry().cleanUp(fileVersion);
+		_dlProcessorRegistry.cleanUp(fileVersion);
 	}
 
 	public static void exportGeneratedFiles(
@@ -38,18 +38,19 @@ public class DLProcessorRegistryUtil {
 			Element fileEntryElement)
 		throws Exception {
 
-		getDLProcessorRegistry().exportGeneratedFiles(
+		_dlProcessorRegistry.exportGeneratedFiles(
 			portletDataContext, fileEntry, fileEntryElement);
 	}
 
 	public static DLProcessor getDLProcessor(String dlProcessorType) {
-		return getDLProcessorRegistry().getDLProcessor(dlProcessorType);
+		return _dlProcessorRegistry.getDLProcessor(dlProcessorType);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static DLProcessorRegistry getDLProcessorRegistry() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			DLProcessorRegistryUtil.class);
-
 		return _dlProcessorRegistry;
 	}
 
@@ -58,40 +59,43 @@ public class DLProcessorRegistryUtil {
 			FileEntry importedFileEntry, Element fileEntryElement)
 		throws Exception {
 
-		getDLProcessorRegistry().importGeneratedFiles(
+		_dlProcessorRegistry.importGeneratedFiles(
 			portletDataContext, fileEntry, importedFileEntry, fileEntryElement);
 	}
 
 	public static boolean isPreviewableSize(FileVersion fileVersion) {
-		return getDLProcessorRegistry().isPreviewableSize(fileVersion);
+		return _dlProcessorRegistry.isPreviewableSize(fileVersion);
 	}
 
 	public static void register(DLProcessor dlProcessor) {
-		getDLProcessorRegistry().register(dlProcessor);
+		_dlProcessorRegistry.register(dlProcessor);
 	}
 
 	public static void trigger(FileEntry fileEntry, FileVersion fileVersion) {
-		getDLProcessorRegistry().trigger(fileEntry, fileVersion);
+		_dlProcessorRegistry.trigger(fileEntry, fileVersion);
 	}
 
 	public static void trigger(
 		FileEntry fileEntry, FileVersion fileVersion, boolean trusted) {
 
-		getDLProcessorRegistry().trigger(fileEntry, fileVersion, trusted);
+		_dlProcessorRegistry.trigger(fileEntry, fileVersion, trusted);
 	}
 
 	public static void unregister(DLProcessor dlProcessor) {
-		getDLProcessorRegistry().unregister(dlProcessor);
+		_dlProcessorRegistry.unregister(dlProcessor);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setDLProcessorRegistry(
 		DLProcessorRegistry dlProcessorRegistry) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
-		_dlProcessorRegistry = dlProcessorRegistry;
 	}
 
-	private static DLProcessorRegistry _dlProcessorRegistry;
+	private static volatile DLProcessorRegistry _dlProcessorRegistry =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			DLProcessorRegistry.class, DLProcessorRegistryUtil.class,
+			"_dlProcessorRegistry", false);
 
 }

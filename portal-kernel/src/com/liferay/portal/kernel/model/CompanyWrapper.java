@@ -14,17 +14,12 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.expando.kernel.model.ExpandoBridge;
-
-import com.liferay.portal.kernel.service.ServiceContext;
-
-import java.io.Serializable;
+import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * <p>
@@ -36,19 +31,12 @@ import java.util.Objects;
  * @generated
  */
 @ProviderType
-public class CompanyWrapper implements Company, ModelWrapper<Company> {
+public class CompanyWrapper
+	extends BaseModelWrapper<Company>
+	implements Company, ModelWrapper<Company> {
+
 	public CompanyWrapper(Company company) {
-		_company = company;
-	}
-
-	@Override
-	public Class<?> getModelClass() {
-		return Company.class;
-	}
-
-	@Override
-	public String getModelClassName() {
-		return Company.class.getName();
+		super(company);
 	}
 
 	@Override
@@ -63,9 +51,9 @@ public class CompanyWrapper implements Company, ModelWrapper<Company> {
 		attributes.put("mx", getMx());
 		attributes.put("homeURL", getHomeURL());
 		attributes.put("logoId", getLogoId());
-		attributes.put("system", getSystem());
+		attributes.put("system", isSystem());
 		attributes.put("maxUsers", getMaxUsers());
-		attributes.put("active", getActive());
+		attributes.put("active", isActive());
 
 		return attributes;
 	}
@@ -140,537 +128,421 @@ public class CompanyWrapper implements Company, ModelWrapper<Company> {
 	}
 
 	@Override
+	public int compareTo(Company company) {
+		return model.compareTo(company);
+	}
+
+	@Override
 	public Account getAccount()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getAccount();
+
+		return model.getAccount();
+	}
+
+	/**
+	 * Returns the account ID of this company.
+	 *
+	 * @return the account ID of this company
+	 */
+	@Override
+	public long getAccountId() {
+		return model.getAccountId();
+	}
+
+	/**
+	 * Returns the active of this company.
+	 *
+	 * @return the active of this company
+	 */
+	@Override
+	public boolean getActive() {
+		return model.getActive();
 	}
 
 	@Override
-	public CacheModel<Company> toCacheModel() {
-		return _company.toCacheModel();
+	public String getAdminName() {
+		return model.getAdminName();
 	}
 
 	@Override
-	public Company toEscapedModel() {
-		return new CompanyWrapper(_company.toEscapedModel());
+	public String getAuthType() {
+		return model.getAuthType();
 	}
 
+	/**
+	 * Returns the company ID of this company.
+	 *
+	 * @return the company ID of this company
+	 */
 	@Override
-	public Company toUnescapedModel() {
-		return new CompanyWrapper(_company.toUnescapedModel());
-	}
-
-	@Override
-	public Group getGroup()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getGroup();
+	public long getCompanyId() {
+		return model.getCompanyId();
 	}
 
 	@Override
 	public User getDefaultUser()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getDefaultUser();
-	}
 
-	/**
-	* Returns the active of this company.
-	*
-	* @return the active of this company
-	*/
-	@Override
-	public boolean getActive() {
-		return _company.getActive();
-	}
-
-	/**
-	* Returns the system of this company.
-	*
-	* @return the system of this company
-	*/
-	@Override
-	public boolean getSystem() {
-		return _company.getSystem();
+		return model.getDefaultUser();
 	}
 
 	@Override
-	public boolean hasCompanyMx(java.lang.String emailAddress) {
-		return _company.hasCompanyMx(emailAddress);
-	}
-
-	/**
-	* Returns <code>true</code> if this company is active.
-	*
-	* @return <code>true</code> if this company is active; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isActive() {
-		return _company.isActive();
+	public String getDefaultWebId() {
+		return model.getDefaultWebId();
 	}
 
 	@Override
-	public boolean isAutoLogin() {
-		return _company.isAutoLogin();
+	public String getEmailAddress() {
+		return model.getEmailAddress();
 	}
 
 	@Override
-	public boolean isCachedModel() {
-		return _company.isCachedModel();
-	}
-
-	@Override
-	public boolean isEscapedModel() {
-		return _company.isEscapedModel();
-	}
-
-	@Override
-	public boolean isNew() {
-		return _company.isNew();
-	}
-
-	@Override
-	public boolean isSendPassword() {
-		return _company.isSendPassword();
-	}
-
-	@Override
-	public boolean isSendPasswordResetLink() {
-		return _company.isSendPasswordResetLink();
-	}
-
-	@Override
-	public boolean isSiteLogo() {
-		return _company.isSiteLogo();
-	}
-
-	@Override
-	public boolean isStrangers() {
-		return _company.isStrangers();
-	}
-
-	@Override
-	public boolean isStrangersVerify() {
-		return _company.isStrangersVerify();
-	}
-
-	@Override
-	public boolean isStrangersWithMx() {
-		return _company.isStrangersWithMx();
-	}
-
-	/**
-	* Returns <code>true</code> if this company is system.
-	*
-	* @return <code>true</code> if this company is system; <code>false</code> otherwise
-	*/
-	@Override
-	public boolean isSystem() {
-		return _company.isSystem();
-	}
-
-	@Override
-	public ExpandoBridge getExpandoBridge() {
-		return _company.getExpandoBridge();
-	}
-
-	@Override
-	public int compareTo(Company company) {
-		return _company.compareTo(company);
-	}
-
-	/**
-	* Returns the max users of this company.
-	*
-	* @return the max users of this company
-	*/
-	@Override
-	public int getMaxUsers() {
-		return _company.getMaxUsers();
-	}
-
-	@Override
-	public int hashCode() {
-		return _company.hashCode();
-	}
-
-	@Override
-	public Serializable getPrimaryKeyObj() {
-		return _company.getPrimaryKeyObj();
-	}
-
-	@Override
-	public java.lang.Object clone() {
-		return new CompanyWrapper((Company)_company.clone());
-	}
-
-	@Override
-	public java.lang.String getAdminName() {
-		return _company.getAdminName();
-	}
-
-	@Override
-	public java.lang.String getAuthType() {
-		return _company.getAuthType();
-	}
-
-	@Override
-	public java.lang.String getDefaultWebId() {
-		return _company.getDefaultWebId();
-	}
-
-	@Override
-	public java.lang.String getEmailAddress() {
-		return _company.getEmailAddress();
-	}
-
-	/**
-	* Returns the home u r l of this company.
-	*
-	* @return the home u r l of this company
-	*/
-	@Override
-	public java.lang.String getHomeURL() {
-		return _company.getHomeURL();
-	}
-
-	/**
-	* Returns the key of this company.
-	*
-	* @return the key of this company
-	*/
-	@Override
-	public java.lang.String getKey() {
-		return _company.getKey();
-	}
-
-	/**
-	* Returns the mx of this company.
-	*
-	* @return the mx of this company
-	*/
-	@Override
-	public java.lang.String getMx() {
-		return _company.getMx();
-	}
-
-	@Override
-	public java.lang.String getName()
+	public Group getGroup()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getName();
-	}
 
-	@Override
-	public java.lang.String getPortalURL(long groupId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getPortalURL(groupId);
-	}
-
-	@Override
-	public java.lang.String getShortName()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getShortName();
-	}
-
-	@Override
-	public java.lang.String getVirtualHostname() {
-		return _company.getVirtualHostname();
-	}
-
-	/**
-	* Returns the web ID of this company.
-	*
-	* @return the web ID of this company
-	*/
-	@Override
-	public java.lang.String getWebId() {
-		return _company.getWebId();
-	}
-
-	@Override
-	public java.lang.String toString() {
-		return _company.toString();
-	}
-
-	@Override
-	public java.lang.String toXmlString() {
-		return _company.toXmlString();
-	}
-
-	@Override
-	public java.security.Key getKeyObj() {
-		return _company.getKeyObj();
-	}
-
-	@Override
-	public java.util.Locale getLocale()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getLocale();
-	}
-
-	@Override
-	public java.util.TimeZone getTimeZone()
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getTimeZone();
-	}
-
-	/**
-	* Returns the account ID of this company.
-	*
-	* @return the account ID of this company
-	*/
-	@Override
-	public long getAccountId() {
-		return _company.getAccountId();
-	}
-
-	/**
-	* Returns the company ID of this company.
-	*
-	* @return the company ID of this company
-	*/
-	@Override
-	public long getCompanyId() {
-		return _company.getCompanyId();
+		return model.getGroup();
 	}
 
 	@Override
 	public long getGroupId()
 		throws com.liferay.portal.kernel.exception.PortalException {
-		return _company.getGroupId();
+
+		return model.getGroupId();
 	}
 
 	/**
-	* Returns the logo ID of this company.
-	*
-	* @return the logo ID of this company
-	*/
+	 * Returns the home url of this company.
+	 *
+	 * @return the home url of this company
+	 */
+	@Override
+	public String getHomeURL() {
+		return model.getHomeURL();
+	}
+
+	/**
+	 * Returns the key of this company.
+	 *
+	 * @return the key of this company
+	 */
+	@Override
+	public String getKey() {
+		return model.getKey();
+	}
+
+	@Override
+	public java.security.Key getKeyObj() {
+		return model.getKeyObj();
+	}
+
+	@Override
+	public java.util.Locale getLocale()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getLocale();
+	}
+
+	/**
+	 * Returns the logo ID of this company.
+	 *
+	 * @return the logo ID of this company
+	 */
 	@Override
 	public long getLogoId() {
-		return _company.getLogoId();
+		return model.getLogoId();
 	}
 
 	/**
-	* Returns the mvcc version of this company.
-	*
-	* @return the mvcc version of this company
-	*/
+	 * Returns the max users of this company.
+	 *
+	 * @return the max users of this company
+	 */
+	@Override
+	public int getMaxUsers() {
+		return model.getMaxUsers();
+	}
+
+	/**
+	 * Returns the mvcc version of this company.
+	 *
+	 * @return the mvcc version of this company
+	 */
 	@Override
 	public long getMvccVersion() {
-		return _company.getMvccVersion();
+		return model.getMvccVersion();
 	}
 
 	/**
-	* Returns the primary key of this company.
-	*
-	* @return the primary key of this company
-	*/
+	 * Returns the mx of this company.
+	 *
+	 * @return the mx of this company
+	 */
+	@Override
+	public String getMx() {
+		return model.getMx();
+	}
+
+	@Override
+	public String getName()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getName();
+	}
+
+	@Override
+	public String getPortalURL(long groupId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getPortalURL(groupId);
+	}
+
+	/**
+	 * Returns the primary key of this company.
+	 *
+	 * @return the primary key of this company
+	 */
 	@Override
 	public long getPrimaryKey() {
-		return _company.getPrimaryKey();
+		return model.getPrimaryKey();
+	}
+
+	@Override
+	public String getShortName()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getShortName();
+	}
+
+	/**
+	 * Returns the system of this company.
+	 *
+	 * @return the system of this company
+	 */
+	@Override
+	public boolean getSystem() {
+		return model.getSystem();
+	}
+
+	@Override
+	public java.util.TimeZone getTimeZone()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getTimeZone();
+	}
+
+	@Override
+	public String getVirtualHostname() {
+		return model.getVirtualHostname();
+	}
+
+	/**
+	 * Returns the web ID of this company.
+	 *
+	 * @return the web ID of this company
+	 */
+	@Override
+	public String getWebId() {
+		return model.getWebId();
+	}
+
+	@Override
+	public boolean hasCompanyMx(String emailAddress) {
+		return model.hasCompanyMx(emailAddress);
+	}
+
+	/**
+	 * Returns <code>true</code> if this company is active.
+	 *
+	 * @return <code>true</code> if this company is active; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isActive() {
+		return model.isActive();
+	}
+
+	@Override
+	public boolean isAutoLogin() {
+		return model.isAutoLogin();
+	}
+
+	@Override
+	public boolean isSendPassword() {
+		return model.isSendPassword();
+	}
+
+	@Override
+	public boolean isSendPasswordResetLink() {
+		return model.isSendPasswordResetLink();
+	}
+
+	@Override
+	public boolean isSiteLogo() {
+		return model.isSiteLogo();
+	}
+
+	@Override
+	public boolean isStrangers() {
+		return model.isStrangers();
+	}
+
+	@Override
+	public boolean isStrangersVerify() {
+		return model.isStrangersVerify();
+	}
+
+	@Override
+	public boolean isStrangersWithMx() {
+		return model.isStrangersWithMx();
+	}
+
+	/**
+	 * Returns <code>true</code> if this company is system.
+	 *
+	 * @return <code>true</code> if this company is system; <code>false</code> otherwise
+	 */
+	@Override
+	public boolean isSystem() {
+		return model.isSystem();
 	}
 
 	@Override
 	public void persist() {
-		_company.persist();
+		model.persist();
 	}
 
 	/**
-	* Sets the account ID of this company.
-	*
-	* @param accountId the account ID of this company
-	*/
+	 * Sets the account ID of this company.
+	 *
+	 * @param accountId the account ID of this company
+	 */
 	@Override
 	public void setAccountId(long accountId) {
-		_company.setAccountId(accountId);
+		model.setAccountId(accountId);
 	}
 
 	/**
-	* Sets whether this company is active.
-	*
-	* @param active the active of this company
-	*/
+	 * Sets whether this company is active.
+	 *
+	 * @param active the active of this company
+	 */
 	@Override
 	public void setActive(boolean active) {
-		_company.setActive(active);
-	}
-
-	@Override
-	public void setCachedModel(boolean cachedModel) {
-		_company.setCachedModel(cachedModel);
+		model.setActive(active);
 	}
 
 	/**
-	* Sets the company ID of this company.
-	*
-	* @param companyId the company ID of this company
-	*/
+	 * Sets the company ID of this company.
+	 *
+	 * @param companyId the company ID of this company
+	 */
 	@Override
 	public void setCompanyId(long companyId) {
-		_company.setCompanyId(companyId);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
-		_company.setExpandoBridgeAttributes(baseModel);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
-		_company.setExpandoBridgeAttributes(expandoBridge);
-	}
-
-	@Override
-	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		_company.setExpandoBridgeAttributes(serviceContext);
+		model.setCompanyId(companyId);
 	}
 
 	/**
-	* Sets the home u r l of this company.
-	*
-	* @param homeURL the home u r l of this company
-	*/
+	 * Sets the home url of this company.
+	 *
+	 * @param homeURL the home url of this company
+	 */
 	@Override
-	public void setHomeURL(java.lang.String homeURL) {
-		_company.setHomeURL(homeURL);
+	public void setHomeURL(String homeURL) {
+		model.setHomeURL(homeURL);
 	}
 
 	/**
-	* Sets the key of this company.
-	*
-	* @param key the key of this company
-	*/
+	 * Sets the key of this company.
+	 *
+	 * @param key the key of this company
+	 */
 	@Override
-	public void setKey(java.lang.String key) {
-		_company.setKey(key);
+	public void setKey(String key) {
+		model.setKey(key);
 	}
 
 	@Override
 	public void setKeyObj(java.security.Key keyObj) {
-		_company.setKeyObj(keyObj);
+		model.setKeyObj(keyObj);
 	}
 
 	/**
-	* Sets the logo ID of this company.
-	*
-	* @param logoId the logo ID of this company
-	*/
+	 * Sets the logo ID of this company.
+	 *
+	 * @param logoId the logo ID of this company
+	 */
 	@Override
 	public void setLogoId(long logoId) {
-		_company.setLogoId(logoId);
+		model.setLogoId(logoId);
 	}
 
 	/**
-	* Sets the max users of this company.
-	*
-	* @param maxUsers the max users of this company
-	*/
+	 * Sets the max users of this company.
+	 *
+	 * @param maxUsers the max users of this company
+	 */
 	@Override
 	public void setMaxUsers(int maxUsers) {
-		_company.setMaxUsers(maxUsers);
+		model.setMaxUsers(maxUsers);
 	}
 
 	/**
-	* Sets the mvcc version of this company.
-	*
-	* @param mvccVersion the mvcc version of this company
-	*/
+	 * Sets the mvcc version of this company.
+	 *
+	 * @param mvccVersion the mvcc version of this company
+	 */
 	@Override
 	public void setMvccVersion(long mvccVersion) {
-		_company.setMvccVersion(mvccVersion);
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
-	* Sets the mx of this company.
-	*
-	* @param mx the mx of this company
-	*/
+	 * Sets the mx of this company.
+	 *
+	 * @param mx the mx of this company
+	 */
 	@Override
-	public void setMx(java.lang.String mx) {
-		_company.setMx(mx);
-	}
-
-	@Override
-	public void setNew(boolean n) {
-		_company.setNew(n);
+	public void setMx(String mx) {
+		model.setMx(mx);
 	}
 
 	/**
-	* Sets the primary key of this company.
-	*
-	* @param primaryKey the primary key of this company
-	*/
+	 * Sets the primary key of this company.
+	 *
+	 * @param primaryKey the primary key of this company
+	 */
 	@Override
 	public void setPrimaryKey(long primaryKey) {
-		_company.setPrimaryKey(primaryKey);
-	}
-
-	@Override
-	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
-		_company.setPrimaryKeyObj(primaryKeyObj);
+		model.setPrimaryKey(primaryKey);
 	}
 
 	/**
-	* Sets whether this company is system.
-	*
-	* @param system the system of this company
-	*/
+	 * Sets whether this company is system.
+	 *
+	 * @param system the system of this company
+	 */
 	@Override
 	public void setSystem(boolean system) {
-		_company.setSystem(system);
+		model.setSystem(system);
 	}
 
 	@Override
-	public void setVirtualHostname(java.lang.String virtualHostname) {
-		_company.setVirtualHostname(virtualHostname);
+	public void setVirtualHostname(String virtualHostname) {
+		model.setVirtualHostname(virtualHostname);
 	}
 
 	/**
-	* Sets the web ID of this company.
-	*
-	* @param webId the web ID of this company
-	*/
+	 * Sets the web ID of this company.
+	 *
+	 * @param webId the web ID of this company
+	 */
 	@Override
-	public void setWebId(java.lang.String webId) {
-		_company.setWebId(webId);
+	public void setWebId(String webId) {
+		model.setWebId(webId);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (!(obj instanceof CompanyWrapper)) {
-			return false;
-		}
-
-		CompanyWrapper companyWrapper = (CompanyWrapper)obj;
-
-		if (Objects.equals(_company, companyWrapper._company)) {
-			return true;
-		}
-
-		return false;
+	protected CompanyWrapper wrap(Company company) {
+		return new CompanyWrapper(company);
 	}
 
-	@Override
-	public Company getWrappedModel() {
-		return _company;
-	}
-
-	@Override
-	public boolean isEntityCacheEnabled() {
-		return _company.isEntityCacheEnabled();
-	}
-
-	@Override
-	public boolean isFinderCacheEnabled() {
-		return _company.isFinderCacheEnabled();
-	}
-
-	@Override
-	public void resetOriginalValues() {
-		_company.resetOriginalValues();
-	}
-
-	private final Company _company;
 }

@@ -19,12 +19,12 @@ import com.liferay.mail.kernel.model.Filter;
 import com.liferay.mail.kernel.model.MailMessage;
 import com.liferay.mail.kernel.service.MailService;
 import com.liferay.mail.kernel.util.Hook;
+import com.liferay.portal.kernel.cluster.Clusterable;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
@@ -45,8 +45,7 @@ import javax.mail.Session;
 /**
  * @author Brian Wing Shun Chan
  */
-@DoPrivileged
-public class MailServiceImpl implements MailService, IdentifiableOSGiService {
+public class MailServiceImpl implements IdentifiableOSGiService, MailService {
 
 	@Override
 	public void addForward(
@@ -96,6 +95,7 @@ public class MailServiceImpl implements MailService, IdentifiableOSGiService {
 		MessageBusUtil.sendMessage(DestinationNames.MAIL, methodHandler);
 	}
 
+	@Clusterable
 	@Override
 	public void clearSession() {
 		_session = null;
@@ -138,7 +138,9 @@ public class MailServiceImpl implements MailService, IdentifiableOSGiService {
 
 		Session session = InfrastructureUtil.getMailSession();
 
-		if (!PrefsPropsUtil.getBoolean(PropsKeys.MAIL_SESSION_MAIL)) {
+		if (!PrefsPropsUtil.getBoolean(
+				PropsKeys.MAIL_SESSION_MAIL, PropsValues.MAIL_SESSION_MAIL)) {
+
 			_session = session;
 
 			return _session;

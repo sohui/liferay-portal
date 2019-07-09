@@ -1,0 +1,59 @@
+apply plugin: "com.liferay.target.platform"
+
+task checkApi
+task checkPortlet
+task checkService
+task runGradleTest
+
+checkApi {
+	dependsOn ":modules:foo-api:resolve"
+
+	doLast {
+		List<String> runBundles = project(":modules:foo-api").resolve.runBundles
+
+		assert runBundles.size() > 0
+		assert runBundles.contains("com.liferay.foo.api;version='[1.0.0,1.0.1)'")
+		assert !runBundles.contains("com.liferay.foo.portlet;version='[1.0.0,1.0.1)'")
+		assert !runBundles.contains("com.liferay.foo.service;version='[1.0.0,1.0.1)'")
+	}
+}
+
+checkPortlet {
+	dependsOn ":modules:foo-portlet:resolve"
+
+	doLast {
+		List<String> runBundles = project(":modules:foo-portlet").resolve.runBundles
+
+		assert runBundles.size() > 0
+		assert runBundles.contains("com.liferay.foo.api;version='[1.0.0,1.0.1)'")
+		assert runBundles.contains("com.liferay.foo.portlet;version='[1.0.0,1.0.1)'")
+		assert runBundles.contains("com.liferay.foo.service;version='[1.0.0,1.0.1)'")
+	}
+}
+
+checkService {
+	dependsOn ":modules:foo-service:resolve"
+
+	doLast {
+		List<String> runBundles = project(":modules:foo-service").resolve.runBundles
+
+		assert runBundles.size() > 0
+		assert runBundles.contains("com.liferay.foo.api;version='[1.0.0,1.0.1)'")
+		assert !runBundles.contains("com.liferay.foo.portlet;version='[1.0.0,1.0.1)'")
+		assert runBundles.contains("com.liferay.foo.service;version='[1.0.0,1.0.1)'")
+	}
+}
+
+dependencies {
+	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom", version: "7.1.3"
+	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom.compile.only", version: "7.1.3"
+	targetPlatformBoms group: "com.liferay.portal", name: "release.portal.bom.third.party", version: "7.1.3"
+
+	targetPlatformDistro group: "com.liferay.portal", name: "release.portal.distro", version: "7.1.3"
+}
+
+runGradleTest {
+	dependsOn checkApi
+	dependsOn checkPortlet
+	dependsOn checkService
+}

@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.service.ResourceActionLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the ResourceAction service. Represents a row in the &quot;ResourceAction&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.portal.kernel.service.ResourceActionLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class ResourceActionBaseImpl extends ResourceActionModelImpl
-	implements ResourceAction {
+public abstract class ResourceActionBaseImpl
+	extends ResourceActionModelImpl implements ResourceAction {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a resource action model instance should use the {@link ResourceAction} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a resource action model instance should use the <code>ResourceAction</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class ResourceActionBaseImpl extends ResourceActionModelImpl
 			ResourceActionLocalServiceUtil.updateResourceAction(this);
 		}
 	}
+
 }

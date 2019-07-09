@@ -14,10 +14,10 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.ResourceBlock;
 import com.liferay.portal.kernel.service.ResourceBlockLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the ResourceBlock service. Represents a row in the &quot;ResourceBlock&quot; database table, with each column mapped to a property of this class.
@@ -29,15 +29,18 @@ import com.liferay.portal.kernel.service.ResourceBlockLocalServiceUtil;
  * @author Brian Wing Shun Chan
  * @see ResourceBlockImpl
  * @see ResourceBlock
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  * @generated
  */
+@Deprecated
 @ProviderType
-public abstract class ResourceBlockBaseImpl extends ResourceBlockModelImpl
-	implements ResourceBlock {
+public abstract class ResourceBlockBaseImpl
+	extends ResourceBlockModelImpl implements ResourceBlock {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a resource block model instance should use the {@link ResourceBlock} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a resource block model instance should use the <code>ResourceBlock</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +51,5 @@ public abstract class ResourceBlockBaseImpl extends ResourceBlockModelImpl
 			ResourceBlockLocalServiceUtil.updateResourceBlock(this);
 		}
 	}
+
 }

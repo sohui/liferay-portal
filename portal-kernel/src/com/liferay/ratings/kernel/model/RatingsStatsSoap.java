@@ -14,12 +14,12 @@
 
 package com.liferay.ratings.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * This class is used by SOAP remote services.
@@ -29,6 +29,7 @@ import java.util.List;
  */
 @ProviderType
 public class RatingsStatsSoap implements Serializable {
+
 	public static RatingsStatsSoap toSoapModel(RatingsStats model) {
 		RatingsStatsSoap soapModel = new RatingsStatsSoap();
 
@@ -71,7 +72,8 @@ public class RatingsStatsSoap implements Serializable {
 	}
 
 	public static RatingsStatsSoap[] toSoapModels(List<RatingsStats> models) {
-		List<RatingsStatsSoap> soapModels = new ArrayList<RatingsStatsSoap>(models.size());
+		List<RatingsStatsSoap> soapModels = new ArrayList<RatingsStatsSoap>(
+			models.size());
 
 		for (RatingsStats model : models) {
 			soapModels.add(toSoapModel(model));
@@ -154,4 +156,5 @@ public class RatingsStatsSoap implements Serializable {
 	private int _totalEntries;
 	private double _totalScore;
 	private double _averageScore;
+
 }

@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -24,6 +22,8 @@ import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for Permission. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -31,47 +31,49 @@ import com.liferay.portal.kernel.transaction.Transactional;
  *
  * @author Brian Wing Shun Chan
  * @see PermissionServiceUtil
- * @see com.liferay.portal.service.base.PermissionServiceBaseImpl
- * @see com.liferay.portal.service.impl.PermissionServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface PermissionService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link PermissionServiceUtil} to access the permission remote service. Add custom service methods to {@link com.liferay.portal.service.impl.PermissionServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link PermissionServiceUtil} to access the permission remote service. Add custom service methods to <code>com.liferay.portal.service.impl.PermissionServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
-
-	/**
-	* Checks to see if the group has permission to the service.
-	*
-	* @param groupId the primary key of the group
-	* @param name the service name
-	* @param primKey the primary key of the service
-	*/
-	public void checkPermission(long groupId, java.lang.String name,
-		java.lang.String primKey) throws PortalException;
-
-	/**
-	* Checks to see if the group has permission to the service.
-	*
-	* @param groupId the primary key of the group
-	* @param name the service name
-	* @param primKey the primary key of the service
-	*/
+	 * Checks to see if the group has permission to the service.
+	 *
+	 * @param groupId the primary key of the group
+	 * @param name the service name
+	 * @param primKey the primary key of the service
+	 */
 	@JSONWebService(mode = JSONWebServiceMode.IGNORE)
-	public void checkPermission(long groupId, java.lang.String name,
-		long primKey) throws PortalException;
+	public void checkPermission(long groupId, String name, long primKey)
+		throws PortalException;
+
+	/**
+	 * Checks to see if the group has permission to the service.
+	 *
+	 * @param groupId the primary key of the group
+	 * @param name the service name
+	 * @param primKey the primary key of the service
+	 */
+	public void checkPermission(long groupId, String name, String primKey)
+		throws PortalException;
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
+
 }

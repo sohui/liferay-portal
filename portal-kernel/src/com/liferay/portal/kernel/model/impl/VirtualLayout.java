@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.model.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -28,8 +30,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LayoutTypePortletFactoryUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.List;
@@ -105,11 +105,16 @@ public class VirtualLayout extends LayoutWrapper {
 
 	@Override
 	public LayoutSet getLayoutSet() {
-		if (isPrivateLayout()) {
-			return _targetGroup.getPrivateLayoutSet();
+		if (_layoutSet == null) {
+			if (isPrivateLayout()) {
+				_layoutSet = _targetGroup.getPrivateLayoutSet();
+			}
+			else {
+				_layoutSet = _targetGroup.getPublicLayoutSet();
+			}
 		}
 
-		return _targetGroup.getPublicLayoutSet();
+		return _layoutSet;
 	}
 
 	@Override
@@ -122,37 +127,41 @@ public class VirtualLayout extends LayoutWrapper {
 	}
 
 	@Override
-	public String getRegularURL(HttpServletRequest request)
+	public String getRegularURL(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		String layoutURL = _sourceLayout.getRegularURL(request);
+		String layoutURL = _sourceLayout.getRegularURL(httpServletRequest);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		return injectVirtualGroupURL(layoutURL, themeDisplay.getLocale());
 	}
 
 	@Override
-	public String getResetLayoutURL(HttpServletRequest request)
+	public String getResetLayoutURL(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		String layoutURL = _sourceLayout.getResetLayoutURL(request);
+		String layoutURL = _sourceLayout.getResetLayoutURL(httpServletRequest);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		return injectVirtualGroupURL(layoutURL, themeDisplay.getLocale());
 	}
 
 	@Override
-	public String getResetMaxStateURL(HttpServletRequest request)
+	public String getResetMaxStateURL(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		String layoutURL = _sourceLayout.getResetMaxStateURL(request);
+		String layoutURL = _sourceLayout.getResetMaxStateURL(
+			httpServletRequest);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		return injectVirtualGroupURL(layoutURL, themeDisplay.getLocale());
 	}
@@ -167,6 +176,20 @@ public class VirtualLayout extends LayoutWrapper {
 
 	public long getVirtualGroupId() {
 		return _targetGroup.getGroupId();
+	}
+
+	@Override
+	public void setLayoutSet(LayoutSet layoutSet) {
+		super.setLayoutSet(layoutSet);
+
+		_layoutSet = null;
+	}
+
+	@Override
+	public void setPrivateLayout(boolean privateLayout) {
+		super.setPrivateLayout(privateLayout);
+
+		_layoutSet = null;
 	}
 
 	protected String injectVirtualGroupURL(String layoutURL, Locale locale) {
@@ -188,6 +211,7 @@ public class VirtualLayout extends LayoutWrapper {
 			int pos = layoutURL.indexOf(group.getFriendlyURL());
 
 			sb.append(layoutURL.substring(0, pos));
+
 			sb.append(_targetGroup.getFriendlyURL());
 			sb.append(getFriendlyURL(locale));
 
@@ -204,16 +228,17 @@ public class VirtualLayout extends LayoutWrapper {
 		}
 	}
 
-	private static final String _LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING =
-		PropsUtil.get(
+	private static final String
+		_LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING = PropsUtil.get(
 			PropsKeys.LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING);
 
-	private static final String _LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING =
-		PropsUtil.get(
+	private static final String
+		_LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING = PropsUtil.get(
 			PropsKeys.LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING);
 
 	private static final Log _log = LogFactoryUtil.getLog(VirtualLayout.class);
 
+	private LayoutSet _layoutSet;
 	private LayoutType _layoutType;
 	private final Layout _sourceLayout;
 	private final Group _targetGroup;

@@ -21,9 +21,9 @@ import com.liferay.portal.kernel.settings.definition.ConfigurationPidMapping;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * @author Roberto Díaz
+ * @author Alejandro Tardín
  */
-@Component
+@Component(service = ConfigurationPidMapping.class)
 public class KBGroupServiceConfigurationPidMapping
 	implements ConfigurationPidMapping {
 

@@ -14,19 +14,20 @@
 
 package com.liferay.portal.dao.jdbc.aop;
 
+import com.liferay.portal.kernel.aop.AopMethodInvocation;
+import com.liferay.portal.kernel.aop.ChainableMethodAdvice;
 import com.liferay.portal.kernel.dao.jdbc.aop.DynamicDataSourceTargetSource;
 import com.liferay.portal.kernel.dao.jdbc.aop.MasterDataSource;
 import com.liferay.portal.kernel.dao.jdbc.aop.Operation;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.spring.aop.ChainableMethodAdvice;
-import com.liferay.portal.spring.aop.ServiceBeanAopCacheManager;
+import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.spring.transaction.TransactionAttributeBuilder;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import org.aopalliance.intercept.MethodInvocation;
+import java.util.Map;
 
 import org.springframework.transaction.interceptor.TransactionAttribute;
-import org.springframework.transaction.interceptor.TransactionAttributeSource;
 
 /**
  * @author Shuyang Zhou
@@ -34,86 +35,57 @@ import org.springframework.transaction.interceptor.TransactionAttributeSource;
  */
 public class DynamicDataSourceAdvice extends ChainableMethodAdvice {
 
-	@Override
-	public Object before(MethodInvocation methodInvocation) throws Throwable {
-		Operation operation = Operation.WRITE;
-
-		Object targetBean = methodInvocation.getThis();
-
-		Class<?> targetClass = targetBean.getClass();
-
-		Method targetMethod = methodInvocation.getMethod();
-
-		MasterDataSource masterDataSource =
-			ServiceBeanAopCacheManager.getAnnotation(
-				methodInvocation, MasterDataSource.class,
-				_nullMasterDataSource);
-
-		if (masterDataSource == _nullMasterDataSource) {
-			TransactionAttribute transactionAttribute =
-				_transactionAttributeSource.getTransactionAttribute(
-					targetMethod, targetClass);
-
-			if ((transactionAttribute != null) &&
-				transactionAttribute.isReadOnly()) {
-
-				operation = Operation.READ;
-			}
-		}
-
-		_dynamicDataSourceTargetSource.setOperation(operation);
-
-		String targetClassName = targetClass.getName();
-
-		_dynamicDataSourceTargetSource.pushMethod(
-			targetClassName.concat(StringPool.PERIOD).concat(
-				targetMethod.getName()));
-
-		return null;
-	}
-
-	@Override
-	public void duringFinally(MethodInvocation methodInvocation) {
-		_dynamicDataSourceTargetSource.popMethod();
-	}
-
-	public void setDynamicDataSourceTargetSource(
+	public DynamicDataSourceAdvice(
 		DynamicDataSourceTargetSource dynamicDataSourceTargetSource) {
 
 		_dynamicDataSourceTargetSource = dynamicDataSourceTargetSource;
 	}
 
-	public void setTransactionAttributeSource(
-		TransactionAttributeSource transactionAttributeSource) {
+	@Override
+	public Object createMethodContext(
+		Class<?> targetClass, Method method,
+		Map<Class<? extends Annotation>, Annotation> annotations) {
 
-		_transactionAttributeSource = transactionAttributeSource;
+		Transactional transactional = (Transactional)annotations.get(
+			Transactional.class);
+
+		TransactionAttribute transactionAttribute =
+			TransactionAttributeBuilder.build(transactional);
+
+		if (transactionAttribute == null) {
+			return null;
+		}
+
+		Operation operation = Operation.WRITE;
+
+		MasterDataSource masterDataSource = (MasterDataSource)annotations.get(
+			MasterDataSource.class);
+
+		if ((masterDataSource == null) && transactional.readOnly()) {
+			operation = Operation.READ;
+		}
+
+		return operation;
 	}
 
 	@Override
-	protected void setServiceBeanAopCacheManager(
-		ServiceBeanAopCacheManager serviceBeanAopCacheManager) {
+	protected Object before(
+		AopMethodInvocation aopMethodInvocation, Object[] arguments) {
 
-		if (this.serviceBeanAopCacheManager != null) {
-			return;
-		}
+		Operation operation = aopMethodInvocation.getAdviceMethodContext();
 
-		this.serviceBeanAopCacheManager = serviceBeanAopCacheManager;
+		_dynamicDataSourceTargetSource.pushOperation(operation);
 
-		serviceBeanAopCacheManager.registerAnnotationChainableMethodAdvice(
-			MasterDataSource.class, null);
+		return null;
 	}
 
-	private static final MasterDataSource _nullMasterDataSource =
-		new MasterDataSource() {
+	@Override
+	protected void duringFinally(
+		AopMethodInvocation aopMethodInvocation, Object[] arguments) {
 
-			@Override
-			public Class<? extends MasterDataSource> annotationType() {
-				return MasterDataSource.class;
-			}
+		_dynamicDataSourceTargetSource.popOperation();
+	}
 
-		};
-
-	private DynamicDataSourceTargetSource _dynamicDataSourceTargetSource;
-	private TransactionAttributeSource _transactionAttributeSource;
+	private final DynamicDataSourceTargetSource _dynamicDataSourceTargetSource;
 
 }

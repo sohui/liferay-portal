@@ -14,17 +14,17 @@
 
 package com.liferay.portal.kernel.model;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Brian Wing Shun Chan
@@ -41,8 +41,11 @@ public class PortletCategory implements Serializable {
 	}
 
 	public PortletCategory(String name, Set<String> portletIds) {
-		_portletCategories = new HashMap<>();
-		_portletIds = portletIds;
+		_portletCategories = new ConcurrentHashMap<>();
+
+		_portletIds = ConcurrentHashMap.newKeySet();
+
+		_portletIds.addAll(portletIds);
 
 		if (name.contains(_DELIMITER)) {
 			int index = name.lastIndexOf(_DELIMITER);
@@ -66,8 +69,11 @@ public class PortletCategory implements Serializable {
 	public void addCategory(PortletCategory portletCategory) {
 		portletCategory.setParentCategory(this);
 
-		String path = _path.concat(_DELIMITER).concat(
-			portletCategory.getName());
+		String path = _path.concat(
+			_DELIMITER
+		).concat(
+			portletCategory.getName()
+		);
 
 		portletCategory.setPath(path);
 
@@ -110,9 +116,8 @@ public class PortletCategory implements Serializable {
 		if (_name.equals(PortletCategoryConstants.NAME_HIDDEN)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public void merge(PortletCategory newPortletCategory) {
@@ -124,7 +129,7 @@ public class PortletCategory implements Serializable {
 			portletCategory.separate(portletIds);
 		}
 
-		Iterator<String>itr = _portletIds.iterator();
+		Iterator<String> itr = _portletIds.iterator();
 
 		while (itr.hasNext()) {
 			String portletId = itr.next();
@@ -144,7 +149,9 @@ public class PortletCategory implements Serializable {
 	}
 
 	public void setPortletIds(Set<String> portletIds) {
-		_portletIds = portletIds;
+		_portletIds.clear();
+
+		_portletIds.addAll(portletIds);
 	}
 
 	protected void merge(
@@ -185,6 +192,6 @@ public class PortletCategory implements Serializable {
 	private PortletCategory _parentPortletCategory;
 	private String _path;
 	private final Map<String, PortletCategory> _portletCategories;
-	private Set<String> _portletIds;
+	private final Set<String> _portletIds;
 
 }

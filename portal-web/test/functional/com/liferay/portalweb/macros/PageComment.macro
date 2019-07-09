@@ -1,93 +1,102 @@
-<definition>
-	<command name="addPG">
-		<execute macro="PageComment#reply">
-			<var name="commentBody" value="${commentBody}" />
-		</execute>
+definition {
 
-		<var name="key_entryComment" value="${commentBody}" />
+	macro addWithWorkflowPG {
+		PageComment.reply(commentBody = "${commentBody}");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="PGPagecomments#SUCCESS_MESSAGE" value1="Your request completed successfully." />
-		<execute function="AssertTextEquals" locator1="Comments#COMMENT_BODY_SPECIFIC" value1="${commentBody}" />
-		<execute function="AssertTextEquals" locator1="PGPagecomments#COMMENT_AUTHOR" value1="${commentAuthor}" />
-	</command>
+		var key_commentBody = "${commentBody}";
 
-	<command name="addWithWorkflowPG">
-		<execute macro="PageComment#reply">
-			<var name="commentBody" value="${commentBody}" />
-		</execute>
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#SUCCESS",
+			value1 = "Your request completed successfully.");
 
-		<var name="key_commentBody" value="${commentBody}" />
+		AssertElementPresent(locator1 = "Comments#WORKFLOW_STATUS");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="PGPagecomments#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+		var key_entryComment = "${commentBody}";
+		var key_userFullName = "${commentAuthor}";
 
-		<execute function="AssertElementPresent" locator1="Comments#WORKFLOW_STATUS" />
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_SPECIFIC",
+			value1 = "${commentBody}");
 
-		<if>
-			<condition function="IsTextEqual" locator1="Comments#WORKFLOW_STATUS" value1="Pending (Review)" />
-			<then>
-				<execute function="AssertTextEquals" locator1="Comments#WORKFLOW_STATUS" value1="Pending (Review)" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="Comments#WORKFLOW_STATUS" value1="Pending (Created)" />
-			</else>
-		</if>
+		AssertTextEquals(
+			locator1 = "Comments#USER_NAME",
+			value1 = "${commentAuthor}");
+	}
 
-		<var name="key_entryComment" value="${commentBody}" />
+	macro editCommentField {
+		Type.typeEditor(
+			locator1 = "Comments#COMMENT_FIELD",
+			value1 = "${commentBody}");
+	}
 
-		<execute function="AssertTextEquals" locator1="Comments#COMMENT_BODY_SPECIFIC" value1="${commentBody}" />
-		<execute function="AssertTextEquals" locator1="PGPagecomments#COMMENT_AUTHOR" value1="${commentAuthor}" />
-	</command>
+	macro reply {
+		PageComment.editCommentField(commentBody = "${commentBody}");
 
-	<command name="reply">
-		<execute function="Type" locator1="Comments#COMMENT_FIELD" value1="${commentBody}" />
-		<execute function="AssertClick" locator1="Button#REPLY" value1="Reply" />
-	</command>
+		AssertClick(
+			locator1 = "Button#REPLY",
+			value1 = "Reply");
+	}
 
-	<command name="tearDownPG">
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+	macro tearDownPG {
+		Navigator.gotoPage(pageName = "${pageName}");
 
-		<while>
-			<condition function="IsElementPresent" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
-			<then>
-				<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
-				<execute function="ClickNoError" locator1="MenuItem#DELETE" />
-				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
-				<execute function="AssertTextEquals#assertPartialText" locator1="PGPagecomments#SUCCESS_MESSAGE" value1="Your request completed successfully." />
-			</then>
-		</while>
-	</command>
+		while (IsElementPresent(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS")) {
+			MouseOver(locator1 = "Comments#COMMENT_BODY");
 
-	<command name="viewAsWorkflowAsset">
-		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="${commentBody}" />
-		</execute>
+			LexiconEntry.gotoEllipsisMenuItemNoError(menuItem = "Delete");
 
-		<var name="key_commentBody" value="${commentBody}" />
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-		<execute function="AssertTextEquals" locator1="PGPagecomments#COMMENT_BODY_ASSET" value1="${commentBody}" />
-	</command>
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#SUCCESS",
+				value1 = "Your request completed successfully.");
+		}
+	}
 
-	<command name="viewPG">
-		<var name="key_commentBody" value="${commentBody}" />
+	macro viewAsWorkflowAsset {
+		SiteAdmin.viewPortletTitle(portletTitle = "${commentBody}");
 
-		<execute function="AssertElementNotPresent" locator1="Comments#WORKFLOW_STATUS" />
+		var key_commentBody = "${commentBody}";
 
-		<var name="key_entryComment" value="${commentBody}" />
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_ASSET",
+			value1 = "${commentBody}");
+	}
 
-		<execute function="AssertTextEquals" locator1="Comments#COMMENT_BODY_SPECIFIC" value1="${commentBody}" />
-		<execute function="AssertTextEquals" locator1="PGPagecomments#COMMENT_AUTHOR" value1="${commentAuthor}" />
-	</command>
+	macro viewPG {
+		var key_commentBody = "${commentBody}";
 
-	<command name="viewWithWorkflowPG">
-		<var name="key_commentBody" value="${commentBody}" />
+		AssertElementNotPresent(locator1 = "Comments#WORKFLOW_STATUS");
 
-		<execute function="AssertTextEquals" locator1="Comments#WORKFLOW_STATUS" value1="${commentStatus}" />
+		var key_entryComment = "${commentBody}";
+		var key_userFullName = "${commentAuthor}";
 
-		<var name="key_entryComment" value="${commentBody}" />
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_SPECIFIC",
+			value1 = "${commentBody}");
 
-		<execute function="AssertTextEquals" locator1="Comments#COMMENT_BODY_SPECIFIC" value1="${commentBody}" />
-		<execute function="AssertTextEquals" locator1="PGPagecomments#COMMENT_AUTHOR" value1="${commentAuthor}" />
-	</command>
-</definition>
+		AssertTextEquals(
+			locator1 = "Comments#USER_NAME",
+			value1 = "${commentAuthor}");
+	}
+
+	macro viewWithWorkflowPG {
+		var key_commentBody = "${commentBody}";
+
+		AssertTextEquals(
+			locator1 = "Comments#WORKFLOW_STATUS",
+			value1 = "${commentStatus}");
+
+		var key_entryComment = "${commentBody}";
+		var key_userFullName = "${commentAuthor}";
+
+		AssertTextEquals(
+			locator1 = "Comments#COMMENT_BODY_SPECIFIC",
+			value1 = "${commentBody}");
+
+		AssertTextEquals(
+			locator1 = "Comments#USER_NAME",
+			value1 = "${commentAuthor}");
+	}
+
+}

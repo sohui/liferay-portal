@@ -16,12 +16,17 @@ package com.liferay.portal.kernel.servlet;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * See http://www.zytrax.com/tech/web/browser_ids.htm for examples.
  *
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public interface BrowserSniffer {
+
+	public static final String BROWSER_ID_EDGE = "edge";
 
 	public static final String BROWSER_ID_FIREFOX = "firefox";
 
@@ -29,52 +34,101 @@ public interface BrowserSniffer {
 
 	public static final String BROWSER_ID_OTHER = "other";
 
-	public boolean acceptsGzip(HttpServletRequest request);
+	public boolean acceptsGzip(HttpServletRequest httpServletRequest);
 
-	public String getBrowserId(HttpServletRequest request);
+	public String getBrowserId(HttpServletRequest httpServletRequest);
 
-	public float getMajorVersion(HttpServletRequest request);
+	public BrowserMetadata getBrowserMetadata(
+		HttpServletRequest httpServletRequest);
 
-	public String getRevision(HttpServletRequest request);
+	/**
+	 * Returns the browser's version number as a float. This differs from {@link
+	 * BrowserSniffer#getVersion(HttpServletRequest)}, which returns the version
+	 * number as a String.
+	 *
+	 * <p>
+	 * Note that the version returned is defined as the real version of the
+	 * browser software, not the one used to render the page. For example, the
+	 * browser can be IE10 but it may be using a compatibility view emulating
+	 * IE8 to render the page. In such a case, this method would return
+	 * <code>10.0</code>, not <code>8.0</code>.
+	 * </p>
+	 *
+	 * @param  httpServletRequest the servlet request
+	 * @return a float representing the version number
+	 */
+	public float getMajorVersion(HttpServletRequest httpServletRequest);
 
-	public String getVersion(HttpServletRequest request);
+	/**
+	 * Returns the browser's revision.
+	 *
+	 * <p>
+	 * Note that the revision returned is defined as the real revision of the
+	 * browser software, not the one used to render the page. For example, the
+	 * browser can be IE10 but it may be using a compatibility view emulating
+	 * IE8 to render the page. In such a case, this method would return
+	 * <code>10.0</code>, not <code>8.0</code>.
+	 * </p>
+	 *
+	 * @param  httpServletRequest the servlet request
+	 * @return a String containing the revision number
+	 */
+	public String getRevision(HttpServletRequest httpServletRequest);
 
-	public boolean isAir(HttpServletRequest request);
+	/**
+	 * Returns the browser's version.
+	 *
+	 * <p>
+	 * Note that the version returned is defined as the real version of the
+	 * browser software, not the one used to render the page. For example, the
+	 * browser can be an IE10 but it may be using a compatibility view emulating
+	 * IE8 to render the page. In such a case, this method would return
+	 * <code>10.0</code>, not <code>8.0</code>.
+	 * </p>
+	 *
+	 * @param  httpServletRequest the servlet request
+	 * @return a String containing the version number
+	 */
+	public String getVersion(HttpServletRequest httpServletRequest);
 
-	public boolean isAndroid(HttpServletRequest request);
+	public boolean isAir(HttpServletRequest httpServletRequest);
 
-	public boolean isChrome(HttpServletRequest request);
+	public boolean isAndroid(HttpServletRequest httpServletRequest);
 
-	public boolean isFirefox(HttpServletRequest request);
+	public boolean isChrome(HttpServletRequest httpServletRequest);
 
-	public boolean isGecko(HttpServletRequest request);
+	public boolean isEdge(HttpServletRequest httpServletRequest);
 
-	public boolean isIe(HttpServletRequest request);
+	public boolean isFirefox(HttpServletRequest httpServletRequest);
 
-	public boolean isIeOnWin32(HttpServletRequest request);
+	public boolean isGecko(HttpServletRequest httpServletRequest);
 
-	public boolean isIeOnWin64(HttpServletRequest request);
+	public boolean isIe(HttpServletRequest httpServletRequest);
 
-	public boolean isIphone(HttpServletRequest request);
+	public boolean isIeOnWin32(HttpServletRequest httpServletRequest);
 
-	public boolean isLinux(HttpServletRequest request);
+	public boolean isIeOnWin64(HttpServletRequest httpServletRequest);
 
-	public boolean isMac(HttpServletRequest request);
+	public boolean isIphone(HttpServletRequest httpServletRequest);
 
-	public boolean isMobile(HttpServletRequest request);
+	public boolean isLinux(HttpServletRequest httpServletRequest);
 
-	public boolean isMozilla(HttpServletRequest request);
+	public boolean isMac(HttpServletRequest httpServletRequest);
 
-	public boolean isOpera(HttpServletRequest request);
+	public boolean isMobile(HttpServletRequest httpServletRequest);
 
-	public boolean isRtf(HttpServletRequest request);
+	public boolean isMozilla(HttpServletRequest httpServletRequest);
 
-	public boolean isSafari(HttpServletRequest request);
+	public boolean isOpera(HttpServletRequest httpServletRequest);
 
-	public boolean isSun(HttpServletRequest request);
+	public boolean isRtf(HttpServletRequest httpServletRequest);
 
-	public boolean isWebKit(HttpServletRequest request);
+	public boolean isSafari(HttpServletRequest httpServletRequest);
 
-	public boolean isWindows(HttpServletRequest request);
+	public boolean isSun(HttpServletRequest httpServletRequest);
+
+	public boolean isWebKit(HttpServletRequest httpServletRequest);
+
+	public boolean isWindows(HttpServletRequest httpServletRequest);
 
 }

@@ -1,8 +1,8 @@
 Bundle-Name: ${manifest.bundle.name}
 Bundle-SymbolicName: ${manifest.bundle.symbolic.name}
-Bundle-Version: 2.2.0
+Bundle-Version: 5.0.0
 Export-Package:\
-	com.liferay.alloy.taglib.*;version="2.0.0",\
+	com.liferay.alloy.taglib.*;version="2.1.0",\
 	com.liferay.taglib.*
 Import-Package:\
 	!com.liferay.portal.freemarker,\
@@ -16,6 +16,7 @@ Import-Package:\
 	com.ibm.crypto.provider;resolution:=optional,\
 	\
 	com.liferay.*,\
+	\
 	*
 Include-Resource:\
 	classes,\
@@ -25,8 +26,6 @@ Include-Resource:\
 	@../util-java/util-java.jar!/com/liferay/util/JS.class,\
 	@../util-java/util-java.jar!/com/liferay/util/PwdGenerator.class,\
 	@../util-java/util-java.jar!/com/liferay/util/RSSUtil.class
-Liferay-Releng-Module-Group-Description:
-Liferay-Releng-Module-Group-Title:
 Provide-Capability:\
 	osgi.extender;\
 		osgi.extender="jsp.taglib";\
@@ -42,11 +41,19 @@ Provide-Capability:\
 		version:Version="${Bundle-Version}",\
 	osgi.extender;\
 		osgi.extender="jsp.taglib";\
+		uri="http://java.sun.com/jsp/jstl/core";\
+		version:Version="${Bundle-Version}",\
+	osgi.extender;\
+		osgi.extender="jsp.taglib";\
 		uri="http://java.sun.com/portlet";\
 		version:Version="${Bundle-Version}",\
 	osgi.extender;\
 		osgi.extender="jsp.taglib";\
 		uri="http://java.sun.com/portlet_2_0";\
+		version:Version="${Bundle-Version}",\
+	osgi.extender;\
+		osgi.extender="jsp.taglib";\
+		uri="http://xmlns.jcp.org/portlet_3_0";\
 		version:Version="${Bundle-Version}",\
 	osgi.extender;\
 		osgi.extender="jsp.taglib";\
@@ -72,5 +79,4 @@ Provide-Capability:\
 		osgi.extender="jsp.taglib";\
 		uri="http://liferay.com/tld/util";\
 		version:Version="${Bundle-Version}"
--baseline: *;file=${project.dir}/.bnd/ant-baseline-cache/com.liferay.util.taglib-2.1.0.jar
--include: ../modules/apps/foundation/app.bnd
+-include ../common.bnd

@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.dao.jdbc;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.sql.Date;
@@ -34,8 +34,11 @@ public class SmartResultSet {
 
 	public SmartResultSet(ResultSet rs) throws SQLException {
 		_rs = rs;
+
 		_metaData = _rs.getMetaData();
+
 		_columnCount = _metaData.getColumnCount();
+
 		_columnIndexCache = new HashMap<>();
 	}
 

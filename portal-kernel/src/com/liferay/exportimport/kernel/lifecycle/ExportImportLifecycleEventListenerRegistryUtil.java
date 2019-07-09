@@ -23,13 +23,17 @@ import com.liferay.registry.ServiceTrackerCustomizer;
 import com.liferay.registry.collections.ServiceRegistrationMap;
 import com.liferay.registry.collections.ServiceRegistrationMapImpl;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public class ExportImportLifecycleEventListenerRegistryUtil {
 
 	public static Set<ExportImportLifecycleListener>
@@ -117,14 +121,16 @@ public class ExportImportLifecycleEventListenerRegistryUtil {
 		_instance = new ExportImportLifecycleEventListenerRegistryUtil();
 
 	private final Set<ExportImportLifecycleListener>
-		_asyncExportImportLifecycleListeners = new HashSet<>();
+		_asyncExportImportLifecycleListeners = Collections.newSetFromMap(
+			new ConcurrentHashMap<>());
 	private final ServiceRegistrationMap<ExportImportLifecycleListener>
 		_serviceRegistrations = new ServiceRegistrationMapImpl<>();
 	private final ServiceTracker
 		<ExportImportLifecycleListener, ExportImportLifecycleListener>
 			_serviceTracker;
 	private final Set<ExportImportLifecycleListener>
-		_syncExportImportLifecycleListeners = new HashSet<>();
+		_syncExportImportLifecycleListeners = Collections.newSetFromMap(
+			new ConcurrentHashMap<>());
 
 	private class ExportImportLifecycleListenerServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer
@@ -138,6 +144,23 @@ public class ExportImportLifecycleEventListenerRegistryUtil {
 
 			ExportImportLifecycleListener exportImportLifecycleListener =
 				registry.getService(serviceReference);
+
+			if (exportImportLifecycleListener instanceof
+					ProcessAwareExportImportLifecycleListener) {
+
+				exportImportLifecycleListener =
+					ExportImportLifecycleListenerFactoryUtil.create(
+						(ProcessAwareExportImportLifecycleListener)
+							exportImportLifecycleListener);
+			}
+			else if (exportImportLifecycleListener instanceof
+						EventAwareExportImportLifecycleListener) {
+
+				exportImportLifecycleListener =
+					ExportImportLifecycleListenerFactoryUtil.create(
+						(EventAwareExportImportLifecycleListener)
+							exportImportLifecycleListener);
+			}
 
 			if (exportImportLifecycleListener.isParallel()) {
 				_asyncExportImportLifecycleListeners.add(

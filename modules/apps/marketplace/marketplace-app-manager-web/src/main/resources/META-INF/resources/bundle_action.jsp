@@ -17,16 +17,18 @@
 <%@ include file="/init.jsp" %>
 
 <%
-String app = ParamUtil.getString(request, "app");
-String category = ParamUtil.getString(request, "category");
-String state = ParamUtil.getString(request, "state");
-
 ResultRow row = (ResultRow)request.getAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
 
 Bundle bundle = (Bundle)row.getObject();
 %>
 
-<liferay-ui:icon-menu direction="left-side" icon="<%= StringPool.BLANK %>" markupView="lexicon" message="<%= StringPool.BLANK %>" showWhenSingleIcon="<%= true %>">
+<liferay-ui:icon-menu
+	direction="left-side"
+	icon="<%= StringPool.BLANK %>"
+	markupView="lexicon"
+	message="<%= StringPool.BLANK %>"
+	showWhenSingleIcon="<%= true %>"
+>
 	<c:choose>
 		<c:when test="<%= bundle.getState() == BundleStateConstants.ACTIVE %>">
 			<portlet:actionURL name="deactivateBundles" var="deactivateBundlesURL">
@@ -61,5 +63,8 @@ Bundle bundle = (Bundle)row.getObject();
 		<portlet:param name="bundleIds" value="<%= String.valueOf(bundle.getBundleId()) %>" />
 	</portlet:actionURL>
 
-	<liferay-ui:icon-delete url="<%= uninstallBundlesURL %>" />
+	<liferay-ui:icon-delete
+		message="uninstall"
+		url="<%= uninstallBundlesURL %>"
+	/>
 </liferay-ui:icon-menu>

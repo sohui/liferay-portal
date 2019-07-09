@@ -14,7 +14,7 @@
 
 package com.liferay.trash.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -53,8 +53,11 @@ import java.util.List;
  * @see TrashEntryLocalServiceUtil
  * @see com.liferay.portlet.trash.service.base.TrashEntryLocalServiceBaseImpl
  * @see com.liferay.portlet.trash.service.impl.TrashEntryLocalServiceImpl
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+           com.liferay.trash.service.impl.TrashEntryLocalServiceImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 @Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
 	PortalException.class, SystemException.class})
@@ -145,6 +148,8 @@ public interface TrashEntryLocalService extends BaseLocalService,
 	* @return the trash entry with the entity class name and primary key
 	*/
 	public TrashEntry deleteEntry(java.lang.String className, long classPK);
+
+	public void deleteEntries(long groupId, boolean deleteTrashedModels);
 
 	/**
 	* Deletes the trash entry with the primary key.

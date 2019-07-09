@@ -26,12 +26,12 @@ import com.liferay.portal.util.PropsValues;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author Mate Thurzo
+ * @author Máté Thurzó
  */
 public class GroupDisplayContextHelper {
 
-	public GroupDisplayContextHelper(HttpServletRequest request) {
-		_request = request;
+	public GroupDisplayContextHelper(HttpServletRequest httpServletRequest) {
+		_httpServletRequest = httpServletRequest;
 	}
 
 	public Group getGroup() {
@@ -131,17 +131,18 @@ public class GroupDisplayContextHelper {
 			return _selGroup;
 		}
 
-		long groupId = ParamUtil.getLong(_request, "groupId");
+		long groupId = ParamUtil.getLong(_httpServletRequest, "groupId");
 
 		_selGroup = GroupLocalServiceUtil.fetchGroup(groupId);
 
 		if (_selGroup == null) {
-			_selGroup = (Group)_request.getAttribute(WebKeys.GROUP);
+			_selGroup = (Group)_httpServletRequest.getAttribute(WebKeys.GROUP);
 		}
 
 		if (_selGroup == null) {
-			ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)_httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
 			_selGroup = themeDisplay.getScopeGroup();
 		}
@@ -182,9 +183,9 @@ public class GroupDisplayContextHelper {
 	private Group _group;
 	private Long _groupId;
 	private UnicodeProperties _groupTypeSettings;
+	private final HttpServletRequest _httpServletRequest;
 	private Group _liveGroup;
 	private Long _liveGroupId;
-	private final HttpServletRequest _request;
 	private Group _selGroup;
 	private Group _stagingGroup;
 	private Long _stagingGroupId;

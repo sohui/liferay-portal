@@ -132,8 +132,7 @@ public class SearchContext implements Serializable {
 			return new String[0];
 		}
 
-		return _fullQueryEntryClassNames.toArray(
-			new String[_fullQueryEntryClassNames.size()]);
+		return _fullQueryEntryClassNames.toArray(new String[0]);
 	}
 
 	public GroupBy getGroupBy() {
@@ -321,8 +320,7 @@ public class SearchContext implements Serializable {
 	}
 
 	public void setFolderIds(List<Long> folderIds) {
-		_folderIds = ArrayUtil.toArray(
-			folderIds.toArray(new Long[folderIds.size()]));
+		_folderIds = ArrayUtil.toArray(folderIds.toArray(new Long[0]));
 	}
 
 	public void setFolderIds(long[] folderIds) {
@@ -387,8 +385,12 @@ public class SearchContext implements Serializable {
 		_portletIds = portletIds;
 	}
 
+	/**
+	 * @param      queryConfig
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getQueryConfig()}
+	 */
+	@Deprecated
 	public void setQueryConfig(QueryConfig queryConfig) {
-		_queryConfig = queryConfig;
 	}
 
 	public void setScopeStrict(boolean scopeStrict) {
@@ -419,6 +421,10 @@ public class SearchContext implements Serializable {
 
 	public void setUserId(long userId) {
 		_userId = userId;
+
+		if (_attributes != null) {
+			_attributes.remove("searchPermissionContext");
+		}
 	}
 
 	private boolean _andSearch;

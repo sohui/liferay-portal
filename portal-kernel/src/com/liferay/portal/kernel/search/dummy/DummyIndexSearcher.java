@@ -14,17 +14,16 @@
 
 package com.liferay.portal.kernel.search.dummy;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.HitsImpl;
 import com.liferay.portal.kernel.search.IndexSearcher;
 import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.generic.StringQuery;
 import com.liferay.portal.kernel.search.suggest.Suggester;
 import com.liferay.portal.kernel.search.suggest.SuggesterResults;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,19 +42,6 @@ public class DummyIndexSearcher implements IndexSearcher {
 
 	@Override
 	public Hits search(SearchContext searchContext, Query query) {
-		return _getHits();
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #search(SearchContext,
-	 *             Query)}
-	 */
-	@Deprecated
-	@Override
-	public Hits search(
-		String searchEngineId, long companyId, Query query, Sort[] sort,
-		int start, int end) {
-
 		return _getHits();
 	}
 

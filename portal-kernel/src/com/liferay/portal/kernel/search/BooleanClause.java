@@ -25,10 +25,4 @@ public interface BooleanClause<T> extends Serializable {
 
 	public T getClause();
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getClause}
-	 */
-	@Deprecated
-	public T getQuery();
-
 }

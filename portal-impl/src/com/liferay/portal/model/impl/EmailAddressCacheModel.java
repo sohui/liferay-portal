@@ -14,14 +14,11 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.EmailAddress;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,16 +27,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing EmailAddress in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see EmailAddress
  * @generated
  */
 @ProviderType
-public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
-	Externalizable, MVCCModel {
+public class EmailAddressCacheModel
+	implements CacheModel<EmailAddress>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -50,10 +49,12 @@ public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
 			return false;
 		}
 
-		EmailAddressCacheModel emailAddressCacheModel = (EmailAddressCacheModel)obj;
+		EmailAddressCacheModel emailAddressCacheModel =
+			(EmailAddressCacheModel)obj;
 
 		if ((emailAddressId == emailAddressCacheModel.emailAddressId) &&
-				(mvccVersion == emailAddressCacheModel.mvccVersion)) {
+			(mvccVersion == emailAddressCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -119,7 +120,7 @@ public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
 		emailAddressImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
-			emailAddressImpl.setUuid(StringPool.BLANK);
+			emailAddressImpl.setUuid("");
 		}
 		else {
 			emailAddressImpl.setUuid(uuid);
@@ -130,7 +131,7 @@ public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
 		emailAddressImpl.setUserId(userId);
 
 		if (userName == null) {
-			emailAddressImpl.setUserName(StringPool.BLANK);
+			emailAddressImpl.setUserName("");
 		}
 		else {
 			emailAddressImpl.setUserName(userName);
@@ -154,7 +155,7 @@ public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
 		emailAddressImpl.setClassPK(classPK);
 
 		if (address == null) {
-			emailAddressImpl.setAddress(StringPool.BLANK);
+			emailAddressImpl.setAddress("");
 		}
 		else {
 			emailAddressImpl.setAddress(address);
@@ -193,12 +194,11 @@ public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
@@ -211,7 +211,7 @@ public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -225,7 +225,7 @@ public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
 		objectOutput.writeLong(classPK);
 
 		if (address == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(address);
@@ -249,4 +249,5 @@ public class EmailAddressCacheModel implements CacheModel<EmailAddress>,
 	public String address;
 	public long typeId;
 	public boolean primary;
+
 }

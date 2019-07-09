@@ -9,13 +9,49 @@
 </thead>
 <tbody>
 <tr>
-	<td>MENUBAR_CATEGORY</td>
-	<td>//ul[@role='menubar']//a[@role='menuitem' and contains(.,'${key_category}')]</td>
+	<td>CONFIGURATION_ENTRY</td>
+	<td>//tr[@data-qa-id="row"]//strong[contains(.,'${key_configurationEntry}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LDAP_ENTRY</td>
-	<td>//table[contains(@data-searchcontainerid,'ConfigurationAdminPortlet')]//td</td>
+	<td>DROPDOWN_MENU</td>
+	<td>//label[contains(.,'${key_fieldLabel}')]/parent::div//div[contains(@class,'option-selected')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DROPDOWN_MENU_OPTION</td>
+	<td>//button[contains(@class,'dropdown-item') and @aria-label='${key_selectOption}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SCOPED_CONFIGURATION_NAME</td>
+	<td>//a[contains(.,'${key_configurationScope}')]/following-sibling::div//a[contains(@class,'nav-link') and normalize-space(./text())='${key_configurationName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SECURITY_CREDENTIAL_FIELD</td>
+	<td>//div[contains(@data-field-name,'securityCredential')]//input[@type='password']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SECURITY_CREDENTIAL_HIDDEN_IMAGE</td>
+	<td>portal/screenshots/foundation/ldap_server_security_credential.png</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SETTING_FIELD_NAME_CHECKBOX</td>
+	<td>//span[contains(@class,'custom-control-label-text') and contains(.,'${key_settingFieldName}')]/../..//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--ASSETS-->
+<tr>
+	<td>ASSETS_DYNAMIC_EXPORT_LIMIT</td>
+	<td>//div[contains(@data-field-name,'dynamicExportLimit')]//input[@type='text']</td>
 	<td></td>
 </tr>
 </tbody>

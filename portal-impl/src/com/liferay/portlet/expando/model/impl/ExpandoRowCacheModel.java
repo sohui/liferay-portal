@@ -14,13 +14,10 @@
 
 package com.liferay.portlet.expando.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.expando.kernel.model.ExpandoRow;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -29,16 +26,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing ExpandoRow in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see ExpandoRow
  * @generated
  */
 @ProviderType
-public class ExpandoRowCacheModel implements CacheModel<ExpandoRow>,
-	Externalizable {
+public class ExpandoRowCacheModel
+	implements CacheModel<ExpandoRow>, Externalizable {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -117,8 +116,7 @@ public class ExpandoRowCacheModel implements CacheModel<ExpandoRow>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(rowId);
 
 		objectOutput.writeLong(companyId);
@@ -134,4 +132,5 @@ public class ExpandoRowCacheModel implements CacheModel<ExpandoRow>,
 	public long modifiedDate;
 	public long tableId;
 	public long classPK;
+
 }

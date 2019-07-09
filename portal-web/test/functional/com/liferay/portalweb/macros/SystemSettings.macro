@@ -1,54 +1,147 @@
-<definition>
-	<command name="editConfiguration">
-		<var name="key_rowEntry" value="${configurationName}" />
+definition {
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+	macro configureDisplayStyle {
+		Click(locator1 = "Dropdown#TRIGGER");
 
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-	</command>
+		AssertClick(
+			key_option = "${displayStyle}",
+			locator1 = "Dropdown#RESULT",
+			value1 = "${displayStyle}");
 
-	<command name="gotoCategory">
-		<var name="key_category" value="${category}" />
+		AssertTextEquals(
+			locator1 = "Dropdown#SELECTED_VALUE",
+			value1 = "${displayStyle}");
 
-		<execute function="AssertClick" locator1="SystemSettings#MENUBAR_CATEGORY" value1="${category}" />
-	</command>
+		SystemSettings.saveConfiguration();
+	}
 
-	<command name="resetConfiguration">
-		<execute macro="SystemSettings#gotoCategory">
-			<var name="category" value="${category}" />
-		</execute>
+	macro configureDynamicExportLimit {
+		Type(
+			locator1 = "SystemSettings#ASSETS_DYNAMIC_EXPORT_LIMIT",
+			value1 = "${exportLimitNumber}");
 
-		<var name="key_rowEntry" value="${configurationName}" />
+		SystemSettings.saveConfiguration();
+	}
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+	macro configureSystemSetting {
+		var key_settingFieldName = "${settingFieldName}";
 
-		<execute function="AssertClick" locator1="MenuItem#RESET_DEFAULT_VALUES" value1="Reset Default Values" />
+		if ("${enableSetting}" == "true") {
+			Check.toggleSwitch(locator1 = "SystemSettings#SETTING_FIELD_NAME_CHECKBOX");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+			SystemSettings.saveConfiguration();
 
-	<command name="viewPlatformSettingCP">
-		<var name="key_rowEntry" value="${configurationName}" />
+			AssertChecked.assertCheckedNotVisible(locator1 = "SystemSettings#SETTING_FIELD_NAME_CHECKBOX");
+		}
+		else if ("${enableSetting}" == "false") {
+			Uncheck.uncheckToggleSwitch(locator1 = "SystemSettings#SETTING_FIELD_NAME_CHECKBOX");
 
-		<while>
-			<condition function="IsElementNotPresent" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-			<then>
-				<execute function="Click" locator1="Pagination#NEXT_LINK" />
-			</then>
-		</while>
+			SystemSettings.saveConfiguration();
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+			AssertNotChecked.assertNotCheckedNotVisible(locator1 = "SystemSettings#SETTING_FIELD_NAME_CHECKBOX");
+		}
+	}
 
-		<execute function="AssertClick" locator1="MenuItem#VIEW" value1="View" />
+	macro deleteConfiguration {
+		Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
 
-		<if>
-			<equals arg1="${LDAPEnabled}" arg2="true" />
-			<then>
-				<execute function="AssertElementPresent" locator1="SystemSettings#LDAP_ENTRY" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No configurations were found." />
-			</else>
-		</if>
-	</command>
-</definition>
+		MenuItem.click(menuItem = "Delete");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro editSecurityCredential {
+		Type(
+			locator1 = "SystemSettings#SECURITY_CREDENTIAL_FIELD",
+			value1 = "${securityCredential}");
+
+		var key_fieldName = "securityPrincipal";
+
+		Type(
+			locator1 = "FormFields#TEXT_MULTILINE_FIELD",
+			value1 = "test");
+
+		AssertElementPresent(locator1 = "SystemSettings#SECURITY_CREDENTIAL_FIELD");
+
+		SikuliAssertElementPresent(locator1 = "SystemSettings#SECURITY_CREDENTIAL_HIDDEN_IMAGE");
+	}
+
+	macro editTextAreaSetting {
+		Type(
+			key_label = "${settingName}",
+			locator1 = "TextArea#ANY_LABELED",
+			value1 = "${settingValue}");
+	}
+
+	macro editTextSetting {
+		Type(
+			key_fieldLabel = "${settingName}",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${settingValue}");
+	}
+
+	macro exitEditConfiguration {
+		Click(locator1 = "Icon#ANGLE_LEFT_BACK");
+	}
+
+	macro gotoConfiguration {
+		Click(
+			key_itemName = "${configurationCategory}",
+			locator1 = "ListGroupItem#ITEM_TEXT");
+
+		var browserType = PropsUtil.get("browser.type");
+
+		if ("${browserType}" == "chrome") {
+			Pause(locator1 = "5000");
+		}
+
+		Click(
+			key_configurationName = "${configurationName}",
+			key_configurationScope = "${configurationScope}",
+			locator1 = "SystemSettings#SCOPED_CONFIGURATION_NAME");
+
+		AssertElementPresent(
+			key_title = "${configurationName}",
+			locator1 = "Header#H2_TITLE");
+	}
+
+	macro gotoConfigurationEntry {
+		Click(
+			key_configurationEntry = "${configurationEntry}",
+			locator1 = "SystemSettings#CONFIGURATION_ENTRY");
+	}
+
+	macro openSystemSettingsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage?p_p_id=com_liferay_configuration_admin_web_portlet_SystemSettingsPortlet");
+	}
+
+	macro resetConfiguration {
+		Click.waitForMenuToggleJSClick(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Reset Default Values");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro saveConfiguration {
+		if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+		else {
+			Button.clickUpdate();
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro selectOptionSetting {
+		Click(
+			key_fieldLabel = "${fieldName}",
+			locator1 = "SystemSettings#DROPDOWN_MENU");
+
+		Click(
+			key_selectOption = "${selectOption}",
+			locator1 = "SystemSettings#DROPDOWN_MENU_OPTION");
+	}
+
+}

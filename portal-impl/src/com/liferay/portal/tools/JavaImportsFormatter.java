@@ -34,7 +34,13 @@ public class JavaImportsFormatter extends BaseImportsFormatter {
 		Matcher matcher = _importsPattern.matcher(content);
 
 		if (matcher.find()) {
-			return matcher.group();
+			String imports = matcher.group();
+
+			if (imports.endsWith("\n\n")) {
+				imports = imports.substring(0, imports.length() - 1);
+			}
+
+			return imports;
 		}
 
 		return null;
@@ -58,7 +64,7 @@ public class JavaImportsFormatter extends BaseImportsFormatter {
 		}
 
 		String newImports = stripUnusedImports(
-			imports, content, packagePath, className, "\\*");
+			imports, content, packagePath, className, "\\*|\\$");
 
 		newImports = sortAndGroupImports(newImports);
 
@@ -66,15 +72,11 @@ public class JavaImportsFormatter extends BaseImportsFormatter {
 			content = StringUtil.replaceFirst(content, imports, newImports);
 		}
 
-		content = content.replaceFirst(
-			"(?m)^[ \t]*(package .*;)\\s*^[ \t]*import", "$1\n\nimport");
-
-		content = content.replaceFirst(
-			"(?m)^[ \t]*((?:package|import) .*;)\\s*^[ \t]*/\\*\\*",
-			"$1\n\n/**");
-
-		return ToolsUtil.stripFullyQualifiedClassNames(
+		content = ToolsUtil.stripFullyQualifiedClassNames(
 			content, newImports, packagePath);
+
+		return content.replaceFirst(
+			"(?m)^[ \t]*(package .*;)\\s*^[ \t]*import", "$1\n\nimport");
 	}
 
 	private static final Pattern _importsPattern = Pattern.compile(

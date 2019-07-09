@@ -14,7 +14,7 @@
 
 package com.liferay.knowledge.base.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -22,10 +22,14 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface KBArticleFinder {
-	public int countByUrlTitle(long groupId, java.lang.String kbFolderUrlTitle,
-		java.lang.String kbArticleUrlTitle, int[] status);
 
-	public java.util.List<com.liferay.knowledge.base.model.KBArticle> findByUrlTitle(
-		long groupId, java.lang.String kbFolderUrlTitle,
-		java.lang.String kbArticleUrlTitle, int[] status, int start, int end);
+	public int countByUrlTitle(
+		long groupId, String kbFolderUrlTitle, String kbArticleUrlTitle,
+		int[] status);
+
+	public java.util.List<com.liferay.knowledge.base.model.KBArticle>
+		findByUrlTitle(
+			long groupId, String kbFolderUrlTitle, String kbArticleUrlTitle,
+			int[] status, int start, int end);
+
 }

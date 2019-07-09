@@ -1,66 +1,49 @@
-<definition>
-	<command name="addCategorization">
-		<if>
-			<condition function="IsVisible" locator1="AssetCategorization#CATEGORIZATION_PANEL_COLLAPSED" />
-			<then>
-				<execute function="AssertClick" locator1="AssetCategorization#CATEGORIZATION_PANEL_EXPANDED" value1="Categorization" />
-			</then>
-		</if>
+definition {
 
-		<execute function="Type" locator1="AssetCategorization#TAGS_FIELD" value1="${tagName}" />
+	macro discardChanges {
+		var key_text = "Discard Changes";
 
-		<execute function="AssertClick" locator1="AssetCategorization#TAGS_ADD_BUTTON" value1="Add" />
+		AssertElementPresent(locator1 = "Button#ANY");
 
-		<var name="key_tagName" value="${tagName}" />
+		AssertClick(
+			locator1 = "Button#ANY",
+			value1 = "Discard Changes");
+	}
 
-		<execute function="AssertTextEquals" locator1="AssetCategorization#TAG" value1="${tagName}" />
-	</command>
+	macro editTitleInGoogleDoc {
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#GOOGLE_DOC");
 
-	<command name="selectDocument">
-		<execute function="AssertClick" locator1="Button#SELECT_FILE" value1="Select File" />
+		Click(locator1 = "GoogleDoc#TITLE");
 
-		<execute function="SelectFrame" locator1="GoogleDrive#GOOGLE_DRIVE_IFRAME" />
+		Type(
+			locator1 = "GoogleDoc#TITLE",
+			value1 = "${dmDocumentTitle}");
 
-		<if>
-			<condition function="IsVisible" locator1="GoogleDrive#LIST_VIEW_BUTTON" />
-			<then>
-				<execute function="AssertClick" locator1="GoogleDrive#LIST_VIEW_BUTTON" value1="List view" />
-			</then>
-		</if>
+		SelectFrameTop();
+	}
 
-		<var name="key_googleDocName" value="${googleDocName}" />
+	macro gotoEdit {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
 
-		<execute function="AssertClick" locator1="GoogleDrive#LIST_VIEW_DOCUMENT" value1="${googleDocName}" />
+		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS");
 
-		<execute function="AssertClick" locator1="GoogleDrive#SELECT_BUTTON" value1="Select" />
+		MenuItem.click(menuItem = "Edit in ${dmGoogleApp}");
 
-		<var name="key_dmDocumentTitle" value="${googleDocName}" />
+		AssertElementPresent(
+			key_text = "Save and Return to Liferay",
+			locator1 = "Button#ANY");
+	}
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMediaEntry#SELECTED_DOCUMENT_TITLE" value1="${googleDocName}" />
-	</command>
+	macro saveAndExit {
+		var key_text = "Save and Return to Liferay";
 
-	<command name="selectRelatedAsset">
-		<if>
-			<condition function="IsElementNotPresent" locator1="AssetRelatedAssets#RELATED_ASSETS_SELECT" />
-			<then>
-				<execute function="Click" locator1="AssetRelatedAssets#HEADER_COLLAPSED" />
+		AssertElementPresent(locator1 = "Button#ANY");
 
-				<execute function="AssertElementPresent" locator1="AssetRelatedAssets#HEADER_EXPANDED" />
-			</then>
-		</if>
+		AssertClick(
+			locator1 = "Button#ANY",
+			value1 = "Save and Return to Liferay");
 
-		<execute function="AssertClick" locator1="Button#SELECT" value1="Select" />
+		Navigator.openURL();
+	}
 
-		<var name="key_assetType" value="${assetType}" />
-
-		<execute function="AssertClick" locator1="AssetRelatedAssets#RELATED_ASSETS_SELECT_MENULIST_ASSET" value1="${assetType}" />
-
-		<execute function="SelectFrame" locator1="AssetRelatedAssets#SELECT_ASSET_IFRAME" />
-
-		<var name="key_assetTitle" value="${assetTitle}" />
-
-		<execute function="AssertClick" locator1="AssetRelatedAssets#ASSET_TABLE_CHOOSE" value1="Choose" />
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-</definition>
+}

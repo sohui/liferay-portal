@@ -1,0 +1,80 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+import * as FormSupport from 'dynamic-data-mapping-form-renderer/js/components/FormRenderer/FormSupport.es';
+import {generateFieldName, getFieldLocalizedValue} from '../util/fields.es';
+import {PagesVisitor} from 'dynamic-data-mapping-form-renderer/js/util/visitors.es';
+import {sub} from '../../../util/strings.es';
+
+const handleFieldDuplicated = (state, editingLanguageId, event) => {
+	const {columnIndex, pageIndex, rowIndex} = event.indexes;
+	const {pages} = state;
+
+	const field = FormSupport.getField(pages, pageIndex, rowIndex, columnIndex);
+
+	const localizedLabel = getFieldLocalizedValue(
+		field.settingsContext.pages,
+		'label',
+		editingLanguageId
+	);
+
+	const label = sub(Liferay.Language.get('copy-of-x'), [localizedLabel]);
+	const newFieldName = generateFieldName(pages, label);
+	const visitor = new PagesVisitor(field.settingsContext.pages);
+
+	const duplicatedField = {
+		...field,
+		fieldName: newFieldName,
+		label,
+		name: newFieldName,
+		settingsContext: {
+			...field.settingsContext,
+			pages: visitor.mapFields(field => {
+				if (field.fieldName === 'name') {
+					field = {
+						...field,
+						value: newFieldName
+					};
+				} else if (field.fieldName === 'label') {
+					field = {
+						...field,
+						localizedValue: {
+							...field.localizedValue,
+							[editingLanguageId]: label
+						},
+						value: label
+					};
+				}
+				return {
+					...field
+				};
+			})
+		}
+	};
+	const newRowIndex = rowIndex + 1;
+
+	const newRow = FormSupport.implAddRow(12, [duplicatedField]);
+
+	return {
+		focusedField: {
+			...duplicatedField,
+			columnIndex,
+			pageIndex,
+			rowIndex: newRowIndex
+		},
+		pages: FormSupport.addRow(pages, newRowIndex, pageIndex, newRow)
+	};
+};
+
+export default handleFieldDuplicated;

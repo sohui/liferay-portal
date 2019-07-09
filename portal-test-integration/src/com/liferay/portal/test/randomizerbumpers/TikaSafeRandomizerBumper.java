@@ -14,13 +14,15 @@
 
 package com.liferay.portal.test.randomizerbumpers;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.DummyWriter;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.randomizerbumpers.RandomizerBumper;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.util.FileImpl;
 
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.metadata.Metadata;
@@ -44,18 +46,18 @@ public class TikaSafeRandomizerBumper implements RandomizerBumper<byte[]> {
 	@Override
 	public boolean accept(byte[] randomValue) {
 		try {
-			ParseContext parserContext = new ParseContext();
+			ParseContext parseContext = new ParseContext();
 
-			Parser parser = new AutoDetectParser(new TikaConfig());
+			Parser parser = new AutoDetectParser(_tikaConfig);
 
-			parserContext.set(Parser.class, parser);
+			parseContext.set(Parser.class, parser);
 
 			Metadata metadata = new Metadata();
 
 			parser.parse(
 				new UnsyncByteArrayInputStream(randomValue),
 				new WriteOutContentHandler(new DummyWriter()), metadata,
-				parserContext);
+				parseContext);
 
 			if (_contentType == null) {
 				if (_log.isInfoEnabled()) {
@@ -102,6 +104,22 @@ public class TikaSafeRandomizerBumper implements RandomizerBumper<byte[]> {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		TikaSafeRandomizerBumper.class);
+
+	private static final TikaConfig _tikaConfig;
+
+	static {
+		ClassLoader classLoader = FileImpl.class.getClassLoader();
+
+		try {
+			_tikaConfig = ReflectionTestUtil.getFieldValue(
+				classLoader.loadClass(
+					FileImpl.class.getName() + "$TikaConfigHolder"),
+				"_tikaConfig");
+		}
+		catch (Exception e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
 
 	private final String _contentType;
 

@@ -14,8 +14,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DATE</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//input</td>
+	<td>COLOR_PICKER_COLOR</td>
+	<td>//a[@class='palette-item-inner'][@title='#${key_colorCode}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -24,8 +24,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>DECIMAL</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//input</td>
+	<td>GEOLOCATION</td>
+	<td>//div[@data-fieldname='${key_fieldName}']//span[contains(.,'${key_fieldFieldLabel}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -34,28 +34,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>IMAGE</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//input[contains(@type,'file')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>INTEGER</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//input</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LINK_TO_PAGE</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//select</td>
+	<td>IMAGE_PREVIEW_PNG</td>
+	<td>portal/screenshots/ddm/spaceport_image_preview.png</td>
 	<td></td>
 </tr>
 <tr>
 	<td>NESTED</td>
 	<td>//div[@data-fieldname='${key_fieldName}']/div[@data-fieldname='${key_nestedFieldName}']//input</td>
-	<td></td>
-</tr>
-<tr>
-	<td>NUMBER</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -69,13 +54,18 @@
 	<td></td>
 </tr>
 <tr>
-	<td>TEXT</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//input</td>
+	<td>TEXT_BOX</td>
+	<td>//div[contains(@data-fieldname,'${key_fieldName}')]//textarea</td>
 	<td></td>
 </tr>
 <tr>
-	<td>TEXT_BOX</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//textarea</td>
+	<td>WEB_CONTENT</td>
+	<td>//div[@data-fieldname='${key_fieldName}']//label[contains(.,'${key_fieldFieldLabel}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WEB_CONTENT_TITLE_SELECTED</td>
+	<td>//div[@data-fieldname='${key_fieldName}']//input[@value='${key_fieldData}']</td>
 	<td></td>
 </tr>
 </tbody>

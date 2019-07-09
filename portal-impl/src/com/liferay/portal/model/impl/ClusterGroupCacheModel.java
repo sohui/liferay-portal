@@ -14,30 +14,31 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.ClusterGroup;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing ClusterGroup in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see ClusterGroup
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
-public class ClusterGroupCacheModel implements CacheModel<ClusterGroup>,
-	Externalizable, MVCCModel {
+public class ClusterGroupCacheModel
+	implements CacheModel<ClusterGroup>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -48,10 +49,12 @@ public class ClusterGroupCacheModel implements CacheModel<ClusterGroup>,
 			return false;
 		}
 
-		ClusterGroupCacheModel clusterGroupCacheModel = (ClusterGroupCacheModel)obj;
+		ClusterGroupCacheModel clusterGroupCacheModel =
+			(ClusterGroupCacheModel)obj;
 
 		if ((clusterGroupId == clusterGroupCacheModel.clusterGroupId) &&
-				(mvccVersion == clusterGroupCacheModel.mvccVersion)) {
+			(mvccVersion == clusterGroupCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -102,14 +105,14 @@ public class ClusterGroupCacheModel implements CacheModel<ClusterGroup>,
 		clusterGroupImpl.setClusterGroupId(clusterGroupId);
 
 		if (name == null) {
-			clusterGroupImpl.setName(StringPool.BLANK);
+			clusterGroupImpl.setName("");
 		}
 		else {
 			clusterGroupImpl.setName(name);
 		}
 
 		if (clusterNodeIds == null) {
-			clusterGroupImpl.setClusterNodeIds(StringPool.BLANK);
+			clusterGroupImpl.setClusterNodeIds("");
 		}
 		else {
 			clusterGroupImpl.setClusterNodeIds(clusterNodeIds);
@@ -134,21 +137,20 @@ public class ClusterGroupCacheModel implements CacheModel<ClusterGroup>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(clusterGroupId);
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
 
 		if (clusterNodeIds == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(clusterNodeIds);
@@ -162,4 +164,5 @@ public class ClusterGroupCacheModel implements CacheModel<ClusterGroup>,
 	public String name;
 	public String clusterNodeIds;
 	public boolean wholeCluster;
+
 }

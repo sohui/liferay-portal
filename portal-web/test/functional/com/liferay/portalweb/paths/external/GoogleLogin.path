@@ -14,8 +14,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ACCEPT</td>
-	<td>//button[contains(.,'Accept')]</td>
+	<td>ALLOW</td>
+	<td>//button[contains(.,'Allow')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>HEADER</td>
+	<td>//h1[normalize-space()='Choose an account']</td>
 	<td></td>
 </tr>
 <tr>
@@ -26,17 +31,17 @@
 <!--LOGIN-->
 <tr>
 	<td>LOGIN_EMAIL_FIELD</td>
-	<td>//input[contains(@id,'Email')]</td>
+	<td>//input[@id='identifierId']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LOGIN_PASSWORD_FIELD</td>
-	<td>//input[contains(@id,'Passwd')]</td>
+	<td>//input[@name='password']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LOGIN_NEXT_BUTTON</td>
-	<td>//input[@id='next']</td>
+	<td>//input[@id='next'] | //div[contains(@id,'Next')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -51,18 +56,8 @@
 </tr>
 <!--ACCOUNT_MENULIST-->
 <tr>
-	<td>ACCOUNT_MENULIST</td>
-	<td>//a[contains(@title,'Account')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ACCOUNT_MENULIST_SIGN_OUT</td>
-	<td>//a[contains(.,'Sign out')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ACCOUNT_MENULIST_ADD_ACCOUNT</td>
-	<td>//a[contains(.,'Add account')]</td>
+	<td>ACCOUNT_MENULIST_USE_ANOTHER_ACCOUNT</td>
+	<td>//div[@role='button']//p[contains(.,'Use another account')]</td>
 	<td></td>
 </tr>
 </tbody>

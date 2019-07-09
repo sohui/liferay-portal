@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionContext;
 
 /**
  * @author Brian Wing Shun Chan
@@ -120,18 +121,18 @@ public class SharedSessionWrapper implements HttpSession {
 	}
 
 	/**
-	 * @deprecated As of 6.1.0
+	 * @deprecated As of Paton (6.1.x)
 	 */
 	@Deprecated
 	@Override
-	public javax.servlet.http.HttpSessionContext getSessionContext() {
+	public HttpSessionContext getSessionContext() {
 		HttpSession session = getSessionDelegate();
 
 		return session.getSessionContext();
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -140,14 +141,14 @@ public class SharedSessionWrapper implements HttpSession {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
 	public String[] getValueNames() {
 		List<String> names = ListUtil.fromEnumeration(getAttributeNames());
 
-		return names.toArray(new String[names.size()]);
+		return names.toArray(new String[0]);
 	}
 
 	@Override
@@ -165,7 +166,7 @@ public class SharedSessionWrapper implements HttpSession {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -181,7 +182,7 @@ public class SharedSessionWrapper implements HttpSession {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -217,9 +218,8 @@ public class SharedSessionWrapper implements HttpSession {
 		if (_portletSession != null) {
 			return _portletSession;
 		}
-		else {
-			return _portalSession;
-		}
+
+		return _portalSession;
 	}
 
 	protected HttpSession getSessionDelegate(String name) {
@@ -233,23 +233,23 @@ public class SharedSessionWrapper implements HttpSession {
 		else if (containsSharedAttribute(name)) {
 			return _portalSession;
 		}
-		else {
-			return _portletSession;
-		}
+
+		return _portletSession;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SharedSessionWrapper.class);
 
-	private static final Map<String, String> _sharedSessionAttributesExcludes;
+	private static final Map<String, String> _sharedSessionAttributesExcludes =
+		new HashMap<String, String>() {
+			{
+				for (String name :
+						PropsValues.SESSION_SHARED_ATTRIBUTES_EXCLUDES) {
 
-	static {
-		_sharedSessionAttributesExcludes = new HashMap<>();
-
-		for (String name : PropsValues.SESSION_SHARED_ATTRIBUTES_EXCLUDES) {
-			_sharedSessionAttributesExcludes.put(name, name);
-		}
-	}
+					put(name, name);
+				}
+			}
+		};
 
 	private final HttpSession _portalSession;
 	private HttpSession _portletSession;

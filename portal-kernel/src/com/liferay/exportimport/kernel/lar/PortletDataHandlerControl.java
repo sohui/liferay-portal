@@ -14,16 +14,19 @@
 
 package com.liferay.exportimport.kernel.lar;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Locale;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public class PortletDataHandlerControl {
 
 	public static String getNamespacedControlName(
@@ -91,7 +94,8 @@ public class PortletDataHandlerControl {
 
 	public String getHelpMessage(Locale locale, String action) {
 		String helpMessage = LanguageUtil.get(
-			locale, action + "-" + _controlLabel + "-help", StringPool.BLANK);
+			locale, StringBundler.concat(action, "-", _controlLabel, "-help"),
+			StringPool.BLANK);
 
 		if (Validator.isNull(helpMessage)) {
 			helpMessage = LanguageUtil.get(

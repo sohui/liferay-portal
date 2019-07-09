@@ -1,0 +1,125 @@
+definition {
+
+	macro assertAutoTagPresent {
+		var key_tagName = "${tagName}";
+
+		AssertElementPresent(locator1 = "DocumentsAndMedia#TAG");
+	}
+
+	macro assertNoAutoTag {
+		var key_tagName = "${tagName}";
+
+		AssertElementNotPresent(locator1 = "DocumentsAndMedia#TAG");
+	}
+
+	macro disableAutoTagging {
+		if ("${disableAutoTaggingFor}" == "System Settings") {
+			ProductMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "System Settings");
+
+			SystemSettings.gotoConfiguration(
+				configurationCategory = "Assets",
+				configurationName = "Asset Auto Tagging",
+				configurationScope = "System Scope");
+
+			FormFields.disableCheckbox(fieldName = "enabled");
+
+		}
+
+		else if ("${disableAutoTaggingFor}" == "Instance Settings") {
+			PortalSettings.gotoConfiguration(
+				configurationCategory = "Assets",
+				configurationName = "Asset Auto Tagging",
+				configurationScope = "Virtual Instance Scope");
+
+			Uncheck(locator1 = "Checkbox#ENABLE_AUTO_TAGGING");
+		}
+
+		else if ("${disableAutoTaggingFor}" == "Settings") {
+			ProductMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Site Administration",
+				portlet = "Settings");
+
+			Panel.expandPanel(panel = "Asset Auto Tagging");
+
+			Uncheck.uncheckToggleSwitch(locator1 = "Checkbox#ENABLE_AUTO_TAGGING");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	macro enableAutoTagging {
+		if ("${enableAutoTaggingFor}" == "System Settings") {
+			ProductMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Control Panel",
+				portlet = "System Settings");
+
+			SystemSettings.gotoConfiguration(
+				configurationCategory = "Assets",
+				configurationName = "Asset Auto Tagging",
+				configurationScope = "System Scope");
+
+			FormFields.enableCheckbox(fieldName = "enabled");
+		}
+
+		else if ("${enableAutoTaggingFor}" == "Instance Settings") {
+			PortalSettings.gotoConfiguration(
+				configurationCategory = "Assets",
+				configurationName = "Asset Auto Tagging",
+				configurationScope = "Virtual Instance Scope");
+			Check(locator1 = "Checkbox#ENABLE_AUTO_TAGGING");
+		}
+
+		else if ("${enableAutoTaggingFor}" == "Settings") {
+			ProductMenu.gotoPortlet(
+				category = "Configuration",
+				panel = "Site Administration",
+				portlet = "Settings");
+
+			Panel.expandPanel(panel = "Asset Auto Tagging");
+
+			Check.checkToggleSwitch(locator1 = "Checkbox#ENABLE_AUTO_TAGGING");
+		}
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+	macro enableTensorFlow {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Assets",
+			configurationName = "TensorFlow Image Auto Tagging",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.enableCheckbox(fieldName = "enabled");
+
+		if (IsElementPresent(locator1 = "Button#UPDATE")) {
+			PortletEntry.update();
+		}
+
+		else if (IsElementPresent(locator1 = "Button#SAVE")) {
+			PortletEntry.save();
+		}
+	}
+
+}

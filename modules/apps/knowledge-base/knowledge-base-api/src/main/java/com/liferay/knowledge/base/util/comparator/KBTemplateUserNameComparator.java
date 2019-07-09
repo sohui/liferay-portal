@@ -41,8 +41,12 @@ public class KBTemplateUserNameComparator
 
 	@Override
 	public int compare(KBTemplate kbTemplate1, KBTemplate kbTemplate2) {
-		int value = StringUtil.toLowerCase(kbTemplate1.getUserName()).compareTo(
-			StringUtil.toLowerCase(kbTemplate2.getUserName()));
+		String lowerCaseUserName1 = StringUtil.toLowerCase(
+			kbTemplate1.getUserName());
+		String lowerCaseUserName2 = StringUtil.toLowerCase(
+			kbTemplate2.getUserName());
+
+		int value = lowerCaseUserName1.compareTo(lowerCaseUserName2);
 
 		if (value == 0) {
 			String title1 = kbTemplate1.getTitle();
@@ -54,9 +58,8 @@ public class KBTemplateUserNameComparator
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	@Override
@@ -64,9 +67,8 @@ public class KBTemplateUserNameComparator
 		if (_ascending) {
 			return ORDER_BY_ASC;
 		}
-		else {
-			return ORDER_BY_DESC;
-		}
+
+		return ORDER_BY_DESC;
 	}
 
 	@Override

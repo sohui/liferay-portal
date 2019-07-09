@@ -1,36 +1,38 @@
-<definition>
-	<command name="getCompanyId" returns="companyId">
-		<execute macro="JSONCompany#getPortalInstanceName">
-			<return from="portalInstanceName" name="portalInstanceName" />
-		</execute>
+definition {
 
-		<var name="curl">
-			http://localhost:8080/api/jsonws/company/get-company-by-virtual-host \
-				-u test@liferay.com:test \
-				-d virtualHost=${portalInstanceName}
-		</var>
+	macro getCompanyId {
+		var portalInstanceName = JSONCompany.getPortalInstanceName();
 
-		<execute class="com.liferay.poshi.runner.util.JSONCurlUtil" method="get">
-			<arg value="${curl}" />
-			<arg value="$['companyId']" />
-			<return name="companyId" />
-		</execute>
+		var curl = '''
+			http://localhost:8080/api/jsonws/company/get-company-by-virtual-host/virtual-host/${portalInstanceName} \
+				-u test@liferay.com:test
+		''';
+		var companyId = JSONCurlUtil.get("${curl}", "$['companyId']");
 
-		<return name="companyId" value="${companyId}" />
-	</command>
+		return "${companyId}";
+	}
 
-	<command name="getPortalInstanceName" returns="portalInstanceName">
-		<var method="TestPropsUtil#get('portal.url')" name="portalInstanceName" />
+	macro getPortalInstanceName {
+		var testNameSkipPortalInstance = PropsUtil.get("test.name.skip.portal.instance");
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		<var method="StringUtil#replace('${portalInstanceName}', 'http://', '')" name="portalInstanceName" />
-		<var method="StringUtil#replace('${portalInstanceName}', ':8080', '')" name="portalInstanceName" />
+		if (("${testPortalInstance}" == "true") && (!(IsTestName(locator1 = "", value1 = "${testNameSkipPortalInstance}")))) {
+			var portalURL = JSONCompany.getPortalURL();
 
-		<return name="portalInstanceName" value="${portalInstanceName}" />
-	</command>
+			var portalInstanceName = StringUtil.replace("${portalURL}", "http://", "");
+			var portalInstanceName = StringUtil.replace("${portalInstanceName}", ":8080", "");
 
-	<command name="getPortalURL" returns="portalURL">
-		<var method="TestPropsUtil#get('portal.url')" name="portalURL" />
+			return "${portalInstanceName}";
+		}
+		else {
+			return "localhost";
+		}
+	}
 
-		<return name="portalURL" value="${portalURL}" />
-	</command>
-</definition>
+	macro getPortalURL {
+		var portalURL = PropsUtil.get("portal.url");
+
+		return "${portalURL}";
+	}
+
+}

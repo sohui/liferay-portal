@@ -10,22 +10,17 @@
 <tbody>
 <tr>
 	<td>HEADER</td>
-	<td>//h2[contains(@class,'asset-links-title')]</td>
+	<td>//h2[contains(@class,'sheet-tertiary-title')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HEADER_COLLAPSED</td>
-	<td>//div[contains(@class,'toggler-header-collapsed')]//span[contains(.,'Related Assets')]</td>
+	<td>//div[contains(@class,'panel-title')]/a[contains(.,'Related Assets') and contains(@aria-expanded,'false')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>HEADER_EXPANDED</td>
-	<td>//div[contains(@class,'toggler-header-expanded')]//span[contains(.,'Related Assets')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>IMAGE</td>
-	<td>//li[@class='asset-links-list-item']//i</td>
+	<td>//div[contains(@class,'panel-title')]/a[contains(.,'Related Assets') and contains(@aria-expanded,'true')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -34,19 +29,19 @@
 	<td></td>
 </tr>
 <tr>
-	<td>RELATED_ASSETS_SELECT_MENULIST_ASSET</td>
-	<td>//a[@data-title='Select ${key_assetType}']</td>
+	<td>ASSET_TITLE</td>
+	<td>//div[contains(@class,'links')]//a[contains(text(),'${key_relatedAssetTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>ASSET_TITLE</td>
-	<td>//li[@class='asset-links-list-item']//a/span | //li[@class='asset-links-list-item']//a</td>
+	<td></td>
+	<td></td>
 	<td></td>
 </tr>
 <!--This is temporary. After path restructure, the ideal solution is to make the path variable more generic.-->
 <tr>
 	<td>KB_RELATED_ASSETS_LINKS</td>
-	<td>//ul[@class='asset-links-list']/li/a[contains(.,'${key_kbArticleRelatedAssetTitle}')]</td>
+	<td>//ul[@class='list-group sidebar-list-group']/li//a[contains(.,'${key_kbArticleRelatedAssetTitle}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -57,33 +52,22 @@
 <!--RELATED_ASSETS_TABLE-->
 <tr>
 	<td>RELATED_ASSETS_TABLE_TYPE</td>
-	<td>//tr[contains(.,'${key_assetTitle}')]//td[1]</td>
+	<td>//tr[contains(.,'${key_assetTitle}')]//p</td>
 	<td></td>
 </tr>
 <tr>
 	<td>RELATED_ASSETS_TABLE_TITLE</td>
-	<td>//tr[contains(.,'${key_assetTitle}')]//td[2]</td>
+	<td>//tr[contains(.,'${key_assetTitle}')]//*[contains(@class,'title')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>RELATED_ASSETS_TABLE_SCOPE</td>
-	<td>//tr[contains(.,'${key_assetTitle}')]//td[3]</td>
+	<td>//tr[contains(.,'${key_assetTitle}')]//p[2]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>RELATED_ASSETS_TABLE_REMOVE_LINK</td>
-	<td>//tr[contains(.,'${key_assetTitle}')]//td[4]//a</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--BOOKMARKS_ENTRY-->
-<tr>
-	<td>BOOKMARKS_ENTRY_NAVIGATION_ADD_BOOKMARKS_ENTRY</td>
-	<td>//div[@class='navbar-inner' or contains(@class,'navbar-default')]//li/a[contains(@href,'BookmarksEntry')]</td>
+	<td>//tr[contains(.,'${key_assetTitle}')]//a</td>
 	<td></td>
 </tr>
 <tr>
@@ -99,12 +83,7 @@
 </tr>
 <tr>
 	<td>MESSAGE_BOARDS_THREAD_CONTENT</td>
-	<td>//div[@class='panel-body']/div[@class='message-content']</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
+	<td>//div[@class='panel-body']/div[contains(@class,'message-content')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -117,7 +96,6 @@
 	<td></td>
 	<td></td>
 </tr>
-<!--This is temporary. After path restructure, the ideal solution is to make the key_kbArticleRelatedAssetTitle path variable more generic.-->
 <!--KB_ASSET_TABLE-->
 <tr>
 	<td>KB_ASSET_TABLE_TITLE_LINK</td>
@@ -130,6 +108,11 @@
 	<td></td>
 </tr>
 <!--ASSET_TABLE-->
+<tr>
+	<td>ASSET_TABLE_CHECKBOX</td>
+	<td>//tr[contains(.,'${key_assetTitle}')]/td//input[@type='checkbox']</td>
+	<td></td>
+</tr>
 <tr>
 	<td>ASSET_TABLE_CHOOSE</td>
 	<td>//tr[contains(.,'${key_assetTitle}')]/td//a</td>

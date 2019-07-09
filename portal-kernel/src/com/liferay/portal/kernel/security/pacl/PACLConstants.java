@@ -15,8 +15,10 @@
 package com.liferay.portal.kernel.security.pacl;
 
 /**
- * @author Raymond Augé
+ * @author     Raymond Augé
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public interface PACLConstants {
 
 	public static final String FILE_PERMISSION_ACTION_DELETE = "delete";

@@ -18,10 +18,17 @@ import java.io.Serializable;
 
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Andrew Betts
  */
+@ProviderType
 public interface BackgroundTaskDisplay extends Serializable {
+
+	public String getDisplayName(HttpServletRequest httpServletRequest);
 
 	public int getPercentage();
 

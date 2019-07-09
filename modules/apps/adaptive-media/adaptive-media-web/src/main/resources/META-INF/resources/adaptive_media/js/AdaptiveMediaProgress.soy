@@ -1,0 +1,24 @@
+{namespace AdaptiveMediaProgress}
+
+/**
+ * It renders a progressbar and a loading icon.
+ *
+ * @param disabled
+ * @param percentage_
+ * @param progressBarTooltip_
+ * @param spritemap
+ * @param? id_
+ * @param showLoadingIndicator_
+ */
+{template .render}
+	<div id="{$id_}">
+		<div class="progress-container {$disabled ? 'disabled' : ''}" data-title="{$progressBarTooltip_}">
+			{call ClayProgressBar.render}
+				{param spritemap: $spritemap /}
+				{param value: $percentage_ /}
+			{/call}
+		</div>
+
+		<span class="{$showLoadingIndicator_ ? '' : 'hide '}loading-animation loading-animation-sm"></span>
+	</div>
+{/template}

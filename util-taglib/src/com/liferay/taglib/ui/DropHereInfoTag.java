@@ -23,12 +23,18 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class DropHereInfoTag extends IncludeTag {
 
+	public String getMessage() {
+		return _message;
+	}
+
 	public void setMessage(String message) {
 		_message = message;
 	}
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_message = null;
 	}
 
@@ -38,8 +44,9 @@ public class DropHereInfoTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute("liferay-ui:drop-here-info:message", _message);
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
+			"liferay-ui:drop-here-info:message", _message);
 	}
 
 	private static final String _PAGE =

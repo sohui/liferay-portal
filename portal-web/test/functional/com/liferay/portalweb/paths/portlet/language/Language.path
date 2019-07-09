@@ -10,68 +10,18 @@
 <tbody>
 <!--LANGUAGE_MENU-->
 <tr>
-	<td>LANGUAGE_MENU_ARABIC</td>
-	<td>//a[@lang='ar-SA']/img</td>
+	<td>DROPDOWN</td>
+	<td>//button[contains(@id,'${key_portletName}') and contains(@id,'_menu')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LANGUAGE_MENU_CHINESE</td>
-	<td>//*[name()='svg'][@message='中文']</td>
+	<td>DROPDOWN_CURRENT_LANGUAGE</td>
+	<td>//button[contains(@id,'LanguagePortlet') and contains(@id,'_menu')]//span[contains(@class,'btn-section') and contains(.,'${key_locale}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LANGUAGE_MENU_ENGLISH</td>
-	<td>//*[name()='svg'][@message='English']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE_MENU_FINNISH</td>
-	<td>//*[name()='svg'][@message='suomi']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE_MENU_FRENCH</td>
-	<td>//*[name()='svg'][@message='français']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE_MENU_GERMAN</td>
-	<td>//*[name()='svg'][@message='Deutsch']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE_MENU_HEBREW</td>
-	<td>//*[name()='svg'][@message='עברית']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE_MENU_HUNGARIAN</td>
-	<td>//*[name()='svg'][@message='magyar']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE_MENU_JAPANESE</td>
-	<td>//*[name()='svg'][@message='日本語']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE_MENU_PORTUGUESE</td>
-	<td>//*[name()='svg'][@message='português']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE_MENU_SPANISH</td>
-	<td>//*[name()='svg'][@message='español']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ICON_MENU_DROPDOWN</td>
-	<td>//a[i[contains(@class,'icon-globe')]]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ICON_MENU_LANGUAGE</td>
-	<td>//a[contains(.,'${key_language}')]</td>
+	<td>DROPDOWN_LANGUAGE</td>
+	<td>//button[contains(@id,'${key_portletName}') and contains(@id,'_menu')]//span[contains(@class,'btn-section')]</td>
 	<td></td>
 </tr>
 <tr>

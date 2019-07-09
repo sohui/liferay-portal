@@ -14,73 +14,77 @@
 
 package com.liferay.document.library.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the local service utility for DLTrash. This utility wraps
- * {@link com.liferay.portlet.documentlibrary.service.impl.DLTrashLocalServiceImpl} and is the
- * primary access point for service operations in application layer code running
+ * <code>com.liferay.portlet.documentlibrary.service.impl.DLTrashLocalServiceImpl</code> and
+ * is an access point for service operations in application layer code running
  * on the local server. Methods of this service will not have security checks
  * based on the propagated JAAS credentials because this service can only be
  * accessed from within the same VM.
  *
  * @author Brian Wing Shun Chan
  * @see DLTrashLocalService
- * @see com.liferay.portlet.documentlibrary.service.base.DLTrashLocalServiceBaseImpl
- * @see com.liferay.portlet.documentlibrary.service.impl.DLTrashLocalServiceImpl
  * @generated
  */
 @ProviderType
 public class DLTrashLocalServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portlet.documentlibrary.service.impl.DLTrashLocalServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLTrashLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.portal.kernel.repository.model.FileEntry moveFileEntryFromTrash(
-		long userId, long repositoryId, long fileEntryId, long newFolderId,
-		com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .moveFileEntryFromTrash(userId, repositoryId, fileEntryId,
-			newFolderId, serviceContext);
-	}
-
-	public static com.liferay.portal.kernel.repository.model.FileEntry moveFileEntryToTrash(
-		long userId, long repositoryId, long fileEntryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .moveFileEntryToTrash(userId, repositoryId, fileEntryId);
-	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static void restoreFileEntryFromTrash(long userId,
-		long repositoryId, long fileEntryId)
+	public static com.liferay.portal.kernel.repository.model.FileEntry
+			moveFileEntryFromTrash(
+				long userId, long repositoryId, long fileEntryId,
+				long newFolderId,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		getService().restoreFileEntryFromTrash(userId, repositoryId, fileEntryId);
+
+		return getService().moveFileEntryFromTrash(
+			userId, repositoryId, fileEntryId, newFolderId, serviceContext);
+	}
+
+	public static com.liferay.portal.kernel.repository.model.FileEntry
+			moveFileEntryToTrash(
+				long userId, long repositoryId, long fileEntryId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().moveFileEntryToTrash(
+			userId, repositoryId, fileEntryId);
+	}
+
+	public static void restoreFileEntryFromTrash(
+			long userId, long repositoryId, long fileEntryId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().restoreFileEntryFromTrash(
+			userId, repositoryId, fileEntryId);
 	}
 
 	public static DLTrashLocalService getService() {
 		if (_service == null) {
-			_service = (DLTrashLocalService)PortalBeanLocatorUtil.locate(DLTrashLocalService.class.getName());
-
-			ReferenceRegistry.registerReference(DLTrashLocalServiceUtil.class,
-				"_service");
+			_service = (DLTrashLocalService)PortalBeanLocatorUtil.locate(
+				DLTrashLocalService.class.getName());
 		}
 
 		return _service;
 	}
 
 	private static DLTrashLocalService _service;
+
 }

@@ -1,179 +1,71 @@
-<definition>
-	<command name="addFirstPage">
-		<execute function="ClickNoError#waitForMenuToggleJSClick" locator1="SitePages#PAGES_ELLIPSIS" />
+definition {
 
-		<if>
-			<equals arg1="${sitePagePrivacy}" arg2="Private" />
-			<then>
-				<execute function="Click" locator1="SitePages#ADD_PRIVATE_PAGE_MENUITEM" />
-			</then>
-			<else>
-				<execute function="Click" locator1="SitePages#ADD_PUBLIC_PAGE_MENUITEM" />
-			</else>
-		</if>
-	</command>
+	macro closeProductMenu {
+		if (IsElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED")) {
+			Click(locator1 = "ProductMenu#TOGGLE");
+		}
 
-	<command name="closeProductMenu">
-		<if>
-			<condition function="IsElementPresent" locator1="ProductMenu#PRODUCT_MENU_OPENED" />
-			<then>
-				<execute function="Click" locator1="ProductMenu#TOGGLE" />
-			</then>
-		</if>
+		AssertElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_CLOSED");
+	}
 
-		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_CLOSED" />
+	macro expandCategory {
+		var key_category = "${category}";
 
-		<execute function="AssertNotVisible" locator1="ProductMenu#PRODUCT_MENU_BODY" />
-	</command>
+		if (IsElementPresent(locator1 = "ProductMenu#CATEGORY_COLLAPSED")) {
+			Click(locator1 = "ProductMenu#CATEGORY_COLLAPSED");
+		}
 
-	<command name="expandCategory">
-		<var name="key_category" value="${category}" />
+		AssertElementPresent(locator1 = "ProductMenu#CATEGORY_EXPANDED");
+	}
 
-		<if>
-			<condition function="IsElementPresent" locator1="ProductMenu#CATEGORY_COLLAPSED" />
-			<then>
-				<execute function="Click" locator1="ProductMenu#CATEGORY_COLLAPSED" />
-			</then>
-		</if>
+	macro expandPanel {
+		ProductMenuHelper.openProductMenu();
 
-		<execute function="AssertElementPresent" locator1="ProductMenu#CATEGORY_EXPANDED" />
-	</command>
+		var key_panel = StringUtil.toLowerCase("${panel}");
+		var key_panel = StringUtil.replace("${key_panel}", " ", "_");
 
-	<command name="expandPagePagination">
-		<while>
-			<condition function="IsElementPresent" locator1="SitePages#PAGE_TREE_LOAD_MORE_RESULTS_LINK" />
-			<then>
-				<execute function="AssertClick" locator1="SitePages#PAGE_TREE_LOAD_MORE_RESULTS_LINK" value1="Load more results" />
-			</then>
-		</while>
+		if (IsElementPresent(locator1 = "ProductMenu#PANEL_COLLAPSED", key_panel = "${key_panel}")) {
+			Click(
+				key_panel = "${key_panel}",
+				locator1 = "ProductMenu#PANEL_COLLAPSED");
+		}
 
-		<execute function="AssertTextNotPresent" locator1="SitePages#PAGE_TREE_LOAD_MORE_RESULTS_LINK" value1="Load more results" />
-	</command>
+		AssertElementPresent(
+			key_panel = "${key_panel}",
+			locator1 = "ProductMenu#PANEL_EXPANDED");
+	}
 
-	<command name="expandPageTree">
-		<while>
-			<and>
-				<condition function="IsElementPresent" locator1="ProductMenu#PAGE_PLUS_ICON_COLLAPSED" />
-				<condition function="IsVisible" locator1="ProductMenu#PAGE_PLUS_ICON_COLLAPSED" />
-			</and>
-			<then>
-				<execute function="Click" locator1="ProductMenu#PAGE_PLUS_ICON_COLLAPSED" />
-			</then>
-		</while>
+	macro gotoPortlet {
+		AssertClick.assertPartialTextClickAt(
+			key_portlet = "${portlet}",
+			locator1 = "ProductMenu#PORTLET",
+			value1 = "${portlet}");
+	}
 
-		<execute function="AssertElementNotPresent" locator1="ProductMenu#PAGE_PLUS_ICON_COLLAPSED" />
-	</command>
+	macro openProductMenu {
+		if ((IsElementNotPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED")) && (IsElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_CLOSED"))) {
+			Click(locator1 = "ProductMenu#TOGGLE");
+		}
 
-	<command name="expandPanelControlPanel">
-		<execute macro="ProductMenuHelper#openProductMenu" />
+		AssertElementPresent(locator1 = "ProductMenu#PRODUCT_MENU_OPENED");
 
-		<if>
-			<condition function="IsElementPresent" locator1="ProductMenu#PRODUCT_MENU_TABS_CONTROL_PANEL_COLLAPSED" />
-			<then>
-				<execute function="Click" locator1="ProductMenu#PRODUCT_MENU_TABS_CONTROL_PANEL_COLLAPSED" />
-			</then>
-		</if>
+		AssertElementNotPresent(locator1 = "ProductMenu#PRODUCT_MENU_CLOSED");
 
-		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_TABS_CONTROL_PANEL_EXPANDED" />
+		AssertVisible(locator1 = "ProductMenu#PRODUCT_MENU_BODY");
+	}
 
-		<var name="key_panelId" value="control_panel" />
+	macro openSitesPopup {
+		if (IsElementNotPresent(locator1 = "Portlet#H3_MODAL_TITLE")) {
+			Click(locator1 = "ProductMenu#SITES_COMPASS");
 
-		<execute function="AssertVisible" locator1="ProductMenu#PRODUCT_MENU_TABS_EXPANDED_PANEL" />
-	</command>
+			AssertVisible(locator1 = "Portlet#H3_MODAL_TITLE");
+		}
+	}
 
-	<command name="expandPanelSites">
-		<execute macro="ProductMenuHelper#openProductMenu" />
+	macro viewNoSite {
+		var key_site = "${site}";
 
-		<if>
-			<condition function="IsElementPresent" locator1="ProductMenu#PRODUCT_MENU_TABS_SITES_COLLAPSED" />
-			<then>
-				<execute function="Click" locator1="ProductMenu#PRODUCT_MENU_TABS_SITES_COLLAPSED" />
-			</then>
-		</if>
+		AssertElementNotPresent(locator1 = "ProductMenu#SITE");
+	}
 
-		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_TABS_SITES_EXPANDED" />
-
-		<var name="key_panelId" value="site" />
-
-		<execute function="AssertVisible" locator1="ProductMenu#PRODUCT_MENU_TABS_EXPANDED_PANEL" />
-	</command>
-
-	<command name="expandPanelUser">
-		<execute macro="ProductMenuHelper#openProductMenu" />
-
-		<if>
-			<condition function="IsElementPresent" locator1="ProductMenu#PRODUCT_MENU_TABS_USER_COLLAPSED" />
-			<then>
-				<execute function="Click" locator1="ProductMenu#PRODUCT_MENU_TABS_USER_COLLAPSED" />
-			</then>
-		</if>
-
-		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_TABS_USER_EXPANDED" />
-
-		<var name="key_panelId" value="user" />
-
-		<execute function="AssertVisible" locator1="ProductMenu#PRODUCT_MENU_TABS_EXPANDED_PANEL" />
-	</command>
-
-	<command name="gotoPortlet">
-		<var name="key_portlet" value="${portlet}" />
-		<var name="key_portletLocalization" value="${portletLocalization}" />
-
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="ProductMenu#PORTLET" value1="${portlet}" />
-
-		<execute macro-mobile="MobileNavigator#clickRemoveIcon" />
-	</command>
-
-	<command name="gotoSite">
-		<var name="key_site" value="${site}" />
-
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${site}" />
-		<execute function="AssertElementPresent" locator1="Icon#BASIC_SEARCH" />
-
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="ContentRow#ENTRY_CONTENT_ROW_TD_1_SITE_LINK" value1="${site}" />
-	</command>
-
-	<command name="gotoTab">
-		<var name="key_tab" value="${tab}" />
-
-		<execute function="Click" locator1="ProductMenu#TAB" />
-	</command>
-
-	<command name="openProductMenu">
-		<if>
-			<condition function="IsElementNotPresent" locator1="ProductMenu#PRODUCT_MENU_OPENED" />
-			<then>
-				<execute function="Click" locator1="ProductMenu#TOGGLE" />
-			</then>
-		</if>
-
-		<execute function="AssertElementPresent" locator1="ProductMenu#PRODUCT_MENU_OPENED" />
-
-		<execute function="AssertVisible" locator1="ProductMenu#PRODUCT_MENU_BODY" />
-	</command>
-
-	<command name="openSitesPopup">
-		<if>
-			<condition function="IsElementNotPresent" locator1="ProductMenu#SITES_MODAL_TITLE" />
-			<then>
-				<execute function="Click" locator1="ProductMenu#SITES_COMPASS" />
-
-				<execute function="AssertVisible" locator1="ProductMenu#SITES_MODAL_TITLE" />
-			</then>
-		</if>
-	</command>
-
-	<command name="viewNoSite">
-		<var name="key_site" value="${site}" />
-
-		<execute function="AssertElementNotPresent" locator1="ProductMenu#SITE" value1="${site}" />
-	</command>
-
-	<command name="viewSite">
-		<var name="key_site" value="${site}" />
-
-		<execute function="AssertTextEquals" locator1="ProductMenu#SITE" value1="${site}" />
-	</command>
-</definition>
+}

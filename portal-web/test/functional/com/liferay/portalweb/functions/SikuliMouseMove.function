@@ -1,11 +1,16 @@
-<definition default="sikuliMouseMove">
-	<command name="sikuliMouseMove">
-		<execute function="WaitForSPARefresh" />
+@default = "sikuliMouseMove"
+definition {
 
-		<execute selenium="sikuliMouseMove" />
+	function sikuliMouseMove {
+		WaitForSPARefresh();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.sikuliMouseMove();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
-</definition>
+		selenium.pause("1000");
+
+		selenium.assertJavaScriptErrors();
+
+		selenium.assertLiferayErrors();
+	}
+
+}

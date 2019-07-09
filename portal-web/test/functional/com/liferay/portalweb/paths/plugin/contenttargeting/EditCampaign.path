@@ -18,7 +18,6 @@
 	<td>//button[@title='Select User Segments']</td>
 	<td></td>
 </tr>
-
 <tr>
 	<td>CAMPAIGN_USER_SEGMENT_APPLIED</td>
 	<td>//div[contains(@id,'assetCategorySelector')]//span[contains(@class,'textboxlistentry')]</td>
@@ -73,7 +72,7 @@
 <!--CAMPAIGN_TRACKING_ACTIONS-->
 <tr>
 	<td>CAMPAIGN_TRACKING_ACTIONS</td>
-	<td>//li[contains(@id,'${key_campaignTrackingAction}TrackingAction')]//h5[@class='field-title']</td>
+	<td>//div[@class='property-builder-field-label']/h5[normalize-space(text())='${key_campaignTrackingAction}']</td>
 	<td></td>
 </tr>
 <tr>
@@ -112,20 +111,46 @@
 	<td></td>
 	<td></td>
 </tr>
-<!--CAMPAIGN_TRACKING_ACTIONS_FORM-->
+<!--CAMPAIGN_TRACKING_ACTIONS_CUSTOM_FORM-->
 <tr>
-	<td>CAMPAIGN_TRACKING_ACTIONS_FORM_NAME_FIELD</td>
+	<td>CAMPAIGN_TRACKING_ACTIONS_CUSTOM_FORM_NAME_FIELD</td>
 	<td>//div[contains(@class,'formtrackingaction')]//input[contains(@id,'alias')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CAMPAIGN_TRACKING_ACTIONS_FORM_FORM_ID_FIELD</td>
+	<td>CAMPAIGN_TRACKING_ACTIONS_CUSTOM_FORM_FORM_ID_FIELD</td>
 	<td>//div[contains(@class,'formtrackingaction')]//input[contains(@id,'elementId')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CAMPAIGN_TRACKING_ACTIONS_FORM_TRACKING_ACTION_SELECT</td>
+	<td>CAMPAIGN_TRACKING_ACTIONS_CUSTOM_FORM_TRACKING_ACTION_SELECT</td>
 	<td>//div[contains(@class,'formtrackingaction')]//select[contains(@id,'eventType')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--CAMPAIGN_TRACKING_ACTIONS_DDL_FORM-->
+<tr>
+	<td>CAMPAIGN_TRACKING_ACTIONS_DDL_FORM_NAME_FIELD</td>
+	<td>//div[contains(@class,'ddmformtrackingaction')]//input[contains(@id,'alias')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CAMPAIGN_TRACKING_ACTIONS_DDL_FORM_SELECT_BUTTON</td>
+	<td>//div[contains(@class,'ddmformtrackingaction')]//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CAMPAIGN_TRACKING_ACTIONS_DDL_FORM_FORM_NAME_FIELD</td>
+	<td>//div[contains(@class,'ddmformtrackingaction')]//input[@readonly='true']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CAMPAIGN_TRACKING_ACTIONS_DDL_FORM_TRACKING_ACTION_SELECT</td>
+	<td>//div[contains(@class,'ddmformtrackingaction')]//select[contains(@id,'eventType')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -162,7 +187,7 @@
 </tr>
 <tr>
 	<td>CAMPAIGN_TRACKING_ACTIONS_CONTENT_SELECT_CONTENT_BUTTON</td>
-	<td>//div[contains(@class,'contenttrackingaction')]//a[@title='Select Content']</td>
+	<td>//div[contains(@class,'contenttrackingaction')]//a[@title='Select']</td>
 	<td></td>
 </tr>
 <tr>

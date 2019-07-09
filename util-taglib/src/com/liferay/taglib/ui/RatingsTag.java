@@ -39,12 +39,48 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class RatingsTag extends IncludeTag {
 
+	public String getClassName() {
+		return _className;
+	}
+
+	public long getClassPK() {
+		return _classPK;
+	}
+
+	public int getNumberOfStars() {
+		return _numberOfStars;
+	}
+
+	public RatingsEntry getRatingsEntry() {
+		return _ratingsEntry;
+	}
+
+	public RatingsStats getRatingsStats() {
+		return _ratingsStats;
+	}
+
+	public String getUrl() {
+		return _url;
+	}
+
+	public boolean isInTrash() {
+		return _inTrash;
+	}
+
+	public boolean isRound() {
+		return _round;
+	}
+
 	public void setClassName(String className) {
 		_className = className;
 	}
 
 	public void setClassPK(long classPK) {
 		_classPK = classPK;
+	}
+
+	public void setInTrash(boolean inTrash) {
+		_inTrash = inTrash;
 	}
 
 	public void setNumberOfStars(int numberOfStars) {
@@ -77,8 +113,11 @@ public class RatingsTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_className = null;
 		_classPK = 0;
+		_inTrash = null;
 		_numberOfStars = _DEFAULT_NUMBER_OF_STARS;
 		_ratingsEntry = null;
 		_ratingsStats = null;
@@ -94,13 +133,14 @@ public class RatingsTag extends IncludeTag {
 		return _PAGE;
 	}
 
-	protected String getType(HttpServletRequest request) {
+	protected String getType(HttpServletRequest httpServletRequest) {
 		if (Validator.isNotNull(_type)) {
 			return _type;
 		}
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		Group group = themeDisplay.getSiteGroup();
 
@@ -108,7 +148,7 @@ public class RatingsTag extends IncludeTag {
 			group = group.getLiveGroup();
 		}
 
-		RatingsType ratingsType = RatingsType.STARS;
+		RatingsType ratingsType = null;
 
 		if (group != null) {
 			try {
@@ -119,8 +159,13 @@ public class RatingsTag extends IncludeTag {
 			catch (PortalException pe) {
 				_log.error(
 					"Unable to get ratings type for group " +
-						group.getGroupId());
+						group.getGroupId(),
+					pe);
 			}
+		}
+
+		if (ratingsType == null) {
+			ratingsType = RatingsType.STARS;
 		}
 
 		return ratingsType.getValue();
@@ -132,24 +177,34 @@ public class RatingsTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute("liferay-ui:ratings:className", _className);
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
+			"liferay-ui:ratings:className", _className);
+		httpServletRequest.setAttribute(
 			"liferay-ui:ratings:classPK", String.valueOf(_classPK));
-		request.setAttribute(
+
+		if (_inTrash != null) {
+			httpServletRequest.setAttribute(
+				"liferay-ui:ratings:inTrash", _inTrash);
+		}
+
+		httpServletRequest.setAttribute(
 			"liferay-ui:ratings:numberOfStars", String.valueOf(_numberOfStars));
-		request.setAttribute("liferay-ui:ratings:ratingsEntry", _ratingsEntry);
-		request.setAttribute("liferay-ui:ratings:ratingsStats", _ratingsStats);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:ratings:ratingsEntry", _ratingsEntry);
+		httpServletRequest.setAttribute(
+			"liferay-ui:ratings:ratingsStats", _ratingsStats);
+		httpServletRequest.setAttribute(
 			"liferay-ui:ratings:round", String.valueOf(_round));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:ratings:setRatingsEntry",
 			String.valueOf(_setRatingsEntry));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:ratings:setRatingsStats",
 			String.valueOf(_setRatingsStats));
-		request.setAttribute("liferay-ui:ratings:type", getType(request));
-		request.setAttribute("liferay-ui:ratings:url", _url);
+		httpServletRequest.setAttribute(
+			"liferay-ui:ratings:type", getType(httpServletRequest));
+		httpServletRequest.setAttribute("liferay-ui:ratings:url", _url);
 	}
 
 	private static final boolean _CLEAN_UP_SET_ATTRIBUTES = true;
@@ -163,10 +218,11 @@ public class RatingsTag extends IncludeTag {
 
 	private String _className;
 	private long _classPK;
+	private Boolean _inTrash;
 	private int _numberOfStars = _DEFAULT_NUMBER_OF_STARS;
 	private RatingsEntry _ratingsEntry;
 	private RatingsStats _ratingsStats;
-	private boolean _round;
+	private boolean _round = true;
 	private boolean _setRatingsEntry;
 	private boolean _setRatingsStats;
 	private String _type;

@@ -23,6 +23,14 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class DiffHtmlTag extends IncludeTag {
 
+	public String getDiffHtmlResults() {
+		return _diffHtmlResults;
+	}
+
+	public String getInfoMessage() {
+		return _infoMessage;
+	}
+
 	public void setDiffHtmlResults(String diffHtmlResults) {
 		_diffHtmlResults = diffHtmlResults;
 	}
@@ -33,6 +41,8 @@ public class DiffHtmlTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_diffHtmlResults = null;
 		_infoMessage = null;
 	}
@@ -43,10 +53,11 @@ public class DiffHtmlTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute(
 			"liferay-ui:diff-html:diffHtmlResults", _diffHtmlResults);
-		request.setAttribute("liferay-ui:diff-html:infoMessage", _infoMessage);
+		httpServletRequest.setAttribute(
+			"liferay-ui:diff-html:infoMessage", _infoMessage);
 	}
 
 	private static final String _PAGE = "/html/taglib/ui/diff_html/page.jsp";

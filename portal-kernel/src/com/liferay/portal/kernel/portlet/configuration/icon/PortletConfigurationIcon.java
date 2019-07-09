@@ -68,12 +68,17 @@ public interface PortletConfigurationIcon {
 	public double getWeight();
 
 	public boolean include(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException;
 
 	public boolean isLabel();
 
 	public boolean isShow(PortletRequest portletRequest);
+
+	public default boolean isShowInEditMode(PortletRequest portletRequest) {
+		return false;
+	}
 
 	public boolean isToolTip();
 

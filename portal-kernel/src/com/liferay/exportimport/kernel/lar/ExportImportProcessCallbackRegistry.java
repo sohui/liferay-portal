@@ -16,11 +16,20 @@ package com.liferay.exportimport.kernel.lar;
 
 import java.util.concurrent.Callable;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public interface ExportImportProcessCallbackRegistry {
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	public void registerCallback(Callable<?> callable);
+
+	public void registerCallback(String processId, Callable<?> callable);
 
 }

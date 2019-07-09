@@ -14,8 +14,8 @@
 
 package com.liferay.taglib.search;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchEntry;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,6 +70,7 @@ public class ResultRow
 		_bold = bold;
 		_cssClass = cssClass;
 		_state = state;
+
 		_searchEntries = new ArrayList<>();
 	}
 
@@ -155,7 +156,7 @@ public class ResultRow
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -168,16 +169,17 @@ public class ResultRow
 	@Override
 	public void addJSP(
 		int index, String path, ServletContext servletContext,
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		addJSP(
 			index, SearchEntry.DEFAULT_ALIGN, SearchEntry.DEFAULT_VALIGN,
-			SearchEntry.DEFAULT_COLSPAN, path, servletContext, request,
-			response);
+			SearchEntry.DEFAULT_COLSPAN, path, servletContext,
+			httpServletRequest, httpServletResponse);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -197,16 +199,16 @@ public class ResultRow
 	@Override
 	public void addJSP(
 		int index, String align, String valign, int colspan, String path,
-		ServletContext servletContext, HttpServletRequest request,
-		HttpServletResponse response) {
+		ServletContext servletContext, HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		JSPSearchEntry jspSearchEntry = new JSPSearchEntry();
 
 		jspSearchEntry.setAlign(align);
 		jspSearchEntry.setColspan(colspan);
 		jspSearchEntry.setPath(path);
-		jspSearchEntry.setRequest(request);
-		jspSearchEntry.setResponse(response);
+		jspSearchEntry.setRequest(httpServletRequest);
+		jspSearchEntry.setResponse(httpServletResponse);
 		jspSearchEntry.setServletContext(servletContext);
 		jspSearchEntry.setValign(valign);
 
@@ -214,7 +216,7 @@ public class ResultRow
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -224,14 +226,17 @@ public class ResultRow
 
 	@Override
 	public void addJSP(
-		String path, ServletContext servletContext, HttpServletRequest request,
-		HttpServletResponse response) {
+		String path, ServletContext servletContext,
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
-		addJSP(_searchEntries.size(), path, servletContext, request, response);
+		addJSP(
+			_searchEntries.size(), path, servletContext, httpServletRequest,
+			httpServletResponse);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -248,7 +253,7 @@ public class ResultRow
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -259,18 +264,19 @@ public class ResultRow
 	@Override
 	public void addJSP(
 		String align, String valign, int colspan, String path,
-		ServletContext servletContext, HttpServletRequest request,
-		HttpServletResponse response) {
+		ServletContext servletContext, HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		addJSP(
 			_searchEntries.size(), align, valign, colspan, path, servletContext,
-			request, response);
+			httpServletRequest, httpServletResponse);
 	}
 
 	@Override
 	public void addJSP(
 		String path, String cssClass, ServletContext servletContext,
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		JSPSearchEntry jspSearchEntry = new JSPSearchEntry();
 
@@ -278,8 +284,8 @@ public class ResultRow
 		jspSearchEntry.setColspan(SearchEntry.DEFAULT_COLSPAN);
 		jspSearchEntry.setCssClass(cssClass);
 		jspSearchEntry.setPath(path);
-		jspSearchEntry.setRequest(request);
-		jspSearchEntry.setResponse(response);
+		jspSearchEntry.setRequest(httpServletRequest);
+		jspSearchEntry.setResponse(httpServletResponse);
 		jspSearchEntry.setServletContext(servletContext);
 		jspSearchEntry.setValign(SearchEntry.DEFAULT_VALIGN);
 
@@ -287,7 +293,7 @@ public class ResultRow
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Judson (7.1.x)
 	 */
 	@Deprecated
 	@Override
@@ -300,11 +306,12 @@ public class ResultRow
 	@Override
 	public void addJSP(
 		String align, String valign, String path, ServletContext servletContext,
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		addJSP(
 			_searchEntries.size(), align, valign, SearchEntry.DEFAULT_COLSPAN,
-			path, servletContext, request, response);
+			path, servletContext, httpServletRequest, httpServletResponse);
 	}
 
 	@Override
@@ -343,15 +350,16 @@ public class ResultRow
 	@Override
 	public void addStatus(
 		int index, int status, String href, ServletContext servletContext,
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		StatusSearchEntry statusSearchEntry = new StatusSearchEntry();
 
 		statusSearchEntry.setAlign(SearchEntry.DEFAULT_ALIGN);
 		statusSearchEntry.setColspan(SearchEntry.DEFAULT_COLSPAN);
 		statusSearchEntry.setHref(href);
-		statusSearchEntry.setRequest(request);
-		statusSearchEntry.setResponse(response);
+		statusSearchEntry.setRequest(httpServletRequest);
+		statusSearchEntry.setResponse(httpServletResponse);
 		statusSearchEntry.setServletContext(servletContext);
 		statusSearchEntry.setStatus(status);
 		statusSearchEntry.setValign(SearchEntry.DEFAULT_VALIGN);

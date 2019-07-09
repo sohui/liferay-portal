@@ -1,44 +1,51 @@
-<definition>
-	<command name="assertCannotEditSpreadsheet">
-		<execute function="AssertElementNotPresent" locator1="DDLSpreadsheet#SPREADSHEET_EDIT_CONTROLS_ADD_ROWS_BUTTON" />
-		<execute function="AssertElementNotPresent" locator1="DDLSpreadsheet#SPREADSHEET_EDIT_CONTROLS_ADD_ROWS_SELECT_MENULIST" />
-	</command>
+definition {
 
-	<command name="configureListViewPG">
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletOption" value="Configuration" />
-		</execute>
+	macro assertCannotEditSpreadsheet {
+		AssertElementNotPresent(locator1 = "DDLSpreadsheet#SPREADSHEET_EDIT_CONTROLS_ADD_ROWS_BUTTON");
 
-		<execute macro="DDLNavigator#gotoOptionalConfiguration" />
+		AssertElementNotPresent(locator1 = "DDLSpreadsheet#SPREADSHEET_EDIT_CONTROLS_ADD_ROWS_SELECT_MENULIST");
+	}
 
-		<if>
-			<equals arg1="${configureChecked}" arg2="false" />
-			<then>
-				<execute function="Uncheck" locator1="DDLConfiguration#${configureCheckBoxName}" />
-			</then>
-			<else>
-				<execute function="Check" locator1="DDLConfiguration#${configureCheckBoxName}" />
-			</else>
-		</if>
+	macro configureListViewPG {
+		Portlet.gotoPortletOptions(portletOption = "Configuration");
 
-		<execute macro="Button#clickSave" />
+		DDLNavigator.gotoOptionalConfiguration();
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		if ("${configureChecked}" == "false") {
+			Uncheck(locator1 = "DDLConfiguration#${configureCheckBoxName}");
+		}
+		else {
+			Check(locator1 = "DDLConfiguration#${configureCheckBoxName}");
+		}
 
-	<command name="viewAddToolbar">
-		<var name="key_ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
+		PortletEntry.save();
+	}
 
-		<execute function="AssertTextEquals" locator1="DDL#TOOLBAR_ADD" value1="Add ${ddlDataDefinitionName}" />
-	</command>
+	macro viewAddToolbar {
+		var key_ddlDataDefinitionName = "${ddlDataDefinitionName}";
 
-	<command name="viewDDLTemplateRecordFieldData">
-		<var name="key_ddlRecordFieldData" value="${ddlRecordFieldData}" />
+		AssertElementPresent(locator1 = "DDL#TOOLBAR_ADD");
+	}
 
-		<execute function="AssertTextEquals" locator1="PGDynamicdatalists#RECORD_TABLE_DISPLAY_FIELD" value1="${key_ddlRecordFieldData}" />
-	</command>
+	macro viewDDLTemplateRecordFieldData {
+		var key_ddlRecordFieldData = "${ddlRecordFieldData}";
 
-	<command name="viewSpreadsheetContainer">
-		<execute function="AssertElementPresent" locator1="DDLSpreadsheet#SPREADSHEET_CONTAINER" />
-	</command>
-</definition>
+		AssertTextEquals(
+			locator1 = "DDL#RECORD_TABLE_DISPLAY_FIELD",
+			value1 = "${ddlRecordFieldData}");
+	}
+
+	macro viewFieldSelectViaSpreadsheetView {
+		var key_ddlRecordRow = "${ddlRecordRow}";
+		var key_fieldName = "${fieldName}";
+
+		AssertTextEquals(
+			locator1 = "DDLSpreadsheet#RECORD_TABLE_FIELD_ENTRY",
+			value1 = "${ddlRecordFieldData}");
+	}
+
+	macro viewSpreadsheetContainer {
+		AssertElementPresent(locator1 = "DDLSpreadsheet#SPREADSHEET_CONTAINER");
+	}
+
+}

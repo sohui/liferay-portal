@@ -139,8 +139,8 @@ public class SocialActivityLocalServiceImpl
 		activity.setExtraData(extraData);
 		activity.setReceiverUserId(receiverUserId);
 
-		AssetEntry assetEntry = assetEntryPersistence.fetchByC_C(
-			classNameId, classPK);
+		AssetEntry assetEntry = assetEntryLocalService.fetchEntry(
+			className, classPK);
 
 		activity.setAssetEntry(assetEntry);
 
@@ -204,30 +204,8 @@ public class SocialActivityLocalServiceImpl
 			String extraData, long receiverUserId)
 		throws PortalException {
 
-		if (ExportImportThreadLocal.isImportInProcess()) {
-			return;
-		}
-
-		Date createDate = new Date();
-
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		while (true) {
-			SocialActivity socialActivity =
-				socialActivityPersistence.fetchByG_U_CD_C_C_T_R(
-					groupId, userId, createDate.getTime(), classNameId, classPK,
-					type, receiverUserId);
-
-			if (socialActivity != null) {
-				createDate = new Date(createDate.getTime() + 1);
-			}
-			else {
-				break;
-			}
-		}
-
 		addActivity(
-			userId, groupId, createDate, className, classPK, type, extraData,
+			userId, groupId, new Date(), className, classPK, type, extraData,
 			receiverUserId);
 	}
 
@@ -262,6 +240,7 @@ public class SocialActivityLocalServiceImpl
 					SocialActivity.class.getName());
 
 				mirrorActivity.setActivityId(mirrorActivityId);
+
 				mirrorActivity.setMirrorActivityId(activity.getPrimaryKey());
 
 				socialActivityPersistence.update(mirrorActivity);
@@ -598,6 +577,18 @@ public class SocialActivityLocalServiceImpl
 		return socialActivityPersistence.countByClassNameId(classNameId);
 	}
 
+	@Override
+	public int getActivitiesCount(
+		long userId, long groupId, Date createDate, String className,
+		long classPK, int type, long receiverUserId) {
+
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		return socialActivityPersistence.countByG_U_CD_C_C_T_R(
+			groupId, userId, createDate.getTime(), classNameId, classPK, type,
+			receiverUserId);
+	}
+
 	/**
 	 * Returns the number of activities done on the asset identified by the
 	 * class name ID and class primary key that are mirrors of the activity
@@ -852,10 +843,10 @@ public class SocialActivityLocalServiceImpl
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end -
 	 * start</code> instances. <code>start</code> and <code>end</code> are not
-	 * primary keys, they are indexes in the result set. Thus, <>0</code> refers
-	 * to the first result in the set. Setting both <code>start</code> and
-	 * <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result
-	 * set.
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full
+	 * result set.
 	 * </p>
 	 *
 	 * @param  userId the primary key of the user

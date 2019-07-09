@@ -17,7 +17,6 @@ package com.liferay.portal.kernel.security.pwd;
 import com.liferay.portal.kernel.exception.PwdEncryptorException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 /**
  * @author Brian Wing Shun Chan
@@ -26,13 +25,6 @@ import com.liferay.portal.kernel.util.StringPool;
  * @author Michael C. Han
  */
 public class PasswordEncryptorUtil {
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getDefaultPasswordAlgorithmType}
-	 */
-	@Deprecated
-	public static String PASSWORDS_ENCRYPTION_ALGORITHM = StringPool.BLANK;
 
 	public static final String TYPE_BCRYPT = "BCRYPT";
 
@@ -102,9 +94,6 @@ public class PasswordEncryptorUtil {
 
 	public void setPasswordEncryptor(PasswordEncryptor passwordEncryptor) {
 		_passwordEncryptor = passwordEncryptor;
-
-		PASSWORDS_ENCRYPTION_ALGORITHM =
-			_passwordEncryptor.getDefaultPasswordAlgorithmType();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

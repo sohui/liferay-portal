@@ -18,7 +18,6 @@ import com.google.javascript.jscomp.BasicErrorManager;
 import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.Compiler;
 import com.google.javascript.jscomp.CompilerOptions;
-import com.google.javascript.jscomp.CompilerOptions.LanguageMode;
 import com.google.javascript.jscomp.DiagnosticGroup;
 import com.google.javascript.jscomp.DiagnosticGroups;
 import com.google.javascript.jscomp.DiagnosticType;
@@ -28,13 +27,15 @@ import com.google.javascript.jscomp.PropertyRenamingPolicy;
 import com.google.javascript.jscomp.SourceFile;
 import com.google.javascript.jscomp.VariableRenamingPolicy;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 /**
- * @author Carlos Sierra Andrés
+ * @author     Carlos Sierra Andrés
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class GoogleJavaScriptMinifier implements JavaScriptMinifier {
 
 	@Override
@@ -47,7 +48,7 @@ public class GoogleJavaScriptMinifier implements JavaScriptMinifier {
 
 		CompilerOptions compilerOptions = new CompilerOptions();
 
-		compilerOptions.setLanguageIn(LanguageMode.ECMASCRIPT5);
+		compilerOptions.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT5);
 		compilerOptions.setWarningLevel(
 			DiagnosticGroups.NON_STANDARD_JSDOC, CheckLevel.OFF);
 		compilerOptions.setWarningLevel(

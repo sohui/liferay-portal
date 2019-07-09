@@ -14,30 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the PasswordPolicy service. Represents a row in the &quot;PasswordPolicy&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see PasswordPolicyModel
- * @see com.liferay.portal.model.impl.PasswordPolicyImpl
- * @see com.liferay.portal.model.impl.PasswordPolicyModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.PasswordPolicyImpl")
 @ProviderType
 public interface PasswordPolicy extends PasswordPolicyModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.PasswordPolicyImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.PasswordPolicyImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<PasswordPolicy, Long> PASSWORD_POLICY_ID_ACCESSOR =
-		new Accessor<PasswordPolicy, Long>() {
+	public static final Accessor<PasswordPolicy, Long>
+		PASSWORD_POLICY_ID_ACCESSOR = new Accessor<PasswordPolicy, Long>() {
+
 			@Override
 			public Long get(PasswordPolicy passwordPolicy) {
 				return passwordPolicy.getPasswordPolicyId();
@@ -52,5 +52,7 @@ public interface PasswordPolicy extends PasswordPolicyModel, PersistedModel {
 			public Class<PasswordPolicy> getTypeClass() {
 				return PasswordPolicy.class;
 			}
+
 		};
+
 }

@@ -34,8 +34,11 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.capabilities.MinimalWorkflowCapability}
  */
+@Deprecated
 public class MinimalWorkflowCapability
 	implements RepositoryWrapperAware, WorkflowCapability, WorkflowSupport {
 

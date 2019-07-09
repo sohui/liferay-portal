@@ -16,12 +16,21 @@ package com.liferay.portal.kernel.instance.lifecycle;
 
 import com.liferay.portal.kernel.model.Company;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Michael C. Han
  */
+@ProviderType
 public interface PortalInstanceLifecycleManager {
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public void preregisterCompany(long companyId);
+
+	public void preunregisterCompany(Company company);
 
 	public void registerCompany(Company company);
 

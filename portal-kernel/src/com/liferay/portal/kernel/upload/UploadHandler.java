@@ -20,8 +20,11 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.upload.UploadHandler}
  */
+@Deprecated
 public interface UploadHandler {
 
 	public void upload(

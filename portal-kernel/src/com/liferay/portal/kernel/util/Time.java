@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 
 import java.text.Format;
@@ -36,7 +37,7 @@ public class Time {
 
 	public static final long MINUTE = Time.SECOND * 60;
 
-	public static final long MONTH = Time.DAY * 30;
+	public static final long MONTH = DAY * 30;
 
 	public static final String RFC822_FORMAT = "EEE, dd MMM yyyy HH:mm:ss Z";
 
@@ -46,9 +47,9 @@ public class Time {
 
 	public static final String TIMESTAMP_FORMAT = "yyyyMMddkkmmssSSS";
 
-	public static final long WEEK = Time.DAY * 7;
+	public static final long WEEK = DAY * 7;
 
-	public static final long YEAR = Time.DAY * 365;
+	public static final long YEAR = DAY * 365;
 
 	public static Date getDate(Calendar cal) {
 		Calendar adjustedCal = CalendarFactoryUtil.getCalendar();
@@ -91,7 +92,7 @@ public class Time {
 
 		if (approximate) {
 			if (milliseconds <= 0) {
-				s = "0 Seconds";
+				s = "0 Second";
 			}
 			else if (milliseconds < MINUTE) {
 				x = (int)(milliseconds / SECOND);
@@ -191,8 +192,6 @@ public class Time {
 		long milliseconds, Locale locale, TimeZone timeZone,
 		Format dateTimeFormat) {
 
-		Format timeFormat = FastDateFormatFactoryUtil.getTime(locale, timeZone);
-
 		int daysBetween = DateUtil.getDaysBetween(
 			new Date(milliseconds), new Date(), timeZone);
 
@@ -212,9 +211,12 @@ public class Time {
 		}
 		else if ((millisAgo < Time.DAY) || (daysBetween == 0)) {
 			return LanguageUtil.format(
-				locale, "x-hours-ago", (millisAgo / Time.HOUR), false);
+				locale, "x-hours-ago", millisAgo / Time.HOUR, false);
 		}
 		else if (daysBetween == 1) {
+			Format timeFormat = FastDateFormatFactoryUtil.getTime(
+				locale, timeZone);
+
 			return LanguageUtil.format(
 				locale, "yesterday-at-x", timeFormat.format(milliseconds),
 				false);

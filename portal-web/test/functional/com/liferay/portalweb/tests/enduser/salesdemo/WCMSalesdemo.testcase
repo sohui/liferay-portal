@@ -1,154 +1,152 @@
-<definition component-name="portal-wcm">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Web Content Display" />
+@component-name = "portal-wcm"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Web Content Display";
 
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	setUp {
+		TestCase.setUpPortalInstance();
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		User.firstLoginPG();
+	}
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="User#tearDownCP" />
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-				<execute macro="Site#tearDownCP" />
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.tearDownCP();
 
-				<execute macro="Page#tearDownPG" />
-			</else>
-		</if>
-	</tear-down>
+			Site.tearDownCP();
 
-	<command name="IFrameDemo" priority="4">
-		<execute macro="Page#add">
-			<var name="columnName" value="1 Column" />
-			<var name="pageName" value="IFrame Page" />
-			<var name="sitePageType" value="Empty Page" />
-		</execute>
+			Page.tearDownCP();
+		}
+	}
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="IFrame Page" />
-		</execute>
+	@priority = "4"
+	test IFrameDemo {
+		property testray.component.names = "IFrame Portlet";
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="IFrame" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletOption" value="Configuration" />
-		</execute>
+		SitePages.addPublicPage(pageName = "IFrame Page");
 
-		<execute macro="IFrame#addCP">
-			<var name="sourceURL" value="http://www.nba.com" />
-		</execute>
+		SitePages.configurePage(
+			columnName = "1 Column",
+			pageName = "IFrame Page",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="IFrame Page" />
-		</execute>
+		Navigator.gotoPage(pageName = "IFrame Page");
 
-		<execute function="Pause" locator1="2000" />
+		Portlet.addPG(portletName = "IFrame");
 
-		<take-screenshot />
+		Portlet.gotoPortletOptions(portletOption = "Configuration");
 
-		<execute function="SikuliAssertElementPresent" locator1="IFramePortlet#SCREENSHOTS_NBA_LOGO_PNG" />
-	</command>
+		IFrame.addCP(sourceURL = "http://iscaliforniaonfire.com");
 
-	<command name="SalesDemo" priority="4">
-		<execute macro="Navigator#openURL" />
+		Navigator.gotoPage(pageName = "IFrame Page");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#IFRAME_PORTLET");
 
-		<execute macro="WebContentNavigator#gotoAddCP" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Embedded#EMBEDDED_TEXT_UPDATED",
+			value1 = "updated");
+	}
 
-		<execute macro="WebContent#addCP">
-			<var name="webContentContent" value="DHS Content" />
-			<var name="webContentTitle" value="DHS Title" />
-		</execute>
+	@priority = "4"
+	test SalesDemo {
+		property testray.component.names = "Web Content Administration,Web Content Display";
 
-		<execute macro="PortletEntry#publish" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="Welcome" />
-		</execute>
+		WebContentNavigator.gotoAddCP();
 
-		<execute macro="Page#editPageLayoutColumn">
-			<var name="columnName" value="2 Columns (50/50)" />
-		</execute>
+		WebContent.addCP(
+			webContentContent = "DHS Content",
+			webContentTitle = "DHS Title");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Welcome" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="Content#addPG">
-			<var name="assetTitle" value="DHS Title" />
-			<var name="webContentContent" value="DHS Content" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="WebContent#viewPGViaWCD">
-			<var name="webContentContent" value="DHS Content" />
-			<var name="webContentTitle" value="DHS Title" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		SitePages.configurePage(
+			columnName = "2 Columns (50/50)",
+			pageName = "Home",
+			privacy = "Public Pages",
+			sitePageType = "Widget Page");
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="test1@liferay.com" />
-			<var name="userFirstName" value="test1" />
-			<var name="userLastName" value="last" />
-			<var name="userScreenName" value="test1" />
-		</execute>
+		Navigator.gotoPage(pageName = "Home");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		Content.addPG(
+			assetTitle = "DHS Title",
+			webContentContent = "DHS Content");
 
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="test1@liferay.com" />
-			<var name="userScreenName" value="test1" />
-		</execute>
+		WebContent.viewPGViaWCD(
+			webContentContent = "DHS Content",
+			webContentTitle = "DHS Title");
 
-		<execute macro="User#logoutAndLoginPG">
-			<var name="userLoginEmailAddress" value="test1@liferay.com" />
-			<var name="userLoginFullName" value="Test1 Last" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="WebContent#viewNoEditWCViaWCD" />
+		User.addCP(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-		<execute macro="User#logoutAndLoginPG">
-			<var name="userLoginEmailAddress" value="test@liferay.com" />
-			<var name="userLoginFullName" value="Test Test" />
-			<var name="webContentContent" value="DHS Content" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Sales Page" />
-		</execute>
+		User.editPasswordCP(
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Sales Page" />
-		</execute>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
 
-		<execute macro="MobileDevice#previewPG">
-			<var name="deviceType" value="tablet" />
-		</execute>
+		WebContent.viewNoEditWCViaWCD();
 
-		<execute macro="Navigator#openURL" />
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test",
+			webContentContent = "DHS Content");
 
-		<execute macro="MobileDevice#previewPG">
-			<var name="deviceType" value="smartphone" />
-		</execute>
-	</command>
-</definition>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Sales Page");
+
+		Navigator.gotoPage(pageName = "Sales Page");
+
+		MobileDevice.previewPG(deviceType = "tablet");
+
+		Navigator.openURL();
+
+		MobileDevice.previewPG(deviceType = "smartphone");
+	}
+
+}

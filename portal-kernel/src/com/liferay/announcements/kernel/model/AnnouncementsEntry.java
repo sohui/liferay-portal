@@ -14,31 +14,34 @@
 
 package com.liferay.announcements.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the AnnouncementsEntry service. Represents a row in the &quot;AnnouncementsEntry&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see AnnouncementsEntryModel
- * @see com.liferay.portlet.announcements.model.impl.AnnouncementsEntryImpl
- * @see com.liferay.portlet.announcements.model.impl.AnnouncementsEntryModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.announcements.model.impl.AnnouncementsEntryImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.announcements.model.impl.AnnouncementsEntryImpl"
+)
 @ProviderType
-public interface AnnouncementsEntry extends AnnouncementsEntryModel,
-	PersistedModel {
+public interface AnnouncementsEntry
+	extends AnnouncementsEntryModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.announcements.model.impl.AnnouncementsEntryImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.announcements.model.impl.AnnouncementsEntryImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<AnnouncementsEntry, Long> ENTRY_ID_ACCESSOR = new Accessor<AnnouncementsEntry, Long>() {
+	public static final Accessor<AnnouncementsEntry, Long> ENTRY_ID_ACCESSOR =
+		new Accessor<AnnouncementsEntry, Long>() {
+
 			@Override
 			public Long get(AnnouncementsEntry announcementsEntry) {
 				return announcementsEntry.getEntryId();
@@ -53,8 +56,10 @@ public interface AnnouncementsEntry extends AnnouncementsEntryModel,
 			public Class<AnnouncementsEntry> getTypeClass() {
 				return AnnouncementsEntry.class;
 			}
+
 		};
 
 	public long getGroupId()
 		throws com.liferay.portal.kernel.exception.PortalException;
+
 }

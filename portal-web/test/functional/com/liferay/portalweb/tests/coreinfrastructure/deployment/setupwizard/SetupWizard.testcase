@@ -1,43 +1,191 @@
-<definition component-name="portal-deployment-hypersonic">
-	<property name="test.prepare.bundle.properties" value="false" />
-	<property name="testray.main.component.name" value="Setup Wizard" />
+@component-name = "portal-deployment-hypersonic"
+definition {
 
-	<command name="HypersonicToHypersonic" priority="5">
-		<property name="portal.acceptance.tomcat.hypersonic" value="true" />
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property test.prepare.bundle.properties = "false";
+	property testray.main.component.name = "Setup Wizard";
 
-		<execute macro="SetupWizard#configurePG">
-			<var name="administratorEmail" value="test@liferay.com" />
-			<var name="administratorFirstName" value="Test" />
-			<var name="administratorLastName" value="Test" />
-			<var name="databasePassword" property-value="database.hypersonic.password" />
-			<var name="databaseType" value="Hypersonic" />
-			<var name="databaseUserName" property-value="database.hypersonic.username" />
-			<var name="jdbcDriverClassName" property-value="database.hypersonic.driver" />
-			<var name="jdbcURL" property-value="database.hypersonic.url" />
-		</execute>
+	@priority = "5"
+	test HypersonicToHypersonic {
+		property database.types = "hypersonic";
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "SetupWizard#HypersonicToHypersonic";
 
-		<execute macro="Smoke#viewWelcomePage" />
+		SetupWizard.configurePG(
+			administratorEmail = "test@liferay.com",
+			administratorFirstName = "Test",
+			administratorLastName = "Test",
+			databasePassword = PropsUtil.get("database.hypersonic.password"),
+			databaseType = "Hypersonic",
+			databaseUserName = PropsUtil.get("database.hypersonic.username"),
+			jdbcDriverClassName = PropsUtil.get("database.hypersonic.driver"),
+			jdbcURL = PropsUtil.get("database.hypersonic.url"));
 
-		<execute macro="Smoke#runSmoke" />
-	</command>
+		Smoke.viewWelcomePage();
 
-	<command name="HypersonicToMySQL" priority="5">
-		<property name="portal.acceptance.tomcat.mysql" value="true" />
-		<property name="portal.release" value="true" />
+		Smoke.runSmoke();
+	}
 
-		<execute macro="SetupWizard#configurePG">
-			<var name="administratorEmail" value="test@liferay.com" />
-			<var name="administratorFirstName" value="Test" />
-			<var name="administratorLastName" value="Test" />
-			<var name="databasePassword" property-value="database.mysql.password" />
-			<var name="databaseType" value="MySQL" />
-			<var name="databaseUserName" property-value="database.mysql.username" />
-			<var name="jdbcDriverClassName" property-value="database.mysql.driver" />
-			<var name="jdbcURL" property-value="database.mysql.url" />
-		</execute>
+	@priority = "5"
+	test HypersonicToMySQL {
+		property database.types = "mysql";
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "SetupWizard#HypersonicToMySQL";
 
-		<execute macro="Smoke#viewWelcomePage" />
+		SetupWizard.configurePG(
+			administratorEmail = "test@liferay.com",
+			administratorFirstName = "Test",
+			administratorLastName = "Test",
+			databasePassword = PropsUtil.get("database.mysql.password"),
+			databaseType = "MySQL",
+			databaseUserName = PropsUtil.get("database.mysql.username"),
+			jdbcDriverClassName = PropsUtil.get("database.mysql.driver"),
+			jdbcURL = PropsUtil.get("database.mysql.url"));
 
-		<execute macro="Smoke#runSmoke" />
-	</command>
-</definition>
+		Smoke.viewWelcomePage();
+
+		Smoke.runSmoke();
+	}
+
+	@priority = "4"
+	test HypersonicWithSpecialContent {
+		property database.types = "hypersonic";
+		property test.name.skip.portal.instance = "SetupWizard#HypersonicWithSpecialContent";
+
+		SetupWizard.configurePortalNamePG(portalName = "");
+
+		SetupWizard.configureAdministratorUserPG(
+			administratorEmail = "",
+			administratorFirstName = "",
+			administratorLastName = "");
+
+		Click(locator1 = "TextInput#PORTAL_NAME");
+
+		SetupWizard.configureDatabasePG(
+			databasePassword = "",
+			databaseType = "Hypersonic",
+			databaseUserName = "",
+			jdbcDriverClassName = "",
+			jdbcURL = "");
+
+		SetupWizard.finishConfigurationPG();
+
+		for (var fieldName : list "Portal Name,First Name,Last Name,Email,JDBC URL,JDBC Driver Class Name") {
+			var key_fieldName = "${fieldName}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "TextInput#REQUIRED_ALERT",
+				value1 = "This field is required.");
+		}
+
+		AssertTextEquals(
+			locator1 = "SetupWizard#DATABASE_CHANGE_USER_NAME_FIELD",
+			value1 = "");
+
+		AssertTextEquals(
+			locator1 = "SetupWizard#DATABASE_CHANGE_PASSWORD_FIELD",
+			value1 = "");
+
+		Refresh();
+
+		SetupWizard.configurePortalNamePG(portalName = "1234567890!@#$%^&amp;*()~`");
+
+		SetupWizard.configureAdministratorUserPG(
+			administratorEmail = "1234567890!@#$%^&amp;*()~`",
+			administratorFirstName = "1234567890!@#$%^&amp;*()~`",
+			administratorLastName = "1234567890!@#$%^&amp;*()~`");
+
+		Click(locator1 = "TextInput#PORTAL_NAME");
+
+		AssertTextEquals.assertValue(
+			locator1 = "TextInput#FIRST_NAME",
+			value1 = "1234567890!@#$%^&*()~`");
+
+		AssertTextEquals.assertValue(
+			locator1 = "TextInput#LAST_NAME",
+			value1 = "1234567890!@#$%^&*()~`");
+
+		AssertTextEquals.assertValue(
+			locator1 = "TextInput#PORTAL_NAME",
+			value1 = "1234567890!@#$%^&*()~`");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#ERROR_ENTER_A_VALID_EMAIL_ADDRESS",
+			value1 = "Please enter a valid email address.");
+	}
+
+	@priority = "5"
+	test MySQLWithXSSContent {
+		property database.types = "mysql";
+		property test.name.skip.portal.instance = "SetupWizard#MySQLWithXSSContent";
+
+		SetupWizard.configurePG(
+			administratorEmail = "test@liferay.com",
+			administratorFirstName = '''<script>alert("xss")</script>''',
+			administratorLastName = '''<script>alert("xss")</script>''',
+			databasePassword = PropsUtil.get("database.mysql.password"),
+			databaseType = "MySQL",
+			databaseUserName = PropsUtil.get("database.mysql.username"),
+			jdbcDriverClassName = PropsUtil.get("database.mysql.driver"),
+			jdbcURL = PropsUtil.get("database.mysql.url"),
+			portalName = '''<script>alert("xss")</script>''');
+
+		AssertAlertNotPresent();
+
+		var actualScript = '''<script>alert("xss")</script>''';
+
+		var escapedScript = '''\x3cscript\x3ealert("xss")\x3c/script\x3e''';
+
+		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
+
+		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+	}
+
+	@priority = "5"
+	test ViewConfiguredSetupWizardValue {
+		property database.types = "mysql";
+		property test.name.skip.portal.instance = "SetupWizard#ViewConfiguredSetupWizardValue";
+
+		SetupWizard.viewDefaultPortalNamePG();
+
+		SetupWizard.configureAdministratorUserPG(
+			administratorEmail = "user@liferay.com",
+			administratorFirstName = "User",
+			administratorLastName = "User");
+
+		SetupWizard.configureDatabasePG(
+			databasePassword = PropsUtil.get("database.mysql.password"),
+			databaseType = "MySQL",
+			databaseUserName = PropsUtil.get("database.mysql.username"),
+			jdbcDriverClassName = PropsUtil.get("database.mysql.driver"),
+			jdbcURL = PropsUtil.get("database.mysql.url"));
+
+		SetupWizard.finishConfigurationPG();
+
+		SetupWizard.viewConfigurationSavedPG();
+
+		Portlet.shutdownServer();
+
+		Portlet.startServer(
+			base_branch = "${base_branch}",
+			deleteLiferayHome = "false");
+
+		SetupWizard.viewConfiguredDatabaseInConsole(databaseType = "${databaseType}");
+
+		User.firstLoginPG(
+			password = "test",
+			userEmailAddress = "user@liferay.com");
+
+		var liferayHome = PropsUtil.get("liferay.home.dir.name");
+		var fileContent = FileUtil.read("${liferayHome}/portal-setup-wizard.properties");
+
+		if ((contains("${fileContent}", "admin.email.from.address=user@liferay.com")) && (contains("${fileContent}", "admin.email.from.name=User User")) && (contains("${fileContent}", "default.admin.email.address.prefix=user")) && (contains("${fileContent}", "default.admin.first.name=User")) && (contains("${fileContent}", "default.admin.last.name=User"))) {
+			echo("The configuration was saved successfully in portal-setup-wizard.properties!");
+		}
+		else {
+			fail("Fail to save the configuration in portal file portal-setup-wizard.properties.");
+		}
+	}
+
+}

@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.security.permission;
 
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
@@ -26,14 +25,11 @@ import com.liferay.registry.ServiceTracker;
  */
 public class PermissionCheckerFactoryUtil {
 
-	public static PermissionChecker create(User user) throws Exception {
+	public static PermissionChecker create(User user) {
 		return getPermissionCheckerFactory().create(user);
 	}
 
 	public static PermissionCheckerFactory getPermissionCheckerFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PermissionCheckerFactoryUtil.class);
-
 		return _instance._serviceTracker.getService();
 	}
 

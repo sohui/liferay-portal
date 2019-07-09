@@ -14,11 +14,10 @@
 
 package com.liferay.portal.kernel.notifications;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -26,9 +25,12 @@ import com.liferay.portal.kernel.model.UserNotificationEvent;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserNotificationEventLocalServiceUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -105,9 +107,7 @@ public abstract class BaseModelUserNotificationHandler
 		return LanguageUtil.format(
 			serviceContext.getLocale(), message,
 			new String[] {
-				HtmlUtil.escape(
-					PortalUtil.getUserName(
-						jsonObject.getLong("userId"), StringPool.BLANK)),
+				HtmlUtil.escape(_getUserFullName(jsonObject)),
 				StringUtil.toLowerCase(HtmlUtil.escape(typeName))
 			},
 			false);
@@ -122,7 +122,24 @@ public abstract class BaseModelUserNotificationHandler
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userNotificationEvent.getPayload());
 
-		return jsonObject.getString("entryURL");
+		String entryURL = jsonObject.getString("entryURL");
+
+		if (Validator.isNull(entryURL)) {
+			return StringPool.BLANK;
+		}
+
+		String entryURLDomain = HttpUtil.getDomain(entryURL);
+
+		String portalURL = serviceContext.getPortalURL();
+
+		String portalURLDomain = HttpUtil.getDomain(portalURL);
+
+		if (!entryURLDomain.equals(portalURLDomain)) {
+			entryURL = StringUtil.replaceFirst(
+				entryURL, entryURLDomain, portalURLDomain);
+		}
+
+		return entryURL;
 	}
 
 	protected String getTitle(
@@ -146,14 +163,24 @@ public abstract class BaseModelUserNotificationHandler
 			message = "x-added-a-new-x";
 		}
 		else if (notificationType ==
-					UserNotificationDefinition.
-						NOTIFICATION_TYPE_UPDATE_ENTRY) {
+					UserNotificationDefinition.NOTIFICATION_TYPE_UPDATE_ENTRY) {
 
 			message = "x-updated-a-x";
 		}
 
 		return getFormattedMessage(
 			jsonObject, serviceContext, message, typeName);
+	}
+
+	private String _getUserFullName(JSONObject jsonObject) {
+		String fullName = jsonObject.getString("fullName");
+
+		if (Validator.isNotNull(fullName)) {
+			return fullName;
+		}
+
+		return PortalUtil.getUserName(
+			jsonObject.getLong("userId"), StringPool.BLANK);
 	}
 
 }

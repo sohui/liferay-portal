@@ -24,8 +24,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.petra.executor.PortalExecutorConfig}
  */
+@Deprecated
 public class PortalExecutorConfig implements Serializable {
 
 	public PortalExecutorConfig(

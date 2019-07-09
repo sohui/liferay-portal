@@ -48,6 +48,7 @@ public class RepositoryModelReadCountComparator<T>
 
 	public RepositoryModelReadCountComparator(boolean ascending) {
 		_ascending = ascending;
+
 		_orderByModel = false;
 	}
 
@@ -66,15 +67,15 @@ public class RepositoryModelReadCountComparator<T>
 		Long readCount2 = getReadCount(t2);
 
 		if (_orderByModel) {
-			if (((t1 instanceof DLFolder) || (t1 instanceof Folder)) &&
-				((t2 instanceof DLFolder) || (t2 instanceof Folder))) {
+			if ((t1 instanceof DLFolder || t1 instanceof Folder) &&
+				(t2 instanceof DLFolder || t2 instanceof Folder)) {
 
 				value = readCount1.compareTo(readCount2);
 			}
-			else if ((t1 instanceof DLFolder) || (t1 instanceof Folder)) {
+			else if (t1 instanceof DLFolder || t1 instanceof Folder) {
 				value = -1;
 			}
-			else if ((t2 instanceof DLFolder) || (t2 instanceof Folder)) {
+			else if (t2 instanceof DLFolder || t2 instanceof Folder) {
 				value = 1;
 			}
 			else {
@@ -88,9 +89,8 @@ public class RepositoryModelReadCountComparator<T>
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	@Override
@@ -99,18 +99,15 @@ public class RepositoryModelReadCountComparator<T>
 			if (_ascending) {
 				return ORDER_BY_MODEL_ASC;
 			}
-			else {
-				return ORDER_BY_MODEL_DESC;
-			}
+
+			return ORDER_BY_MODEL_DESC;
 		}
-		else {
-			if (_ascending) {
-				return ORDER_BY_ASC;
-			}
-			else {
-				return ORDER_BY_DESC;
-			}
+
+		if (_ascending) {
+			return ORDER_BY_ASC;
 		}
+
+		return ORDER_BY_DESC;
 	}
 
 	@Override
@@ -154,12 +151,10 @@ public class RepositoryModelReadCountComparator<T>
 
 			return dlFileEntry.getReadCount();
 		}
-		else if ((obj instanceof DLFileShortcut) ||
-				 (obj instanceof FileShortcut)) {
-
+		else if (obj instanceof DLFileShortcut || obj instanceof FileShortcut) {
 			return getFileShortcutReadCount(obj);
 		}
-		else if ((obj instanceof DLFolder) || (obj instanceof Folder)) {
+		else if (obj instanceof DLFolder || obj instanceof Folder) {
 			return 0;
 		}
 		else {

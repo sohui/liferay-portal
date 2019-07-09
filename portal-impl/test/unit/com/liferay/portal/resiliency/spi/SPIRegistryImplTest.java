@@ -62,7 +62,7 @@ public class SPIRegistryImplTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
 
 	@Before
 	public void setUp() {
@@ -91,7 +91,8 @@ public class SPIRegistryImplTest {
 
 		_spiRegistryImpl.addExcludedPortletId(portlet1);
 
-		Assert.assertEquals(1, _excludedPortletIds.size());
+		Assert.assertEquals(
+			_excludedPortletIds.toString(), 1, _excludedPortletIds.size());
 		Assert.assertTrue(_excludedPortletIds.contains(portlet1));
 
 		String portlet2 = "portlet2";
@@ -118,7 +119,7 @@ public class SPIRegistryImplTest {
 		Assert.assertTrue(_excludedPortletIds.isEmpty());
 	}
 
-	@AdviseWith(adviceClasses = {PortletLocalServiceUtilAdvice.class})
+	@AdviseWith(adviceClasses = PortletLocalServiceUtilAdvice.class)
 	@NewEnv(type = NewEnv.Type.CLASSLOADER)
 	@Test
 	public void testRegistration() throws RemoteException {
@@ -134,17 +135,17 @@ public class SPIRegistryImplTest {
 		MockSPI mockSPI = new MockSPI() {
 
 			@Override
+			public boolean equals(Object object) {
+				return super.equals(object);
+			}
+
+			@Override
 			public int hashCode() {
 				if (throwException.get()) {
 					throw new RuntimeException();
 				}
 
 				return super.hashCode();
-			}
-
-			@Override
-			public boolean equals(Object object) {
-				return super.equals(object);
 			}
 
 		};
@@ -161,7 +162,8 @@ public class SPIRegistryImplTest {
 
 			_spiRegistryImpl.registerSPI(mockSPI);
 
-			Assert.assertEquals(3, _portletSPIs.size());
+			Assert.assertEquals(
+				_portletSPIs.toString(), 3, _portletSPIs.size());
 			Assert.assertEquals(mockSPI, _portletSPIs.remove("portlet1"));
 			Assert.assertEquals(mockSPI, _portletSPIs.remove("portlet3"));
 			Assert.assertEquals(mockSPI, _portletSPIs.remove("portlet4"));
@@ -189,11 +191,14 @@ public class SPIRegistryImplTest {
 			List<String> portletIds = Arrays.asList(
 				_portletIds.remove(mockSPI));
 
-			Assert.assertTrue(portletIds.contains("portlet1"));
-			Assert.assertTrue(portletIds.contains("portlet3"));
-			Assert.assertTrue(portletIds.contains("portlet4"));
+			Assert.assertTrue(
+				portletIds.toString(), portletIds.contains("portlet1"));
+			Assert.assertTrue(
+				portletIds.toString(), portletIds.contains("portlet3"));
+			Assert.assertTrue(
+				portletIds.toString(), portletIds.contains("portlet4"));
 
-			Assert.assertEquals(2, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			LogRecord logRecord1 = logRecords.get(0);
 
@@ -212,18 +217,22 @@ public class SPIRegistryImplTest {
 
 			_spiRegistryImpl.registerSPI(mockSPI);
 
-			Assert.assertEquals(3, _portletSPIs.size());
+			Assert.assertEquals(
+				_portletSPIs.toString(), 3, _portletSPIs.size());
 			Assert.assertEquals(mockSPI, _portletSPIs.remove("portlet1"));
 			Assert.assertEquals(mockSPI, _portletSPIs.remove("portlet3"));
 			Assert.assertEquals(mockSPI, _portletSPIs.remove("portlet4"));
 
 			portletIds = Arrays.asList(_portletIds.remove(mockSPI));
 
-			Assert.assertTrue(portletIds.contains("portlet1"));
-			Assert.assertTrue(portletIds.contains("portlet3"));
-			Assert.assertTrue(portletIds.contains("portlet4"));
+			Assert.assertTrue(
+				portletIds.toString(), portletIds.contains("portlet1"));
+			Assert.assertTrue(
+				portletIds.toString(), portletIds.contains("portlet3"));
+			Assert.assertTrue(
+				portletIds.toString(), portletIds.contains("portlet4"));
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 			// Hash failure
 
@@ -239,7 +248,7 @@ public class SPIRegistryImplTest {
 			catch (RuntimeException re) {
 			}
 
-			Assert.assertEquals(2, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			logRecord1 = logRecords.get(0);
 
@@ -262,7 +271,7 @@ public class SPIRegistryImplTest {
 
 			_spiRegistryImpl.registerSPI(mockSPI);
 
-			Assert.assertEquals(2, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			logRecord1 = logRecords.get(0);
 
@@ -318,8 +327,8 @@ public class SPIRegistryImplTest {
 		}
 
 		@Around(
-			"execution(public static com.liferay.portal.kernel.model.Portlet" +
-				" com.liferay.portal.kernel.service.PortletLocalServiceUtil." +
+			"execution(public static com.liferay.portal.kernel.model.Portlet " +
+				"com.liferay.portal.kernel.service.PortletLocalServiceUtil." +
 					"getPortletById(String)) && args(portletId)"
 		)
 		public Portlet getPortletById(String portletId) {

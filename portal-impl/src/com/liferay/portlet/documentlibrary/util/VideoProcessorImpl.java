@@ -20,6 +20,13 @@ import com.liferay.document.library.kernel.util.DLPreviewableProcessor;
 import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.document.library.kernel.util.VideoProcessor;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
+import com.liferay.petra.log4j.Log4JUtil;
+import com.liferay.petra.process.ProcessCallable;
+import com.liferay.petra.process.ProcessChannel;
+import com.liferay.petra.process.ProcessException;
+import com.liferay.petra.process.ProcessExecutor;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.fabric.InputResource;
 import com.liferay.portal.fabric.OutputResource;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -28,28 +35,24 @@ import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
-import com.liferay.portal.kernel.process.ClassPathUtil;
-import com.liferay.portal.kernel.process.ProcessCallable;
-import com.liferay.portal.kernel.process.ProcessChannel;
-import com.liferay.portal.kernel.process.ProcessException;
-import com.liferay.portal.kernel.process.ProcessExecutorUtil;
+import com.liferay.portal.kernel.repository.event.FileVersionPreviewEventListener;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StreamUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemEnv;
+import com.liferay.portal.kernel.util.ThreadUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xuggler.XugglerUtil;
 import com.liferay.portal.log.Log4jLogFactoryImpl;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileVersion;
+import com.liferay.portal.util.PortalClassPathUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.util.log4j.Log4JUtil;
 
 import java.awt.image.RenderedImage;
 
@@ -316,8 +319,7 @@ public class VideoProcessorImpl
 	}
 
 	private void _generateThumbnailXuggler(
-			FileVersion fileVersion, File file, int height, int width)
-		throws Exception {
+		FileVersion fileVersion, File file, int height, int width) {
 
 		StopWatch stopWatch = new StopWatch();
 
@@ -341,8 +343,8 @@ public class VideoProcessorImpl
 								DL_FILE_ENTRY_THUMBNAIL_VIDEO_FRAME_PERCENTAGE);
 
 					ProcessChannel<String> processChannel =
-						ProcessExecutorUtil.execute(
-							ClassPathUtil.getPortalProcessConfig(),
+						_processExecutor.execute(
+							PortalClassPathUtil.getPortalProcessConfig(),
 							processCallable);
 
 					Future<String> future =
@@ -369,22 +371,28 @@ public class VideoProcessorImpl
 			catch (CancellationException ce) {
 				if (_log.isInfoEnabled()) {
 					_log.info(
-						"Cancellation received for " +
-							fileVersion.getFileVersionId() + " " +
-								fileVersion.getTitle());
+						StringBundler.concat(
+							"Cancellation received for ",
+							fileVersion.getFileVersionId(), " ",
+							fileVersion.getTitle()));
 				}
 			}
 			catch (Exception e) {
-				_log.error(e, e);
+				_log.error(
+					StringBundler.concat(
+						"Unable to process ", fileVersion.getFileVersionId(),
+						" ", fileVersion.getTitle(), "."),
+					e);
 			}
 
 			storeThumbnailImages(fileVersion, thumbnailTempFile);
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Xuggler generated a thumbnail for " +
-						fileVersion.getTitle() + " in " + stopWatch.getTime() +
-							" ms");
+					StringBundler.concat(
+						"Xuggler generated a thumbnail for ",
+						fileVersion.getTitle(), " in ", stopWatch.getTime(),
+						" ms"));
 			}
 		}
 		catch (Exception e) {
@@ -402,8 +410,6 @@ public class VideoProcessorImpl
 		if (!XugglerUtil.isEnabled() || _hasVideo(destinationFileVersion)) {
 			return;
 		}
-
-		InputStream inputStream = null;
 
 		File[] previewTempFiles = new File[_PREVIEW_TYPES.length];
 
@@ -429,19 +435,23 @@ public class VideoProcessorImpl
 						file = liferayFileVersion.getFile(false);
 					}
 					catch (UnsupportedOperationException uoe) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(uoe, uoe);
+						}
 					}
 				}
 
 				if (file == null) {
-					inputStream = destinationFileVersion.getContentStream(
-						false);
+					try (InputStream inputStream =
+							destinationFileVersion.getContentStream(false)) {
 
-					videoTempFile = FileUtil.createTempFile(
-						destinationFileVersion.getExtension());
+						videoTempFile = FileUtil.createTempFile(
+							destinationFileVersion.getExtension());
 
-					FileUtil.write(videoTempFile, inputStream);
+						FileUtil.write(videoTempFile, inputStream);
 
-					file = videoTempFile;
+						file = videoTempFile;
+					}
 				}
 			}
 
@@ -460,6 +470,9 @@ public class VideoProcessorImpl
 						destinationFileVersion, file, previewTempFiles);
 				}
 				catch (Exception e) {
+					_fileVersionPreviewEventListener.onFailure(
+						destinationFileVersion);
+
 					_log.error(e, e);
 				}
 			}
@@ -480,14 +493,14 @@ public class VideoProcessorImpl
 			if (_log.isDebugEnabled()) {
 				_log.debug(nsfee, nsfee);
 			}
+
+			_fileVersionPreviewEventListener.onFailure(destinationFileVersion);
 		}
 		finally {
-			StreamUtil.cleanUp(inputStream);
-
 			_fileVersionIds.remove(destinationFileVersion.getFileVersionId());
 
-			for (int i = 0; i < previewTempFiles.length; i++) {
-				FileUtil.delete(previewTempFiles[i]);
+			for (File previewTempFile : previewTempFiles) {
+				FileUtil.delete(previewTempFile);
 			}
 
 			FileUtil.delete(videoTempFile);
@@ -507,38 +520,57 @@ public class VideoProcessorImpl
 
 		stopWatch.start();
 
-		if (PropsValues.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_ENABLED) {
-			ProcessCallable<String> processCallable =
-				new LiferayVideoProcessCallable(
-					ServerDetector.getServerId(),
-					PropsUtil.get(PropsKeys.LIFERAY_HOME),
-					Log4JUtil.getCustomLogSettings(), sourceFile,
-					destinationFile, containerType,
+		try {
+			if (PropsValues.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_ENABLED) {
+				ProcessCallable<String> processCallable =
+					new LiferayVideoProcessCallable(
+						ServerDetector.getServerId(),
+						PropsUtil.get(PropsKeys.LIFERAY_HOME),
+						Log4JUtil.getCustomLogSettings(), sourceFile,
+						destinationFile, containerType,
+						PropsUtil.getProperties(
+							PropsKeys.DL_FILE_ENTRY_PREVIEW_VIDEO, false),
+						PropsUtil.getProperties(
+							PropsKeys.XUGGLER_FFPRESET, true));
+
+				ProcessChannel<String> processChannel =
+					_processExecutor.execute(
+						PortalClassPathUtil.getPortalProcessConfig(),
+						processCallable);
+
+				Future<String> future =
+					processChannel.getProcessNoticeableFuture();
+
+				String processIdentity = String.valueOf(
+					fileVersion.getFileVersionId());
+
+				futures.put(processIdentity, future);
+
+				future.get();
+
+				_fileVersionPreviewEventListener.onSuccess(fileVersion);
+			}
+			else {
+				LiferayConverter liferayConverter = new LiferayVideoConverter(
+					sourceFile.getCanonicalPath(),
+					destinationFile.getCanonicalPath(), containerType,
 					PropsUtil.getProperties(
 						PropsKeys.DL_FILE_ENTRY_PREVIEW_VIDEO, false),
 					PropsUtil.getProperties(PropsKeys.XUGGLER_FFPRESET, true));
 
-			ProcessChannel<String> processChannel = ProcessExecutorUtil.execute(
-				ClassPathUtil.getPortalProcessConfig(), processCallable);
+				liferayConverter.convert();
 
-			Future<String> future = processChannel.getProcessNoticeableFuture();
-
-			String processIdentity = String.valueOf(
-				fileVersion.getFileVersionId());
-
-			futures.put(processIdentity, future);
-
-			future.get();
+				_fileVersionPreviewEventListener.onSuccess(fileVersion);
+			}
 		}
-		else {
-			LiferayConverter liferayConverter = new LiferayVideoConverter(
-				sourceFile.getCanonicalPath(),
-				destinationFile.getCanonicalPath(), containerType,
-				PropsUtil.getProperties(
-					PropsKeys.DL_FILE_ENTRY_PREVIEW_VIDEO, false),
-				PropsUtil.getProperties(PropsKeys.XUGGLER_FFPRESET, true));
+		catch (Exception e) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to process ", fileVersion.getFileVersionId(), " ",
+					fileVersion.getTitle(), "."),
+				e);
 
-			liferayConverter.convert();
+			_fileVersionPreviewEventListener.onFailure(fileVersion);
 		}
 
 		addFileToStore(
@@ -547,9 +579,10 @@ public class VideoProcessorImpl
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"Xuggler generated a " + containerType + " preview video for " +
-					fileVersion.getTitle() + " in " + stopWatch.getTime() +
-						" ms");
+				StringBundler.concat(
+					"Xuggler generated a ", containerType,
+					" preview video for ", fileVersion.getTitle(), " in ",
+					stopWatch.getTime(), " ms"));
 		}
 	}
 
@@ -566,13 +599,18 @@ public class VideoProcessorImpl
 		catch (CancellationException ce) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Cancellation received for " +
-						fileVersion.getFileVersionId() + " " +
-							fileVersion.getTitle());
+					StringBundler.concat(
+						"Cancellation received for ",
+						fileVersion.getFileVersionId(), " ",
+						fileVersion.getTitle()));
 			}
+
+			_fileVersionPreviewEventListener.onFailure(fileVersion);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
+
+			_fileVersionPreviewEventListener.onFailure(fileVersion);
 		}
 	}
 
@@ -581,7 +619,11 @@ public class VideoProcessorImpl
 			return false;
 		}
 
-		return hasPreviews(fileVersion) && hasThumbnails(fileVersion);
+		if (hasPreviews(fileVersion) && hasThumbnails(fileVersion)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private void _queueGeneration(
@@ -607,9 +649,33 @@ public class VideoProcessorImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		VideoProcessorImpl.class);
 
+	private static volatile FileVersionPreviewEventListener
+		_fileVersionPreviewEventListener =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				FileVersionPreviewEventListener.class, VideoProcessorImpl.class,
+				"_fileVersionPreviewEventListener", false, false);
+	private static volatile ProcessExecutor _processExecutor =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			ProcessExecutor.class, VideoProcessorImpl.class, "_processExecutor",
+			true);
+
 	private final List<Long> _fileVersionIds = new Vector<>();
 	private final Set<String> _videoMimeTypes = SetUtil.fromArray(
 		PropsValues.DL_FILE_ENTRY_PREVIEW_VIDEO_MIME_TYPES);
+
+	private static class DestroyHangingThreadHelper {
+
+		private static void _destroyHangingThread() {
+			for (Thread thread : ThreadUtil.getThreads()) {
+				if ((thread != null) && !thread.isDaemon() &&
+					!StringUtil.equalsIgnoreCase(thread.getName(), "main")) {
+
+					System.exit(-1);
+				}
+			}
+		}
+
+	}
 
 	private static class LiferayVideoProcessCallable
 		implements ProcessCallable<String> {
@@ -656,6 +722,9 @@ public class VideoProcessorImpl
 			}
 			catch (Exception e) {
 				throw new ProcessException(e);
+			}
+			finally {
+				DestroyHangingThreadHelper._destroyHangingThread();
 			}
 
 			return StringPool.BLANK;
@@ -709,6 +778,7 @@ public class VideoProcessorImpl
 			ClassLoader classLoader = clazz.getClassLoader();
 
 			Properties systemProperties = System.getProperties();
+
 			SystemEnv.setProperties(systemProperties);
 
 			Log4JUtil.initLog4J(
@@ -725,6 +795,9 @@ public class VideoProcessorImpl
 			}
 			catch (Exception e) {
 				throw new ProcessException(e);
+			}
+			finally {
+				DestroyHangingThreadHelper._destroyHangingThread();
 			}
 
 			return StringPool.BLANK;

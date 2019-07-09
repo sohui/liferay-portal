@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -30,11 +31,9 @@ import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.service.PortalService;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
-import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.model.impl.ClassNameImpl;
 import com.liferay.portal.service.base.PortalServiceBaseImpl;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
 
 /**
@@ -45,9 +44,7 @@ public class PortalServiceImpl extends PortalServiceBaseImpl {
 
 	@Override
 	public String getAutoDeployDirectory() {
-		return PrefsPropsUtil.getString(
-			PropsKeys.AUTO_DEPLOY_DEPLOY_DIR,
-			PropsValues.AUTO_DEPLOY_DEPLOY_DIR);
+		return PropsValues.AUTO_DEPLOY_DEPLOY_DIR;
 	}
 
 	@JSONWebService
@@ -162,8 +159,9 @@ public class PortalServiceImpl extends PortalServiceBaseImpl {
 
 			if (!newValue.equals(className.getValue())) {
 				throw new IllegalStateException(
-					"Expected " + newValue + " but found " +
-						className.getClassName());
+					StringBundler.concat(
+						"Expected ", newValue, " but found ",
+						className.getClassName()));
 			}
 		}
 		finally {
@@ -208,9 +206,8 @@ public class PortalServiceImpl extends PortalServiceBaseImpl {
 		if (count > 0) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected void addClassName(String classNameValue) {

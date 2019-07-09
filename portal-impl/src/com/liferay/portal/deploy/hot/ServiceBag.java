@@ -15,14 +15,13 @@
 package com.liferay.portal.deploy.hot;
 
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
+import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.ServiceWrapper;
+import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.spring.aop.AopInvocationHandler;
 
 import java.lang.reflect.InvocationHandler;
-
-import org.springframework.aop.TargetSource;
-import org.springframework.aop.framework.AdvisedSupport;
-import org.springframework.aop.target.SingletonTargetSource;
 
 /**
  * @author Raymond Augé
@@ -30,51 +29,54 @@ import org.springframework.aop.target.SingletonTargetSource;
 public class ServiceBag<V> {
 
 	public ServiceBag(
-		ClassLoader classLoader, AdvisedSupport advisedSupport,
+		ClassLoader classLoader, AopInvocationHandler aopInvocationHandler,
 		Class<?> serviceTypeClass, final ServiceWrapper<V> serviceWrapper) {
 
-		_advisedSupport = advisedSupport;
+		_aopInvocationHandler = aopInvocationHandler;
 
 		Object previousService = serviceWrapper.getWrappedService();
 
 		if (!(previousService instanceof ServiceWrapper)) {
 			Class<?> previousServiceClass = previousService.getClass();
 
-			ClassLoader previousServiceClassLoader =
-				previousServiceClass.getClassLoader();
+			ClassLoader previousServiceAggregateClassLoader =
+				AggregateClassLoader.getAggregateClassLoader(
+					previousServiceClass.getClassLoader(),
+					IdentifiableOSGiService.class.getClassLoader());
 
 			previousService = ProxyUtil.newProxyInstance(
-				previousServiceClassLoader, new Class<?>[] {serviceTypeClass},
+				previousServiceAggregateClassLoader,
+				new Class<?>[] {
+					serviceTypeClass, IdentifiableOSGiService.class
+				},
 				new ClassLoaderBeanHandler(
-					previousService, previousServiceClassLoader));
+					previousService, previousServiceAggregateClassLoader));
 
 			serviceWrapper.setWrappedService((V)previousService);
 		}
 
+		ClassLoader newServiceAggregateClassLoader =
+			AggregateClassLoader.getAggregateClassLoader(
+				serviceTypeClass.getClassLoader(),
+				IdentifiableOSGiService.class.getClassLoader());
+
 		Object nextTarget = ProxyUtil.newProxyInstance(
-			serviceTypeClass.getClassLoader(),
-			new Class<?>[] {serviceTypeClass, ServiceWrapper.class},
+			newServiceAggregateClassLoader,
+			new Class<?>[] {
+				serviceTypeClass, ServiceWrapper.class,
+				IdentifiableOSGiService.class
+			},
 			new ClassLoaderBeanHandler(serviceWrapper, classLoader));
 
-		TargetSource nextTargetSource = new SingletonTargetSource(nextTarget) {
-
-			@Override
-			public Class<?> getTargetClass() {
-				return serviceWrapper.getClass();
-			}
-
-		};
-
-		_advisedSupport.setTargetSource(nextTargetSource);
+		_aopInvocationHandler.setTarget(nextTarget);
 
 		_serviceWrapper = (ServiceWrapper<?>)nextTarget;
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T> void replace() throws Exception {
-		TargetSource targetSource = _advisedSupport.getTargetSource();
+		Object currentService = _aopInvocationHandler.getTarget();
 
-		Object currentService = targetSource.getTarget();
 		ServiceWrapper<T> previousService = null;
 
 		// Loop through services
@@ -108,10 +110,7 @@ public class ServiceBag<V> {
 						}
 					}
 
-					TargetSource previousTargetSource =
-						new SingletonTargetSource(wrappedService);
-
-					_advisedSupport.setTargetSource(previousTargetSource);
+					_aopInvocationHandler.setTarget(wrappedService);
 				}
 				else {
 
@@ -140,7 +139,7 @@ public class ServiceBag<V> {
 		}
 	}
 
-	private final AdvisedSupport _advisedSupport;
+	private final AopInvocationHandler _aopInvocationHandler;
 	private final ServiceWrapper<?> _serviceWrapper;
 
 }

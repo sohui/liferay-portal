@@ -18,11 +18,10 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Contact;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.ResourceConstants;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.BaseModelPermissionChecker;
@@ -42,7 +41,7 @@ import java.util.List;
  * @author Jorge Ferrer
  */
 @OSGiBeanProperties(
-	property = {"model.class.name=com.liferay.portal.kernel.model.User"}
+	property = "model.class.name=com.liferay.portal.kernel.model.User"
 )
 public class UserPermissionImpl
 	implements BaseModelPermissionChecker, UserPermission {
@@ -101,15 +100,9 @@ public class UserPermissionImpl
 			if (userId != ResourceConstants.PRIMKEY_DNE) {
 				user = UserLocalServiceUtil.getUserById(userId);
 
-				if ((actionId.equals(ActionKeys.DELETE) ||
-					 actionId.equals(ActionKeys.IMPERSONATE) ||
-					 actionId.equals(ActionKeys.PERMISSIONS) ||
-					 actionId.equals(ActionKeys.UPDATE) ||
-					 actionId.equals(ActionKeys.VIEW)) &&
+				if (!actionId.equals(ActionKeys.VIEW) &&
 					!permissionChecker.isOmniadmin() &&
-					(PortalUtil.isOmniadmin(user) ||
-					 (!permissionChecker.isCompanyAdmin() &&
-					  PortalUtil.isCompanyAdmin(user)))) {
+					PortalUtil.isOmniadmin(user)) {
 
 					return false;
 				}
@@ -125,14 +118,14 @@ public class UserPermissionImpl
 				}
 
 				if (permissionChecker.hasPermission(
-						0, User.class.getName(), userId, actionId)) {
+						null, User.class.getName(), userId, actionId)) {
 
 					return true;
 				}
 			}
 			else {
 				if (permissionChecker.hasPermission(
-						0, User.class.getName(), User.class.getName(),
+						null, User.class.getName(), User.class.getName(),
 						actionId)) {
 
 					return true;
@@ -160,31 +153,42 @@ public class UserPermissionImpl
 						return true;
 					}
 
-					Group organizationGroup = organization.getGroup();
+					Organization curOrganization = organization;
 
-					// Organization administrators can only manage normal users.
-					// Owners can only manage normal users and administrators.
+					while (curOrganization != null) {
 
-					if (UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-							user.getUserId(), organizationGroup.getGroupId(),
-							RoleConstants.ORGANIZATION_OWNER, true)) {
+						// Organization owners can manage all users
 
-						continue;
-					}
-					else if (UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-								user.getUserId(),
-								organizationGroup.getGroupId(),
-								RoleConstants.ORGANIZATION_ADMINISTRATOR,
-								true) &&
-							 !UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-								 permissionChecker.getUserId(),
-								organizationGroup.getGroupId(),
+						if (UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+								permissionChecker.getUserId(),
+								curOrganization.getGroupId(),
 								RoleConstants.ORGANIZATION_OWNER, true)) {
 
-						continue;
-					}
+							return true;
+						}
 
-					return true;
+						// Organization administrators can only manage normal
+						// users
+
+						if (UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+								permissionChecker.getUserId(),
+								curOrganization.getGroupId(),
+								RoleConstants.ORGANIZATION_ADMINISTRATOR,
+								true) &&
+							!UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+								user.getUserId(), organization.getGroupId(),
+								RoleConstants.ORGANIZATION_ADMINISTRATOR,
+								true) &&
+							!UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+								user.getUserId(), organization.getGroupId(),
+								RoleConstants.ORGANIZATION_OWNER, true)) {
+
+							return true;
+						}
+
+						curOrganization =
+							curOrganization.getParentOrganization();
+					}
 				}
 			}
 		}

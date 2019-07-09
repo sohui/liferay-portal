@@ -14,6 +14,8 @@
 
 package com.liferay.portlet.usersadmin.atom;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.atom.AtomPager;
 import com.liferay.portal.atom.AtomUtil;
 import com.liferay.portal.kernel.atom.AtomEntryContent;
@@ -26,10 +28,8 @@ import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.UserServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.ListUtil;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -46,44 +46,40 @@ public class UserAtomCollectionAdapter extends BaseAtomCollectionAdapter<User> {
 
 	@Override
 	public List<String> getEntryAuthors(User user) {
-		List<String> authors = new ArrayList<>();
-
-		authors.add(user.getFullName());
-
-		return authors;
+		return ListUtil.toList(user.getFullName());
 	}
 
 	@Override
 	public AtomEntryContent getEntryContent(
 		User user, AtomRequestContext atomRequestContext) {
 
-		StringBundler content = new StringBundler();
+		StringBundler sb = new StringBundler();
 
-		content.append(user.getScreenName());
-		content.append(StringPool.NEW_LINE);
-		content.append(user.getEmailAddress());
-		content.append(StringPool.NEW_LINE);
-		content.append(user.getFullName());
-		content.append(StringPool.NEW_LINE);
-		content.append(user.getJobTitle());
-		content.append(StringPool.NEW_LINE);
+		sb.append(user.getScreenName());
+		sb.append(StringPool.NEW_LINE);
+		sb.append(user.getEmailAddress());
+		sb.append(StringPool.NEW_LINE);
+		sb.append(user.getFullName());
+		sb.append(StringPool.NEW_LINE);
+		sb.append(user.getJobTitle());
+		sb.append(StringPool.NEW_LINE);
 
 		try {
 			List<Address> userAddresses = user.getAddresses();
 
 			for (Address address : userAddresses) {
-				content.append(address.getStreet1());
-				content.append(StringPool.NEW_LINE);
-				content.append(address.getStreet2());
-				content.append(StringPool.NEW_LINE);
-				content.append(address.getStreet3());
-				content.append(StringPool.NEW_LINE);
+				sb.append(address.getStreet1());
+				sb.append(StringPool.NEW_LINE);
+				sb.append(address.getStreet2());
+				sb.append(StringPool.NEW_LINE);
+				sb.append(address.getStreet3());
+				sb.append(StringPool.NEW_LINE);
 			}
 		}
 		catch (Exception e) {
 		}
 
-		return new AtomEntryContent(content.toString());
+		return new AtomEntryContent(sb.toString());
 	}
 
 	@Override
@@ -133,27 +129,20 @@ public class UserAtomCollectionAdapter extends BaseAtomCollectionAdapter<User> {
 		long groupId = atomRequestContext.getLongParameter("groupId");
 
 		if (groupId > 0) {
-			List<User> users = UserServiceUtil.getGroupUsers(groupId);
-
-			return users;
+			return UserServiceUtil.getGroupUsers(groupId);
 		}
 
 		long organizationId = atomRequestContext.getLongParameter(
 			"organizationId");
 
 		if (organizationId > 0) {
-			List<User> users = UserServiceUtil.getOrganizationUsers(
-				organizationId);
-
-			return users;
+			return UserServiceUtil.getOrganizationUsers(organizationId);
 		}
 
 		long userGroupId = atomRequestContext.getLongParameter("userGroupId");
 
 		if (userGroupId > 0) {
-			List<User> users = UserServiceUtil.getUserGroupUsers(userGroupId);
-
-			return users;
+			return UserServiceUtil.getUserGroupUsers(userGroupId);
 		}
 
 		long companyId = CompanyThreadLocal.getCompanyId();
@@ -165,10 +154,8 @@ public class UserAtomCollectionAdapter extends BaseAtomCollectionAdapter<User> {
 
 			AtomUtil.saveAtomPagerInRequest(atomRequestContext, atomPager);
 
-			List<User> users = UserServiceUtil.getCompanyUsers(
+			return UserServiceUtil.getCompanyUsers(
 				companyId, atomPager.getStart(), atomPager.getEnd() + 1);
-
-			return users;
 		}
 
 		return Collections.emptyList();

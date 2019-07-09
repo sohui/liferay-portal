@@ -14,7 +14,7 @@
 
 package com.liferay.taglib.ui;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.IncludeTag;
 
@@ -24,6 +24,86 @@ import javax.servlet.http.HttpServletRequest;
  * @author Brian Wing Shun Chan
  */
 public class FlashTag extends IncludeTag {
+
+	public String getAlign() {
+		return _align;
+	}
+
+	public String getAllowFullScreen() {
+		return _allowFullScreen;
+	}
+
+	public String getAllowScriptAccess() {
+		return _allowScriptAccess;
+	}
+
+	public String getBase() {
+		return _base;
+	}
+
+	public String getBgcolor() {
+		return _bgcolor;
+	}
+
+	public String getDevicefont() {
+		return _devicefont;
+	}
+
+	public String getFlashvars() {
+		return _flashvars;
+	}
+
+	public String getHeight() {
+		return _height;
+	}
+
+	public String getId() {
+		return _id;
+	}
+
+	public String getLoop() {
+		return _loop;
+	}
+
+	public String getMenu() {
+		return _menu;
+	}
+
+	public String getMovie() {
+		return _movie;
+	}
+
+	public String getPlay() {
+		return _play;
+	}
+
+	public String getQuality() {
+		return _quality;
+	}
+
+	public String getSalign() {
+		return _salign;
+	}
+
+	public String getScale() {
+		return _scale;
+	}
+
+	public String getSwliveconnect() {
+		return _swliveconnect;
+	}
+
+	public String getVersion() {
+		return _version;
+	}
+
+	public String getWidth() {
+		return _width;
+	}
+
+	public String getWmode() {
+		return _wmode;
+	}
 
 	public void setAlign(String align) {
 		if (Validator.isNotNull(align)) {
@@ -145,6 +225,8 @@ public class FlashTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_align = "left";
 		_allowFullScreen = Boolean.FALSE.toString();
 		_allowScriptAccess = "sameDomain";
@@ -173,29 +255,32 @@ public class FlashTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
-		request.setAttribute("liferay-ui:flash:align", _align);
-		request.setAttribute(
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
+		httpServletRequest.setAttribute("liferay-ui:flash:align", _align);
+		httpServletRequest.setAttribute(
 			"liferay-ui:flash:allowFullScreen", _allowFullScreen);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:flash:allowScriptAccess", _allowScriptAccess);
-		request.setAttribute("liferay-ui:flash:base", _base);
-		request.setAttribute("liferay-ui:flash:bgcolor", _bgcolor);
-		request.setAttribute("liferay-ui:flash:devicefont", _devicefont);
-		request.setAttribute("liferay-ui:flash:flashvars", _flashvars);
-		request.setAttribute("liferay-ui:flash:height", _height);
-		request.setAttribute("liferay-ui:flash:id", _id);
-		request.setAttribute("liferay-ui:flash:loop", _loop);
-		request.setAttribute("liferay-ui:flash:menu", _menu);
-		request.setAttribute("liferay-ui:flash:movie", _movie);
-		request.setAttribute("liferay-ui:flash:play", _play);
-		request.setAttribute("liferay-ui:flash:quality", _quality);
-		request.setAttribute("liferay-ui:flash:salign", _salign);
-		request.setAttribute("liferay-ui:flash:scale", _scale);
-		request.setAttribute("liferay-ui:flash:swliveconnect", _swliveconnect);
-		request.setAttribute("liferay-ui:flash:version", _version);
-		request.setAttribute("liferay-ui:flash:width", _width);
-		request.setAttribute("liferay-ui:flash:wmode", _wmode);
+		httpServletRequest.setAttribute("liferay-ui:flash:base", _base);
+		httpServletRequest.setAttribute("liferay-ui:flash:bgcolor", _bgcolor);
+		httpServletRequest.setAttribute(
+			"liferay-ui:flash:devicefont", _devicefont);
+		httpServletRequest.setAttribute(
+			"liferay-ui:flash:flashvars", _flashvars);
+		httpServletRequest.setAttribute("liferay-ui:flash:height", _height);
+		httpServletRequest.setAttribute("liferay-ui:flash:id", _id);
+		httpServletRequest.setAttribute("liferay-ui:flash:loop", _loop);
+		httpServletRequest.setAttribute("liferay-ui:flash:menu", _menu);
+		httpServletRequest.setAttribute("liferay-ui:flash:movie", _movie);
+		httpServletRequest.setAttribute("liferay-ui:flash:play", _play);
+		httpServletRequest.setAttribute("liferay-ui:flash:quality", _quality);
+		httpServletRequest.setAttribute("liferay-ui:flash:salign", _salign);
+		httpServletRequest.setAttribute("liferay-ui:flash:scale", _scale);
+		httpServletRequest.setAttribute(
+			"liferay-ui:flash:swliveconnect", _swliveconnect);
+		httpServletRequest.setAttribute("liferay-ui:flash:version", _version);
+		httpServletRequest.setAttribute("liferay-ui:flash:width", _width);
+		httpServletRequest.setAttribute("liferay-ui:flash:wmode", _wmode);
 	}
 
 	private static final String _PAGE = "/html/taglib/ui/flash/page.jsp";

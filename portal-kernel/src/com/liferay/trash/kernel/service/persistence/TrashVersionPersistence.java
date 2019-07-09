@@ -14,7 +14,7 @@
 
 package com.liferay.trash.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 
@@ -31,8 +31,11 @@ import com.liferay.trash.kernel.model.TrashVersion;
  * @author Brian Wing Shun Chan
  * @see com.liferay.portlet.trash.service.persistence.impl.TrashVersionPersistenceImpl
  * @see TrashVersionUtil
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+com.liferay.trash.model.impl.TrashVersionImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
 public interface TrashVersionPersistence extends BasePersistence<TrashVersion> {
 	/*
@@ -320,7 +323,7 @@ public interface TrashVersionPersistence extends BasePersistence<TrashVersion> {
 	* Returns the trash version where classNameId = &#63; and classPK = &#63; or throws a {@link NoSuchVersionException} if it could not be found.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @return the matching trash version
 	* @throws NoSuchVersionException if a matching trash version could not be found
 	*/
@@ -331,7 +334,7 @@ public interface TrashVersionPersistence extends BasePersistence<TrashVersion> {
 	* Returns the trash version where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @return the matching trash version, or <code>null</code> if a matching trash version could not be found
 	*/
 	public TrashVersion fetchByC_C(long classNameId, long classPK);
@@ -340,7 +343,7 @@ public interface TrashVersionPersistence extends BasePersistence<TrashVersion> {
 	* Returns the trash version where classNameId = &#63; and classPK = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @param retrieveFromCache whether to retrieve from the finder cache
 	* @return the matching trash version, or <code>null</code> if a matching trash version could not be found
 	*/
@@ -351,7 +354,7 @@ public interface TrashVersionPersistence extends BasePersistence<TrashVersion> {
 	* Removes the trash version where classNameId = &#63; and classPK = &#63; from the database.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @return the trash version that was removed
 	*/
 	public TrashVersion removeByC_C(long classNameId, long classPK)
@@ -361,7 +364,7 @@ public interface TrashVersionPersistence extends BasePersistence<TrashVersion> {
 	* Returns the number of trash versions where classNameId = &#63; and classPK = &#63;.
 	*
 	* @param classNameId the class name ID
-	* @param classPK the class p k
+	* @param classPK the class pk
 	* @return the number of matching trash versions
 	*/
 	public int countByC_C(long classNameId, long classPK);

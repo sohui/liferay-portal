@@ -14,10 +14,10 @@
 
 package com.liferay.portlet.expando.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.expando.kernel.model.ExpandoRow;
 import com.liferay.expando.kernel.service.ExpandoRowLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the ExpandoRow service. Represents a row in the &quot;ExpandoRow&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.expando.kernel.service.ExpandoRowLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class ExpandoRowBaseImpl extends ExpandoRowModelImpl
-	implements ExpandoRow {
+public abstract class ExpandoRowBaseImpl
+	extends ExpandoRowModelImpl implements ExpandoRow {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a expando row model instance should use the {@link ExpandoRow} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a expando row model instance should use the <code>ExpandoRow</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class ExpandoRowBaseImpl extends ExpandoRowModelImpl
 			ExpandoRowLocalServiceUtil.updateExpandoRow(this);
 		}
 	}
+
 }

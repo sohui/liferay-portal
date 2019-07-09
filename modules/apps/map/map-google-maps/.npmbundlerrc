@@ -1,0 +1,10 @@
+{
+	"config": {
+		"imports": {
+			"map-common": {
+				"/": ">=3.0.2"
+			}
+		}
+	},
+	"output": "classes/META-INF/resources"
+}

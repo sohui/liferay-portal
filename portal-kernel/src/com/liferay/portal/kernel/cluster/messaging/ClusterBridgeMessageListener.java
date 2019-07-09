@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.cluster.messaging;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.cluster.Address;
 import com.liferay.portal.kernel.cluster.ClusterInvokeThreadLocal;
 import com.liferay.portal.kernel.cluster.ClusterLinkUtil;
@@ -50,8 +51,9 @@ public class ClusterBridgeMessageListener extends BaseMessageListener {
 		else {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Bridging cluster link unicast message " + message +
-						" to " + address);
+					StringBundler.concat(
+						"Bridging cluster link unicast message ", message,
+						" to ", address));
 			}
 
 			ClusterLinkUtil.sendUnicastMessage(address, message, _priority);

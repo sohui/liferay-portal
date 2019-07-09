@@ -34,8 +34,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.capabilities.LiferayBulkOperationCapability}
  */
+@Deprecated
 public class LiferayBulkOperationCapability implements BulkOperationCapability {
 
 	public LiferayBulkOperationCapability(
@@ -96,11 +99,11 @@ public class LiferayBulkOperationCapability implements BulkOperationCapability {
 	}
 
 	private static final Map<Class<? extends Field<?>>, String> _fieldNames =
-		new HashMap<>();
-
-	static {
-		_fieldNames.put(Field.CreateDate.class, "createDate");
-	}
+		new HashMap<Class<? extends Field<?>>, String>() {
+			{
+				put(Field.CreateDate.class, "createDate");
+			}
+		};
 
 	private final DLFileEntryServiceAdapter _dlFileEntryServiceAdapter;
 	private final DLFolderServiceAdapter _dlFolderServiceAdapter;

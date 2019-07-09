@@ -14,13 +14,15 @@
 
 package com.liferay.portal.dao.db;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.IOException;
+
+import java.sql.Types;
 
 /**
  * @author Alexander Chow
@@ -57,6 +59,11 @@ public class HypersonicDB extends BaseDB {
 	}
 
 	@Override
+	protected int[] getSQLTypes() {
+		return _SQL_TYPES;
+	}
+
+	@Override
 	protected String[] getTemplate() {
 		return _HYPERSONIC;
 	}
@@ -75,17 +82,22 @@ public class HypersonicDB extends BaseDB {
 					String[] template = buildColumnNameTokens(line);
 
 					line = StringUtil.replace(
-						"alter table @table@ alter column @old-column@ rename" +
-							" to @new-column@;",
+						"alter table @table@ alter column @old-column@ " +
+							"rename to @new-column@;",
 						REWORD_TEMPLATE, template);
 				}
 				else if (line.startsWith(ALTER_COLUMN_TYPE)) {
 					String[] template = buildColumnTypeTokens(line);
 
 					line = StringUtil.replace(
-						"alter table @table@ alter column @old-column@ " +
-							"@type@ @nullable@;",
+						"alter table @table@ alter column @old-column@ @type@;",
 						REWORD_TEMPLATE, template);
+
+					line = line.concat(
+						StringUtil.replace(
+							"alter table @table@ alter column @old-column@ " +
+								"set @nullable@;",
+							REWORD_TEMPLATE, template));
 				}
 				else if (line.startsWith(ALTER_TABLE_NAME)) {
 					String[] template = buildTableNameTokens(line);
@@ -113,6 +125,11 @@ public class HypersonicDB extends BaseDB {
 		"//", "true", "false", "'1970-01-01 00:00:00'", "now()", " blob",
 		" blob", " bit", " timestamp", " double", " int", " bigint",
 		" longvarchar", " longvarchar", " varchar", "", "commit"
+	};
+
+	private static final int[] _SQL_TYPES = {
+		Types.BLOB, Types.BLOB, Types.BIT, Types.TIMESTAMP, Types.DOUBLE,
+		Types.INTEGER, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR
 	};
 
 }

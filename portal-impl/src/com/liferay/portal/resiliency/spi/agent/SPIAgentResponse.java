@@ -14,16 +14,15 @@
 
 package com.liferay.portal.resiliency.spi.agent;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.resiliency.PortalResiliencyException;
 import com.liferay.portal.kernel.resiliency.spi.agent.annotation.Direction;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.MetaInfoCacheServletResponse;
-import com.liferay.portal.kernel.servlet.MetaInfoCacheServletResponse.MetaData;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.util.PropsValues;
 
@@ -50,18 +49,21 @@ public class SPIAgentResponse extends SPIAgentSerializable {
 		super(servletContextName);
 	}
 
-	public void captureRequestSessionAttributes(HttpServletRequest request) {
-		distributedRequestAttributes = extractDistributedRequestAttributes(
-			request, Direction.RESPONSE);
+	public void captureRequestSessionAttributes(
+		HttpServletRequest httpServletRequest) {
 
-		SPIAgentRequest spiAgentRequest = (SPIAgentRequest)request.getAttribute(
-			WebKeys.SPI_AGENT_REQUEST);
+		distributedRequestAttributes = extractDistributedRequestAttributes(
+			httpServletRequest, Direction.RESPONSE);
+
+		SPIAgentRequest spiAgentRequest =
+			(SPIAgentRequest)httpServletRequest.getAttribute(
+				WebKeys.SPI_AGENT_REQUEST);
 
 		Map<String, Serializable> originalSessionAttributes =
 			spiAgentRequest.getOriginalSessionAttributes();
 
 		Map<String, Serializable> newSessionAttributes =
-			extractSessionAttributes(request);
+			extractSessionAttributes(httpServletRequest);
 
 		Set<String> removedSessionAttributeNames =
 			originalSessionAttributes.keySet();
@@ -80,12 +82,13 @@ public class SPIAgentResponse extends SPIAgentSerializable {
 	}
 
 	public void captureResponse(
-			HttpServletRequest request,
+			HttpServletRequest httpServletRequest,
 			BufferCacheServletResponse bufferCacheServletResponse)
 		throws IOException {
 
-		Boolean portalResiliencyAction = (Boolean)request.getAttribute(
-			WebKeys.PORTAL_RESILIENCY_ACTION);
+		Boolean portalResiliencyAction =
+			(Boolean)httpServletRequest.getAttribute(
+				WebKeys.PORTAL_RESILIENCY_ACTION);
 
 		if (portalResiliencyAction != Boolean.TRUE) {
 			portalResiliencyResponse = false;
@@ -132,7 +135,7 @@ public class SPIAgentResponse extends SPIAgentSerializable {
 		}
 
 		if (ParamUtil.get(
-				request, "portalResiliencyPortletShowFooter",
+				httpServletRequest, "portalResiliencyPortletShowFooter",
 				PropsValues.PORTAL_RESILIENCY_PORTLET_SHOW_FOOTER)) {
 
 			int index = content.lastIndexOf("</div>");
@@ -155,7 +158,8 @@ public class SPIAgentResponse extends SPIAgentSerializable {
 	}
 
 	public void populate(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws PortalResiliencyException {
 
 		if (exception != null) {
@@ -170,7 +174,8 @@ public class SPIAgentResponse extends SPIAgentSerializable {
 			WebKeys.SPI_AGENT_LAYOUT_TYPE_SETTINGS);
 
 		if (typeSettings != null) {
-			Layout layout = (Layout)request.getAttribute(WebKeys.LAYOUT);
+			Layout layout = (Layout)httpServletRequest.getAttribute(
+				WebKeys.LAYOUT);
 
 			layout.setTypeSettings(typeSettings);
 		}
@@ -178,10 +183,10 @@ public class SPIAgentResponse extends SPIAgentSerializable {
 		for (Map.Entry<String, Serializable> entry :
 				distributedRequestAttributes.entrySet()) {
 
-			request.setAttribute(entry.getKey(), entry.getValue());
+			httpServletRequest.setAttribute(entry.getKey(), entry.getValue());
 		}
 
-		HttpSession session = request.getSession();
+		HttpSession session = httpServletRequest.getSession();
 
 		for (Map.Entry<String, Serializable> entry :
 				deltaSessionAttributes.entrySet()) {
@@ -190,15 +195,17 @@ public class SPIAgentResponse extends SPIAgentSerializable {
 		}
 
 		try {
-			MetaInfoCacheServletResponse.finishResponse(metaData, response);
+			MetaInfoCacheServletResponse.finishResponse(
+				metaData, httpServletResponse);
 
 			if (byteData != null) {
-				ServletResponseUtil.write(response, ByteBuffer.wrap(byteData));
+				ServletResponseUtil.write(
+					httpServletResponse, ByteBuffer.wrap(byteData));
 			}
 
 			if (stringData != null) {
 				ServletResponseUtil.write(
-					response, CharBuffer.wrap(stringData));
+					httpServletResponse, CharBuffer.wrap(stringData));
 			}
 		}
 		catch (IOException ioe) {
@@ -216,7 +223,7 @@ public class SPIAgentResponse extends SPIAgentSerializable {
 	protected Map<String, Serializable> deltaSessionAttributes;
 	protected Map<String, Serializable> distributedRequestAttributes;
 	protected Exception exception;
-	protected MetaData metaData;
+	protected MetaInfoCacheServletResponse.MetaData metaData;
 	protected boolean portalResiliencyResponse;
 	protected String stringData;
 

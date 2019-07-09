@@ -24,12 +24,17 @@ import com.liferay.document.library.kernel.exception.SourceFileNameException;
 import java.io.File;
 import java.io.InputStream;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Adolfo Pérez
  */
+@ProviderType
 public interface DLValidator {
 
 	public String fixName(String name);
+
+	public long getMaxAllowableSize();
 
 	public boolean isValidName(String name);
 

@@ -14,21 +14,48 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceKeyHashMap;
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceValueHashMap;
-import com.liferay.portal.kernel.memory.FinalizeManager;
+import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
+import com.liferay.petra.concurrent.ConcurrentReferenceValueHashMap;
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.reflect.ReflectionUtil;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 /**
  * @author Shuyang Zhou
  */
 public class ProxyUtil {
+
+	public static <T extends InvocationHandler> T fetchInvocationHandler(
+		Object proxy, Class<T> clazz) {
+
+		if (!isProxyClass(proxy.getClass())) {
+			return null;
+		}
+
+		try {
+			InvocationHandler invocationHandler =
+				(InvocationHandler)_invocationHandlerField.get(proxy);
+
+			if (clazz.isInstance(invocationHandler)) {
+				return clazz.cast(invocationHandler);
+			}
+
+			return null;
+		}
+		catch (IllegalAccessException iae) {
+			throw new IllegalArgumentException(iae);
+		}
+	}
 
 	public static InvocationHandler getInvocationHandler(Object proxy) {
 		if (!isProxyClass(proxy.getClass())) {
@@ -38,8 +65,8 @@ public class ProxyUtil {
 		try {
 			return (InvocationHandler)_invocationHandlerField.get(proxy);
 		}
-		catch (Exception e) {
-			throw new IllegalArgumentException(e);
+		catch (IllegalAccessException iae) {
+			throw new IllegalArgumentException(iae);
 		}
 	}
 
@@ -66,7 +93,7 @@ public class ProxyUtil {
 		Class<?> clazz = classReferences.get(lookupKey);
 
 		if (clazz == null) {
-			synchronized(classReferences) {
+			synchronized (classReferences) {
 				clazz = classReferences.get(lookupKey);
 
 				if (clazz == null) {
@@ -77,20 +104,38 @@ public class ProxyUtil {
 			}
 		}
 
-		Constructor<?> constructor = null;
-
-		try {
-			constructor = clazz.getConstructor(_argumentsClazz);
-
-			constructor.setAccessible(true);
-		}
-		catch (Exception e) {
-			throw new InternalError(e.toString());
-		}
-
-		_constructors.putIfAbsent(clazz, constructor);
+		_constructorReferences.putIfAbsent(clazz, new ConstructorReference());
 
 		return clazz;
+	}
+
+	public static <T> Function<InvocationHandler, T> getProxyProviderFunction(
+		Class<?>... interfaceClasses) {
+
+		ClassLoader classLoader = interfaceClasses[0].getClassLoader();
+
+		if (classLoader == null) {
+			classLoader = ClassLoader.getSystemClassLoader();
+		}
+
+		Class<?> proxyClass = getProxyClass(classLoader, interfaceClasses);
+
+		try {
+			Constructor<T> constructor =
+				(Constructor<T>)proxyClass.getConstructor(_ARGUMENTS_CLASS);
+
+			return invocationHandler -> {
+				try {
+					return constructor.newInstance(invocationHandler);
+				}
+				catch (ReflectiveOperationException roe) {
+					throw new InternalError(roe);
+				}
+			};
+		}
+		catch (NoSuchMethodException nsme) {
+			throw new InternalError(nsme);
+		}
 	}
 
 	public static boolean isProxyClass(Class<?> clazz) {
@@ -98,33 +143,31 @@ public class ProxyUtil {
 			throw new NullPointerException();
 		}
 
-		return _constructors.containsKey(clazz);
+		return _constructorReferences.containsKey(clazz);
 	}
 
 	public static Object newProxyInstance(
 		ClassLoader classLoader, Class<?>[] interfaces,
 		InvocationHandler invocationHandler) {
 
-		Constructor<?> constructor = _constructors.get(
-			getProxyClass(classLoader, interfaces));
+		Class<?> proxyClass = getProxyClass(classLoader, interfaces);
 
-		try {
-			return constructor.newInstance(new Object[] {invocationHandler});
-		}
-		catch (Exception e) {
-			throw new InternalError(e.toString());
-		}
+		ConstructorReference constructorHolder = _constructorReferences.get(
+			proxyClass);
+
+		return constructorHolder.newInstance(proxyClass, invocationHandler);
 	}
 
-	private static final Class<?>[] _argumentsClazz = {InvocationHandler.class};
+	private static final Class<?>[] _ARGUMENTS_CLASS = {
+		InvocationHandler.class
+	};
+
 	private static final ConcurrentMap
 		<ClassLoader, ConcurrentMap<LookupKey, Class<?>>> _classReferences =
 			new ConcurrentReferenceKeyHashMap<>(
 				FinalizeManager.WEAK_REFERENCE_FACTORY);
-	private static final ConcurrentMap<Class<?>, Constructor<?>> _constructors =
-		new ConcurrentReferenceKeyHashMap<>(
-			new ConcurrentReferenceValueHashMap<Class<?>, Constructor<?>>(
-				FinalizeManager.WEAK_REFERENCE_FACTORY),
+	private static final ConcurrentMap<Class<?>, ConstructorReference>
+		_constructorReferences = new ConcurrentReferenceKeyHashMap<>(
 			FinalizeManager.WEAK_REFERENCE_FACTORY);
 	private static final Field _invocationHandlerField;
 
@@ -138,30 +181,59 @@ public class ProxyUtil {
 		}
 	}
 
-	private static class LookupKey {
+	private static class ConstructorReference {
 
-		public LookupKey(Class<?>[] interfaces) {
-			_interfaces = interfaces;
+		public Object newInstance(
+			Class<?> proxyClass, InvocationHandler invocationHandler) {
 
-			int hashCode = 0;
+			Constructor<?> constructor = null;
 
-			for (Class<?> clazz : interfaces) {
-				hashCode = HashUtil.hash(hashCode, clazz.getName());
+			Reference<Constructor<?>> reference = _reference;
+
+			try {
+				if ((reference == null) ||
+					((constructor = reference.get()) == null)) {
+
+					constructor = proxyClass.getConstructor(_ARGUMENTS_CLASS);
+
+					constructor.setAccessible(true);
+
+					_reference = new WeakReference<>(constructor);
+				}
+
+				return constructor.newInstance(
+					new Object[] {invocationHandler});
 			}
-
-			_hashCode = hashCode;
+			catch (ReflectiveOperationException roe) {
+				throw new InternalError(roe);
+			}
 		}
+
+		private volatile Reference<Constructor<?>> _reference;
+
+	}
+
+	private static class LookupKey {
 
 		@Override
 		public boolean equals(Object obj) {
+			if (obj == this) {
+				return true;
+			}
+
 			LookupKey lookupKey = (LookupKey)obj;
 
-			if (_interfaces.length != lookupKey._interfaces.length) {
+			Reference<?>[] references = lookupKey._references;
+
+			if (_references.length != references.length) {
 				return false;
 			}
 
-			for (int i = 0; i < _interfaces.length; i++) {
-				if (_interfaces[i] != lookupKey._interfaces[i]) {
+			for (int i = 0; i < _references.length; i++) {
+				Reference<?> reference = _references[i];
+				Reference<?> otherReference = references[i];
+
+				if (reference.get() != otherReference.get()) {
 					return false;
 				}
 			}
@@ -174,8 +246,24 @@ public class ProxyUtil {
 			return _hashCode;
 		}
 
+		private LookupKey(Class<?>[] interfaces) {
+			int hashCode = 0;
+
+			_references = new Reference<?>[interfaces.length];
+
+			for (int i = 0; i < interfaces.length; i++) {
+				Class<?> clazz = interfaces[i];
+
+				hashCode = HashUtil.hash(hashCode, clazz.getName());
+
+				_references[i] = new WeakReference<>(clazz);
+			}
+
+			_hashCode = hashCode;
+		}
+
 		private final int _hashCode;
-		private final Class<?>[] _interfaces;
+		private final Reference<?>[] _references;
 
 	}
 

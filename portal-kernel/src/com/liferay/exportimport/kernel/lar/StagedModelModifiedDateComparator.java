@@ -18,9 +18,12 @@ import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public class StagedModelModifiedDateComparator<T extends StagedModel>
 	extends OrderByComparator<T> {
 
@@ -46,9 +49,8 @@ public class StagedModelModifiedDateComparator<T extends StagedModel>
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	@Override
@@ -56,9 +58,8 @@ public class StagedModelModifiedDateComparator<T extends StagedModel>
 		if (_ascending) {
 			return ORDER_BY_ASC;
 		}
-		else {
-			return ORDER_BY_DESC;
-		}
+
+		return ORDER_BY_DESC;
 	}
 
 	@Override

@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.io;
 
+import com.liferay.petra.lang.ClassLoaderPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.ClassLoaderPool;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
@@ -85,6 +85,7 @@ public class DeserializerTest {
 		bufferInputStream = deserializer.new BufferInputStream();
 
 		int size1 = _COUNT * 2 / 3;
+
 		int size2 = _COUNT - size1;
 
 		byte[] newBytes = new byte[size1];

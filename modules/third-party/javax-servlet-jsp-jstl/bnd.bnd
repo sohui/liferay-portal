@@ -6,5 +6,5 @@ Import-Package:\
 	!com.sun.*,\
 	\
 	org.apache.taglibs.standard.*;version=1.2.3,\
+	\
 	*
--includeresource: javax.servlet.jsp.jstl-[0-9]*.jar

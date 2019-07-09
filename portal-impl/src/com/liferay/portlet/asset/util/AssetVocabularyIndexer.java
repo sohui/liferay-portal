@@ -16,7 +16,6 @@ package com.liferay.portlet.asset.util;
 
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
-import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -33,8 +32,8 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.asset.service.permission.AssetVocabularyPermission;
 
@@ -44,9 +43,11 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 /**
- * @author Istvan Andras Dezsi
+ * @author     István András Dézsi
+ * @deprecated As of Judson (7.1.x), moved to {@link
+ *             com.liferay.asset.categories.internal.search.AssetVocabularyIndexer}
  */
-@OSGiBeanProperties
+@Deprecated
 public class AssetVocabularyIndexer extends BaseIndexer<AssetVocabulary> {
 
 	public static final String CLASS_NAME = AssetVocabulary.class.getName();
@@ -113,10 +114,19 @@ public class AssetVocabularyIndexer extends BaseIndexer<AssetVocabulary> {
 
 		document.addKeyword(
 			Field.ASSET_VOCABULARY_ID, assetVocabulary.getVocabularyId());
-		document.addLocalizedText(
-			Field.DESCRIPTION, assetVocabulary.getDescriptionMap());
+
+		Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(
+			assetVocabulary.getGroupId());
+
+		addLocalizedField(
+			document, Field.DESCRIPTION, siteDefaultLocale,
+			assetVocabulary.getDescriptionMap());
+
 		document.addText(Field.NAME, assetVocabulary.getName());
-		document.addLocalizedText(Field.TITLE, assetVocabulary.getTitleMap());
+
+		addLocalizedField(
+			document, Field.TITLE, siteDefaultLocale,
+			assetVocabulary.getTitleMap());
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Document " + assetVocabulary + " indexed successfully");
@@ -166,25 +176,20 @@ public class AssetVocabularyIndexer extends BaseIndexer<AssetVocabulary> {
 
 		indexableActionableDynamicQuery.setCompanyId(companyId);
 		indexableActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<AssetVocabulary>() {
+			(AssetVocabulary assetVocabulary) -> {
+				try {
+					Document document = getDocument(assetVocabulary);
 
-				@Override
-				public void performAction(AssetVocabulary assetVocabulary) {
-					try {
-						Document document = getDocument(assetVocabulary);
-
-						indexableActionableDynamicQuery.addDocuments(document);
-					}
-					catch (PortalException pe) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(
-								"Unable to index asset vocabulary " +
-									assetVocabulary.getVocabularyId(),
-								pe);
-						}
+					indexableActionableDynamicQuery.addDocuments(document);
+				}
+				catch (PortalException pe) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Unable to index asset vocabulary " +
+								assetVocabulary.getVocabularyId(),
+							pe);
 					}
 				}
-
 			});
 		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 

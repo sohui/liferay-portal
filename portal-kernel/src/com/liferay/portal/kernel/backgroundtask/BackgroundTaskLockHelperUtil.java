@@ -14,15 +14,18 @@
 
 package com.liferay.portal.kernel.backgroundtask;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
-import com.liferay.portal.kernel.util.StringPool;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
- * @author Daniel Kocsis
+ * @author     Daniel Kocsis
+ * @deprecated As of Judson (7.1.x), moved to {@link
+ *             com.liferay.portal.background.task.internal.lock.BackgroundTaskLockHelper}
  */
+@Deprecated
 @ProviderType
 public class BackgroundTaskLockHelperUtil {
 

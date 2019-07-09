@@ -14,8 +14,6 @@
 
 package com.liferay.knowledge.base.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.constants.AdminActivityKeys;
 import com.liferay.knowledge.base.exception.KBTemplateContentException;
 import com.liferay.knowledge.base.exception.KBTemplateTitleException;
@@ -23,6 +21,7 @@ import com.liferay.knowledge.base.exception.NoSuchTemplateException;
 import com.liferay.knowledge.base.model.KBTemplate;
 import com.liferay.knowledge.base.service.base.KBTemplateLocalServiceBaseImpl;
 import com.liferay.knowledge.base.util.KnowledgeBaseUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.Conjunction;
 import com.liferay.portal.kernel.dao.orm.Criterion;
 import com.liferay.portal.kernel.dao.orm.Disjunction;
@@ -33,15 +32,14 @@ import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -54,7 +52,6 @@ import java.util.Map;
  * @author Peter Shin
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class KBTemplateLocalServiceImpl extends KBTemplateLocalServiceBaseImpl {
 
 	@Override
@@ -65,7 +62,7 @@ public class KBTemplateLocalServiceImpl extends KBTemplateLocalServiceBaseImpl {
 
 		// KB template
 
-		User user = userPersistence.findByPrimaryKey(userId);
+		User user = userLocalService.getUser(userId);
 		long groupId = serviceContext.getScopeGroupId();
 		Date now = new Date();
 
@@ -93,9 +90,8 @@ public class KBTemplateLocalServiceImpl extends KBTemplateLocalServiceBaseImpl {
 
 		// Social
 
-		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
-
-		extraDataJSONObject.put("title", kbTemplate.getTitle());
+		JSONObject extraDataJSONObject = JSONUtil.put(
+			"title", kbTemplate.getTitle());
 
 		socialActivityLocalService.addActivity(
 			userId, groupId, KBTemplate.class.getName(), kbTemplateId,
@@ -218,21 +214,10 @@ public class KBTemplateLocalServiceImpl extends KBTemplateLocalServiceBaseImpl {
 
 		kbTemplatePersistence.update(kbTemplate);
 
-		// Resources
-
-		if ((serviceContext.getGroupPermissions() != null) ||
-			(serviceContext.getGuestPermissions() != null)) {
-
-			updateKBTemplateResources(
-				kbTemplate, serviceContext.getGroupPermissions(),
-				serviceContext.getGuestPermissions());
-		}
-
 		// Social
 
-		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
-
-		extraDataJSONObject.put("title", kbTemplate.getTitle());
+		JSONObject extraDataJSONObject = JSONUtil.put(
+			"title", kbTemplate.getTitle());
 
 		socialActivityLocalService.addActivity(
 			kbTemplate.getUserId(), kbTemplate.getGroupId(),

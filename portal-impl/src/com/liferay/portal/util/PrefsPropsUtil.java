@@ -14,16 +14,16 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.content.ContentUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.service.PortalPreferencesLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.PortalPreferencesWrapper;
 import com.liferay.portlet.PortalPreferencesWrapperCacheUtil;
-import com.liferay.util.ContentUtil;
 
 import java.util.Enumeration;
 import java.util.Properties;
@@ -50,7 +50,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getBoolean(PortletPreferences, String)}
 	 */
 	@Deprecated
@@ -61,7 +61,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getBoolean(PortletPreferences, String, boolean)}
 	 */
 	@Deprecated
@@ -104,7 +104,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getContent(PortletPreferences, String)}
 	 */
 	@Deprecated
@@ -123,7 +123,8 @@ public class PrefsPropsUtil {
 			return value;
 		}
 
-		return ContentUtil.get(PropsUtil.get(name));
+		return ContentUtil.get(
+			PrefsPropsUtil.class.getClassLoader(), PropsUtil.get(name));
 	}
 
 	public static String getContent(String name) {
@@ -147,7 +148,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getDouble(PortletPreferences, String)}
 	 */
 	@Deprecated
@@ -158,7 +159,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getDouble(PortletPreferences, String, double)}
 	 */
 	@Deprecated
@@ -208,7 +209,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getInteger(PortletPreferences, String)}
 	 */
 	@Deprecated
@@ -219,7 +220,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getInteger(PortletPreferences, String, int)}
 	 */
 	@Deprecated
@@ -266,8 +267,8 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getLong(PortletPreferences,
-	 *             String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getLong(PortletPreferences, String)}
 	 */
 	@Deprecated
 	public static long getLong(
@@ -277,8 +278,8 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getLong(PortletPreferences,
-	 *             String, long)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getLong(PortletPreferences, String, long)}
 	 */
 	@Deprecated
 	public static long getLong(
@@ -359,7 +360,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getProperties(PortletPreferences, String, boolean)}
 	 */
 	@Deprecated
@@ -417,8 +418,8 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getShort(PortletPreferences,
-	 *             String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getShort(PortletPreferences, String)}
 	 */
 	@Deprecated
 	public static short getShort(
@@ -428,8 +429,8 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getShort(PortletPreferences,
-	 *             String, short)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getShort(PortletPreferences, String, short)}
 	 */
 	@Deprecated
 	public static short getShort(
@@ -476,7 +477,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getString(PortletPreferences, String)}
 	 */
 	@Deprecated
@@ -487,7 +488,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getString(PortletPreferences, String, boolean)}
 	 */
 	@Deprecated
@@ -499,7 +500,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getString(PortletPreferences, String, double)}
 	 */
 	@Deprecated
@@ -511,7 +512,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getString(PortletPreferences, String, int)}
 	 */
 	@Deprecated
@@ -523,7 +524,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getString(PortletPreferences, String, long)}
 	 */
 	@Deprecated
@@ -535,7 +536,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getString(PortletPreferences, String, short)}
 	 */
 	@Deprecated
@@ -547,7 +548,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getString(PortletPreferences, String, String)}
 	 */
 	@Deprecated
@@ -667,7 +668,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getStringArray(PortletPreferences, String, String)}
 	 */
 	@Deprecated
@@ -679,7 +680,7 @@ public class PrefsPropsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
 	 *             #getStringArray(PortletPreferences, String, String,
 	 *             String[])}
 	 */

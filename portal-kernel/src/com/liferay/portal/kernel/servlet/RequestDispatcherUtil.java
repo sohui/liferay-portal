@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.servlet;
 
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Enumeration;
 
@@ -31,15 +32,16 @@ import javax.servlet.http.HttpServletResponse;
 public class RequestDispatcherUtil {
 
 	public static ObjectValuePair<String, Long> getContentAndLastModifiedTime(
-			RequestDispatcher requestDispatcher, HttpServletRequest request,
-			HttpServletResponse response)
+			RequestDispatcher requestDispatcher,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		BufferCacheServletResponse bufferCacheServletResponse =
-			new BufferCacheServletResponse(response);
+			new LastModifiedCacheServletResponse(httpServletResponse);
 
 		requestDispatcher.include(
-			new HttpServletRequestWrapper(request) {
+			new HttpServletRequestWrapper(httpServletRequest) {
 
 				@Override
 				public long getDateHeader(String name) {
@@ -89,31 +91,34 @@ public class RequestDispatcherUtil {
 				-1));
 	}
 
-	public static String getEffectivePath(HttpServletRequest request) {
-		DispatcherType dispatcherType = request.getDispatcherType();
+	public static String getEffectivePath(
+		HttpServletRequest httpServletRequest) {
+
+		DispatcherType dispatcherType = httpServletRequest.getDispatcherType();
 
 		if (dispatcherType.equals(DispatcherType.FORWARD)) {
-			return (String)request.getAttribute(
+			return (String)httpServletRequest.getAttribute(
 				RequestDispatcher.FORWARD_SERVLET_PATH);
 		}
 		else if (dispatcherType.equals(DispatcherType.INCLUDE)) {
-			return (String)request.getAttribute(
+			return (String)httpServletRequest.getAttribute(
 				RequestDispatcher.INCLUDE_SERVLET_PATH);
 		}
 
-		return request.getServletPath();
+		return httpServletRequest.getServletPath();
 	}
 
 	public static long getLastModifiedTime(
-			RequestDispatcher requestDispatcher, HttpServletRequest request,
-			HttpServletResponse response)
+			RequestDispatcher requestDispatcher,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
 		MetaInfoCacheServletResponse metaInfoCacheServletResponse =
-			new MetaInfoCacheServletResponse(response);
+			new LastModifiedCacheServletResponse(httpServletResponse);
 
 		requestDispatcher.include(
-			new HttpServletRequestWrapper(request) {
+			new HttpServletRequestWrapper(httpServletRequest) {
 
 				@Override
 				public String getMethod() {
@@ -126,6 +131,72 @@ public class RequestDispatcherUtil {
 		return GetterUtil.getLong(
 			metaInfoCacheServletResponse.getHeader(HttpHeaders.LAST_MODIFIED),
 			-1);
+	}
+
+	private static class LastModifiedCacheServletResponse
+		extends BufferCacheServletResponse {
+
+		public LastModifiedCacheServletResponse(
+			HttpServletResponse httpServletResponse) {
+
+			super(httpServletResponse);
+		}
+
+		@Override
+		public void addDateHeader(String name, long value) {
+			if (StringUtil.equalsIgnoreCase(name, HttpHeaders.LAST_MODIFIED)) {
+				_lastModified = String.valueOf(value);
+
+				return;
+			}
+
+			super.addDateHeader(name, value);
+		}
+
+		@Override
+		public void addHeader(String name, String value) {
+			if (StringUtil.equalsIgnoreCase(name, HttpHeaders.LAST_MODIFIED)) {
+				_lastModified = value;
+
+				return;
+			}
+
+			super.addHeader(name, value);
+		}
+
+		@Override
+		public String getHeader(String name) {
+			if (StringUtil.equalsIgnoreCase(name, HttpHeaders.LAST_MODIFIED)) {
+				return _lastModified;
+			}
+
+			return super.getHeader(name);
+		}
+
+		@Override
+		public void setDateHeader(String name, long value) {
+			if (StringUtil.equalsIgnoreCase(name, HttpHeaders.LAST_MODIFIED)) {
+				_lastModified = String.valueOf(value);
+
+				return;
+			}
+
+			super.setDateHeader(name, value);
+		}
+
+		@Override
+		public void setHeader(String name, String value) {
+			if (StringUtil.equalsIgnoreCase(name, HttpHeaders.LAST_MODIFIED)) {
+				_lastModified = value;
+
+				return;
+			}
+
+			super.setHeader(name, value);
+		}
+
+		private String _lastModified;
+
 	}
 
 }

@@ -41,8 +41,8 @@ import javax.servlet.http.HttpServletRequest;
  */
 public abstract class BaseRequestHelper {
 
-	public BaseRequestHelper(HttpServletRequest request) {
-		_request = request;
+	public BaseRequestHelper(HttpServletRequest httpServletRequest) {
+		_httpServletRequest = httpServletRequest;
 	}
 
 	public Company getCompany() {
@@ -89,7 +89,7 @@ public abstract class BaseRequestHelper {
 	public LiferayPortletRequest getLiferayPortletRequest() {
 		if (_liferayPortletRequest == null) {
 			PortletRequest portletRequest =
-				(PortletRequest)_request.getAttribute(
+				(PortletRequest)_httpServletRequest.getAttribute(
 					JavaConstants.JAVAX_PORTLET_REQUEST);
 
 			_liferayPortletRequest = PortalUtil.getLiferayPortletRequest(
@@ -102,7 +102,7 @@ public abstract class BaseRequestHelper {
 	public LiferayPortletResponse getLiferayPortletResponse() {
 		if (_liferayPortletResponse == null) {
 			PortletResponse portletResponse =
-				(PortletResponse)_request.getAttribute(
+				(PortletResponse)_httpServletRequest.getAttribute(
 					JavaConstants.JAVAX_PORTLET_RESPONSE);
 
 			_liferayPortletResponse = PortalUtil.getLiferayPortletResponse(
@@ -183,7 +183,7 @@ public abstract class BaseRequestHelper {
 	}
 
 	public HttpServletRequest getRequest() {
-		return _request;
+		return _httpServletRequest;
 	}
 
 	public String getResourcePortletId() {
@@ -238,7 +238,7 @@ public abstract class BaseRequestHelper {
 
 	public ThemeDisplay getThemeDisplay() {
 		if (_themeDisplay == null) {
-			_themeDisplay = (ThemeDisplay)_request.getAttribute(
+			_themeDisplay = (ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 		}
 
@@ -268,6 +268,7 @@ public abstract class BaseRequestHelper {
 	private Company _company;
 	private Long _companyId;
 	private String _currentURL;
+	private final HttpServletRequest _httpServletRequest;
 	private Layout _layout;
 	private LiferayPortletRequest _liferayPortletRequest;
 	private LiferayPortletResponse _liferayPortletResponse;
@@ -278,7 +279,6 @@ public abstract class BaseRequestHelper {
 	private String _portletName;
 	private String _portletResource;
 	private String _portletTitle;
-	private final HttpServletRequest _request;
 	private String _resourcePortletId;
 	private String _resourcePortletName;
 	private Long _scopeGroupId;

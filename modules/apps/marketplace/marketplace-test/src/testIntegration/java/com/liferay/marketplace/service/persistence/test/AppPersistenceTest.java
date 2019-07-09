@@ -15,13 +15,11 @@
 package com.liferay.marketplace.service.persistence.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-
 import com.liferay.marketplace.exception.NoSuchAppException;
 import com.liferay.marketplace.model.App;
 import com.liferay.marketplace.service.AppLocalServiceUtil;
 import com.liferay.marketplace.service.persistence.AppPersistence;
 import com.liferay.marketplace.service.persistence.AppUtil;
-
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
@@ -30,25 +28,15 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.TransactionalTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.junit.runner.RunWith;
+import com.liferay.portal.test.rule.TransactionalTestRule;
 
 import java.io.Serializable;
 
@@ -59,16 +47,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 /**
  * @generated
  */
 @RunWith(Arquillian.class)
 public class AppPersistenceTest {
+
 	@ClassRule
 	@Rule
-	public static final AggregateTestRule aggregateTestRule = new AggregateTestRule(new LiferayIntegrationTestRule(),
-			PersistenceTestRule.INSTANCE,
-			new TransactionalTestRule(Propagation.REQUIRED));
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(), PersistenceTestRule.INSTANCE,
+			new TransactionalTestRule(
+				Propagation.REQUIRED, "com.liferay.marketplace.service"));
 
 	@Before
 	public void setUp() {
@@ -107,7 +106,8 @@ public class AppPersistenceTest {
 
 		_persistence.remove(newApp);
 
-		App existingApp = _persistence.fetchByPrimaryKey(newApp.getPrimaryKey());
+		App existingApp = _persistence.fetchByPrimaryKey(
+			newApp.getPrimaryKey());
 
 		Assert.assertNull(existingApp);
 	}
@@ -158,36 +158,37 @@ public class AppPersistenceTest {
 		Assert.assertEquals(existingApp.getCompanyId(), newApp.getCompanyId());
 		Assert.assertEquals(existingApp.getUserId(), newApp.getUserId());
 		Assert.assertEquals(existingApp.getUserName(), newApp.getUserName());
-		Assert.assertEquals(Time.getShortTimestamp(existingApp.getCreateDate()),
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingApp.getCreateDate()),
 			Time.getShortTimestamp(newApp.getCreateDate()));
-		Assert.assertEquals(Time.getShortTimestamp(
-				existingApp.getModifiedDate()),
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingApp.getModifiedDate()),
 			Time.getShortTimestamp(newApp.getModifiedDate()));
-		Assert.assertEquals(existingApp.getRemoteAppId(),
-			newApp.getRemoteAppId());
+		Assert.assertEquals(
+			existingApp.getRemoteAppId(), newApp.getRemoteAppId());
 		Assert.assertEquals(existingApp.getTitle(), newApp.getTitle());
-		Assert.assertEquals(existingApp.getDescription(),
-			newApp.getDescription());
+		Assert.assertEquals(
+			existingApp.getDescription(), newApp.getDescription());
 		Assert.assertEquals(existingApp.getCategory(), newApp.getCategory());
 		Assert.assertEquals(existingApp.getIconURL(), newApp.getIconURL());
 		Assert.assertEquals(existingApp.getVersion(), newApp.getVersion());
-		Assert.assertEquals(existingApp.getRequired(), newApp.getRequired());
+		Assert.assertEquals(existingApp.isRequired(), newApp.isRequired());
 	}
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
 	}
@@ -208,9 +209,9 @@ public class AppPersistenceTest {
 
 	@Test
 	public void testCountByCategory() throws Exception {
-		_persistence.countByCategory(StringPool.BLANK);
+		_persistence.countByCategory("");
 
-		_persistence.countByCategory(StringPool.NULL);
+		_persistence.countByCategory("null");
 
 		_persistence.countByCategory((String)null);
 	}
@@ -233,23 +234,25 @@ public class AppPersistenceTest {
 
 	@Test
 	public void testFindAll() throws Exception {
-		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			getOrderByComparator());
+		_persistence.findAll(
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
 	protected OrderByComparator<App> getOrderByComparator() {
-		return OrderByComparatorFactoryUtil.create("Marketplace_App", "uuid",
-			true, "appId", true, "companyId", true, "userId", true, "userName",
-			true, "createDate", true, "modifiedDate", true, "remoteAppId",
-			true, "title", true, "description", true, "category", true,
-			"iconURL", true, "version", true, "required", true);
+		return OrderByComparatorFactoryUtil.create(
+			"Marketplace_App", "uuid", true, "appId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "remoteAppId", true, "title", true,
+			"description", true, "category", true, "iconURL", true, "version",
+			true, "required", true);
 	}
 
 	@Test
 	public void testFetchByPrimaryKeyExisting() throws Exception {
 		App newApp = addApp();
 
-		App existingApp = _persistence.fetchByPrimaryKey(newApp.getPrimaryKey());
+		App existingApp = _persistence.fetchByPrimaryKey(
+			newApp.getPrimaryKey());
 
 		Assert.assertEquals(existingApp, newApp);
 	}
@@ -266,6 +269,7 @@ public class AppPersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereAllPrimaryKeysExist()
 		throws Exception {
+
 		App newApp1 = addApp();
 		App newApp2 = addApp();
 
@@ -274,7 +278,8 @@ public class AppPersistenceTest {
 		primaryKeys.add(newApp1.getPrimaryKey());
 		primaryKeys.add(newApp2.getPrimaryKey());
 
-		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(
+			primaryKeys);
 
 		Assert.assertEquals(2, apps.size());
 		Assert.assertEquals(newApp1, apps.get(newApp1.getPrimaryKey()));
@@ -284,6 +289,7 @@ public class AppPersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereNoPrimaryKeysExist()
 		throws Exception {
+
 		long pk1 = RandomTestUtil.nextLong();
 
 		long pk2 = RandomTestUtil.nextLong();
@@ -293,7 +299,8 @@ public class AppPersistenceTest {
 		primaryKeys.add(pk1);
 		primaryKeys.add(pk2);
 
-		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(
+			primaryKeys);
 
 		Assert.assertTrue(apps.isEmpty());
 	}
@@ -301,6 +308,7 @@ public class AppPersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereSomePrimaryKeysExist()
 		throws Exception {
+
 		App newApp = addApp();
 
 		long pk = RandomTestUtil.nextLong();
@@ -310,32 +318,33 @@ public class AppPersistenceTest {
 		primaryKeys.add(newApp.getPrimaryKey());
 		primaryKeys.add(pk);
 
-		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(
+			primaryKeys);
 
 		Assert.assertEquals(1, apps.size());
 		Assert.assertEquals(newApp, apps.get(newApp.getPrimaryKey()));
 	}
 
 	@Test
-	public void testFetchByPrimaryKeysWithNoPrimaryKeys()
-		throws Exception {
+	public void testFetchByPrimaryKeysWithNoPrimaryKeys() throws Exception {
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
-		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(
+			primaryKeys);
 
 		Assert.assertTrue(apps.isEmpty());
 	}
 
 	@Test
-	public void testFetchByPrimaryKeysWithOnePrimaryKey()
-		throws Exception {
+	public void testFetchByPrimaryKeysWithOnePrimaryKey() throws Exception {
 		App newApp = addApp();
 
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
 		primaryKeys.add(newApp.getPrimaryKey());
 
-		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, App> apps = _persistence.fetchByPrimaryKeys(
+			primaryKeys);
 
 		Assert.assertEquals(1, apps.size());
 		Assert.assertEquals(newApp, apps.get(newApp.getPrimaryKey()));
@@ -345,15 +354,19 @@ public class AppPersistenceTest {
 	public void testActionableDynamicQuery() throws Exception {
 		final IntegerWrapper count = new IntegerWrapper();
 
-		ActionableDynamicQuery actionableDynamicQuery = AppLocalServiceUtil.getActionableDynamicQuery();
+		ActionableDynamicQuery actionableDynamicQuery =
+			AppLocalServiceUtil.getActionableDynamicQuery();
 
-		actionableDynamicQuery.setPerformActionMethod(new ActionableDynamicQuery.PerformActionMethod<App>() {
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod<App>() {
+
 				@Override
 				public void performAction(App app) {
 					Assert.assertNotNull(app);
 
 					count.increment();
 				}
+
 			});
 
 		actionableDynamicQuery.performActions();
@@ -362,14 +375,14 @@ public class AppPersistenceTest {
 	}
 
 	@Test
-	public void testDynamicQueryByPrimaryKeyExisting()
-		throws Exception {
+	public void testDynamicQueryByPrimaryKeyExisting() throws Exception {
 		App newApp = addApp();
 
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(App.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			App.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.add(RestrictionsFactoryUtil.eq("appId", newApp.getAppId()));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("appId", newApp.getAppId()));
 
 		List<App> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -382,11 +395,11 @@ public class AppPersistenceTest {
 
 	@Test
 	public void testDynamicQueryByPrimaryKeyMissing() throws Exception {
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(App.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			App.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.add(RestrictionsFactoryUtil.eq("appId",
-				RandomTestUtil.nextLong()));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq("appId", RandomTestUtil.nextLong()));
 
 		List<App> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -394,19 +407,18 @@ public class AppPersistenceTest {
 	}
 
 	@Test
-	public void testDynamicQueryByProjectionExisting()
-		throws Exception {
+	public void testDynamicQueryByProjectionExisting() throws Exception {
 		App newApp = addApp();
 
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(App.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			App.class, _dynamicQueryClassLoader);
 
 		dynamicQuery.setProjection(ProjectionFactoryUtil.property("appId"));
 
 		Object newAppId = newApp.getAppId();
 
-		dynamicQuery.add(RestrictionsFactoryUtil.in("appId",
-				new Object[] { newAppId }));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.in("appId", new Object[] {newAppId}));
 
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -419,13 +431,14 @@ public class AppPersistenceTest {
 
 	@Test
 	public void testDynamicQueryByProjectionMissing() throws Exception {
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(App.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			App.class, _dynamicQueryClassLoader);
 
 		dynamicQuery.setProjection(ProjectionFactoryUtil.property("appId"));
 
-		dynamicQuery.add(RestrictionsFactoryUtil.in("appId",
-				new Object[] { RandomTestUtil.nextLong() }));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.in(
+				"appId", new Object[] {RandomTestUtil.nextLong()}));
 
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -440,9 +453,10 @@ public class AppPersistenceTest {
 
 		App existingApp = _persistence.findByPrimaryKey(newApp.getPrimaryKey());
 
-		Assert.assertEquals(Long.valueOf(existingApp.getRemoteAppId()),
-			ReflectionTestUtil.<Long>invoke(existingApp,
-				"getOriginalRemoteAppId", new Class<?>[0]));
+		Assert.assertEquals(
+			Long.valueOf(existingApp.getRemoteAppId()),
+			ReflectionTestUtil.<Long>invoke(
+				existingApp, "getOriginalRemoteAppId", new Class<?>[0]));
 	}
 
 	protected App addApp() throws Exception {
@@ -484,4 +498,5 @@ public class AppPersistenceTest {
 	private List<App> _apps = new ArrayList<App>();
 	private AppPersistence _persistence;
 	private ClassLoader _dynamicQueryClassLoader;
+
 }

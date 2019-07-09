@@ -14,21 +14,24 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
+ * @deprecated
  * @generated
  */
+@Deprecated
 @ProviderType
 public class ClusterGroupSoap implements Serializable {
+
 	public static ClusterGroupSoap toSoapModel(ClusterGroup model) {
 		ClusterGroupSoap soapModel = new ClusterGroupSoap();
 
@@ -36,7 +39,7 @@ public class ClusterGroupSoap implements Serializable {
 		soapModel.setClusterGroupId(model.getClusterGroupId());
 		soapModel.setName(model.getName());
 		soapModel.setClusterNodeIds(model.getClusterNodeIds());
-		soapModel.setWholeCluster(model.getWholeCluster());
+		soapModel.setWholeCluster(model.isWholeCluster());
 
 		return soapModel;
 	}
@@ -69,7 +72,8 @@ public class ClusterGroupSoap implements Serializable {
 	}
 
 	public static ClusterGroupSoap[] toSoapModels(List<ClusterGroup> models) {
-		List<ClusterGroupSoap> soapModels = new ArrayList<ClusterGroupSoap>(models.size());
+		List<ClusterGroupSoap> soapModels = new ArrayList<ClusterGroupSoap>(
+			models.size());
 
 		for (ClusterGroup model : models) {
 			soapModels.add(toSoapModel(model));
@@ -138,4 +142,5 @@ public class ClusterGroupSoap implements Serializable {
 	private String _name;
 	private String _clusterNodeIds;
 	private boolean _wholeCluster;
+
 }

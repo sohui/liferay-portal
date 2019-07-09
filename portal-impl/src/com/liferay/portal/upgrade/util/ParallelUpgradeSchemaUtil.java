@@ -14,15 +14,16 @@
 
 package com.liferay.portal.upgrade.util;
 
-import com.liferay.portal.kernel.concurrent.ThreadPoolExecutor;
+import com.liferay.petra.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
-import com.liferay.portal.kernel.executor.PortalExecutorManagerUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
@@ -31,8 +32,8 @@ import java.util.concurrent.Future;
 public class ParallelUpgradeSchemaUtil {
 
 	public static void execute(String... sqlFileNames) throws Exception {
-		ThreadPoolExecutor threadPoolExecutor =
-			PortalExecutorManagerUtil.getPortalExecutor(
+		ExecutorService executorService =
+			_portalExecutorManager.getPortalExecutor(
 				ParallelUpgradeSchemaUtil.class.getName());
 
 		List<Future<Void>> futures = new ArrayList<>(sqlFileNames.length);
@@ -40,7 +41,7 @@ public class ParallelUpgradeSchemaUtil {
 		try {
 			for (String sqlFileName : sqlFileNames) {
 				futures.add(
-					threadPoolExecutor.submit(
+					executorService.submit(
 						new CallableSQLExecutor(sqlFileName)));
 			}
 
@@ -49,9 +50,14 @@ public class ParallelUpgradeSchemaUtil {
 			}
 		}
 		finally {
-			threadPoolExecutor.shutdown();
+			executorService.shutdown();
 		}
 	}
+
+	private static volatile PortalExecutorManager _portalExecutorManager =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			PortalExecutorManager.class, ParallelUpgradeSchemaUtil.class,
+			"_portalExecutorManager", true);
 
 	private static class CallableSQLExecutor implements Callable<Void> {
 

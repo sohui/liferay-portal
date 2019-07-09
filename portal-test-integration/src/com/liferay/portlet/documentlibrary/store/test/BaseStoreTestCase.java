@@ -18,17 +18,13 @@ import com.liferay.document.library.kernel.exception.DuplicateFileException;
 import com.liferay.document.library.kernel.exception.NoSuchFileException;
 import com.liferay.document.library.kernel.store.BaseStore;
 import com.liferay.document.library.kernel.store.Store;
-import com.liferay.document.library.kernel.store.StoreWrapper;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
-import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.test.rule.ExpectedLog;
 import com.liferay.portal.test.rule.ExpectedLogs;
 import com.liferay.portal.test.rule.ExpectedType;
-import com.liferay.portlet.documentlibrary.store.StoreFactory;
-import com.liferay.registry.collections.ServiceTrackerMap;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -40,8 +36,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
@@ -56,47 +50,7 @@ public abstract class BaseStoreTestCase {
 
 	@Before
 	public void setUp() throws Exception {
-		StoreFactory storeFactory = StoreFactory.getInstance();
-
-		ServiceTrackerMap<String, List<StoreWrapper>> serviceTrackerMap =
-			ReflectionTestUtil.getAndSetFieldValue(
-				storeFactory, "_storeWrapperServiceTrackerMap",
-				new ServiceTrackerMap<String, List<StoreWrapper>>() {
-
-					@Override
-					public void close() {
-					}
-
-					@Override
-					public boolean containsKey(String key) {
-						return false;
-					}
-
-					@Override
-					public List<StoreWrapper> getService(String key) {
-						return Collections.emptyList();
-					}
-
-					@Override
-					public Set<String> keySet() {
-						return Collections.emptySet();
-					}
-
-					@Override
-					public void open() {
-					}
-
-				});
-
-		try {
-			store = storeFactory.getStore(getStoreType());
-		}
-		finally {
-			ReflectionTestUtil.setFieldValue(
-				storeFactory, "_storeWrapperServiceTrackerMap",
-				serviceTrackerMap);
-		}
-
+		store = getStore();
 		companyId = RandomTestUtil.nextLong();
 		repositoryId = RandomTestUtil.nextLong();
 	}
@@ -355,12 +309,14 @@ public abstract class BaseStoreTestCase {
 
 		String[] fileNames = store.getFileNames(companyId, repositoryId);
 
-		Assert.assertEquals(2, fileNames.length);
+		Assert.assertEquals(Arrays.toString(fileNames), 2, fileNames.length);
 
 		Set<String> fileNamesSet = SetUtil.fromArray(fileNames);
 
-		Assert.assertTrue(fileNamesSet.contains(fileName1));
-		Assert.assertTrue(fileNamesSet.contains(fileName2));
+		Assert.assertTrue(
+			fileNamesSet.toString(), fileNamesSet.contains(fileName1));
+		Assert.assertTrue(
+			fileNamesSet.toString(), fileNamesSet.contains(fileName2));
 	}
 
 	@Test
@@ -378,12 +334,14 @@ public abstract class BaseStoreTestCase {
 		String[] fileNames = store.getFileNames(
 			companyId, repositoryId, dirName);
 
-		Assert.assertEquals(2, fileNames.length);
+		Assert.assertEquals(Arrays.toString(fileNames), 2, fileNames.length);
 
 		Set<String> fileNamesSet = SetUtil.fromArray(fileNames);
 
-		Assert.assertTrue(fileNamesSet.contains(fileName1));
-		Assert.assertTrue(fileNamesSet.contains(fileName2));
+		Assert.assertTrue(
+			fileNamesSet.toString(), fileNamesSet.contains(fileName1));
+		Assert.assertTrue(
+			fileNamesSet.toString(), fileNamesSet.contains(fileName2));
 	}
 
 	@Test
@@ -408,16 +366,18 @@ public abstract class BaseStoreTestCase {
 		String[] fileNames = store.getFileNames(
 			companyId, repositoryId, dirName);
 
-		Assert.assertEquals(2, fileNames.length);
+		Assert.assertEquals(Arrays.toString(fileNames), 2, fileNames.length);
 
 		Set<String> fileNamesSet = SetUtil.fromArray(fileNames);
 
-		Assert.assertTrue(fileNamesSet.contains(fileName1));
-		Assert.assertTrue(fileNamesSet.contains(fileName2));
+		Assert.assertTrue(
+			fileNamesSet.toString(), fileNamesSet.contains(fileName1));
+		Assert.assertTrue(
+			fileNamesSet.toString(), fileNamesSet.contains(fileName2));
 
 		fileNames = store.getFileNames(companyId, repositoryId, subdirName);
 
-		Assert.assertEquals(1, fileNames.length);
+		Assert.assertEquals(Arrays.toString(fileNames), 1, fileNames.length);
 		Assert.assertEquals(fileName2, fileNames[0]);
 	}
 
@@ -428,14 +388,14 @@ public abstract class BaseStoreTestCase {
 		String[] fileNames = store.getFileNames(
 			companyId, repositoryId, dirName);
 
-		Assert.assertEquals(0, fileNames.length);
+		Assert.assertEquals(Arrays.toString(fileNames), 0, fileNames.length);
 	}
 
 	@Test
 	public void testGetFileNamesWithInvalidRepository() throws Exception {
 		String[] fileNames = store.getFileNames(companyId, repositoryId);
 
-		Assert.assertEquals(0, fileNames.length);
+		Assert.assertEquals(Arrays.toString(fileNames), 0, fileNames.length);
 	}
 
 	@Test
@@ -454,12 +414,14 @@ public abstract class BaseStoreTestCase {
 
 		String[] fileNames = store.getFileNames(companyId, repositoryId);
 
-		Assert.assertEquals(2, fileNames.length);
+		Assert.assertEquals(Arrays.toString(fileNames), 2, fileNames.length);
 
 		Set<String> fileNamesSet = SetUtil.fromArray(fileNames);
 
-		Assert.assertTrue(fileNamesSet.contains(fileName1));
-		Assert.assertTrue(fileNamesSet.contains(fileName2));
+		Assert.assertTrue(
+			fileNamesSet.toString(), fileNamesSet.contains(fileName1));
+		Assert.assertTrue(
+			fileNamesSet.toString(), fileNamesSet.contains(fileName2));
 	}
 
 	@Test
@@ -516,9 +478,9 @@ public abstract class BaseStoreTestCase {
 		}
 	}
 
-	@ExpectedLogs (
+	@ExpectedLogs(
 		expectedLogs = {
-			@ExpectedLog (
+			@ExpectedLog(
 				expectedLog = "Unable to delete file {companyId=",
 				expectedType = ExpectedType.PREFIX
 			)
@@ -531,9 +493,9 @@ public abstract class BaseStoreTestCase {
 			companyId, repositoryId, RandomTestUtil.randomString());
 	}
 
-	@ExpectedLogs (
+	@ExpectedLogs(
 		expectedLogs = {
-			@ExpectedLog (
+			@ExpectedLog(
 				expectedLog = "Unable to delete file {companyId=",
 				expectedType = ExpectedType.PREFIX
 			)
@@ -613,17 +575,17 @@ public abstract class BaseStoreTestCase {
 		byte[] firstVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName, "1.0");
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_1, firstVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_1, firstVersionBytes);
 
 		byte[] secondVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName, "1.1");
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_2, secondVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_2, secondVersionBytes);
 
 		byte[] currentVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName);
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_2, currentVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_2, currentVersionBytes);
 	}
 
 	@Test
@@ -639,17 +601,17 @@ public abstract class BaseStoreTestCase {
 		byte[] firstVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName, "1.0");
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_1, firstVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_1, firstVersionBytes);
 
 		byte[] secondVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName, "1.1");
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_2, secondVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_2, secondVersionBytes);
 
 		byte[] currentVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName);
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_2, currentVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_2, currentVersionBytes);
 	}
 
 	@Test
@@ -665,17 +627,17 @@ public abstract class BaseStoreTestCase {
 		byte[] firstVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName, "1.0");
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_1, firstVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_1, firstVersionBytes);
 
 		byte[] secondVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName, "1.1");
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_2, secondVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_2, secondVersionBytes);
 
 		byte[] currentVersionBytes = store.getFileAsBytes(
 			companyId, repositoryId, fileName);
 
-		Assert.assertTrue(Arrays.equals(_DATA_VERSION_2, currentVersionBytes));
+		Assert.assertArrayEquals(_DATA_VERSION_2, currentVersionBytes);
 	}
 
 	@Test
@@ -770,7 +732,7 @@ public abstract class BaseStoreTestCase {
 		return file;
 	}
 
-	protected abstract String getStoreType();
+	protected abstract Store getStore();
 
 	protected long companyId;
 	protected long repositoryId;

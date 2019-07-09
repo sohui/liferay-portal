@@ -46,6 +46,7 @@ public class RepositoryModelSizeComparator<T> extends OrderByComparator<T> {
 
 	public RepositoryModelSizeComparator(boolean ascending) {
 		_ascending = ascending;
+
 		_orderByModel = false;
 	}
 
@@ -64,15 +65,15 @@ public class RepositoryModelSizeComparator<T> extends OrderByComparator<T> {
 		Long size2 = getSize(t2);
 
 		if (_orderByModel) {
-			if (((t1 instanceof DLFolder) || (t1 instanceof Folder)) &&
-				((t2 instanceof DLFolder) || (t2 instanceof Folder))) {
+			if ((t1 instanceof DLFolder || t1 instanceof Folder) &&
+				(t2 instanceof DLFolder || t2 instanceof Folder)) {
 
 				value = size1.compareTo(size2);
 			}
-			else if ((t1 instanceof DLFolder) || (t1 instanceof Folder)) {
+			else if (t1 instanceof DLFolder || t1 instanceof Folder) {
 				value = -1;
 			}
-			else if ((t2 instanceof DLFolder) || (t2 instanceof Folder)) {
+			else if (t2 instanceof DLFolder || t2 instanceof Folder) {
 				value = 1;
 			}
 			else {
@@ -86,9 +87,8 @@ public class RepositoryModelSizeComparator<T> extends OrderByComparator<T> {
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	@Override
@@ -97,18 +97,15 @@ public class RepositoryModelSizeComparator<T> extends OrderByComparator<T> {
 			if (_ascending) {
 				return ORDER_BY_MODEL_ASC;
 			}
-			else {
-				return ORDER_BY_MODEL_DESC;
-			}
+
+			return ORDER_BY_MODEL_DESC;
 		}
-		else {
-			if (_ascending) {
-				return ORDER_BY_ASC;
-			}
-			else {
-				return ORDER_BY_DESC;
-			}
+
+		if (_ascending) {
+			return ORDER_BY_ASC;
 		}
+
+		return ORDER_BY_DESC;
 	}
 
 	@Override
@@ -152,12 +149,10 @@ public class RepositoryModelSizeComparator<T> extends OrderByComparator<T> {
 
 			return dlFileEntry.getSize();
 		}
-		else if ((obj instanceof DLFileShortcut) ||
-				 (obj instanceof FileShortcut)) {
-
+		else if (obj instanceof DLFileShortcut || obj instanceof FileShortcut) {
 			return getFileShortcutSize(obj);
 		}
-		else if ((obj instanceof DLFolder) || (obj instanceof Folder)) {
+		else if (obj instanceof DLFolder || obj instanceof Folder) {
 			return 0;
 		}
 		else {

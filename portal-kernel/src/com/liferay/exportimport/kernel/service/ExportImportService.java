@@ -14,11 +14,8 @@
 
 package com.liferay.exportimport.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.exportimport.kernel.lar.MissingReferences;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -30,6 +27,10 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import java.io.File;
 import java.io.InputStream;
 
+import java.util.Map;
+
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for ExportImport. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -37,92 +38,119 @@ import java.io.InputStream;
  *
  * @author Brian Wing Shun Chan
  * @see ExportImportServiceUtil
- * @see com.liferay.portlet.exportimport.service.base.ExportImportServiceBaseImpl
- * @see com.liferay.portlet.exportimport.service.impl.ExportImportServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface ExportImportService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link ExportImportServiceUtil} to access the export import remote service. Add custom service methods to {@link com.liferay.portlet.exportimport.service.impl.ExportImportServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link ExportImportServiceUtil} to access the export import remote service. Add custom service methods to <code>com.liferay.portlet.exportimport.service.impl.ExportImportServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public MissingReferences validateImportLayoutsFile(
-		ExportImportConfiguration exportImportConfiguration, File file)
-		throws PortalException;
-
-	public MissingReferences validateImportLayoutsFile(
-		ExportImportConfiguration exportImportConfiguration,
-		InputStream inputStream) throws PortalException;
-
-	public MissingReferences validateImportPortletInfo(
-		ExportImportConfiguration exportImportConfiguration, File file)
-		throws PortalException;
-
-	public MissingReferences validateImportPortletInfo(
-		ExportImportConfiguration exportImportConfiguration,
-		InputStream inputStream) throws PortalException;
-
 	public File exportLayoutsAsFile(
-		ExportImportConfiguration exportImportConfiguration)
-		throws PortalException;
-
-	public File exportPortletInfoAsFile(
-		ExportImportConfiguration exportImportConfiguration)
+			ExportImportConfiguration exportImportConfiguration)
 		throws PortalException;
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
-
-	public long exportLayoutsAsFileInBackground(
-		ExportImportConfiguration exportImportConfiguration)
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
+	public File exportLayoutsAsFile(
+			long userId, long groupId, boolean privateLayout,
+			Map<String, String[]> parameterMap)
 		throws PortalException;
 
 	public long exportLayoutsAsFileInBackground(
-		long exportImportConfigurationId) throws PortalException;
+			ExportImportConfiguration exportImportConfiguration)
+		throws PortalException;
+
+	public long exportLayoutsAsFileInBackground(
+			long exportImportConfigurationId)
+		throws PortalException;
+
+	public File exportPortletInfoAsFile(
+			ExportImportConfiguration exportImportConfiguration)
+		throws PortalException;
 
 	public long exportPortletInfoAsFileInBackground(
-		ExportImportConfiguration exportImportConfiguration)
+			ExportImportConfiguration exportImportConfiguration)
 		throws PortalException;
 
-	public long importLayoutsInBackground(
-		ExportImportConfiguration exportImportConfiguration, File file)
-		throws PortalException;
-
-	public long importLayoutsInBackground(
-		ExportImportConfiguration exportImportConfiguration,
-		InputStream inputStream) throws PortalException;
-
-	public long importPortletInfoInBackground(
-		ExportImportConfiguration exportImportConfiguration, File file)
-		throws PortalException;
-
-	public long importPortletInfoInBackground(
-		ExportImportConfiguration exportImportConfiguration,
-		InputStream inputStream) throws PortalException;
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
 
 	public void importLayouts(
-		ExportImportConfiguration exportImportConfiguration, File file)
+			ExportImportConfiguration exportImportConfiguration, File file)
 		throws PortalException;
 
 	public void importLayouts(
-		ExportImportConfiguration exportImportConfiguration,
-		InputStream inputStream) throws PortalException;
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
 
-	public void importPortletInfo(
-		ExportImportConfiguration exportImportConfiguration, File file)
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
+	public void importLayouts(
+			long userId, long groupId, boolean privateLayout,
+			Map<String, String[]> parameterMap, File file)
+		throws PortalException;
+
+	public long importLayoutsInBackground(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public long importLayoutsInBackground(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
 		throws PortalException;
 
 	public void importPortletInfo(
-		ExportImportConfiguration exportImportConfiguration,
-		InputStream inputStream) throws PortalException;
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public void importPortletInfo(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
+	public long importPortletInfoInBackground(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public long importPortletInfoInBackground(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
+	public MissingReferences validateImportLayoutsFile(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public MissingReferences validateImportLayoutsFile(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
+	public MissingReferences validateImportPortletInfo(
+			ExportImportConfiguration exportImportConfiguration, File file)
+		throws PortalException;
+
+	public MissingReferences validateImportPortletInfo(
+			ExportImportConfiguration exportImportConfiguration,
+			InputStream inputStream)
+		throws PortalException;
+
 }

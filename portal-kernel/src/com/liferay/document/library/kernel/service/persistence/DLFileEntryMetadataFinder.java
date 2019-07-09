@@ -14,7 +14,7 @@
 
 package com.liferay.document.library.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -22,7 +22,13 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface DLFileEntryMetadataFinder {
-	public java.util.List<com.liferay.document.library.kernel.model.DLFileEntryMetadata> findByMismatchedCompanyId();
 
-	public java.util.List<com.liferay.document.library.kernel.model.DLFileEntryMetadata> findByNoStructures();
+	public java.util.List
+		<com.liferay.document.library.kernel.model.DLFileEntryMetadata>
+			findByMismatchedCompanyId();
+
+	public java.util.List
+		<com.liferay.document.library.kernel.model.DLFileEntryMetadata>
+			findByNoStructures();
+
 }

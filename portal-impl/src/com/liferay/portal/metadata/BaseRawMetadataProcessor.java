@@ -19,12 +19,12 @@ import com.liferay.dynamic.data.mapping.kernel.DDMFormField;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.kernel.DDMFormValues;
 import com.liferay.dynamic.data.mapping.kernel.UnlocalizedValue;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.metadata.RawMetadataProcessor;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.File;
 import java.io.InputStream;
@@ -110,7 +110,10 @@ public abstract class BaseRawMetadataProcessor implements RawMetadataProcessor {
 			String fieldClassName = fieldClass.getSimpleName();
 
 			String name = fieldClassName.concat(
-				StringPool.UNDERLINE).concat(field.getName());
+				StringPool.UNDERLINE
+			).concat(
+				field.getName()
+			);
 
 			String value = getMetadataValue(metadata, field);
 
@@ -234,8 +237,7 @@ public abstract class BaseRawMetadataProcessor implements RawMetadataProcessor {
 		_addFields(TikaMimeKeys.class, fields);
 		_addFields(XMPDM.class, fields);
 
-		_fields.put(
-			TIKA_RAW_METADATA, fields.toArray(new Field[fields.size()]));
+		_fields.put(TIKA_RAW_METADATA, fields.toArray(new Field[0]));
 	}
 
 }

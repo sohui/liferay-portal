@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.test.rule.NewEnvTestRule;
 
 import java.security.SecureRandom;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -103,9 +104,9 @@ public class SecureRandomUtilTest {
 				SecureRandomUtil.class, "_BUFFER_SIZE"));
 
 		byte[] bytes = ReflectionTestUtil.getFieldValue(
-			SecureRandomUtil.class, "_bytes");
+			SecureRandomUtil.class, "_BYTES");
 
-		Assert.assertEquals(1024, bytes.length);
+		Assert.assertEquals(Arrays.toString(bytes), 1024, bytes.length);
 	}
 
 	@Test
@@ -375,7 +376,7 @@ public class SecureRandomUtilTest {
 
 	protected long getLong(int offset) {
 		byte[] bytes = ReflectionTestUtil.getFieldValue(
-			SecureRandomUtil.class, "_bytes");
+			SecureRandomUtil.class, "_BYTES");
 
 		return BigEndianCodec.getLong(bytes, offset);
 	}
@@ -402,7 +403,7 @@ public class SecureRandomUtilTest {
 			SecureRandomUtil.class, "_random", predictableRandom);
 
 		byte[] bytes = ReflectionTestUtil.getFieldValue(
-			SecureRandomUtil.class, "_bytes");
+			SecureRandomUtil.class, "_BYTES");
 
 		predictableRandom.nextBytes(bytes);
 

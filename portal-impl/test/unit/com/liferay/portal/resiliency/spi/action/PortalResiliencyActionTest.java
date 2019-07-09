@@ -14,6 +14,7 @@
 
 package com.liferay.portal.resiliency.spi.action;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletContainerUtil;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
-import com.liferay.portal.kernel.util.CentralizedThreadLocal;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.impl.LayoutImpl;
@@ -33,7 +33,9 @@ import com.liferay.portal.resiliency.spi.agent.SPIAgentResponse;
 import com.liferay.portal.test.rule.AdviseWith;
 import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
 import com.liferay.portal.util.PropsImpl;
-import com.liferay.portlet.EventImpl;
+import com.liferay.portlet.internal.EventImpl;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
 
 import java.io.IOException;
 
@@ -65,10 +67,12 @@ public class PortalResiliencyActionTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
 
 	@Before
 	public void setUp() throws IOException {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+
 		PropsUtil.setProps(new PropsImpl());
 
 		PortletContainerUtil portletContainerUtil = new PortletContainerUtil();
@@ -108,11 +112,12 @@ public class PortalResiliencyActionTest {
 		_mockHttpServletRequest.setAttribute(
 			WebKeys.SPI_AGENT_REQUEST,
 			new SPIAgentRequest(originalMockHttpServletRequest));
+
 		_mockHttpServletRequest.setAttribute(
 			WebKeys.SPI_AGENT_RESPONSE,
 			new SPIAgentResponse(_SERVLET_CONTEXT_NAME));
 
-		_response = new MockHttpServletResponse();
+		_httpServletResponse = new MockHttpServletResponse();
 
 		HttpSession session = _mockHttpServletRequest.getSession();
 
@@ -146,11 +151,11 @@ public class PortalResiliencyActionTest {
 			WebKeys.SPI_AGENT_LIFECYCLE, SPIAgent.Lifecycle.ACTION);
 
 		_portalResiliencyAction.execute(
-			null, null, _mockHttpServletRequest, _response);
+			null, _mockHttpServletRequest, _httpServletResponse);
 
 		Assert.assertSame(
 			_mockHttpServletRequest, _mockPortletContainer.request);
-		Assert.assertSame(_response, _mockPortletContainer.response);
+		Assert.assertSame(_httpServletResponse, _mockPortletContainer.response);
 		Assert.assertSame(_portlet, _mockPortletContainer.portlet);
 		Assert.assertSame(
 			_mockPortletContainer.actionResult,
@@ -167,11 +172,11 @@ public class PortalResiliencyActionTest {
 		_mockHttpServletRequest.setParameter("p_p_id", _PORTLET_ID);
 
 		_portalResiliencyAction.execute(
-			null, null, _mockHttpServletRequest, _response);
+			null, _mockHttpServletRequest, _httpServletResponse);
 
 		Assert.assertSame(
 			_mockHttpServletRequest, _mockPortletContainer.request);
-		Assert.assertSame(_response, _mockPortletContainer.response);
+		Assert.assertSame(_httpServletResponse, _mockPortletContainer.response);
 		Assert.assertSame(_portlet, _mockPortletContainer.portlet);
 		Assert.assertSame(
 			_mockPortletContainer.actionResult,
@@ -200,11 +205,11 @@ public class PortalResiliencyActionTest {
 		_mockHttpServletRequest.setAttribute(WebKeys.SPI_AGENT_LAYOUT, layout);
 
 		_portalResiliencyAction.execute(
-			null, null, _mockHttpServletRequest, _response);
+			null, _mockHttpServletRequest, _httpServletResponse);
 
 		Assert.assertSame(
 			_mockHttpServletRequest, _mockPortletContainer.request);
-		Assert.assertSame(_response, _mockPortletContainer.response);
+		Assert.assertSame(_httpServletResponse, _mockPortletContainer.response);
 		Assert.assertSame(_portlet, _mockPortletContainer.portlet);
 		Assert.assertSame(layout, _mockPortletContainer.layout);
 		Assert.assertSame(event, _mockPortletContainer.event);
@@ -223,11 +228,11 @@ public class PortalResiliencyActionTest {
 		_mockHttpServletRequest.setParameter("p_p_id", _PORTLET_ID);
 
 		_portalResiliencyAction.execute(
-			null, null, _mockHttpServletRequest, _response);
+			null, _mockHttpServletRequest, _httpServletResponse);
 
 		Assert.assertSame(
 			_mockHttpServletRequest, _mockPortletContainer.request);
-		Assert.assertSame(_response, _mockPortletContainer.response);
+		Assert.assertSame(_httpServletResponse, _mockPortletContainer.response);
 		Assert.assertSame(_portlet, _mockPortletContainer.portlet);
 		Assert.assertSame(layout, _mockPortletContainer.layout);
 		Assert.assertSame(event, _mockPortletContainer.event);
@@ -247,11 +252,11 @@ public class PortalResiliencyActionTest {
 			WebKeys.SPI_AGENT_LIFECYCLE, SPIAgent.Lifecycle.RENDER);
 
 		_portalResiliencyAction.execute(
-			null, null, _mockHttpServletRequest, _response);
+			null, _mockHttpServletRequest, _httpServletResponse);
 
 		Assert.assertSame(
 			_mockHttpServletRequest, _mockPortletContainer.request);
-		Assert.assertSame(_response, _mockPortletContainer.response);
+		Assert.assertSame(_httpServletResponse, _mockPortletContainer.response);
 		Assert.assertSame(_portlet, _mockPortletContainer.portlet);
 	}
 
@@ -261,15 +266,15 @@ public class PortalResiliencyActionTest {
 			WebKeys.SPI_AGENT_LIFECYCLE, SPIAgent.Lifecycle.RESOURCE);
 
 		_portalResiliencyAction.execute(
-			null, null, _mockHttpServletRequest, _response);
+			null, _mockHttpServletRequest, _httpServletResponse);
 
 		Assert.assertSame(
 			_mockHttpServletRequest, _mockPortletContainer.request);
-		Assert.assertSame(_response, _mockPortletContainer.response);
+		Assert.assertSame(_httpServletResponse, _mockPortletContainer.response);
 		Assert.assertSame(_portlet, _mockPortletContainer.portlet);
 	}
 
-	@AdviseWith(adviceClasses = {LifecycleAdvice.class})
+	@AdviseWith(adviceClasses = LifecycleAdvice.class)
 	@NewEnv(type = NewEnv.Type.CLASSLOADER)
 	@Test
 	public void testUnknownPhase() throws Exception {
@@ -278,7 +283,7 @@ public class PortalResiliencyActionTest {
 
 		try {
 			_portalResiliencyAction.execute(
-				null, null, _mockHttpServletRequest, _response);
+				null, _mockHttpServletRequest, _httpServletResponse);
 
 			Assert.fail();
 		}
@@ -325,12 +330,12 @@ public class PortalResiliencyActionTest {
 
 	private static final String _SERVLET_CONTEXT_NAME = "SERVLET_CONTEXT_NAME";
 
+	private HttpServletResponse _httpServletResponse;
 	private Layout _layout;
 	private MockHttpServletRequest _mockHttpServletRequest;
 	private MockPortletContainer _mockPortletContainer;
 	private final PortalResiliencyAction _portalResiliencyAction =
 		new PortalResiliencyAction();
 	private Portlet _portlet;
-	private HttpServletResponse _response;
 
 }

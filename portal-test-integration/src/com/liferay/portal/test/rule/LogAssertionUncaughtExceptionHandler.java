@@ -14,20 +14,17 @@
 
 package com.liferay.portal.test.rule;
 
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.test.rule.callback.LogAssertionTestCallback;
-
-import java.lang.Thread.UncaughtExceptionHandler;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 
 /**
  * @author Shuyang Zhou
  */
 public class LogAssertionUncaughtExceptionHandler
-	implements UncaughtExceptionHandler {
+	implements Thread.UncaughtExceptionHandler {
 
 	public LogAssertionUncaughtExceptionHandler(
-		UncaughtExceptionHandler uncaughtExceptionHandler) {
+		Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
 
 		_uncaughtExceptionHandler = uncaughtExceptionHandler;
 	}
@@ -45,10 +42,10 @@ public class LogAssertionUncaughtExceptionHandler
 		sb.append(StringPool.COMMA_AND_SPACE);
 		sb.append(throwable);
 
-		LogAssertionTestCallback.caughtFailure(
+		LogAssertionTestRule.caughtFailure(
 			new AssertionError(sb.toString(), throwable));
 	}
 
-	private final UncaughtExceptionHandler _uncaughtExceptionHandler;
+	private final Thread.UncaughtExceptionHandler _uncaughtExceptionHandler;
 
 }

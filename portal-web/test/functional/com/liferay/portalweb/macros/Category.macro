@@ -1,446 +1,446 @@
-<definition>
-	<command name="addCategoryLocalizationCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+definition {
 
-		<var name="key_rowEntry" value="${vocabularyName}" />
-
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#ADD_CATEGORY" value1="Add Category" />
-
-		<execute function="Type" locator1="TextInput#TITLE" value1="${categoryName}" />
-
-		<var name="key_localizationName" value="${localizationNameKey}" />
-
-		<execute function="Click" locator1="CategoriesEditCategory#LOCALIZATION_NAME" />
-		<execute function="Type" locator1="TextInput#TITLE" value1="${localizationName}" />
+	macro addCategoryLocalizationCP {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Add Category",
+			rowEntry = "${vocabularyName}");
 
-		<if>
-			<isset var="localization2NameKey" />
-			<then>
-				<var name="key_localizationName" value="${localization2NameKey}" />
-
-				<execute function="Click" locator1="CategoriesEditCategory#LOCALIZATION_NAME" />
-				<execute function="Type" locator1="TextInput#TITLE" value1="${localization2Name}" />
-			</then>
-		</if>
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="addCategoryPropertyCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
-
-		<var name="key_rowEntry" value="${vocabularyName}" />
+		PortletEntry.inputTitle(title = "${categoryName}");
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#ADD_CATEGORY" value1="Add Category" />
-
-		<execute function="Type" locator1="TextInput#TITLE" value1="${categoryName}" />
+		PortletEntry.changeLocale(
+			fieldName = "Name",
+			locale = "${locale}");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Properties" />
-		</execute>
+		PortletEntry.inputTitle(title = "${localizationName}");
 
-		<var name="i" value="0" />
-		<var name="pathNumber" value="0" />
-
-		<if>
-			<equals arg1="${propertyNumber}" arg2="0" />
-			<then>
-				<var name="key_pathNumber" value="${pathNumber}" />
-
-				<execute function="Type" locator1="CategoriesEditCategory#PROPERTIES_KEY_FIELD" value1="${propertiesKeyField}" />
-				<execute function="Type" locator1="CategoriesEditCategory#PROPERTIES_VALUE_FIELD" value1="${propertiesValueField}" />
-				<execute function="Click" locator1="Button#ADD_ROW_LAST" />
-			</then>
-			<else>
-				<while>
-					<not>
-						<equals arg1="${i}" arg2="${propertyNumber}" />
-					</not>
-					<then>
-						<var method="MathUtil#sum('${i}', '1')" name="i" />
-						<var name="key_pathNumber" value="${pathNumber}" />
-						<var method="MathUtil#sum('${pathNumber}', '2')" name="pathNumber" />
-
-						<execute function="Type" locator1="CategoriesEditCategory#PROPERTIES_KEY_FIELD" value1="${propertiesKeyField} ${i}" />
-						<execute function="Type" locator1="CategoriesEditCategory#PROPERTIES_VALUE_FIELD" value1="${propertiesValueField} ${i}" />
-						<execute function="Click" locator1="Button#ADD_ROW_LAST" />
-					</then>
-				</while>
-			</else>
-		</if>
-
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="addCategoryViewableByCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
-
-		<var name="key_rowEntry" value="${vocabularyName}" />
-
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#ADD_CATEGORY" value1="Add Category" />
-
-		<execute function="Type" locator1="TextInput#TITLE" value1="${categoryName}" />
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Permissions" />
-		</execute>
-
-		<execute function="Select" locator1="CategoriesEditCategory#PERMISSIONS_VIEWABLE_BY_SELECT" value1="${viewableBy}" />
-		<execute macro="PortletEntry#save" />
-	</command>
-
-	<command name="addCP" summary="Add a category named '${categoryName}' to the vocabulary named '${vocabularyName}'">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
-
-		<if>
-			<condition function="IsElementPresent" locator1="Categories#VOCABULARY_HEADER" />
-			<then>
-				<execute function="AssertClick" locator1="Categories#ADD_CATEGORY_BUTTON" value1="Add Category" />
-			</then>
-			<else>
-				<var name="key_rowEntry" value="${vocabularyName}" />
-
-				<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-				<execute function="AssertClick" locator1="MenuItem#ADD_CATEGORY" value1="Add Category" />
-			</else>
-		</if>
-
-		<execute function="Type" locator1="TextInput#TITLE" value1="${categoryName}" />
-
-		<if>
-			<isset var="categoryDescription" />
-			<then>
-				<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${categoryDescription}" />
-			</then>
-		</if>
-
-		<execute macro="PortletEntry#save" />
-	</command>
+		if (isSet(locale2)) {
+			PortletEntry.changeLocale(
+				fieldName = "Name",
+				locale = "${locale2}");
 
-	<command name="addWithNullTitleCP">
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+			PortletEntry.inputTitle(title = "${localization2Name}");
+		}
 
-		<var name="key_rowEntry" value="${vocabularyName}" />
+		PortletEntry.save();
+	}
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#ADD_CATEGORY" value1="Add Category" />
+	macro addCategoryViewableByCP {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Add Category",
+			rowEntry = "${vocabularyName}");
 
-		<execute function="Type" locator1="TextInput#TITLE" value1=" " />
-		<execute macro="Button#clickSave" />
-		<execute function="AssertTextEquals" locator1="Message#ERROR_FIELD_REQUIRED" value1="This field is required." />
-	</command>
+		PortletEntry.inputTitle(title = "${categoryName}");
 
-	<command name="deleteByIconCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		Panel.expandPanel(panel = "Permissions");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
-		<execute function="AssertTextEquals" locator1="Categories#VOCABULARY_CATEGORY" value1="${categoryName}" />
-		<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
-		<execute function="ClickNoError" locator1="Icon#DELETE" />
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no categories." />
-		<execute function="AssertTextNotPresent" value1="${categoryName}" />
-	</command>
+		Select(
+			locator1 = "Select#PERMISSIONS",
+			value1 = "${viewableBy}");
 
-	<command name="deleteCategoriesCP">
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		PortletEntry.save();
+	}
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
-		<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
-		<execute function="ClickNoError" locator1="Icon#DELETE" />
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no categories." />
-	</command>
+	@summary = "Add a category named '${categoryName}' to the vocabulary named '${vocabularyName}'"
+	macro addCP {
+		var key_categoryName = "${categoryName}";
+		var key_vocabularyName = "${vocabularyName}";
 
-	<command name="deleteCategoryByMenuCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		if (IsElementPresent(locator1 = "Categories#VOCABULARY_HEADER")) {
+			AssertClick(
+				locator1 = "Categories#ADD_CATEGORY_BUTTON",
+				value1 = "Add Category");
+		}
+		else {
+			LexiconEntry.gotoEntryMenuItem(
+				menuItem = "Add Category",
+				rowEntry = "${vocabularyName}");
+		}
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
+		PortletEntry.inputTitle(title = "${categoryName}");
 
-		<var name="key_rowEntry" value="${categoryName}" />
+		if (isSet(categoryDescription)) {
+			PortletEntry.inputDescription(description = "${categoryDescription}");
+		}
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClickNoError" locator1="MenuItem#DELETE" value1="Delete" />
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no categories." />
-		<execute function="AssertTextNotPresent" value1="${categoryName}" />
-	</command>
+		PortletEntry.save();
+	}
 
-	<command name="deleteCategoryProperty2CP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+	macro addPropertyCP {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "${categoryName}");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_CATEGORY" value1="${categoryName}" />
+		Navigator.gotoNavUnderline(navUnderline = "Properties");
 
-		<var name="key_rowEntry" value="${categoryName}" />
+		var i = "0";
+		var pathNumber = "0";
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		if ("${propertyNumber}" == "0") {
+			var key_pathNumber = "${pathNumber}";
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Properties" />
-		</execute>
+			Type(
+				locator1 = "CategoriesEditCategory#PROPERTIES_KEY_FIELD",
+				value1 = "${propertiesKeyField}");
 
-		<var name="key_rowIndexNumber" value="2" />
+			Type(
+				locator1 = "CategoriesEditCategory#PROPERTIES_VALUE_FIELD",
+				value1 = "${propertiesValueField}");
 
-		<execute function="Click" locator1="Button#DELETE_ROW_N" />
-		<execute function="AssertElementPresent" locator1="CategoriesEditCategory#PROPERTIES_UNDO_MESSAGE" />
-		<execute macro="PortletEntry#save" />
-	</command>
+			Click(locator1 = "Button#ADD_ROW_LAST");
+		}
+		else {
+			while (!("${i}" == "${propertyNumber}")) {
+				var i = MathUtil.sum("${i}", "1");
+				var key_pathNumber = "${pathNumber}";
+				var pathNumber = MathUtil.sum("${pathNumber}", "1");
 
-	<command name="deletePartialCategoryCP">
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+				Type(
+					locator1 = "CategoriesEditCategory#PROPERTIES_KEY_FIELD",
+					value1 = "${propertiesKeyField} ${i}");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
-		<execute function="Check#checkAll" locator1="Checkbox#SELECT_ALL" />
-		<execute function="ClickNoError" locator1="Icon#DELETE" />
-		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+				Type(
+					locator1 = "CategoriesEditCategory#PROPERTIES_VALUE_FIELD",
+					value1 = "${propertiesValueField} ${i}");
 
-		<execute macro="Alert#viewRequestFailedToComplete" />
+				Click(locator1 = "Button#ADD_ROW_LAST");
+			}
+		}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="You do not have the required permissions." />
-	</command>
+		PortletEntry.save();
+	}
 
-	<command name="editCategoryPropertyCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+	macro addWithNullTitleCP {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Add Category",
+			rowEntry = "${vocabularyName}");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_CATEGORY" value1="${categoryName}" />
+		PortletEntry.inputTitle(title = " ");
 
-		<var name="key_rowEntry" value="${categoryName}" />
+		Button.clickSave();
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		Alert.viewRequiredField();
+	}
 
-		<execute function="Type" locator1="TextInput#TITLE" value1="${categoryNameEdit}" />
+	macro deleteByIconCP {
+		var key_categoryName = "${categoryName}";
+		var key_vocabularyName = "${vocabularyName}";
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Properties" />
-		</execute>
+		AssertClick(
+			locator1 = "Categories#VOCABULARY_ENTRY_LINK",
+			value1 = "${vocabularyName}");
 
-		<execute function="Type" locator1="CategoriesEditCategory#PROPERTIES_KEY_FIELD_1" value1="${propertiesKeyFieldEdit}" />
-		<execute function="Type" locator1="CategoriesEditCategory#PROPERTIES_VALUE_FIELD_1" value1="${propertiesValueFieldEdit}" />
-		<execute macro="PortletEntry#save" />
-	</command>
+		AssertTextEquals(
+			locator1 = "Categories#VOCABULARY_CATEGORY",
+			value1 = "${categoryName}");
 
-	<command name="editCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		PortletEntry.selectAll();
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
+		ClickNoError(locator1 = "Icon#DELETE");
 
-		<var name="key_rowEntry" value="${categoryName}" />
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		Alert.viewSuccessMessage();
 
-		<execute function="Type" locator1="TextInput#TITLE" value1="${categoryNameEdit}" />
-		<execute macro="PortletEntry#save" />
-	</command>
+		PortletEntry.viewEmptyMessage(entity = "Categories");
 
-	<command name="moveViaEditCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		AssertTextNotPresent(value1 = "${categoryName}");
+	}
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
+	macro deleteCategoriesCP {
+		var key_vocabularyName = "${vocabularyName}";
 
-		<var name="key_rowEntry" value="${categoryName}" />
+		AssertClick(
+			locator1 = "Categories#VOCABULARY_ENTRY_LINK",
+			value1 = "${vocabularyName}");
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#MOVE" value1="Move" />
+		PortletEntry.selectAll();
 
-		<execute function="Select" locator1="CategoriesEditCategory#VOCABULARY_SELECT" value1="${vocabularyName2}" />
-		<execute function="AssertClick" locator1="Button#MOVE" value1="Move" />
+		ClickNoError(locator1 = "Icon#DELETE");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-	<command name="searchCP">
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		Alert.viewSuccessMessage();
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
+		PortletEntry.viewEmptyMessage(entity = "Categories");
+	}
 
-		<execute function="Type" locator1="TextInput#SEARCH" value1="${categorySearchEntry}" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-	</command>
+	macro deleteCategoryByMenuCP {
+		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
 
-	<command name="viewCategoryPropertyCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		LexiconEntry.gotoEntryMenuItemNoError(
+			menuItem = "Delete",
+			rowEntry = "${categoryName}");
 
-		<var name="i" value="0" />
-		<var name="pathNumber" value="0" />
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
+		Alert.viewSuccessMessage();
 
-		<var name="key_rowEntry" value="${categoryName}" />
+		PortletEntry.viewEmptyMessage(entity = "Categories");
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		AssertTextNotPresent(value1 = "${categoryName}");
+	}
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Properties" />
-		</execute>
+	macro deleteCategoryNoPermissionCP {
+		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
 
-		<if>
-			<equals arg1="${propertyNumber}" arg2="0" />
-			<then>
-				<var name="key_pathNumber" value="${pathNumber}" />
+		LexiconEntry.selectEntry(key_rowEntry = "${rowEntry}");
 
-				<execute function="AssertTextEquals" locator1="CategoriesEditCategory#PROPERTIES_KEY_FIELD" value1="${propertiesKeyField}" />
-				<execute function="AssertTextEquals" locator1="CategoriesEditCategory#PROPERTIES_VALUE_FIELD" value1="${propertiesValueField}" />
-			</then>
-			<else>
-				<while>
-					<not>
-						<equals arg1="${i}" arg2="${propertyNumber}" />
-					</not>
-					<then>
-						<var name="key_pathNumber" value="${i}" />
+		AssertElementPresent(locator1 = "Icon#DELETE_NOT_FOCUSABLE");
+	}
 
-						<var method="MathUtil#sum('${i}', '1')" name="i" />
+	macro deleteCategoryProperty2CP {
+		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
 
-						<execute function="AssertTextEquals" locator1="Categories#CATEGORY_DETAILS_PROPERTY_KEY_2" value1="${propertiesKeyField} ${i}" />
-						<execute function="AssertTextEquals" locator1="Categories#CATEGORY_DETAILS_PROPERTY_VALUE_2" value1="${propertiesValueField} ${i}" />
-					</then>
-				</while>
-			</else>
-		</if>
-	</command>
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "${categoryName}");
 
-	<command name="viewCategoryToVocabularyCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		Navigator.gotoNavUnderline(navUnderline = "Properties");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_CATEGORY" value1="${categoryName}" />
-	</command>
+		Click(
+			key_rowIndexNumber = "2",
+			locator1 = "Button#DELETE_ROW_N");
 
-	<command name="viewCategoryViewableByCP">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		AssertElementPresent(locator1 = "CategoriesEditCategory#PROPERTIES_UNDO_MESSAGE");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
+		PortletEntry.save();
+	}
 
-		<var name="key_rowEntry" value="${categoryName}" />
+	macro editCP {
+		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#PERMISSIONS_LEXICON" value1="Permissions" />
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "${categoryName}");
 
-		<execute function="SelectFrame" locator1="AssetPermissions#IFRAME" />
+		PortletEntry.inputTitle(title = "${categoryNameEdit}");
 
-		<if>
-			<equals arg1="${viewableBy}" arg2="Anyone (Guest Role)" />
-			<then>
-				<execute function="AssertChecked" locator1="AssetPermissions#GUEST_VIEW_CHECKBOX" />
-			</then>
-			<elseif>
-				<equals arg1="${viewableBy}" arg2="Owner" />
-				<then>
-					<execute function="AssertChecked" locator1="AssetPermissions#OWNER_VIEW_CHECKBOX" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${viewableBy}" arg2="Site Members" />
-				<then>
-					<execute function="AssertChecked" locator1="AssetPermissions#SITE_MEMBER_VIEW_CHECKBOX" />
-				</then>
-			</elseif>
-		</if>
+		PortletEntry.save();
+	}
 
-		<execute function="SelectFrameTop" value1="relative=top" />
-	</command>
+	macro editPropertyCP {
+		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
 
-	<command name="viewCP" summary="Assert that the category named '${categoryName}' has been added to the vocabulary named '${vocabularyName}'">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "${categoryName}");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
-		<execute function="AssertTextEquals" locator1="Categories#VOCABULARY_CATEGORY" value1="${categoryName}" />
-	</command>
+		Navigator.gotoNavUnderline(navUnderline = "Properties");
 
-	<command name="viewFilterViaCategoriesNavigationPG">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		Type(
+			locator1 = "CategoriesEditCategory#PROPERTIES_KEY_FIELD_1",
+			value1 = "${propertiesKeyFieldEdit}");
 
-		<execute function="AssertTextEquals" locator1="CategoriesNavigation#VOCABULARY_NAME" value1="${vocabularyName}" />
-		<execute function="AssertClick" locator1="CategoriesNavigation#CATEGORY_NAME" value1="${categoryName}" />
+		Type(
+			locator1 = "CategoriesEditCategory#PROPERTIES_VALUE_FIELD_1",
+			value1 = "${propertiesValueFieldEdit}");
 
-		<execute function="AssertTextEquals" locator1="AP#CATEGORIES_FILTER_CATEGORY" value1="${categoryName}" />
-	</command>
+		PortletEntry.save();
+	}
 
-	<command name="viewNavigationCP">
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+	macro getAssetId {
+		var assetId = selenium.getAttribute("//table[contains(@class,'table')]//tr[contains(.,'${assetName}')]/td[1]//input@value");
 
-		<execute function="AssertClick" locator1="Categories#VOCABULARY_ENTRY_LINK" value1="${vocabularyName}" />
+		return "${assetId}";
+	}
 
-		<var name="key_categoryName" value="${categoryName}" />
+	macro moveViaEditCP {
+		AssertClick(
+			key_rowEntry = "${vocabularyName}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME_LINK",
+			value1 = "${vocabularyName}");
 
-		<execute function="Click" locator1="Categories#CATEGORY_ENTRY_LINK" />
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Move",
+			rowEntry = "${categoryName}");
 
-		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="${categoryName}" />
-		</execute>
+		AssetCategorization.selectCategory(categoryName = "${vocabularyName2}");
+	}
 
-		<execute function="Click" locator1="Icon#BACK" />
+	macro openCategoriesAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage/-/categories_admin/");
+	}
 
-		<execute macro="SiteAdmin#viewPortletTitle">
-			<var name="portletTitle" value="${vocabularyName}" />
-		</execute>
-	</command>
+	macro searchCP {
+		var key_vocabularyName = "${vocabularyName}";
 
-	<command name="viewRemoveFilterViaCategoriesNavigationPG">
-		<var name="key_categoryName" value="${categoryName}" />
-		<var name="key_vocabularyName" value="${vocabularyName}" />
+		AssertClick(
+			locator1 = "Categories#VOCABULARY_ENTRY_LINK",
+			value1 = "${vocabularyName}");
 
-		<execute function="AssertTextEquals" locator1="CategoriesNavigation#VOCABULARY_NAME" value1="${vocabularyName}" />
-		<execute function="AssertClick" locator1="CategoriesNavigation#CATEGORY_NAME" value1="${categoryName}" />
+		Search.searchCP(searchTerm = "${categorySearchEntry}");
+	}
 
-		<execute function="AssertElementNotPresent" locator1="AP#CATEGORIES_FILTER_CATEGORY" value1="${categoryName}" />
-	</command>
+	macro viewCategoryPropertyCP {
+		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
 
-	<command name="viewSearchResultsCP">
-		<if>
-			<isset var="categoryNameList" />
-			<then>
-				<for list="${categoryNameList}" param="categoryName">
-					<var name="key_categoryName" value="${categoryName}" />
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "${categoryName}");
 
-					<execute function="AssertTextEquals" locator1="Categories#CATEGORY_ENTRY" value1="${categoryName}" />
-				</for>
-			</then>
-		</if>
+		Navigator.gotoNavUnderline(navUnderline = "Properties");
 
-		<if>
-			<isset var="categoryDescriptionList" />
-			<then>
-				<for list="${categoryDescriptionList}" param="categoryDescription">
-					<var name="key_categoryDescription" value="${categoryDescription}" />
+		var i = "0";
+		var pathNumber = "0";
 
-					<execute function="AssertTextEquals" locator1="Categories#CATEGORY_ENTRY_DESCRIPTION" value1="${categoryDescription}" />
-				</for>
-			</then>
-		</if>
+		if ("${propertyNumber}" == "0") {
+			var key_pathNumber = "${pathNumber}";
 
-		<if>
-			<equals arg1="${nullResult}" arg2="true" />
-			<then>
-				<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no categories." />
-			</then>
-		</if>
-	</command>
-</definition>
+			AssertTextEquals(
+				locator1 = "CategoriesEditCategory#PROPERTIES_KEY_FIELD",
+				value1 = "${propertiesKeyField}");
+
+			AssertTextEquals(
+				locator1 = "CategoriesEditCategory#PROPERTIES_VALUE_FIELD",
+				value1 = "${propertiesValueField}");
+		}
+		else {
+			while (!("${i}" == "${propertyNumber}")) {
+				var key_pathNumber = "${i}";
+				var i = MathUtil.sum("${i}", "1");
+
+				AssertTextEquals(
+					locator1 = "Categories#CATEGORY_DETAILS_PROPERTY_KEY_2",
+					value1 = "${propertiesKeyField} ${i}");
+
+				AssertTextEquals(
+					locator1 = "Categories#CATEGORY_DETAILS_PROPERTY_VALUE_2",
+					value1 = "${propertiesValueField} ${i}");
+			}
+		}
+	}
+
+	macro viewCategoryToVocabularyCP {
+		var key_categoryName = "${categoryName}";
+		var key_vocabularyName = "${vocabularyName}";
+
+		AssertClick(
+			locator1 = "Categories#VOCABULARY_ENTRY_LINK",
+			value1 = "${vocabularyName}");
+
+		AssertClick(
+			locator1 = "Categories#VOCABULARY_CATEGORY",
+			value1 = "${categoryName}");
+	}
+
+	macro viewCategoryViewableByCP {
+		LexiconEntry.gotoEntry(rowEntry = "${vocabularyName}");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Permissions",
+			rowEntry = "${categoryName}");
+
+		SelectFrame(locator1 = "IFrame#DIALOG");
+
+		if ("${viewableBy}" == "Anyone (Guest Role)") {
+			AssertChecked(locator1 = "AssetPermissions#GUEST_VIEW_CHECKBOX");
+		}
+		else if ("${viewableBy}" == "Owner") {
+			AssertChecked(locator1 = "AssetPermissions#OWNER_VIEW_CHECKBOX");
+		}
+		else if ("${viewableBy}" == "Site Members") {
+			AssertChecked(locator1 = "AssetPermissions#SITE_MEMBER_VIEW_CHECKBOX");
+		}
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	@summary = "Assert that the category named '${categoryName}' has been added to the vocabulary named '${vocabularyName}'"
+	macro viewCP {
+		var key_categoryName = "${categoryName}";
+		var key_vocabularyName = "${vocabularyName}";
+
+		AssertClick(
+			locator1 = "Categories#VOCABULARY_ENTRY_LINK",
+			value1 = "${vocabularyName}");
+
+		AssertTextEquals(
+			locator1 = "Categories#VOCABULARY_CATEGORY",
+			value1 = "${categoryName}");
+	}
+
+	macro viewFilterViaCategoriesNavigationPG {
+		var key_categoryName = "${categoryName}";
+		var key_vocabularyName = "${vocabularyName}";
+
+		AssertTextEquals(
+			locator1 = "CategoriesNavigation#VOCABULARY_NAME",
+			value1 = "${vocabularyName}");
+
+		AssertClick(
+			locator1 = "CategoriesNavigation#CATEGORY_NAME",
+			value1 = "${categoryName}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "AP#CATEGORIES_FILTER_CATEGORY",
+			value1 = "${categoryName}");
+	}
+
+	macro viewNavigationCP {
+		var key_vocabularyName = "${vocabularyName}";
+
+		AssertClick(
+			locator1 = "Categories#VOCABULARY_ENTRY_LINK",
+			value1 = "${vocabularyName}");
+
+		var key_categoryName = "${categoryName}";
+
+		Click(locator1 = "Categories#CATEGORY_ENTRY_LINK");
+
+		SiteAdmin.viewPortletTitle(portletTitle = "Categories");
+
+		AssertClick(
+			key_breadcrumbName = "${vocabularyName}",
+			locator1 = "Breadcrumb#BREADCRUMB_ENTRY_LINK",
+			value1 = "${vocabularyName}");
+
+		SiteAdmin.viewPortletTitle(portletTitle = "Categories");
+	}
+
+	macro viewPath {
+		AssertTextEquals(
+			key_categoryName = "${categoryName}",
+			locator1 = "Categories#CATEGORY_ENTRY_PATH",
+			value1 = "${path}");
+	}
+
+	macro viewRemoveFilterViaAP {
+		var key_categoryName = "${categoryName}";
+		var key_vocabularyName = "${vocabularyName}";
+
+		AssertTextEquals(
+			locator1 = "CategoriesNavigation#VOCABULARY_NAME",
+			value1 = "${vocabularyName}");
+
+		Click(locator1 = "AP#CATEGORIES_FILTER_CATEGORY_REMOVE");
+
+		AssertElementNotPresent(locator1 = "AP#CATEGORIES_FILTER_CATEGORY");
+	}
+
+	macro viewSearchResultsCP {
+		if (isSet(categoryNameList)) {
+			for (var categoryName : list "${categoryNameList}") {
+				var key_categoryName = "${categoryName}";
+
+				AssertTextEquals(
+					locator1 = "Categories#CATEGORY_ENTRY",
+					value1 = "${categoryName}");
+			}
+		}
+
+		if (isSet(categoryDescriptionList)) {
+			for (var categoryDescription : list "${categoryDescriptionList}") {
+				var key_categoryDescription = "${categoryDescription}";
+
+				AssertTextEquals(
+					locator1 = "Categories#CATEGORY_ENTRY_DESCRIPTION",
+					value1 = "${categoryDescription}");
+			}
+		}
+
+		if ("${nullResult}" == "true") {
+			PortletEntry.viewEmptyMessage(entity = "Categories");
+		}
+	}
+
+}

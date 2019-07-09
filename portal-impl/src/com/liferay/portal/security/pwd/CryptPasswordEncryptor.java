@@ -15,6 +15,7 @@
 package com.liferay.portal.security.pwd;
 
 import com.liferay.portal.kernel.exception.PwdEncryptorException;
+import com.liferay.portal.kernel.security.SecureRandom;
 import com.liferay.portal.kernel.security.pwd.PasswordEncryptor;
 import com.liferay.portal.kernel.security.pwd.PasswordEncryptorUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -35,15 +36,7 @@ public class CryptPasswordEncryptor
 	extends BasePasswordEncryptor implements PasswordEncryptor {
 
 	@Override
-	public String[] getSupportedAlgorithmTypes() {
-		return new String[] {
-			PasswordEncryptorUtil.TYPE_UFC_CRYPT,
-			PasswordEncryptorUtil.TYPE_UFC_CRYPT
-		};
-	}
-
-	@Override
-	protected String doEncrypt(
+	public String encrypt(
 			String algorithm, String plainTextPassword,
 			String encryptedPassword)
 		throws PwdEncryptorException {
@@ -59,6 +52,14 @@ public class CryptPasswordEncryptor
 		}
 	}
 
+	@Override
+	public String[] getSupportedAlgorithmTypes() {
+		return new String[] {
+			PasswordEncryptorUtil.TYPE_UFC_CRYPT,
+			PasswordEncryptorUtil.TYPE_UFC_CRYPT
+		};
+	}
+
 	protected byte[] getSalt(String encryptedPassword)
 		throws PwdEncryptorException {
 
@@ -66,7 +67,7 @@ public class CryptPasswordEncryptor
 
 		try {
 			if (Validator.isNull(encryptedPassword)) {
-				Random random = new Random();
+				Random random = new SecureRandom();
 
 				int x = random.nextInt(Integer.MAX_VALUE) % _SALT.length;
 				int y = random.nextInt(Integer.MAX_VALUE) % _SALT.length;

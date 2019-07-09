@@ -14,6 +14,7 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.ORMException;
 import com.liferay.portal.kernel.dao.orm.ScrollableResults;
 
@@ -96,6 +97,17 @@ public class ScrollableResultsImpl implements ScrollableResults {
 		catch (Exception e) {
 			throw ExceptionTranslator.translate(e);
 		}
+	}
+
+	@Override
+	public String toString() {
+		StringBundler sb = new StringBundler(3);
+
+		sb.append("{_scrollableResults=");
+		sb.append(String.valueOf(_scrollableResults));
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	private final org.hibernate.ScrollableResults _scrollableResults;

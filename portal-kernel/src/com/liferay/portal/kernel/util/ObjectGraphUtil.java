@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -26,8 +28,11 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.petra.reflect.ObjectGraphUtil}
  */
+@Deprecated
 public class ObjectGraphUtil {
 
 	public static void walkObjectGraph(Object object, Visitor visitor) {
@@ -36,7 +41,7 @@ public class ObjectGraphUtil {
 		queue.offer(object);
 
 		Set<Object> visitedObjects = Collections.newSetFromMap(
-			new IdentityHashMap<Object, Boolean>());
+			new IdentityHashMap<>());
 
 		while ((object = queue.poll()) != null) {
 			if (!visitedObjects.add(object)) {
@@ -90,7 +95,7 @@ public class ObjectGraphUtil {
 		}
 	}
 
-	public static abstract class AnnotatedFieldMappingVisitor
+	public abstract static class AnnotatedFieldMappingVisitor
 		implements Visitor {
 
 		public AnnotatedFieldMappingVisitor(

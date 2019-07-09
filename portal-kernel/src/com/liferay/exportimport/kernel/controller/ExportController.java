@@ -18,9 +18,12 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 
 import java.io.File;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public interface ExportController extends ExportImportController {
 
 	public File export(ExportImportConfiguration exportImportConfiguration)

@@ -14,30 +14,29 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.LayoutBranch;
 import com.liferay.portal.kernel.model.MVCCModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing LayoutBranch in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see LayoutBranch
  * @generated
  */
 @ProviderType
-public class LayoutBranchCacheModel implements CacheModel<LayoutBranch>,
-	Externalizable, MVCCModel {
+public class LayoutBranchCacheModel
+	implements CacheModel<LayoutBranch>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -48,10 +47,12 @@ public class LayoutBranchCacheModel implements CacheModel<LayoutBranch>,
 			return false;
 		}
 
-		LayoutBranchCacheModel layoutBranchCacheModel = (LayoutBranchCacheModel)obj;
+		LayoutBranchCacheModel layoutBranchCacheModel =
+			(LayoutBranchCacheModel)obj;
 
 		if ((layoutBranchId == layoutBranchCacheModel.layoutBranchId) &&
-				(mvccVersion == layoutBranchCacheModel.mvccVersion)) {
+			(mvccVersion == layoutBranchCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -117,7 +118,7 @@ public class LayoutBranchCacheModel implements CacheModel<LayoutBranch>,
 		layoutBranchImpl.setUserId(userId);
 
 		if (userName == null) {
-			layoutBranchImpl.setUserName(StringPool.BLANK);
+			layoutBranchImpl.setUserName("");
 		}
 		else {
 			layoutBranchImpl.setUserName(userName);
@@ -127,14 +128,14 @@ public class LayoutBranchCacheModel implements CacheModel<LayoutBranch>,
 		layoutBranchImpl.setPlid(plid);
 
 		if (name == null) {
-			layoutBranchImpl.setName(StringPool.BLANK);
+			layoutBranchImpl.setName("");
 		}
 		else {
 			layoutBranchImpl.setName(name);
 		}
 
 		if (description == null) {
-			layoutBranchImpl.setDescription(StringPool.BLANK);
+			layoutBranchImpl.setDescription("");
 		}
 		else {
 			layoutBranchImpl.setDescription(description);
@@ -170,8 +171,7 @@ public class LayoutBranchCacheModel implements CacheModel<LayoutBranch>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		objectOutput.writeLong(layoutBranchId);
@@ -183,7 +183,7 @@ public class LayoutBranchCacheModel implements CacheModel<LayoutBranch>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -194,14 +194,14 @@ public class LayoutBranchCacheModel implements CacheModel<LayoutBranch>,
 		objectOutput.writeLong(plid);
 
 		if (name == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(name);
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(description);
@@ -221,4 +221,5 @@ public class LayoutBranchCacheModel implements CacheModel<LayoutBranch>,
 	public String name;
 	public String description;
 	public boolean master;
+
 }

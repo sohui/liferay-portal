@@ -14,11 +14,8 @@
 
 package com.liferay.portal.kernel.image;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.ImageResolutionException;
 import com.liferay.portal.kernel.model.Image;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -29,6 +26,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import java.util.concurrent.Future;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The Image utility class.
@@ -104,6 +103,14 @@ public class ImageToolUtil {
 		getImageTool().encodeWBMP(renderedImage, os);
 	}
 
+	public static RenderedImage flipHorizontal(RenderedImage renderedImage) {
+		return getImageTool().flipHorizontal(renderedImage);
+	}
+
+	public static RenderedImage flipVertical(RenderedImage renderedImage) {
+		return getImageTool().flipVertical(renderedImage);
+	}
+
 	/**
 	 * Returns the rendered image as a {@link BufferedImage}.
 	 *
@@ -150,6 +157,10 @@ public class ImageToolUtil {
 		return getImageTool().getDefaultUserMalePortrait();
 	}
 
+	public static Image getDefaultUserPortrait() {
+		return getImageTool().getDefaultUserPortrait();
+	}
+
 	public static Image getImage(byte[] bytes)
 		throws ImageResolutionException, IOException {
 
@@ -175,8 +186,6 @@ public class ImageToolUtil {
 	}
 
 	public static ImageTool getImageTool() {
-		PortalRuntimePermission.checkGetBeanProperty(ImageToolUtil.class);
-
 		return _imageTool;
 	}
 
@@ -185,9 +194,8 @@ public class ImageToolUtil {
 	}
 
 	/**
-	 * Detects the image format and creates an {@link
-	 * ImageBag} containing the {@link
-	 * RenderedImage} and image type.
+	 * Detects the image format and creates an {@link ImageBag} containing the
+	 * {@link RenderedImage} and image type.
 	 *
 	 * @param  bytes the bytes to read
 	 * @return the {@link ImageBag}
@@ -204,9 +212,8 @@ public class ImageToolUtil {
 	}
 
 	/**
-	 * Detects the image format and creates an {@link
-	 * ImageBag} containing the {@link
-	 * RenderedImage} and image type.
+	 * Detects the image format and creates an {@link ImageBag} containing the
+	 * {@link RenderedImage} and image type.
 	 *
 	 * @param  file the file to read
 	 * @return the {@link ImageBag}
@@ -226,6 +233,12 @@ public class ImageToolUtil {
 		throws ImageResolutionException, IOException {
 
 		return getImageTool().read(inputStream);
+	}
+
+	public static RenderedImage rotate(
+		RenderedImage renderedImage, int degrees) {
+
+		return getImageTool().rotate(renderedImage, degrees);
 	}
 
 	/**
@@ -273,8 +286,6 @@ public class ImageToolUtil {
 	}
 
 	public void setImageTool(ImageTool imageTool) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_imageTool = imageTool;
 	}
 

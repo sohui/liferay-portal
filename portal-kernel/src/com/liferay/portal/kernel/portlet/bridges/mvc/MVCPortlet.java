@@ -14,21 +14,34 @@
 
 package com.liferay.portal.kernel.portlet.bridges.mvc;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.portlet.LiferayPortlet;
+import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
+import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -57,11 +70,15 @@ public class MVCPortlet extends LiferayPortlet {
 
 	@Override
 	public void destroy() {
+		PortletContext portletContext = getPortletContext();
+
+		_validPathsMaps.remove(portletContext.getPortletContextName());
+
 		super.destroy();
 
-		_mvcActionCommandCache.close();
-		_mvcRenderCommandCache.close();
-		_mvcResourceCommandCache.close();
+		_actionMVCCommandCache.close();
+		_renderMVCCommandCache.close();
+		_resourceMVCCommandCache.close();
 	}
 
 	@Override
@@ -197,38 +214,32 @@ public class MVCPortlet extends LiferayPortlet {
 		copyRequestParameters = GetterUtil.getBoolean(
 			getInitParameter("copy-request-parameters"), true);
 
-		_mvcActionCommandCache = new MVCCommandCache(
+		LiferayPortletConfig liferayPortletConfig =
+			(LiferayPortletConfig)getPortletConfig();
+
+		String portletId = liferayPortletConfig.getPortletId();
+
+		_actionMVCCommandCache = new MVCCommandCache<>(
 			MVCActionCommand.EMPTY,
 			getInitParameter("mvc-action-command-package-prefix"),
-			getPortletName(), MVCActionCommand.class, "ActionCommand");
-		_mvcRenderCommandCache = new MVCCommandCache(
+			getPortletName(), portletId, MVCActionCommand.class,
+			"ActionCommand");
+		_renderMVCCommandCache = new MVCCommandCache<>(
 			MVCRenderCommand.EMPTY,
 			getInitParameter("mvc-render-command-package-prefix"),
-			getPortletName(), MVCRenderCommand.class, "RenderCommand");
-		_mvcResourceCommandCache = new MVCCommandCache(
+			getPortletName(), portletId, MVCRenderCommand.class,
+			"RenderCommand");
+		_resourceMVCCommandCache = new MVCCommandCache<>(
 			MVCResourceCommand.EMPTY,
 			getInitParameter("mvc-resource-command-package-prefix"),
-			getPortletName(), MVCResourceCommand.class, "ResourceCommand");
+			getPortletName(), portletId, MVCResourceCommand.class,
+			"ResourceCommand");
 
-		initValidPaths(templatePath, ".jsp");
+		_initValidPaths(templatePath);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public void invokeTaglibDiscussion(
-			ActionRequest actionRequest, ActionResponse actionResponse)
-		throws Exception {
-
-		PortletConfig portletConfig = getPortletConfig();
-
-		PortalUtil.invokeTaglibDiscussion(
-			portletConfig, actionRequest, actionResponse);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public void invokeTaglibDiscussionPagination(
@@ -267,8 +278,7 @@ public class MVCPortlet extends LiferayPortlet {
 
 		if (!mvcRenderCommandName.equals("/") || Validator.isNull(mvcPath)) {
 			MVCRenderCommand mvcRenderCommand =
-				(MVCRenderCommand)_mvcRenderCommandCache.getMVCCommand(
-					mvcRenderCommandName);
+				_renderMVCCommandCache.getMVCCommand(mvcRenderCommandName);
 
 			mvcPath = null;
 
@@ -283,9 +293,24 @@ public class MVCPortlet extends LiferayPortlet {
 				return;
 			}
 
-			renderRequest.setAttribute(
-				getMVCPathAttributeName(renderResponse.getNamespace()),
-				mvcPath);
+			if (Validator.isNotNull(mvcPath)) {
+				renderRequest.setAttribute(
+					getMVCPathAttributeName(renderResponse.getNamespace()),
+					mvcPath);
+			}
+			else if (!mvcRenderCommandName.equals("/")) {
+				if (_log.isWarnEnabled()) {
+					StringBundler sb = new StringBundler(5);
+
+					sb.append("No render mappings found for MVC render ");
+					sb.append("command name \"");
+					sb.append(HtmlUtil.escape(mvcRenderCommandName));
+					sb.append("\" for portlet ");
+					sb.append(renderRequest.getAttribute(WebKeys.PORTLET_ID));
+
+					_log.warn(sb.toString());
+				}
+			}
 		}
 
 		super.render(renderRequest, renderResponse);
@@ -336,8 +361,7 @@ public class MVCPortlet extends LiferayPortlet {
 
 		if (!actionName.contains(StringPool.COMMA)) {
 			MVCActionCommand mvcActionCommand =
-				(MVCActionCommand)_mvcActionCommandCache.getMVCCommand(
-					actionName);
+				_actionMVCCommandCache.getMVCCommand(actionName);
 
 			if (mvcActionCommand != MVCActionCommand.EMPTY) {
 				if (mvcActionCommand instanceof FormMVCActionCommand) {
@@ -357,8 +381,7 @@ public class MVCPortlet extends LiferayPortlet {
 		}
 		else {
 			List<MVCActionCommand> mvcActionCommands =
-				(List<MVCActionCommand>)_mvcActionCommandCache.getMVCCommands(
-					actionName);
+				_actionMVCCommandCache.getMVCCommands(actionName);
 
 			if (!mvcActionCommands.isEmpty()) {
 				boolean valid = true;
@@ -409,8 +432,7 @@ public class MVCPortlet extends LiferayPortlet {
 
 		if (!resourceID.contains(StringPool.COMMA)) {
 			MVCResourceCommand mvcResourceCommand =
-				(MVCResourceCommand)_mvcResourceCommandCache.getMVCCommand(
-					resourceID);
+				_resourceMVCCommandCache.getMVCCommand(resourceID);
 
 			if (mvcResourceCommand != MVCResourceCommand.EMPTY) {
 				return mvcResourceCommand.serveResource(
@@ -419,8 +441,7 @@ public class MVCPortlet extends LiferayPortlet {
 		}
 		else {
 			List<MVCResourceCommand> mvcResourceCommands =
-				(List<MVCResourceCommand>)
-					_mvcResourceCommandCache.getMVCCommands(resourceID);
+				_resourceMVCCommandCache.getMVCCommands(resourceID);
 
 			if (!mvcResourceCommands.isEmpty()) {
 				for (MVCResourceCommand mvcResourceCommand :
@@ -452,13 +473,6 @@ public class MVCPortlet extends LiferayPortlet {
 		String path = getPath(renderRequest, renderResponse);
 
 		if (path != null) {
-			if (!isProcessRenderRequest(renderRequest)) {
-				renderRequest.setAttribute(
-					WebKeys.PORTLET_DECORATE, Boolean.FALSE);
-
-				return;
-			}
-
 			WindowState windowState = renderRequest.getWindowState();
 
 			if (windowState.equals(WindowState.MINIMIZED)) {
@@ -472,9 +486,16 @@ public class MVCPortlet extends LiferayPortlet {
 		}
 	}
 
+	protected MVCCommandCache<MVCActionCommand> getActionMVCCommandCache() {
+		return _actionMVCCommandCache;
+	}
+
 	protected String getMVCPathAttributeName(String namespace) {
-		return namespace.concat(StringPool.PERIOD).concat(
-			MVCRenderConstants.MVC_PATH_REQUEST_ATTRIBUTE_NAME);
+		return namespace.concat(
+			StringPool.PERIOD
+		).concat(
+			MVCRenderConstants.MVC_PATH_REQUEST_ATTRIBUTE_NAME
+		);
 	}
 
 	protected String getPath(
@@ -494,6 +515,14 @@ public class MVCPortlet extends LiferayPortlet {
 		}
 
 		return mvcPath;
+	}
+
+	protected MVCCommandCache<MVCRenderCommand> getRenderMVCCommandCache() {
+		return _renderMVCCommandCache;
+	}
+
+	protected MVCCommandCache<MVCResourceCommand> getResourceMVCCommandCache() {
+		return _resourceMVCCommandCache;
 	}
 
 	protected void hideDefaultErrorMessage(PortletRequest portletRequest) {
@@ -551,16 +580,23 @@ public class MVCPortlet extends LiferayPortlet {
 			_log.error(path + " is not a valid include");
 		}
 		else {
-			checkPath(path);
+			if (Validator.isNotNull(path) && !_validPaths.contains(path) &&
+				!_validPaths.contains(_PATH_META_INF_RESOURCES.concat(path))) {
+
+				throw new PortletException(
+					StringBundler.concat(
+						"Path ", path, " is not accessible by portlet ",
+						getPortletName()));
+			}
 
 			portletRequestDispatcher.include(portletRequest, portletResponse);
 		}
 
-		if (clearRequestParameters) {
-			if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
-				portletResponse.setProperty(
-					"clear-request-parameters", Boolean.TRUE.toString());
-			}
+		if (clearRequestParameters &&
+			lifecycle.equals(PortletRequest.RENDER_PHASE)) {
+
+			portletResponse.setProperty(
+				"clear-request-parameters", Boolean.TRUE.toString());
 		}
 	}
 
@@ -628,10 +664,105 @@ public class MVCPortlet extends LiferayPortlet {
 		return null;
 	}
 
+	private Set<String> _getJspPaths(String path) {
+		Set<String> paths = new HashSet<>();
+
+		PortletContext portletContext = getPortletContext();
+
+		Queue<String> queue = new ArrayDeque<>();
+
+		queue.add(path);
+
+		while ((path = queue.poll()) != null) {
+			Set<String> childPaths = portletContext.getResourcePaths(path);
+
+			if (childPaths != null) {
+				for (String childPath : childPaths) {
+					if (childPath.charAt(childPath.length() - 1) ==
+							CharPool.SLASH) {
+
+						queue.add(childPath);
+					}
+					else if (childPath.endsWith(".jsp")) {
+						paths.add(childPath);
+					}
+				}
+			}
+		}
+
+		return paths;
+	}
+
+	private void _initValidPaths(String rootPath) {
+		PortletContext portletContext = getPortletContext();
+
+		String portletContextName = portletContext.getPortletContextName();
+
+		Map<String, Set<String>> validPathsMap = _validPathsMaps.get(
+			portletContextName);
+
+		if (validPathsMap != null) {
+			_validPaths = validPathsMap.get(rootPath);
+
+			if (_validPaths != null) {
+				return;
+			}
+		}
+		else {
+			validPathsMap = _validPathsMaps.computeIfAbsent(
+				portletContextName, key -> new ConcurrentHashMap<>());
+		}
+
+		if (rootPath.equals(StringPool.SLASH)) {
+			PortletApp portletApp = PortletLocalServiceUtil.getPortletApp(
+				portletContextName);
+
+			if (!portletApp.isWARFile()) {
+				_log.error(
+					StringBundler.concat(
+						"Disabling paths for portlet ", getPortletName(),
+						" because root path is configured to have access to ",
+						"all portal paths"));
+
+				_validPaths = validPathsMap.computeIfAbsent(
+					rootPath, key -> Collections.emptySet());
+
+				return;
+			}
+		}
+
+		_validPaths = validPathsMap.computeIfAbsent(
+			rootPath,
+			key -> {
+				Set<String> validPaths = _getJspPaths(key);
+
+				if (!key.equals(StringPool.SLASH) &&
+					!key.equals("/META-INF/") &&
+					!key.equals("/META-INF/resources/")) {
+
+					validPaths.addAll(
+						_getJspPaths(_PATH_META_INF_RESOURCES.concat(key)));
+				}
+
+				Collections.addAll(
+					validPaths,
+					StringUtil.split(getInitParameter("valid-paths")));
+
+				return validPaths;
+			});
+	}
+
+	private static final String _PATH_META_INF_RESOURCES =
+		"/META-INF/resources";
+
 	private static final Log _log = LogFactoryUtil.getLog(MVCPortlet.class);
 
-	private MVCCommandCache _mvcActionCommandCache;
-	private MVCCommandCache _mvcRenderCommandCache;
-	private MVCCommandCache _mvcResourceCommandCache;
+	private static final Map<String, Map<String, Set<String>>> _validPathsMaps =
+		new ConcurrentHashMap<>();
+
+	private MVCCommandCache<MVCActionCommand> _actionMVCCommandCache;
+	private MVCCommandCache<MVCRenderCommand> _renderMVCCommandCache;
+	private MVCCommandCache<MVCResourceCommand> _resourceMVCCommandCache;
+	private Set<String> _validPaths;
 
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.admin.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.User;
@@ -23,7 +24,6 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserServiceUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Calendar;
 import java.util.List;
@@ -40,18 +40,18 @@ public class AdminUtil {
 	public static String getUpdateUserPassword(
 		ActionRequest actionRequest, long userId) {
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			actionRequest);
+		HttpServletRequest httpServletRequest =
+			PortalUtil.getHttpServletRequest(actionRequest);
 
-		return getUpdateUserPassword(request, userId);
+		return getUpdateUserPassword(httpServletRequest, userId);
 	}
 
 	public static String getUpdateUserPassword(
-		HttpServletRequest request, long userId) {
+		HttpServletRequest httpServletRequest, long userId) {
 
-		String password = PortalUtil.getUserPassword(request);
+		String password = PortalUtil.getUserPassword(httpServletRequest);
 
-		if (userId != PortalUtil.getUserId(request)) {
+		if (userId != PortalUtil.getUserId(httpServletRequest)) {
 			password = StringPool.BLANK;
 		}
 
@@ -70,24 +70,24 @@ public class AdminUtil {
 			String skypeSn, String twitterSn)
 		throws PortalException {
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			actionRequest);
+		HttpServletRequest httpServletRequest =
+			PortalUtil.getHttpServletRequest(actionRequest);
 
 		return updateUser(
-			request, userId, screenName, emailAddress, facebookId, openId,
-			languageId, timeZoneId, greeting, comments, smsSn, facebookSn,
-			jabberSn, skypeSn, twitterSn);
+			httpServletRequest, userId, screenName, emailAddress, facebookId,
+			openId, languageId, timeZoneId, greeting, comments, smsSn,
+			facebookSn, jabberSn, skypeSn, twitterSn);
 	}
 
 	public static User updateUser(
-			HttpServletRequest request, long userId, String screenName,
-			String emailAddress, long facebookId, String openId,
-			String languageId, String timeZoneId, String greeting,
-			String comments, String smsSn, String facebookSn, String jabberSn,
-			String skypeSn, String twitterSn)
+			HttpServletRequest httpServletRequest, long userId,
+			String screenName, String emailAddress, long facebookId,
+			String openId, String languageId, String timeZoneId,
+			String greeting, String comments, String smsSn, String facebookSn,
+			String jabberSn, String skypeSn, String twitterSn)
 		throws PortalException {
 
-		String password = getUpdateUserPassword(request, userId);
+		String password = getUpdateUserPassword(httpServletRequest, userId);
 
 		User user = UserLocalServiceUtil.getUserById(userId);
 

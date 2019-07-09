@@ -14,8 +14,9 @@
 
 package com.liferay.portal.verify;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.concurrent.ThrowableAwareRunnable;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
@@ -23,8 +24,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.FullNameGenerator;
 import com.liferay.portal.kernel.security.auth.FullNameGeneratorFactory;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.verify.model.VerifiableAuditedModel;
 
 import java.sql.Connection;
@@ -37,11 +36,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
- * @author Michael C. Han
- * @author Shinn Lok
+ * @author     Michael C. Han
+ * @author     Shinn Lok
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public class VerifyAuditedModel extends VerifyProcess {
 
 	public void verify(VerifiableAuditedModel... verifiableAuditedModels)
@@ -55,7 +57,7 @@ public class VerifyAuditedModel extends VerifyProcess {
 			unverifiedTableNames.add(verifiableAuditedModel.getTableName());
 		}
 
-		List<VerifyAuditedModelRunnable> verifyAuditedModelRunnables =
+		List<VerifyAuditedModelCallable> verifyAuditedModelCallables =
 			new ArrayList<>(unverifiedTableNames.size());
 
 		while (!unverifiedTableNames.isEmpty()) {
@@ -72,10 +74,10 @@ public class VerifyAuditedModel extends VerifyProcess {
 					continue;
 				}
 
-				VerifyAuditedModelRunnable verifyAuditedModelRunnable =
-					new VerifyAuditedModelRunnable(verifiableAuditedModel);
+				VerifyAuditedModelCallable verifyAuditedModelCallable =
+					new VerifyAuditedModelCallable(verifiableAuditedModel);
 
-				verifyAuditedModelRunnables.add(verifyAuditedModelRunnable);
+				verifyAuditedModelCallables.add(verifyAuditedModelCallable);
 
 				unverifiedTableNames.remove(
 					verifiableAuditedModel.getTableName());
@@ -87,7 +89,7 @@ public class VerifyAuditedModel extends VerifyProcess {
 			}
 		}
 
-		doVerify(verifyAuditedModelRunnables);
+		doVerify(verifyAuditedModelCallables);
 	}
 
 	@Override
@@ -98,9 +100,7 @@ public class VerifyAuditedModel extends VerifyProcess {
 		Collection<VerifiableAuditedModel> verifiableAuditedModels =
 			verifiableAuditedModelsMap.values();
 
-		verify(
-			verifiableAuditedModels.toArray(
-				new VerifiableAuditedModel[verifiableAuditedModels.size()]));
+		verify(verifiableAuditedModels.toArray(new VerifiableAuditedModel[0]));
 	}
 
 	protected Object[] getAuditedModelArray(
@@ -109,8 +109,9 @@ public class VerifyAuditedModel extends VerifyProcess {
 		throws Exception {
 
 		try (PreparedStatement ps = con.prepareStatement(
-				"select companyId, userId, createDate, modifiedDate from " +
-					tableName + " where " + pkColumnName + " = ?")) {
+				StringBundler.concat(
+					"select companyId, userId, createDate, modifiedDate from ",
+					tableName, " where ", pkColumnName, " = ?"))) {
 
 			ps.setLong(1, primKey);
 
@@ -127,6 +128,7 @@ public class VerifyAuditedModel extends VerifyProcess {
 					}
 					else {
 						userId = rs.getLong("userId");
+
 						userName = getUserName(con, userId);
 					}
 
@@ -139,7 +141,9 @@ public class VerifyAuditedModel extends VerifyProcess {
 				}
 
 				if (_log.isDebugEnabled()) {
-					_log.debug("Unable to find " + tableName + " " + primKey);
+					_log.debug(
+						StringBundler.concat(
+							"Unable to find ", tableName, " ", primKey));
 				}
 
 				return null;
@@ -151,8 +155,8 @@ public class VerifyAuditedModel extends VerifyProcess {
 		throws Exception {
 
 		try (PreparedStatement ps = con.prepareStatement(
-				"select userId, firstName, middleName, lastName from User_" +
-					" where companyId = ? and defaultUser = ?")) {
+				"select userId, firstName, middleName, lastName from User_ " +
+					"where companyId = ? and defaultUser = ?")) {
 
 			ps.setLong(1, companyId);
 			ps.setBoolean(2, true);
@@ -226,16 +230,20 @@ public class VerifyAuditedModel extends VerifyProcess {
 
 			long userId = (Long)auditedModelArray[1];
 			String userName = (String)auditedModelArray[2];
-			Timestamp createDate = (Timestamp)auditedModelArray[3];
-			Timestamp modifiedDate = (Timestamp)auditedModelArray[4];
 
 			ps.setLong(1, companyId);
 			ps.setLong(2, userId);
 			ps.setString(3, userName);
 
 			if (updateDates) {
+				Timestamp createDate = (Timestamp)auditedModelArray[3];
+
 				ps.setTimestamp(4, createDate);
+
+				Timestamp modifiedDate = (Timestamp)auditedModelArray[4];
+
 				ps.setTimestamp(5, modifiedDate);
+
 				ps.setLong(6, primKey);
 			}
 			else {
@@ -277,26 +285,21 @@ public class VerifyAuditedModel extends VerifyProcess {
 
 			long previousCompanyId = 0;
 
-			try (Connection con = DataAccess.getUpgradeOptimizedConnection();
+			try (Connection con = DataAccess.getConnection();
 				PreparedStatement ps1 = con.prepareStatement(sb.toString());
 				ResultSet rs = ps1.executeQuery();
 				PreparedStatement ps2 =
 					AutoBatchPreparedStatementUtil.autoBatch(
 						_createPreparedStatement(
 							con, verifiableAuditedModel.getTableName(),
-							verifiableAuditedModel.
-								getPrimaryKeyColumnName(),
+							verifiableAuditedModel.getPrimaryKeyColumnName(),
 							verifiableAuditedModel.isUpdateDates()))) {
 
 				while (rs.next()) {
 					long companyId = rs.getLong("companyId");
-					long primKey = rs.getLong(
-						verifiableAuditedModel.getPrimaryKeyColumnName());
-					long previousUserId = rs.getLong("userId");
 
-					if (verifiableAuditedModel.getJoinByTableName()
-							!= null) {
-
+					if (verifiableAuditedModel.getJoinByTableName() != null) {
+						long previousUserId = rs.getLong("userId");
 						long relatedPrimKey = rs.getLong(
 							verifiableAuditedModel.getJoinByTableName());
 
@@ -316,6 +319,9 @@ public class VerifyAuditedModel extends VerifyProcess {
 					if (auditedModelArray == null) {
 						continue;
 					}
+
+					long primKey = rs.getLong(
+						verifiableAuditedModel.getPrimaryKeyColumnName());
 
 					verifyAuditedModel(
 						con, ps2, verifiableAuditedModel.getTableName(),
@@ -353,17 +359,19 @@ public class VerifyAuditedModel extends VerifyProcess {
 	private static final Log _log = LogFactoryUtil.getLog(
 		VerifyAuditedModel.class);
 
-	private class VerifyAuditedModelRunnable extends ThrowableAwareRunnable {
+	private class VerifyAuditedModelCallable implements Callable<Void> {
 
-		public VerifyAuditedModelRunnable(
+		@Override
+		public Void call() throws Exception {
+			verifyAuditedModel(_verifiableAuditedModel);
+
+			return null;
+		}
+
+		private VerifyAuditedModelCallable(
 			VerifiableAuditedModel verifiableAuditedModel) {
 
 			_verifiableAuditedModel = verifiableAuditedModel;
-		}
-
-		@Override
-		protected void doRun() throws Exception {
-			verifyAuditedModel(_verifiableAuditedModel);
 		}
 
 		private final VerifiableAuditedModel _verifiableAuditedModel;

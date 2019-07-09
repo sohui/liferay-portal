@@ -8,81 +8,6 @@
 	<property name="manifest.bundle.name" value="Liferay Util Taglib" />
 	<property name="manifest.bundle.symbolic.name" value="com.liferay.util.taglib" />
 
-	<macrodef name="clean">
-		<sequential>
-			<clean-cmd>
-				<clean-post>
-					<delete failonerror="false" file="${liferay.home}/osgi/portal/${jar.file}.jar" />
-				</clean-post>
-			</clean-cmd>
-		</sequential>
-	</macrodef>
-
-	<macrodef name="compile-java">
-		<sequential>
-			<compile-java-cmd>
-				<compile-java-post>
-					<copy file="classes/META-INF/liferay-portlet.tld" preservelastmodified="true" tofile="classes/META-INF/liferay-portlet_2_0.tld" />
-
-					<replace file="classes/META-INF/liferay-portlet_2_0.tld">
-						<replacetoken><![CDATA[<uri>http://java.sun.com/portlet</uri>]]></replacetoken>
-						<replacevalue><![CDATA[<uri>http://java.sun.com/portlet_2_0</uri>]]></replacevalue>
-					</replace>
-				</compile-java-post>
-			</compile-java-cmd>
-		</sequential>
-	</macrodef>
-
-	<macrodef name="deploy">
-		<attribute name="deploy.dir" />
-		<attribute name="jar.file" />
-		<attribute name="src.dir" />
-
-		<sequential>
-			<deploy-cmd
-				copy.jar="false"
-				deploy.dir="@{deploy.dir}"
-				jar.file="@{jar.file}"
-				src.dir="@{src.dir}"
-			>
-				<deploy-post>
-					<copy file="@{jar.file}.jar" preservelastmodified="true" tofile="${liferay.home}/osgi/static/${manifest.bundle.symbolic.name}.jar" />
-
-					<if>
-						<equals arg1="${app.server.type}" arg2="tomcat" />
-						<then>
-							<copy file="@{jar.file}.jar" preservelastmodified="true" todir="@{deploy.dir}" />
-
-							<copy preservelastmodified="true" todir="${app.server.portal.dir}/WEB-INF/tld">
-								<fileset dir="classes/META-INF" includes="*.tld" />
-							</copy>
-						</then>
-					</if>
-				</deploy-post>
-			</deploy-cmd>
-		</sequential>
-	</macrodef>
-
-	<macrodef name="jar-macro">
-		<sequential>
-			<jar-macro-cmd>
-				<jar-post>
-					<copy file="${jar.file}.jar" preservelastmodified="true" todir="${portal-impl.classes.dir}/com/liferay/portal/deploy/dependencies" />
-
-					<copy preservelastmodified="true" todir="${portal-impl.classes.dir}/com/liferay/portal/deploy/dependencies">
-						<fileset dir="classes/META-INF" />
-					</copy>
-
-					<copy file="${jar.file}.jar" preservelastmodified="true" todir="${project.dir}/portal-web/docroot/WEB-INF/lib" />
-
-					<copy overwrite="true" preservelastmodified="true" todir="${project.dir}/portal-web/docroot/WEB-INF/tld">
-						<fileset dir="classes/META-INF" includes="*.tld" />
-					</copy>
-				</jar-post>
-			</jar-macro-cmd>
-		</sequential>
-	</macrodef>
-
 	<target name="build-taglibs">
 		<java
 			classname="com.liferay.alloy.tools.tagbuilder.TagBuilder"
@@ -103,22 +28,152 @@
 		</java>
 	</target>
 
+	<target depends="build-common-java.clean" name="clean">
+		<delete failonerror="false" file="${liferay.home}/osgi/portal/${jar.file}.jar" />
+	</target>
+
+	<target depends="build-common-java.compile,download-latest-artifact,init-compile" name="compile" unless="${compile.uptodate}">
+		<copy
+			file="classes/META-INF/liferay-portlet_1_0.tld"
+			preservelastmodified="true"
+			tofile="classes/META-INF/liferay-portlet_1_0.tld"
+		/>
+
+		<replace
+			file="classes/META-INF/liferay-portlet_1_0.tld"
+		>
+			<replacetoken><![CDATA[<short-name>portlet_1_0</short-name>]]></replacetoken>
+			<replacevalue><![CDATA[<short-name>portlet</short-name>]]></replacevalue>
+		</replace>
+
+		<replace
+			file="classes/META-INF/liferay-portlet_2_0.tld"
+		>
+			<replacetoken><![CDATA[<short-name>portlet_2_0</short-name>]]></replacetoken>
+			<replacevalue><![CDATA[<short-name>portlet</short-name>]]></replacevalue>
+		</replace>
+	</target>
+
+	<target depends="build-common-java.deploy" name="deploy">
+		<if>
+			<equals arg1="${build.profile}" arg2="slim" />
+			<then>
+			</then>
+			<elseif>
+				<equals arg1="${app.server.type}" arg2="tomcat" />
+				<then>
+					<copy
+						file="${jar.file}.jar"
+						preservelastmodified="true"
+						todir="${deploy.dir}"
+					/>
+
+					<copy
+						preservelastmodified="true"
+						todir="${app.server.portal.dir}/WEB-INF/tld"
+					>
+						<fileset
+							dir="classes/META-INF"
+							includes="*.tld"
+						/>
+					</copy>
+				</then>
+			</elseif>
+		</if>
+	</target>
+
+	<target depends="build-common-java.init-jar" name="init-jar">
+		<for param="file">
+			<path>
+				<fileset
+					dir="classes/META-INF"
+					includes="*.tld"
+				/>
+			</path>
+
+			<sequential>
+				<local name="filename" />
+
+				<basename file="@{file}" property="filename" suffix=".tld" />
+
+				<if>
+					<available file="../modules/core/util-taglib-compat/tld/${filename}-compat" />
+					<then>
+						<local name="content" />
+
+						<loadfile
+							property="content"
+							srcFile="../modules/core/util-taglib-compat/tld/${filename}-compat"
+						/>
+
+						<replace
+							file="@{file}"
+							value="${content}"
+						>
+							<replacetoken><![CDATA[</taglib>]]></replacetoken>
+						</replace>
+
+						<concat append="true" destfile="@{file}"><![CDATA[</taglib>]]></concat>
+					</then>
+				</if>
+			</sequential>
+		</for>
+	</target>
+
+	<target depends="build-common-java.jar" name="jar">
+		<copy
+			file="${jar.file}.jar"
+			preservelastmodified="true"
+			todir="${portal-impl.classes.dir}/com/liferay/portal/deploy/dependencies"
+		/>
+
+		<copy
+			preservelastmodified="true"
+			todir="${portal-impl.classes.dir}/com/liferay/portal/deploy/dependencies"
+		>
+			<fileset
+				dir="classes/META-INF"
+			/>
+		</copy>
+
+		<copy
+			file="${jar.file}.jar"
+			preservelastmodified="true"
+			todir="${project.dir}/portal-web/docroot/WEB-INF/lib"
+		/>
+
+		<copy
+			overwrite="true"
+			preservelastmodified="true"
+			todir="${project.dir}/portal-web/docroot/WEB-INF/tld"
+		>
+			<fileset
+				dir="classes/META-INF"
+				includes="*.tld"
+			/>
+		</copy>
+	</target>
+
 	<target depends="taglibdoc" name="jar-tlddoc">
-		<zip destfile="util-taglib-tlddoc.jar">
-			<zipfileset dir="${doc.dir}/taglibs/util-taglib" />
+		<zip
+			destfile="util-taglib-tlddoc.jar"
+		>
+			<zipfileset
+				dir="${doc.dir}/taglibs/util-taglib"
+			/>
 		</zip>
 	</target>
 
-	<target depends="jar,jar-javadoc,jar-sources,jar-tlddoc" name="publish-portal-release">
-		<publish-portal-artifact >
+	<target name="publish-portal-release">
+		<publish-portal-artifact targets="jar,jar-javadoc,jar-sources,jar-tlddoc">
 			<attach classifier="javadoc" file="${artifact.name}-javadoc.jar" />
 			<attach classifier="sources" file="${artifact.name}-sources.jar" />
 			<attach classifier="tlddoc" file="${artifact.name}-tlddoc.jar" />
 		</publish-portal-artifact>
 	</target>
 
-	<target depends="jar,jar-javadoc,jar-sources,jar-tlddoc" name="publish-portal-snapshot">
-		<publish-portal-artifact snapshot="true">
+	<target name="publish-portal-snapshot">
+		<publish-portal-artifact snapshot="true" targets="jar,jar-javadoc,jar-sources,jar-tlddoc">
 			<attach classifier="javadoc" file="${artifact.name}-javadoc.jar" />
 			<attach classifier="sources" file="${artifact.name}-sources.jar" />
 			<attach classifier="tlddoc" file="${artifact.name}-tlddoc.jar" />
@@ -132,7 +187,9 @@
 
 		<pathconvert pathsep=" " property="tld.files">
 			<path>
-				<fileset dir="${project.dir}/util-taglib/src/META-INF">
+				<fileset
+					dir="${project.dir}/util-taglib/src/META-INF"
+				>
 					<include name="*.tld" />
 				</fileset>
 			</path>
@@ -150,16 +207,20 @@
 			<arg line="-xslt ${project.dir}/tools/styles/taglibs" />
 		</java>
 
-		<copy overwrite="true" preservelastmodified="true" todir="${doc.taglibs.dir}/images">
-			<fileset dir="${project.dir}/util-taglib/src/META-INF/images" />
+		<copy
+			overwrite="true"
+			preservelastmodified="true"
+			todir="${doc.taglibs.dir}/images"
+		>
+			<fileset
+				dir="${project.dir}/util-taglib/src/META-INF/images"
+			/>
 		</copy>
 	</target>
 
 	<target name="validate-tld">
-		<schemavalidate>
-			<fileset dir="${project.dir}/util-taglib/src/META-INF">
-				<include name="*.tld" />
-			</fileset>
-		</schemavalidate>
+		<gradle-execute dir="${project.dir}/util-taglib" task="validateTLD">
+			<arg value="--info" />
+		</gradle-execute>
 	</target>
 </project>

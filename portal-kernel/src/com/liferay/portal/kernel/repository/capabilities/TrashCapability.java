@@ -20,14 +20,19 @@ import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.ServiceContext;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Adolfo Pérez
  */
+@ProviderType
 public interface TrashCapability extends Capability {
 
 	public void deleteFileEntry(FileEntry fileEntry) throws PortalException;
 
 	public void deleteFolder(Folder folder) throws PortalException;
+
+	public boolean isInTrash(FileEntry fileEntry) throws PortalException;
 
 	public boolean isInTrash(Folder folder) throws PortalException;
 

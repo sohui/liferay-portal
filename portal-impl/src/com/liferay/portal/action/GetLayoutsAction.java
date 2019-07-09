@@ -22,9 +22,6 @@ import com.liferay.portlet.layoutsadmin.util.LayoutsTreeUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-
 /**
  * @author Eduardo Lundgren
  * @author Zsolt Szabó
@@ -34,36 +31,56 @@ public class GetLayoutsAction extends JSONAction {
 
 	@Override
 	public String getJSON(
-			ActionMapping actionMapping, ActionForm actionForm,
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		String cmd = ParamUtil.getString(request, Constants.CMD);
+		String cmd = ParamUtil.getString(httpServletRequest, Constants.CMD);
 
-		long groupId = ParamUtil.getLong(request, "groupId");
-		String treeId = ParamUtil.getString(request, "treeId");
+		long groupId = ParamUtil.getLong(httpServletRequest, "groupId");
+		String treeId = ParamUtil.getString(httpServletRequest, "treeId");
 
 		if (cmd.equals("get")) {
-			return getLayoutsJSON(request, groupId, treeId);
+			return getLayoutsJSON(httpServletRequest, groupId, treeId);
 		}
 		else if (cmd.equals("getAll")) {
-			return LayoutsTreeUtil.getLayoutsJSON(request, groupId, treeId);
+			return LayoutsTreeUtil.getLayoutsJSON(
+				httpServletRequest, groupId, treeId);
+		}
+		else if (cmd.equals("getSiblingLayoutsJSON")) {
+			return getSiblingLayoutsJSON(httpServletRequest, groupId);
 		}
 
 		return null;
 	}
 
 	protected String getLayoutsJSON(
-			HttpServletRequest request, long groupId, String treeId)
+			HttpServletRequest httpServletRequest, long groupId, String treeId)
 		throws Exception {
 
-		boolean privateLayout = ParamUtil.getBoolean(request, "privateLayout");
-		long parentLayoutId = ParamUtil.getLong(request, "parentLayoutId");
-		boolean incomplete = ParamUtil.getBoolean(request, "incomplete", true);
+		boolean privateLayout = ParamUtil.getBoolean(
+			httpServletRequest, "privateLayout");
+		long parentLayoutId = ParamUtil.getLong(
+			httpServletRequest, "parentLayoutId");
+		boolean incomplete = ParamUtil.getBoolean(
+			httpServletRequest, "incomplete", true);
 
 		return LayoutsTreeUtil.getLayoutsJSON(
-			request, groupId, privateLayout, parentLayoutId, incomplete,
-			treeId);
+			httpServletRequest, groupId, privateLayout, parentLayoutId,
+			incomplete, treeId);
+	}
+
+	protected String getSiblingLayoutsJSON(
+			HttpServletRequest httpServletRequest, long groupId)
+		throws Exception {
+
+		boolean privateLayout = ParamUtil.getBoolean(
+			httpServletRequest, "privateLayout");
+		long layoutId = ParamUtil.getLong(httpServletRequest, "layoutId");
+		int max = ParamUtil.getInteger(httpServletRequest, "max");
+
+		return LayoutsTreeUtil.getLayoutsJSON(
+			httpServletRequest, groupId, privateLayout, layoutId, max);
 	}
 
 }

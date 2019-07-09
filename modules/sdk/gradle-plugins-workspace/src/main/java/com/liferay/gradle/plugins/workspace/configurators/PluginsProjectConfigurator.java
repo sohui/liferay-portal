@@ -14,28 +14,41 @@
 
 package com.liferay.gradle.plugins.workspace.configurators;
 
+import com.liferay.gradle.plugins.workspace.ProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.WorkspaceExtension;
 import com.liferay.gradle.plugins.workspace.WorkspacePlugin;
+import com.liferay.gradle.plugins.workspace.internal.util.FileUtil;
+import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.workspace.tasks.UpdatePropertiesTask;
-import com.liferay.gradle.plugins.workspace.util.GradleUtil;
-import com.liferay.gradle.util.FileUtil;
+import com.liferay.gradle.util.StringUtil;
+import com.liferay.gradle.util.copy.StripPathSegmentsAction;
 
 import groovy.lang.Closure;
 
 import java.io.File;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.gradle.api.Action;
 import org.gradle.api.AntBuilder;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.ConfigurableFileTree;
 import org.gradle.api.file.CopySpec;
+import org.gradle.api.file.FileTree;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.WarPlugin;
+import org.gradle.api.tasks.Copy;
 import org.gradle.language.base.plugins.LifecycleBasePlugin;
+import org.gradle.util.CollectionUtils;
 
 /**
  * @author Andrea Di Giorgi
@@ -43,7 +56,12 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin;
  */
 public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 
+	public static final String PLUGINS_SDK_CONFIGURATION_NAME = "pluginsSDK";
+
 	public static final String UPDATE_PROPERTIES_TASK_NAME = "updateProperties";
+
+	public static final String UPGRADE_PLUGINS_SDK_TASK_NAME =
+		"upgradePluginsSDK";
 
 	public PluginsProjectConfigurator(Settings settings) {
 		super(settings);
@@ -58,26 +76,167 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 			project.getRootProject(),
 			RootProjectConfigurator.INIT_BUNDLE_TASK_NAME);
 
-		configureAnt(project);
+		_configureAnt(project);
 
-		UpdatePropertiesTask updatePropertiesTask = addTaskUpdateProperties(
+		UpdatePropertiesTask updatePropertiesTask = _addTaskUpdateProperties(
 			project, workspaceExtension);
 
-		addTaskBuild(project, updatePropertiesTask);
-		configureTaskWar(project, workspaceExtension, initBundleTask);
+		_addTaskBuild(project, updatePropertiesTask);
 
-		configureRootTaskDistBundle(
-			project, RootProjectConfigurator.DIST_BUNDLE_TAR_TASK_NAME);
-		configureRootTaskDistBundle(
-			project, RootProjectConfigurator.DIST_BUNDLE_ZIP_TASK_NAME);
+		Task warTask = GradleUtil.getTask(project, WarPlugin.WAR_TASK_NAME);
+
+		_configureTaskWar(warTask, workspaceExtension, initBundleTask);
+
+		_configureRootTaskDistBundle(warTask);
+	}
+
+	@Override
+	public void configureRootProject(
+		Project project, WorkspaceExtension workspaceExtension) {
+
+		Configuration pluginsSDKConfiguration = _addRootConfigurationPluginsSDK(
+			project);
+
+		_addRootTaskUpgradePluginsSDK(
+			project, pluginsSDKConfiguration, workspaceExtension);
 	}
 
 	@Override
 	public String getName() {
-		return _NAME;
+		return NAME;
 	}
 
-	protected Task addTaskBuild(
+	@Override
+	protected Iterable<File> doGetProjectDirs(File rootDir) throws Exception {
+		File buildXmlFile = new File(rootDir, "build.xml");
+
+		if (!buildXmlFile.exists()) {
+			return Collections.emptySet();
+		}
+
+		return Collections.singleton(rootDir);
+	}
+
+	@Override
+	protected String getDefaultRootDirName() {
+		return _DEFAULT_ROOT_DIR_NAME;
+	}
+
+	@Override
+	protected String getDefaultRootDirPropertyName() {
+		return _DEFAULT_ROOT_DIR_PROPERTY_NAME;
+	}
+
+	protected static final String NAME = "plugins";
+
+	private Configuration _addRootConfigurationPluginsSDK(
+		final Project project) {
+
+		Configuration configuration = GradleUtil.addConfiguration(
+			project, PLUGINS_SDK_CONFIGURATION_NAME);
+
+		configuration.defaultDependencies(
+			new Action<DependencySet>() {
+
+				@Override
+				public void execute(DependencySet dependencySet) {
+					_addRootDependenciesPluginsSDK(project);
+				}
+
+			});
+
+		configuration.setDescription(
+			"Configures the Plugins SDK for this Liferay Workspace.");
+		configuration.setVisible(false);
+
+		return configuration;
+	}
+
+	private void _addRootDependenciesPluginsSDK(Project project) {
+		DependencyHandler dependencyHandler = project.getDependencies();
+
+		Map<String, Object> dependencyNotation = new HashMap<>();
+
+		dependencyNotation.put("classifier", "withdependencies");
+		dependencyNotation.put("ext", "zip");
+		dependencyNotation.put("group", "com.liferay.portal");
+		dependencyNotation.put("name", "com.liferay.portal.plugins.sdk");
+		dependencyNotation.put("version", "latest.release");
+
+		dependencyHandler.add(
+			PLUGINS_SDK_CONFIGURATION_NAME, dependencyNotation);
+	}
+
+	private Task _addRootTaskUpgradePluginsSDK(
+		Project project, Configuration pluginsSDKConfiguration,
+		WorkspaceExtension workspaceExtension) {
+
+		ProjectConfigurator projectConfigurator =
+			workspaceExtension.propertyMissing(PluginsProjectConfigurator.NAME);
+
+		Collection<File> dirs =
+			(Collection<File>)projectConfigurator.getDefaultRootDirs();
+
+		if (dirs.size() == 1) {
+			return _addRootTaskUpgradePluginsSDK(
+				project, UPGRADE_PLUGINS_SDK_TASK_NAME,
+				CollectionUtils.first(dirs), pluginsSDKConfiguration);
+		}
+
+		Task task = project.task(UPGRADE_PLUGINS_SDK_TASK_NAME);
+
+		for (File dir : projectConfigurator.getDefaultRootDirs()) {
+			String taskName =
+				UPGRADE_PLUGINS_SDK_TASK_NAME +
+					StringUtil.capitalize(dir.getName());
+
+			Copy copy = _addRootTaskUpgradePluginsSDK(
+				project, taskName, dir, pluginsSDKConfiguration);
+
+			task.dependsOn(copy);
+		}
+
+		task.setDescription(
+			"Downloads and upgrades all Plugins SDK directories.");
+
+		return task;
+	}
+
+	private Copy _addRootTaskUpgradePluginsSDK(
+		final Project project, String taskName, File dir,
+		final Configuration pluginsSDKConfiguration) {
+
+		Copy copy = GradleUtil.addTask(project, taskName, Copy.class);
+
+		copy.from(
+			new Callable<FileTree>() {
+
+				@Override
+				public FileTree call() throws Exception {
+					return project.zipTree(
+						pluginsSDKConfiguration.getSingleFile());
+				}
+
+			},
+			new Closure<Void>(project) {
+
+				@SuppressWarnings("unused")
+				public void doCall(CopySpec copySpec) {
+					copySpec.eachFile(new StripPathSegmentsAction(1));
+				}
+
+			});
+
+		copy.into(dir);
+		copy.setDescription(
+			"Downloads the Liferay Plugins SDK zip file into " +
+				project.relativePath(dir) + ", upgrading if necessary.");
+		copy.setIncludeEmptyDirs(false);
+
+		return copy;
+	}
+
+	private Task _addTaskBuild(
 		Project project, UpdatePropertiesTask updatePropertiesTask) {
 
 		Task task = project.task(LifecycleBasePlugin.BUILD_TASK_NAME);
@@ -88,7 +247,7 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 		return task;
 	}
 
-	protected UpdatePropertiesTask addTaskUpdateProperties(
+	private UpdatePropertiesTask _addTaskUpdateProperties(
 		Project project, final WorkspaceExtension workspaceExtension) {
 
 		UpdatePropertiesTask updatePropertiesTask = GradleUtil.addTask(
@@ -118,28 +277,33 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 		return updatePropertiesTask;
 	}
 
-	protected void configureAnt(Project project) {
+	private void _configureAnt(Project project) {
 		AntBuilder antBuilder = project.getAnt();
 
 		antBuilder.importBuild("build.xml");
 	}
 
-	protected void configureRootTaskDistBundle(
-		final Project project, String rootTaskName) {
+	private void _configureRootTaskDistBundle(final Task warTask) {
+		Project project = warTask.getProject();
 
-		CopySpec copySpec = (CopySpec)GradleUtil.getTask(
-			project.getRootProject(), rootTaskName);
+		Copy copy = (Copy)GradleUtil.getTask(
+			project.getRootProject(),
+			RootProjectConfigurator.DIST_BUNDLE_TASK_NAME);
 
-		copySpec.into(
+		copy.dependsOn(warTask);
+
+		copy.into(
 			"osgi/modules",
-			new Closure<Void>(null) {
+			new Closure<Void>(project) {
 
 				@SuppressWarnings("unused")
 				public void doCall(CopySpec copySpec) {
+					Project project = warTask.getProject();
+
 					ConfigurableFileTree configurableFileTree =
 						project.fileTree("dist");
 
-					configurableFileTree.builtBy(WarPlugin.WAR_TASK_NAME);
+					configurableFileTree.builtBy(warTask);
 					configurableFileTree.include("*.war");
 
 					copySpec.from(configurableFileTree);
@@ -148,13 +312,11 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 			});
 	}
 
-	protected void configureTaskWar(
-		Project project, final WorkspaceExtension workspaceExtension,
+	private void _configureTaskWar(
+		Task warTask, final WorkspaceExtension workspaceExtension,
 		final Task initBundleTask) {
 
-		Task task = GradleUtil.getTask(project, WarPlugin.WAR_TASK_NAME);
-
-		task.dependsOn(
+		warTask.dependsOn(
 			new Callable<Task>() {
 
 				@Override
@@ -171,32 +333,9 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 			});
 	}
 
-	@Override
-	protected Iterable<File> doGetProjectDirs(File rootDir) throws Exception {
-		File buildXmlFile = new File(rootDir, "build.xml");
-
-		if (!buildXmlFile.exists()) {
-			return Collections.emptySet();
-		}
-
-		return Collections.singleton(rootDir);
-	}
-
-	@Override
-	protected String getDefaultRootDirName() {
-		return _DEFAULT_ROOT_DIR_NAME;
-	}
-
-	@Override
-	protected String getDefaultRootDirPropertyName() {
-		return _DEFAULT_ROOT_DIR_PROPERTY_NAME;
-	}
-
 	private static final String _DEFAULT_ROOT_DIR_NAME = "plugins-sdk";
 
 	private static final String _DEFAULT_ROOT_DIR_PROPERTY_NAME =
 		WorkspacePlugin.PROPERTY_PREFIX + "plugins.sdk.dir";
-
-	private static final String _NAME = "plugins";
 
 }

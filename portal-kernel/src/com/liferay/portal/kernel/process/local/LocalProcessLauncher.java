@@ -14,28 +14,38 @@
 
 package com.liferay.portal.kernel.process.local;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncPrintWriter;
-import com.liferay.portal.kernel.process.ClassPathUtil;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.process.ProcessException;
-import com.liferay.portal.kernel.process.log.ProcessOutputStream;
 import com.liferay.portal.kernel.util.ClassLoaderObjectInputStream;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.net.URLClassLoader;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -64,7 +74,7 @@ public class LocalProcessLauncher {
 			ProcessContext._setProcessOutputStream(outProcessOutputStream);
 
 			PrintStream newOutPrintStream = new PrintStream(
-				outProcessOutputStream, true);
+				outProcessOutputStream, true, StringPool.UTF8);
 
 			System.setOut(newOutPrintStream);
 		}
@@ -73,7 +83,7 @@ public class LocalProcessLauncher {
 			objectOutputStream, true);
 
 		PrintStream errPrintStream = new PrintStream(
-			errProcessOutputStream, true);
+			errProcessOutputStream, true, StringPool.UTF8);
 
 		System.setErr(errPrintStream);
 
@@ -88,9 +98,11 @@ public class LocalProcessLauncher {
 			String processCallableName =
 				(String)bootstrapObjectInputStream.readObject();
 
-			String logPrefixString =
-				StringPool.OPEN_BRACKET.concat(processCallableName).concat(
-					StringPool.CLOSE_BRACKET);
+			String logPrefixString = StringPool.OPEN_BRACKET.concat(
+				processCallableName
+			).concat(
+				StringPool.CLOSE_BRACKET
+			);
 
 			byte[] logPrefix = logPrefixString.getBytes(StringPool.UTF8);
 
@@ -100,7 +112,7 @@ public class LocalProcessLauncher {
 			String classPath = (String)bootstrapObjectInputStream.readObject();
 
 			ClassLoader classLoader = new URLClassLoader(
-				ClassPathUtil.getClassPathURLs(classPath));
+				_getClassPathURLs(classPath));
 
 			currentThread.setContextClassLoader(classLoader);
 
@@ -112,8 +124,8 @@ public class LocalProcessLauncher {
 				(ProcessCallable<?>)objectInputStream.readObject();
 
 			Thread thread = new Thread(
-				new ProcessCallableRunner(objectInputStream),
-				"ProcessCallable-Runner");
+				new ProcessCallableDispatcher(objectInputStream),
+				"ProcessCallable-Dispatcher");
 
 			thread.setDaemon(true);
 
@@ -124,7 +136,7 @@ public class LocalProcessLauncher {
 			System.out.flush();
 
 			outProcessOutputStream.writeProcessCallable(
-				new ReturnProcessCallable<Serializable>(result));
+				new ResultProcessCallable<>(result, null));
 
 			outProcessOutputStream.flush();
 		}
@@ -141,7 +153,7 @@ public class LocalProcessLauncher {
 			}
 
 			errProcessOutputStream.writeProcessCallable(
-				new ExceptionProcessCallable(processException));
+				new ResultProcessCallable<>(null, processException));
 
 			errProcessOutputStream.flush();
 		}
@@ -158,7 +170,7 @@ public class LocalProcessLauncher {
 			HeartbeatThread heartbeatThread = new HeartbeatThread(
 				message, interval, shutdownHook);
 
-			boolean value = _heartbeatThreadReference.compareAndSet(
+			boolean value = _heartbeatThreadAtomicReference.compareAndSet(
 				null, heartbeatThread);
 
 			if (value) {
@@ -170,7 +182,7 @@ public class LocalProcessLauncher {
 
 		public static void detach() throws InterruptedException {
 			HeartbeatThread heartbeatThread =
-				_heartbeatThreadReference.getAndSet(null);
+				_heartbeatThreadAtomicReference.getAndSet(null);
 
 			if (heartbeatThread != null) {
 				heartbeatThread.detach();
@@ -182,19 +194,22 @@ public class LocalProcessLauncher {
 			return _attributes;
 		}
 
-		public static ProcessOutputStream getProcessOutputStream() {
-			return _processOutputStream;
-		}
-
 		public static boolean isAttached() {
-			HeartbeatThread attachThread = _heartbeatThreadReference.get();
+			HeartbeatThread heartbeatThread =
+				_heartbeatThreadAtomicReference.get();
 
-			if (attachThread != null) {
+			if (heartbeatThread != null) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
+		}
+
+		public static void writeProcessCallable(
+				ProcessCallable<?> processCallable)
+			throws IOException {
+
+			_processOutputStream.writeProcessCallable(processCallable);
 		}
 
 		private static void _setProcessOutputStream(
@@ -209,7 +224,7 @@ public class LocalProcessLauncher {
 		private static final ConcurrentMap<String, Object> _attributes =
 			new ConcurrentHashMap<>();
 		private static final AtomicReference<HeartbeatThread>
-			_heartbeatThreadReference = new AtomicReference<>();
+			_heartbeatThreadAtomicReference = new AtomicReference<>();
 		private static ProcessOutputStream _processOutputStream;
 
 	}
@@ -224,6 +239,24 @@ public class LocalProcessLauncher {
 
 		public boolean shutdown(int shutdownCode, Throwable shutdownThrowable);
 
+	}
+
+	private static URL[] _getClassPathURLs(String classPath)
+		throws MalformedURLException {
+
+		Set<URL> urls = new LinkedHashSet<>();
+
+		String[] paths = StringUtil.split(classPath, File.pathSeparatorChar);
+
+		for (String path : paths) {
+			File file = new File(path);
+
+			URI uri = file.toURI();
+
+			urls.add(uri.toURL());
+		}
+
+		return urls.toArray(new URL[0]);
 	}
 
 	private static class HeartbeatThread extends Thread {
@@ -252,9 +285,6 @@ public class LocalProcessLauncher {
 
 		@Override
 		public void run() {
-			ProcessOutputStream processOutputStream =
-				ProcessContext.getProcessOutputStream();
-
 			int shutdownCode = 0;
 			Throwable shutdownThrowable = null;
 
@@ -262,18 +292,17 @@ public class LocalProcessLauncher {
 				try {
 					sleep(_interval);
 
-					processOutputStream.writeProcessCallable(
+					ProcessContext.writeProcessCallable(
 						_pringBackProcessCallable);
 				}
 				catch (InterruptedException ie) {
 					if (_detach) {
 						return;
 					}
-					else {
-						shutdownThrowable = ie;
 
-						shutdownCode = ShutdownHook.INTERRUPTION_CODE;
-					}
+					shutdownThrowable = ie;
+
+					shutdownCode = ShutdownHook.INTERRUPTION_CODE;
 				}
 				catch (IOException ioe) {
 					shutdownThrowable = ioe;
@@ -291,12 +320,44 @@ public class LocalProcessLauncher {
 						shutdownCode, shutdownThrowable);
 				}
 			}
+
+			AtomicReference<HeartbeatThread> heartBeatThreadReference =
+				ProcessContext._heartbeatThreadAtomicReference;
+
+			heartBeatThreadReference.compareAndSet(this, null);
 		}
 
 		private volatile boolean _detach;
 		private final long _interval;
 		private final ProcessCallable<String> _pringBackProcessCallable;
 		private final ShutdownHook _shutdownHook;
+
+	}
+
+	private static class LoggingProcessCallable
+		implements ProcessCallable<String> {
+
+		@Override
+		public String call() {
+			if (_error) {
+				System.err.print(_message);
+			}
+			else {
+				System.out.print(_message);
+			}
+
+			return StringPool.BLANK;
+		}
+
+		private LoggingProcessCallable(String message, boolean error) {
+			_message = message;
+			_error = error;
+		}
+
+		private static final long serialVersionUID = 1L;
+
+		private final boolean _error;
+		private final String _message;
 
 	}
 
@@ -318,20 +379,39 @@ public class LocalProcessLauncher {
 
 	}
 
-	private static class ProcessCallableRunner implements Runnable {
+	private static class ProcessCallableDispatcher implements Runnable {
 
-		public ProcessCallableRunner(ObjectInputStream objectInputStream) {
+		public ProcessCallableDispatcher(ObjectInputStream objectInputStream) {
 			_objectInputStream = objectInputStream;
 		}
 
 		@Override
 		public void run() {
+			ExecutorService executorService = Executors.newCachedThreadPool(
+				new ThreadFactory() {
+
+					@Override
+					public Thread newThread(Runnable runnable) {
+						Thread thread = new Thread(
+							runnable,
+							"ProcessCallable-runner-" +
+								_counter.getAndIncrement());
+
+						thread.setDaemon(true);
+
+						return thread;
+					}
+
+					private final AtomicLong _counter = new AtomicLong();
+
+				});
+
 			while (true) {
 				try {
 					ProcessCallable<?> processCallable =
 						(ProcessCallable<?>)_objectInputStream.readObject();
 
-					processCallable.call();
+					executorService.submit(() -> processCallable.call());
 				}
 				catch (Exception e) {
 					UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
@@ -357,6 +437,76 @@ public class LocalProcessLauncher {
 		}
 
 		private final ObjectInputStream _objectInputStream;
+
+	}
+
+	private static class ProcessOutputStream
+		extends UnsyncByteArrayOutputStream {
+
+		@Override
+		public void close() throws IOException {
+			_objectOutputStream.close();
+		}
+
+		@Override
+		public void flush() throws IOException {
+			synchronized (System.out) {
+				if (index > 0) {
+					byte[] bytes = toByteArray();
+
+					reset();
+
+					byte[] logData = new byte[_logPrefix.length + bytes.length];
+
+					System.arraycopy(
+						_logPrefix, 0, logData, 0, _logPrefix.length);
+					System.arraycopy(
+						bytes, 0, logData, _logPrefix.length, bytes.length);
+
+					String message = new String(bytes, StringPool.UTF8);
+
+					_objectOutputStream.writeObject(
+						new LoggingProcessCallable(message, _error));
+				}
+
+				_objectOutputStream.flush();
+
+				_objectOutputStream.reset();
+			}
+		}
+
+		public void setLogPrefix(byte[] logPrefix) {
+			_logPrefix = logPrefix;
+		}
+
+		public void writeProcessCallable(ProcessCallable<?> processCallable)
+			throws IOException {
+
+			synchronized (System.out) {
+				try {
+					_objectOutputStream.writeObject(processCallable);
+				}
+				catch (NotSerializableException nse) {
+					_objectOutputStream.reset();
+
+					throw nse;
+				}
+				finally {
+					_objectOutputStream.flush();
+				}
+			}
+		}
+
+		private ProcessOutputStream(
+			ObjectOutputStream objectOutputStream, boolean error) {
+
+			_objectOutputStream = objectOutputStream;
+			_error = error;
+		}
+
+		private final boolean _error;
+		private byte[] _logPrefix;
+		private final ObjectOutputStream _objectOutputStream;
 
 	}
 

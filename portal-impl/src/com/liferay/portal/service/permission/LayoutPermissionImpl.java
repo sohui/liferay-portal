@@ -15,6 +15,7 @@
 package com.liferay.portal.service.permission;
 
 import com.liferay.exportimport.kernel.staging.permission.StagingPermissionUtil;
+import com.liferay.petra.lang.HashUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -30,11 +31,12 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.UserBag;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
-import com.liferay.portal.kernel.service.ResourceLocalServiceUtil;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil;
+import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermission;
@@ -44,10 +46,14 @@ import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
+import com.liferay.portal.util.LayoutTypeControllerTracker;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.sites.kernel.util.SitesUtil;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Charles May
@@ -55,7 +61,7 @@ import java.util.List;
  * @author Raymond Augé
  */
 @OSGiBeanProperties(
-	property = {"model.class.name=com.liferay.portal.kernel.model.Layout"}
+	property = "model.class.name=com.liferay.portal.kernel.model.Layout"
 )
 public class LayoutPermissionImpl
 	implements BaseModelPermissionChecker, LayoutPermission {
@@ -127,47 +133,23 @@ public class LayoutPermissionImpl
 			boolean checkViewableGroup, String actionId)
 		throws PortalException {
 
-		if (actionId.equals(ActionKeys.VIEW)) {
-			LayoutType layoutType = layout.getLayoutType();
+		Map<Object, Object> permissionChecksMap =
+			permissionChecker.getPermissionChecksMap();
 
-			LayoutTypeController layoutTypeController =
-				layoutType.getLayoutTypeController();
+		CacheKey cacheKey = new CacheKey(
+			layout.getPlid(), layout.getMvccVersion(), checkViewableGroup,
+			actionId);
 
-			if (!layoutTypeController.isCheckLayoutViewPermission()) {
-				return true;
-			}
+		Boolean contains = (Boolean)permissionChecksMap.get(cacheKey);
+
+		if (contains == null) {
+			contains = _contains(
+				permissionChecker, layout, checkViewableGroup, actionId);
+
+			permissionChecksMap.put(cacheKey, contains);
 		}
 
-		if (layout.isTypeControlPanel()) {
-			if (!permissionChecker.isSignedIn()) {
-				return false;
-			}
-
-			return true;
-		}
-
-		if (actionId.equals(ActionKeys.CUSTOMIZE) &&
-			(layout instanceof VirtualLayout)) {
-
-			VirtualLayout virtualLayout = (VirtualLayout)layout;
-
-			layout = virtualLayout.getWrappedModel();
-		}
-
-		if (isAttemptToModifyLockedLayout(layout, actionId)) {
-			return false;
-		}
-
-		Boolean hasPermission = StagingPermissionUtil.hasPermission(
-			permissionChecker, layout.getGroup(), Layout.class.getName(),
-			layout.getGroupId(), null, actionId);
-
-		if (hasPermission != null) {
-			return hasPermission.booleanValue();
-		}
-
-		return containsWithViewableGroup(
-			permissionChecker, layout, checkViewableGroup, actionId);
+		return contains;
 	}
 
 	@Override
@@ -251,6 +233,53 @@ public class LayoutPermissionImpl
 			return false;
 		}
 
+		if (actionId.equals(ActionKeys.ADD_LAYOUT) &&
+			GroupPermissionUtil.contains(
+				permissionChecker, group, ActionKeys.ADD_LAYOUT)) {
+
+			return true;
+		}
+
+		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE &&
+			!actionId.equals(ActionKeys.VIEW)) {
+
+			// Check upward recursively to see if any pages above grant the
+			// action
+
+			long layoutGroupId = layout.getGroupId();
+
+			if (layout instanceof VirtualLayout) {
+				VirtualLayout virtualLayout = (VirtualLayout)layout;
+
+				layoutGroupId = virtualLayout.getSourceGroupId();
+			}
+
+			long parentLayoutId = layout.getParentLayoutId();
+
+			while (parentLayoutId != LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
+				Layout parentLayout = LayoutLocalServiceUtil.getLayout(
+					layoutGroupId, layout.isPrivateLayout(), parentLayoutId);
+
+				if (contains(permissionChecker, parentLayout, actionId)) {
+					return true;
+				}
+
+				parentLayoutId = parentLayout.getParentLayoutId();
+			}
+		}
+
+		if (permissionChecker.hasPermission(
+				group, Layout.class.getName(), layout.getPlid(), actionId)) {
+
+			return true;
+		}
+
+		if (GroupPermissionUtil.contains(
+				permissionChecker, group, ActionKeys.MANAGE_LAYOUTS)) {
+
+			return true;
+		}
+
 		User user = permissionChecker.getUser();
 
 		if (!user.isDefaultUser() && !group.isUser()) {
@@ -279,67 +308,7 @@ public class LayoutPermissionImpl
 			}
 		}
 
-		if (actionId.equals(ActionKeys.ADD_LAYOUT) &&
-			GroupPermissionUtil.contains(
-				permissionChecker, group, ActionKeys.ADD_LAYOUT)) {
-
-			return true;
-		}
-
-		if (GroupPermissionUtil.contains(
-				permissionChecker, group, ActionKeys.MANAGE_LAYOUTS)) {
-
-			return true;
-		}
-
-		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE &&
-			!actionId.equals(ActionKeys.VIEW)) {
-
-			// Check upward recursively to see if any pages above grant the
-			// action
-
-			long parentLayoutId = layout.getParentLayoutId();
-
-			while (parentLayoutId != LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
-				Layout parentLayout = LayoutLocalServiceUtil.getLayout(
-					layout.getGroupId(), layout.isPrivateLayout(),
-					parentLayoutId);
-
-				if (contains(permissionChecker, parentLayout, actionId)) {
-					return true;
-				}
-
-				parentLayoutId = parentLayout.getParentLayoutId();
-			}
-		}
-
-		int resourcePermissionsCount =
-			ResourcePermissionLocalServiceUtil.getResourcePermissionsCount(
-				layout.getCompanyId(), Layout.class.getName(),
-				ResourceConstants.SCOPE_INDIVIDUAL,
-				String.valueOf(layout.getPlid()));
-
-		if (resourcePermissionsCount == 0) {
-			boolean addGroupPermission = true;
-			boolean addGuestPermission = true;
-
-			if (layout.isPrivateLayout()) {
-				addGuestPermission = false;
-
-				if (group.isUser() || group.isUserGroup()) {
-					addGroupPermission = false;
-				}
-			}
-
-			ResourceLocalServiceUtil.addResources(
-				layout.getCompanyId(), layout.getGroupId(), 0,
-				Layout.class.getName(), layout.getPlid(), false,
-				addGroupPermission, addGuestPermission);
-		}
-
-		return permissionChecker.hasPermission(
-			layout.getGroupId(), Layout.class.getName(), layout.getPlid(),
-			actionId);
+		return false;
 	}
 
 	@Override
@@ -385,17 +354,18 @@ public class LayoutPermissionImpl
 
 		Group group = GroupLocalServiceUtil.getGroup(layout.getGroupId());
 
-		// Inactive sites are not viewable
-
-		if (!group.isActive()) {
-			return false;
-		}
-		else if (group.isStagingGroup()) {
-			Group liveGroup = group.getLiveGroup();
-
-			if (!liveGroup.isActive()) {
+		if (group.isControlPanel() && layout.isTypeControlPanel()) {
+			if (!permissionChecker.isSignedIn()) {
 				return false;
 			}
+
+			return true;
+		}
+
+		// Inactive sites are not viewable
+
+		if (!GroupLocalServiceUtil.isLiveGroupActive(group)) {
+			return false;
 		}
 
 		// User private layouts are only viewable by the user and anyone who can
@@ -550,6 +520,132 @@ public class LayoutPermissionImpl
 		}
 
 		return false;
+	}
+
+	private boolean _contains(
+			PermissionChecker permissionChecker, Layout layout,
+			boolean checkViewableGroup, String actionId)
+		throws PortalException {
+
+		if (actionId.equals(ActionKeys.VIEW)) {
+			LayoutTypeController layoutTypeController =
+				LayoutTypeControllerTracker.getLayoutTypeController(
+					layout.getType());
+
+			if (!layoutTypeController.isCheckLayoutViewPermission()) {
+				return true;
+			}
+		}
+
+		if (actionId.equals(ActionKeys.CUSTOMIZE) &&
+			(layout instanceof VirtualLayout)) {
+
+			VirtualLayout virtualLayout = (VirtualLayout)layout;
+
+			layout = virtualLayout.getWrappedModel();
+		}
+
+		if (isAttemptToModifyLockedLayout(layout, actionId)) {
+			return false;
+		}
+
+		Group group = layout.getGroup();
+
+		if (group.hasLocalOrRemoteStagingGroup()) {
+			Boolean hasPermission = StagingPermissionUtil.hasPermission(
+				permissionChecker, group, Layout.class.getName(),
+				layout.getGroupId(), null, actionId);
+
+			if (hasPermission != null) {
+				return hasPermission.booleanValue();
+			}
+		}
+		else if (!checkViewableGroup && group.isUserGroup() &&
+				 actionId.equals(ActionKeys.VIEW)) {
+
+			if (permissionChecker.isGroupAdmin(group.getGroupId())) {
+				return true;
+			}
+
+			try {
+				UserBag userBag = permissionChecker.getUserBag();
+
+				if (userBag == null) {
+					return UserGroupLocalServiceUtil.hasUserUserGroup(
+						permissionChecker.getUserId(), group.getClassPK());
+				}
+
+				int count = Arrays.binarySearch(
+					userBag.getUserUserGroupsIds(), group.getClassPK());
+
+				if (count >= 0) {
+					return true;
+				}
+
+				return false;
+			}
+			catch (PortalException | RuntimeException e) {
+				throw e;
+			}
+			catch (Exception e) {
+				throw new PortalException(e);
+			}
+		}
+
+		return containsWithViewableGroup(
+			permissionChecker, layout, checkViewableGroup, actionId);
+	}
+
+	private static class CacheKey {
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+
+			if (!(obj instanceof CacheKey)) {
+				return false;
+			}
+
+			CacheKey cacheKey = (CacheKey)obj;
+
+			if ((_plid == cacheKey._plid) &&
+				(_mvccVersion == cacheKey._mvccVersion) &&
+				(_checkViewableGroup == cacheKey._checkViewableGroup) &&
+				Objects.equals(_actionId, cacheKey._actionId)) {
+
+				return true;
+			}
+
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			int hash = HashUtil.hash(0, _plid);
+
+			hash = HashUtil.hash(hash, _mvccVersion);
+			hash = HashUtil.hash(hash, _checkViewableGroup);
+
+			return HashUtil.hash(hash, _actionId);
+		}
+
+		private CacheKey(
+			long plid, long mvccVersion, boolean checkViewableGroup,
+			String actionId) {
+
+			_plid = plid;
+			_mvccVersion = mvccVersion;
+			_checkViewableGroup = checkViewableGroup;
+			_actionId = actionId;
+		}
+
+		private final String _actionId;
+		private final boolean _checkViewableGroup;
+		private final long _mvccVersion;
+		private final long _plid;
+
 	}
 
 }

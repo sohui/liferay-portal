@@ -14,7 +14,10 @@
 
 package com.liferay.portal.events;
 
-import com.liferay.portal.deploy.RequiredPluginsUtil;
+import com.liferay.document.library.kernel.document.conversion.DocumentConversionUtil;
+import com.liferay.petra.executor.PortalExecutorManager;
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.fabric.server.FabricServerUtil;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -24,22 +27,19 @@ import com.liferay.portal.kernel.deploy.auto.AutoDeployDir;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployUtil;
 import com.liferay.portal.kernel.deploy.hot.HotDeployUtil;
 import com.liferay.portal.kernel.events.SimpleAction;
-import com.liferay.portal.kernel.executor.PortalExecutorManagerUtil;
 import com.liferay.portal.kernel.javadoc.JavadocManagerUtil;
 import com.liferay.portal.kernel.log.Jdk14LogFactoryImpl;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.resiliency.mpi.MPIHelperUtil;
-import com.liferay.portal.kernel.util.CentralizedThreadLocal;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.struts.AuthPublicPathRegistry;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.zip.TrueZIPHelperUtil;
-import com.liferay.portlet.documentlibrary.util.DocumentConversionUtil;
 import com.liferay.util.ThirdPartyThreadLocalRegistry;
 
 import java.sql.Connection;
@@ -78,9 +78,8 @@ public class GlobalShutdownAction extends SimpleAction {
 			if (threadGroup.getParent() == null) {
 				break;
 			}
-			else {
-				threadGroup = threadGroup.getParent();
-			}
+
+			threadGroup = threadGroup.getParent();
 		}
 
 		return threadGroup;
@@ -107,10 +106,6 @@ public class GlobalShutdownAction extends SimpleAction {
 		// OpenOffice
 
 		DocumentConversionUtil.disconnect();
-
-		// Plugins
-
-		RequiredPluginsUtil.stopCheckingRequiredPlugins();
 	}
 
 	protected void shutdownLevel2() {
@@ -180,7 +175,7 @@ public class GlobalShutdownAction extends SimpleAction {
 
 		// Portal executors
 
-		PortalExecutorManagerUtil.shutdown(true);
+		_portalExecutorManager.shutdown(true);
 
 		// TrueZip
 
@@ -236,5 +231,10 @@ public class GlobalShutdownAction extends SimpleAction {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		GlobalShutdownAction.class);
+
+	private static volatile PortalExecutorManager _portalExecutorManager =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			PortalExecutorManager.class, GlobalShutdownAction.class,
+			"_portalExecutorManager", true);
 
 }

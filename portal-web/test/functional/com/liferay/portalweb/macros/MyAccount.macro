@@ -1,46 +1,116 @@
-<definition>
-	<command name="changeUserLanguage">
-		<execute function="Select" locator1="MyAccount#LANGUAGE_SELECT" value1="${languageName}" />
+definition {
 
-		<var name="key_saveButton" value="${saveButton}" />
+	macro addOrganization {
+		LexiconEntry.gotoAdd();
 
-		<execute function="AssertClick" locator1="Button#SAVE_LOCALIZED" value1="${saveButton}" />
+		PortletEntry.inputName(name = "${organizationName}");
 
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
+		PortletEntry.save();
+	}
 
-	<command name="configureDisplaySettingsLanguage">
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="Account Settings" />
-		</execute>
+	macro changeUserLanguage {
+		Select(
+			locator1 = "MyAccount#LANGUAGE_SELECT",
+			value1 = "${languageName}");
 
-		<execute function="Select" locator1="MyAccount#LANGUAGE_SELECT" value1="${languageName}" />
+		var key_saveButton = "${saveButton}";
 
-		<var name="key_saveButton" value="${saveButton}" />
+		AssertClick(
+			locator1 = "Button#SAVE_LOCALIZED",
+			value1 = "${saveButton}");
 
-		<execute function="AssertClick" locator1="Button#SAVE_LOCALIZED" value1="${saveButton}" />
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+	}
 
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
+	macro configureDisplaySettingsLanguage {
+		Navigator.openURL();
 
-	<command name="configureDisplaySettingsLanguageLocalized">
-		<execute macro="ProductMenu#gotoLocalizedUserMyAccount">
-			<var name="category" value="${category}" />
-			<var name="portlet" value="${portlet}" />
-		</execute>
+		Navigator.gotoAccountSettings();
 
-		<execute function="Select" locator1="MyAccount#LANGUAGE_SELECT" value1="${languageName}" />
+		Select(
+			locator1 = "MyAccount#LANGUAGE_SELECT",
+			value1 = "${languageName}");
 
-		<var name="key_saveButton" value="${saveButton}" />
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
 
-		<execute function="AssertClick" locator1="Button#SAVE_LOCALIZED" value1="${saveButton}" />
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+	}
 
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
+	macro configureDisplaySettingsLanguageLocalized {
+		ProductMenu.gotoPortlet(
+			category = "${category}",
+			panel = "User",
+			portlet = "${portlet}");
 
-	<command name="view">
-		<for list="Password,Organization,Sites,User Groups,Roles,Categorization" param="key_panelHeading">
-			<execute function="AssertElementPresent" locator1="Panel#PANEL_HEADING_COLLAPSED" />
-		</for>
-	</command>
-</definition>
+		Select(
+			locator1 = "MyAccount#LANGUAGE_SELECT",
+			value1 = "${languageName}");
+
+		var key_saveButton = "${saveButton}";
+
+		AssertClick(
+			locator1 = "Button#SAVE_LOCALIZED",
+			value1 = "${saveButton}");
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+	}
+
+	macro editPasswordInvalidCP {
+		UserNavigator.gotoPassword();
+
+		if (isSet(currentPassword)) {
+			Type(
+				locator1 = "TextInput#CURRENT_PASSWORD",
+				value1 = "${currentPassword}");
+		}
+		else {
+			Type(
+				locator1 = "TextInput#CURRENT_PASSWORD",
+				value1 = "test");
+		}
+
+		Type(
+			locator1 = "TextInput#NEW_PASSWORD",
+			value1 = "${newPassword}");
+
+		Type(
+			locator1 = "TextInput#ENTER_AGAIN",
+			value1 = "${newPassword}");
+
+		Button.clickSave();
+
+		if ("${changeable}" == "false") {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "Passwords may not be changed under the current password policy.");
+		}
+		else {
+			Alert.viewRequestFailedToComplete();
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "That password is invalid. Please enter in a different password.");
+		}
+	}
+
+	macro openMyAccountAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/control_panel/manage?p_p_id=com_liferay_my_account_web_portlet_MyAccountPortlet");
+	}
+
+	macro view {
+		AssertElementPresent(locator1 = "UsersAndOrganizationsEditUser#CATEGORIZATION_LABEL");
+
+		UserNavigator.gotoOrganizations();
+
+		UserNavigator.gotoMemberships();
+
+		UserNavigator.gotoRoles();
+
+		UserNavigator.gotoPassword();
+	}
+
+}

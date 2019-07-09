@@ -19,8 +19,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.UserGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
@@ -41,7 +41,6 @@ public abstract class BaseOrganizationMembershipPolicy
 	implements OrganizationMembershipPolicy {
 
 	@Override
-	@SuppressWarnings("unused")
 	public void checkRoles(
 			List<UserGroupRole> addUserGroupRoles,
 			List<UserGroupRole> removeUserGroupRoles)
@@ -49,7 +48,6 @@ public abstract class BaseOrganizationMembershipPolicy
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean isMembershipAllowed(long userId, long organizationId)
 		throws PortalException {
 
@@ -104,7 +102,6 @@ public abstract class BaseOrganizationMembershipPolicy
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean isMembershipRequired(long userId, long organizationId)
 		throws PortalException {
 
@@ -219,37 +216,19 @@ public abstract class BaseOrganizationMembershipPolicy
 			OrganizationLocalServiceUtil.getActionableDynamicQuery();
 
 		organizationActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<Organization>() {
+			(Organization organization) -> {
+				verifyPolicy(organization);
 
-				@Override
-				public void performAction(Organization organization)
-					throws PortalException {
+				ActionableDynamicQuery userGroupRoleActionableDynamicQuery =
+					UserGroupRoleLocalServiceUtil.getActionableDynamicQuery();
 
-					verifyPolicy(organization);
+				userGroupRoleActionableDynamicQuery.setGroupId(
+					organization.getGroupId());
+				userGroupRoleActionableDynamicQuery.setPerformActionMethod(
+					(UserGroupRole userGroupRole) -> verifyPolicy(
+						userGroupRole.getRole()));
 
-					ActionableDynamicQuery userGroupRoleActionableDynamicQuery =
-						UserGroupRoleLocalServiceUtil.
-							getActionableDynamicQuery();
-
-					userGroupRoleActionableDynamicQuery.setGroupId(
-						organization.getGroupId());
-					userGroupRoleActionableDynamicQuery.setPerformActionMethod(
-						new ActionableDynamicQuery.
-							PerformActionMethod<UserGroupRole>() {
-
-							@Override
-							public void performAction(
-									UserGroupRole userGroupRole)
-								throws PortalException {
-
-								verifyPolicy(userGroupRole.getRole());
-							}
-
-						});
-
-					userGroupRoleActionableDynamicQuery.performActions();
-				}
-
+				userGroupRoleActionableDynamicQuery.performActions();
 			});
 
 		organizationActionableDynamicQuery.performActions();

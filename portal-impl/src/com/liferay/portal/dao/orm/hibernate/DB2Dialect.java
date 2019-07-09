@@ -14,14 +14,14 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 /**
  * @author Shepherd Ching
  * @author Jian Cao
- * @author Laszlo Csontos
+ * @author László Csontos
  */
 public class DB2Dialect extends org.hibernate.dialect.DB2Dialect {
 

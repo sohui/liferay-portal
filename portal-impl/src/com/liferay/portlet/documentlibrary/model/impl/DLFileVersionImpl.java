@@ -25,10 +25,10 @@ import com.liferay.document.library.kernel.util.DLUtil;
 import com.liferay.dynamic.data.mapping.kernel.DDMStructure;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
 import java.io.IOException;
@@ -91,9 +91,8 @@ public class DLFileVersionImpl extends DLFileVersionBaseImpl {
 		if (_extraSettingsProperties == null) {
 			return super.getExtraSettings();
 		}
-		else {
-			return _extraSettingsProperties.toString();
-		}
+
+		return _extraSettingsProperties.toString();
 	}
 
 	@Override

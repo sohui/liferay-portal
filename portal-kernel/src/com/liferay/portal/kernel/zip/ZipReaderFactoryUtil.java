@@ -14,15 +14,16 @@
 
 package com.liferay.portal.kernel.zip;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public class ZipReaderFactoryUtil {
 
 	public static ZipReader getZipReader(File file) {
@@ -36,15 +37,10 @@ public class ZipReaderFactoryUtil {
 	}
 
 	public static ZipReaderFactory getZipReaderFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			ZipReaderFactoryUtil.class);
-
 		return _zipReaderFactory;
 	}
 
 	public void setZipReaderFactory(ZipReaderFactory zipReaderFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_zipReaderFactory = zipReaderFactory;
 	}
 

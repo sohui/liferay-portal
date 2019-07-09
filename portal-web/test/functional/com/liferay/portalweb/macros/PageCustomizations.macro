@@ -1,92 +1,54 @@
-<definition>
-	<command name="enableSectionCustomizableCP">
-		<var name="key_columnId" value="${columnId}" />
+definition {
 
-		<execute macro="SitePageNavigator#gotoEditPage">
-			<var name="page" value="${pageName}" />
-		</execute>
+	macro enableSectionCustomizableCP {
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "${pageName}");
 
-		<execute macro="Navigator#gotoTab">
-			<var name="tab" value="Advanced" />
-		</execute>
+		Navigator.gotoNavTab(navTab = "Advanced");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Customization Settings" />
-		</execute>
+		Panel.expandPanel(panel = "Customization Settings");
 
-		<execute function="Check#checkToggleSwitch" locator1="SitePagesEditPage#CUSTOMIZATION_SETTINGS_SHOW_CUSTOMIZABLE_SECTIONS" />
+		Check.checkToggleSwitch(locator1 = "SitePagesEditPage#CUSTOMIZATION_SETTINGS_SHOW_CUSTOMIZABLE_SECTIONS");
 
-		<execute function="Check#checkToggleSwitch" locator1="SitePagesEditPage#CUSTOMIZATION_SETTINGS_CUSTOMIZABLE_COLUMN" />
+		Check.toggleSwitch(
+			key_columnId = "${columnId}",
+			locator1 = "SitePagesEditPage#CUSTOMIZATION_SETTINGS_CUSTOMIZABLE_COLUMN_CHECKBOX");
 
-		<execute macro="PortletEntry#save" />
+		Button.clickSave();
+	}
 
-		<execute macro="Navigator#gotoTab">
-			<var name="tab" value="Advanced" />
-		</execute>
+	macro gotoCustomizedPageInfo {
+		Click(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Customization Settings" />
-		</execute>
+		if (isSet(viewDefaultPage)) {
+			var key_menuItem = "View Page without my customizations";
 
-		<execute function="Check#checkToggleSwitch" locator1="SitePagesEditPage#CUSTOMIZATION_SETTINGS_SHOW_CUSTOMIZABLE_SECTIONS" />
+			MenuItem.click(menuItem = "View Page without my customizations");
+		}
+		else {
+			var key_menuItem = "Reset My Customizations";
 
-		<execute function="AssertChecked#assertCheckedToggleSwitch" locator1="SitePagesEditPage#CUSTOMIZATION_SETTINGS_CUSTOMIZABLE_COLUMN" />
-	</command>
+			MenuItem.clickNoError(menuItem = "Reset My Customizations");
 
-	<command name="enableSectionCustomizablePG">
-		<var name="key_columnId" value="${columnId}" />
+			AssertConfirm(value1 = "Are you sure you want to reset your customizations to default?");
+		}
+	}
 
-		<execute function="Check#checkToggleSwitch" locator1="SitePagesEditPage#CUSTOMIZATION_SETTINGS_SHOW_CUSTOMIZABLE_SECTIONS" />
+	macro viewCustomizablePagePG {
+		Click(locator1 = "Icon#PAGE_CUSTOMIZATION_ELLIPSIS");
 
-		<execute function="Check#checkToggleSwitch" locator1="SitePagesEditPage#CUSTOMIZATION_SETTINGS_CUSTOMIZABLE_COLUMN_CHECKBOX" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Home#PAGE_CUSTOMIZATION_MESSAGE_INFO",
+			value1 = "You can customize this page.");
 
-		<execute function="AssertClick#pauseAssertTextClickAt" locator1="Button#SAVE" value1="Save" />
+		AssertTextEquals(
+			locator1 = "Home#PAGE_CUSTOMIZATION_VIEW_DEFAULT_PAGE",
+			value1 = "View Page without my customizations");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		AssertTextEquals(
+			locator1 = "Home#PAGE_CUSTOMIZATION_RESET_MY_CUSTOMIZATIONS",
+			value1 = "Reset My Customizations");
+	}
 
-	<command name="gotoCustomizationSettingsPG">
-		<execute macro="Navigator#gotoTab">
-			<var name="tab" value="Advanced" />
-		</execute>
-
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Customization Settings" />
-		</execute>
-	</command>
-
-	<command name="gotoCustomizedPageInfo">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-
-		<if>
-			<isset var="viewDefaultPage" />
-			<then>
-				<var name="key_menuItem" value="View Page without my customizations" />
-
-				<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="View Page without my customizations" />
-			</then>
-			<else>
-				<var name="key_menuItem" value="Reset My Customizations" />
-
-				<execute function="AssertClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Reset My Customizations" />
-				<execute function="Confirm" value1="Are you sure you want to reset your customizations to default?" />
-			</else>
-		</if>
-	</command>
-
-	<command name="gotoViewMyCustomizedPage">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-
-		<var name="key_menuItem" value="View My Customized Page" />
-
-		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="View My Customized Page" />
-	</command>
-
-	<command name="viewCustomizablePagePG">
-		<execute function="Click" locator1="Dockbar#PAGE_INFO_MESSAGE_ICON" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="Home#PAGE_CUSTOMIZATION_MESSAGE_INFO" value1="You can customize this page." />
-		<execute function="AssertTextEquals" locator1="Home#PAGE_CUSTOMIZATION_VIEW_DEFAULT_PAGE" value1="View Page without my customizations" />
-		<execute function="AssertTextEquals" locator1="Home#PAGE_CUSTOMIZATION_RESET_MY_CUSTOMIZATIONS" value1="Reset My Customizations" />
-	</command>
-</definition>
+}

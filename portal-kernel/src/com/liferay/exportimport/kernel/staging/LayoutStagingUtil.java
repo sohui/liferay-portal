@@ -14,6 +14,7 @@
 
 package com.liferay.exportimport.kernel.staging;
 
+import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
@@ -21,11 +22,14 @@ import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
 import com.liferay.portal.kernel.model.LayoutSetStagingHandler;
 import com.liferay.portal.kernel.model.LayoutStagingHandler;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public class LayoutStagingUtil {
 
 	public static LayoutRevision getLayoutRevision(Layout layout) {
@@ -56,7 +60,26 @@ public class LayoutStagingUtil {
 		return _layoutStaging.isBranchingLayoutSet(group, privateLayout);
 	}
 
-	private static final LayoutStaging _layoutStaging =
-		ProxyFactory.newServiceTrackedInstance(LayoutStaging.class);
+	public static Layout mergeLayoutRevisionIntoLayout(Layout layout) {
+		return _layoutStaging.mergeLayoutRevisionIntoLayout(layout);
+	}
+
+	public static LayoutSet mergeLayoutSetRevisionIntoLayoutSet(
+		LayoutSet layoutSet) {
+
+		return _layoutStaging.mergeLayoutSetRevisionIntoLayoutSet(layoutSet);
+	}
+
+	public static boolean prepareLayoutStagingHandler(
+		PortletDataContext portletDataContext, Layout layout) {
+
+		return _layoutStaging.prepareLayoutStagingHandler(
+			portletDataContext, layout);
+	}
+
+	private static volatile LayoutStaging _layoutStaging =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			LayoutStaging.class, LayoutStagingUtil.class, "_layoutStaging",
+			false);
 
 }

@@ -14,9 +14,13 @@
 
 package com.liferay.portal.service.impl;
 
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.expando.kernel.model.ExpandoColumn;
+import com.liferay.expando.kernel.model.ExpandoTable;
+import com.liferay.petra.encryptor.Encryptor;
+import com.liferay.petra.encryptor.EncryptorException;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
-import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
@@ -33,6 +37,7 @@ import com.liferay.portal.kernel.instance.lifecycle.PortalInstanceLifecycleManag
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.messaging.async.Async;
 import com.liferay.portal.kernel.model.Account;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyConstants;
@@ -48,34 +53,31 @@ import com.liferay.portal.kernel.model.PasswordPolicy;
 import com.liferay.portal.kernel.model.PortalPreferences;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.SystemEvent;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.VirtualHost;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineHelperUtil;
 import com.liferay.portal.kernel.search.SearchException;
-import com.liferay.portal.kernel.search.facet.AssetEntriesFacet;
 import com.liferay.portal.kernel.search.facet.Facet;
 import com.liferay.portal.kernel.search.facet.ScopeFacet;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcher;
-import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcherManager;
 import com.liferay.portal.kernel.search.facet.faceted.searcher.FacetedSearcherManagerUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -92,8 +94,6 @@ import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
 import com.liferay.registry.ServiceTracker;
 import com.liferay.registry.ServiceTrackerCustomizer;
-import com.liferay.util.Encryptor;
-import com.liferay.util.EncryptorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -154,7 +154,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		// Company
 
-		virtualHostname = StringUtil.toLowerCase(virtualHostname.trim());
+		virtualHostname = StringUtil.toLowerCase(
+			StringUtil.trim(virtualHostname));
 
 		if (Validator.isNull(webId) ||
 			webId.equals(PropsValues.COMPANY_DEFAULT_WEB_ID) ||
@@ -305,11 +306,10 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		preregisterCompany(company.getCompanyId());
 
-		CompanyProvider currentCompanyProvider =
-			_companyProviderWrapper.getCompanyProvider();
-
 		Locale localeThreadLocalDefaultLocale =
 			LocaleThreadLocal.getDefaultLocale();
+		Locale localeThreadSiteDefaultLocale =
+			LocaleThreadLocal.getSiteDefaultLocale();
 
 		try {
 			Locale companyDefaultLocale = LocaleUtil.fromLanguageId(
@@ -317,10 +317,9 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 			LocaleThreadLocal.setDefaultLocale(companyDefaultLocale);
 
-			final long companyId = company.getCompanyId();
+			LocaleThreadLocal.setSiteDefaultLocale(null);
 
-			_companyProviderWrapper.setCompanyProvider(
-				new CustomCompanyProvider(companyId));
+			final long companyId = company.getCompanyId();
 
 			// Key
 
@@ -368,6 +367,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 					defaultUser.getLocale(), "welcome", null, false);
 
 				defaultUser.setGreeting(greeting + StringPool.EXCLAMATION);
+
 				defaultUser.setLoginDate(now);
 				defaultUser.setFailedLoginAttempts(0);
 				defaultUser.setAgreedToTermsOfUse(true);
@@ -424,7 +424,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 			// Default admin
 
-			if (userPersistence.countByCompanyId(companyId) == 1) {
+			if (userPersistence.countByCompanyId(companyId) == 0) {
 				String emailAddress =
 					PropsValues.DEFAULT_ADMIN_EMAIL_ADDRESS_PREFIX + "@" + mx;
 
@@ -455,9 +455,9 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 				});
 		}
 		finally {
-			_companyProviderWrapper.setCompanyProvider(currentCompanyProvider);
-
 			LocaleThreadLocal.setDefaultLocale(localeThreadLocalDefaultLocale);
+			LocaleThreadLocal.setSiteDefaultLocale(
+				localeThreadSiteDefaultLocale);
 		}
 
 		return company;
@@ -507,6 +507,13 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 			return doDeleteCompany(companyId);
 		}
+		catch (PortalException pe) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
+			throw pe;
+		}
 		finally {
 			CompanyThreadLocal.setCompanyId(currentCompanyId);
 			CompanyThreadLocal.setDeleteInProcess(deleteInProcess);
@@ -549,7 +556,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	 */
 	@Override
 	public Company fetchCompanyByVirtualHost(String virtualHostname) {
-		virtualHostname = StringUtil.toLowerCase(virtualHostname.trim());
+		virtualHostname = StringUtil.toLowerCase(
+			StringUtil.trim(virtualHostname));
 
 		VirtualHost virtualHost = virtualHostPersistence.fetchByHostname(
 			virtualHostname);
@@ -644,7 +652,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		throws PortalException {
 
 		try {
-			virtualHostname = StringUtil.toLowerCase(virtualHostname.trim());
+			virtualHostname = StringUtil.toLowerCase(
+				StringUtil.trim(virtualHostname));
 
 			VirtualHost virtualHost = virtualHostPersistence.findByHostname(
 				virtualHostname);
@@ -783,18 +792,11 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		long companyId, long userId, String portletId, long groupId,
 		String type, String keywords, int start, int end) {
 
-		FacetedSearcherManager facetedSearcherManager =
-			FacetedSearcherManagerUtil.getFacetedSearcherManager();
-
 		FacetedSearcher facetedSearcher =
-			facetedSearcherManager.createFacetedSearcher();
+			FacetedSearcherManagerUtil.createFacetedSearcher();
 
 		SearchContext searchContext = createSearchContext(
 			companyId, userId, portletId, groupId, keywords, start, end);
-
-		addAssetEntriesFacet(searchContext);
-
-		addScopeFacet(searchContext);
 
 		try {
 			return facetedSearcher.search(searchContext);
@@ -823,12 +825,11 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		// Company
 
-		virtualHostname = StringUtil.toLowerCase(virtualHostname.trim());
+		virtualHostname = StringUtil.toLowerCase(
+			StringUtil.trim(virtualHostname));
 
-		if (!active) {
-			if (companyId == PortalInstances.getDefaultCompanyId()) {
-				active = true;
-			}
+		if (!active && (companyId == PortalInstances.getDefaultCompanyId())) {
+			active = true;
 		}
 
 		Company company = companyPersistence.findByPrimaryKey(companyId);
@@ -860,7 +861,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	 * @param  virtualHostname the company's virtual host name
 	 * @param  mx the company's mail domain
 	 * @param  homeURL the company's home URL (optionally <code>null</code>)
-	 * @param  logo whether to update the company's logo
+	 * @param  hasLogo if the company has a custom logo
 	 * @param  logoBytes the new logo image data
 	 * @param  name the company's account name(optionally <code>null</code>)
 	 * @param  legalName the company's account legal name (optionally
@@ -882,14 +883,15 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	@Override
 	public Company updateCompany(
 			long companyId, String virtualHostname, String mx, String homeURL,
-			boolean logo, byte[] logoBytes, String name, String legalName,
+			boolean hasLogo, byte[] logoBytes, String name, String legalName,
 			String legalId, String legalType, String sicCode,
 			String tickerSymbol, String industry, String type, String size)
 		throws PortalException {
 
 		// Company
 
-		virtualHostname = StringUtil.toLowerCase(virtualHostname.trim());
+		virtualHostname = StringUtil.toLowerCase(
+			StringUtil.trim(virtualHostname));
 
 		Company company = companyPersistence.findByPrimaryKey(companyId);
 
@@ -907,7 +909,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		company.setHomeURL(homeURL);
 
-		PortalUtil.updateImageId(company, logo, logoBytes, "logoId", 0, 0, 0);
+		PortalUtil.updateImageId(
+			company, hasLogo, logoBytes, "logoId", 0, 0, 0);
 
 		companyPersistence.update(company);
 
@@ -922,50 +925,6 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		company = updateVirtualHostname(companyId, virtualHostname);
 
 		return company;
-	}
-
-	/**
-	 * Update the company with additional account information.
-	 *
-	 * @param      companyId the primary key of the company
-	 * @param      virtualHostname the company's virtual host name
-	 * @param      mx the company's mail domain
-	 * @param      homeURL the company's home URL (optionally <code>null</code>)
-	 * @param      name the company's account name(optionally <code>null</code>)
-	 * @param      legalName the company's account legal name (optionally
-	 *             <code>null</code>)
-	 * @param      legalId the company's account legal ID (optionally
-	 *             <code>null</code>)
-	 * @param      legalType the company's account legal type (optionally
-	 *             <code>null</code>)
-	 * @param      sicCode the company's account SIC code (optionally
-	 *             <code>null</code>)
-	 * @param      tickerSymbol the company's account ticker symbol (optionally
-	 *             <code>null</code>)
-	 * @param      industry the company's account industry (optionally
-	 *             <code>null</code>)
-	 * @param      type the company's account type (optionally
-	 *             <code>null</code>)
-	 * @param      size the company's account size (optionally
-	 *             <code>null</code>)
-	 * @return     the company with the primary key
-	 * @deprecated As of 7.0.0, replaced by {@link #updateCompany(long, String,
-	 *             String, String, boolean, byte[], String, String, String,
-	 *             String, String, String, String, String, String)}
-	 */
-	@Deprecated
-	@Override
-	public Company updateCompany(
-			long companyId, String virtualHostname, String mx, String homeURL,
-			String name, String legalName, String legalId, String legalType,
-			String sicCode, String tickerSymbol, String industry, String type,
-			String size)
-		throws PortalException {
-
-		return updateCompany(
-			companyId, virtualHostname, mx, homeURL, true, null, name,
-			legalName, legalId, legalType, sicCode, tickerSymbol, industry,
-			type, size);
 	}
 
 	/**
@@ -986,6 +945,77 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		user.setTimeZoneId(timeZoneId);
 
 		userPersistence.update(user);
+
+		updateDisplayGroupNames(companyId);
+	}
+
+	@Async
+	@Override
+	public void updateDisplayGroupNames(long companyId) throws PortalException {
+		User user = userLocalService.getDefaultUser(companyId);
+
+		Locale locale = user.getLocale();
+
+		if (locale.equals(LocaleUtil.getDefault())) {
+			return;
+		}
+
+		ActionableDynamicQuery groupActionableDynamicQuery =
+			groupLocalService.getActionableDynamicQuery();
+
+		groupActionableDynamicQuery.setAddCriteriaMethod(
+			dynamicQuery -> {
+				Property activeProperty = PropertyFactoryUtil.forName("active");
+
+				dynamicQuery.add(activeProperty.eq(Boolean.TRUE));
+
+				Property nameProperty = PropertyFactoryUtil.forName("name");
+
+				dynamicQuery.add(nameProperty.isNotNull());
+
+				Property typeProperty = PropertyFactoryUtil.forName("type");
+
+				dynamicQuery.add(
+					typeProperty.ne(GroupConstants.TYPE_SITE_SYSTEM));
+			});
+		groupActionableDynamicQuery.setCompanyId(user.getCompanyId());
+		groupActionableDynamicQuery.setPerformActionMethod(
+			(Group group) -> {
+				Map<Locale, String> nameMap = group.getNameMap();
+
+				if (MapUtil.isEmpty(nameMap)) {
+					return;
+				}
+
+				String groupDefaultName = nameMap.get(locale);
+
+				if (Validator.isNotNull(groupDefaultName)) {
+					return;
+				}
+
+				String oldGroupDefaultName = nameMap.get(
+					LocaleUtil.getDefault());
+
+				if (_log.isWarnEnabled()) {
+					StringBundler sb = new StringBundler(5);
+
+					sb.append("No name was found for locale ");
+					sb.append(locale);
+					sb.append(". Using \"");
+					sb.append(oldGroupDefaultName);
+					sb.append("\" as the name instead.");
+
+					_log.warn(sb.toString());
+				}
+
+				nameMap.put(locale, oldGroupDefaultName);
+
+				group.setNameMap(nameMap);
+
+				groupLocalService.updateGroup(group);
+			});
+
+		groupActionableDynamicQuery.performActions();
 	}
 
 	/**
@@ -1088,12 +1118,13 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			List<String> resetKeys = new ArrayList<>();
 
 			for (Map.Entry<String, String> entry : properties.entrySet()) {
-				String key = entry.getKey();
 				String value = entry.getValue();
 
 				if (value.equals(Portal.TEMP_OBFUSCATION_VALUE)) {
 					continue;
 				}
+
+				String key = entry.getKey();
 
 				String propsUtilValue = PropsUtil.get(key);
 
@@ -1184,13 +1215,12 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	}
 
 	protected void addAssetEntriesFacet(SearchContext searchContext) {
-		Facet assetEntriesFacet = new AssetEntriesFacet(searchContext);
-
-		assetEntriesFacet.setStatic(true);
-
-		searchContext.addFacet(assetEntriesFacet);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	protected void addScopeFacet(SearchContext searchContext) {
 		Facet scopeFacet = new ScopeFacet(searchContext);
 
@@ -1247,23 +1277,33 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		// Company
 
-		final Company company = companyPersistence.remove(companyId);
+		final Company company = companyPersistence.findByPrimaryKey(companyId);
+
+		preunregisterCompany(company);
+
+		companyPersistence.remove(company);
 
 		// Account
 
 		accountLocalService.deleteAccount(company.getAccountId());
 
-		// Organizations
+		// Expando
 
-		DeleteOrganizationActionableDynamicQuery
-			deleteOrganizationActionableDynamicQuery =
-				new DeleteOrganizationActionableDynamicQuery();
+		DeleteExpandoColumnActionableDynamicQuery
+			deleteExpandoColumnActionableDynamicQuery =
+				new DeleteExpandoColumnActionableDynamicQuery(
+					company.getCompanyId());
 
-		deleteOrganizationActionableDynamicQuery.setCompanyId(companyId);
+		deleteExpandoColumnActionableDynamicQuery.performActions();
 
-		deleteOrganizationActionableDynamicQuery.performActions();
+		DeleteExpandoTableActionableDynamicQuery
+			deleteExpandoTableActionableDynamicQuery =
+				new DeleteExpandoTableActionableDynamicQuery(
+					company.getCompanyId());
 
-		// Groups
+		deleteExpandoTableActionableDynamicQuery.performActions();
+
+		// Group
 
 		DeleteGroupActionableDynamicQuery deleteGroupActionableDynamicQuery =
 			new DeleteGroupActionableDynamicQuery();
@@ -1291,17 +1331,9 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		layoutPrototypeActionableDynamicQuery.setCompanyId(companyId);
 		layoutPrototypeActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<LayoutPrototype>() {
-
-				@Override
-				public void performAction(LayoutPrototype layoutPrototype)
-					throws PortalException {
-
-					layoutPrototypeLocalService.deleteLayoutPrototype(
-						layoutPrototype);
-				}
-
-			});
+			(LayoutPrototype layoutPrototype) ->
+				layoutPrototypeLocalService.deleteLayoutPrototype(
+					layoutPrototype));
 
 		layoutPrototypeActionableDynamicQuery.performActions();
 
@@ -1312,40 +1344,34 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		layoutSetPrototypeActionableDynamicQuery.setCompanyId(companyId);
 		layoutSetPrototypeActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.
-				PerformActionMethod<LayoutSetPrototype>() {
-
-				@Override
-				public void performAction(LayoutSetPrototype layoutSetPrototype)
-					throws PortalException {
-
-					layoutSetPrototypeLocalService.deleteLayoutSetPrototype(
-						layoutSetPrototype);
-				}
-
-			});
+			(LayoutSetPrototype layoutSetPrototype) ->
+				layoutSetPrototypeLocalService.deleteLayoutSetPrototype(
+					layoutSetPrototype));
 
 		layoutSetPrototypeActionableDynamicQuery.performActions();
 
-		// Roles
+		// Organization
+
+		DeleteOrganizationActionableDynamicQuery
+			deleteOrganizationActionableDynamicQuery =
+				new DeleteOrganizationActionableDynamicQuery();
+
+		deleteOrganizationActionableDynamicQuery.setCompanyId(companyId);
+
+		deleteOrganizationActionableDynamicQuery.performActions();
+
+		// Role
 
 		ActionableDynamicQuery roleActionableDynamicQuery =
 			roleLocalService.getActionableDynamicQuery();
 
 		roleActionableDynamicQuery.setCompanyId(companyId);
 		roleActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<Role>() {
-
-				@Override
-				public void performAction(Role role) throws PortalException {
-					roleLocalService.deleteRole(role);
-				}
-
-			});
+			(Role role) -> roleLocalService.deleteRole(role));
 
 		roleActionableDynamicQuery.performActions();
 
-		// User groups
+		// User group
 
 		DeleteUserGroupActionableDynamicQuery
 			deleteUserGroupActionableDynamicQuery =
@@ -1375,7 +1401,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		portalPreferencesLocalService.deletePortalPreferences(
 			portalPreferences);
 
-		// Portlets
+		// Portlet
 
 		List<Portlet> portlets = portletPersistence.findByCompanyId(companyId);
 
@@ -1385,22 +1411,17 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		portletLocalService.removeCompanyPortletsPool(companyId);
 
-		// Users
+		// User
 
 		ActionableDynamicQuery userActionableDynamicQuery =
 			userLocalService.getActionableDynamicQuery();
 
 		userActionableDynamicQuery.setCompanyId(companyId);
 		userActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<User>() {
-
-				@Override
-				public void performAction(User user) throws PortalException {
-					if (!user.isDefaultUser()) {
-						userLocalService.deleteUser(user.getUserId());
-					}
+			(User user) -> {
+				if (!user.isDefaultUser()) {
+					userLocalService.deleteUser(user.getUserId());
 				}
-
 			});
 
 		userActionableDynamicQuery.performActions();
@@ -1415,6 +1436,15 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			virtualHostLocalService.fetchVirtualHost(companyId, 0);
 
 		virtualHostLocalService.deleteVirtualHost(companyVirtualHost);
+
+		// System event
+
+		DeleteSystemEventActionableDynamicQuery
+			deleteSystemEventActionableDynamicQuery =
+				new DeleteSystemEventActionableDynamicQuery(
+					company.getCompanyId());
+
+		deleteSystemEventActionableDynamicQuery.performActions();
 
 		// Portal instance
 
@@ -1437,11 +1467,15 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	}
 
 	protected void preregisterCompany(long companyId) {
+		SearchEngineHelperUtil.initialize(companyId);
+	}
+
+	protected void preunregisterCompany(Company company) {
 		PortalInstanceLifecycleManager portalInstanceLifecycleManager =
 			_serviceTracker.getService();
 
 		if (portalInstanceLifecycleManager != null) {
-			portalInstanceLifecycleManager.preregisterCompany(companyId);
+			portalInstanceLifecycleManager.preunregisterCompany(company);
 		}
 	}
 
@@ -1603,8 +1637,55 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 				}
 			}
 			catch (NoSuchVirtualHostException nsvhe) {
+
+				// LPS-52675
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(nsvhe, nsvhe);
+				}
 			}
 		}
+	}
+
+	protected class DeleteExpandoColumnActionableDynamicQuery {
+
+		protected DeleteExpandoColumnActionableDynamicQuery(long companyId) {
+			_actionableDynamicQuery =
+				expandoColumnLocalService.getActionableDynamicQuery();
+
+			_actionableDynamicQuery.setCompanyId(companyId);
+			_actionableDynamicQuery.setPerformActionMethod(
+				(ExpandoColumn expandoColumn) ->
+					expandoColumnLocalService.deleteExpandoColumn(
+						expandoColumn));
+		}
+
+		protected void performActions() throws PortalException {
+			_actionableDynamicQuery.performActions();
+		}
+
+		private ActionableDynamicQuery _actionableDynamicQuery;
+
+	}
+
+	protected class DeleteExpandoTableActionableDynamicQuery {
+
+		protected DeleteExpandoTableActionableDynamicQuery(long companyId) {
+			_actionableDynamicQuery =
+				expandoTableLocalService.getActionableDynamicQuery();
+
+			_actionableDynamicQuery.setCompanyId(companyId);
+			_actionableDynamicQuery.setPerformActionMethod(
+				(ExpandoTable expandoTable) ->
+					expandoTableLocalService.deleteExpandoTable(expandoTable));
+		}
+
+		protected void performActions() throws PortalException {
+			_actionableDynamicQuery.performActions();
+		}
+
+		private ActionableDynamicQuery _actionableDynamicQuery;
+
 	}
 
 	protected class DeleteGroupActionableDynamicQuery {
@@ -1614,37 +1695,23 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 				groupLocalService.getActionableDynamicQuery();
 
 			_actionableDynamicQuery.setAddCriteriaMethod(
-				new ActionableDynamicQuery.AddCriteriaMethod() {
+				dynamicQuery -> {
+					Property parentGroupIdProperty =
+						PropertyFactoryUtil.forName("parentGroupId");
 
-					@Override
-					public void addCriteria(DynamicQuery dynamicQuery) {
-						Property parentGroupIdProperty =
-							PropertyFactoryUtil.forName("parentGroupId");
+					dynamicQuery.add(parentGroupIdProperty.eq(_parentGroupId));
 
-						dynamicQuery.add(
-							parentGroupIdProperty.eq(_parentGroupId));
+					Property siteProperty = PropertyFactoryUtil.forName("site");
 
-						Property siteProperty = PropertyFactoryUtil.forName(
-							"site");
-
-						dynamicQuery.add(siteProperty.eq(Boolean.TRUE));
-					}
-
+					dynamicQuery.add(siteProperty.eq(Boolean.TRUE));
 				});
 			_actionableDynamicQuery.setPerformActionMethod(
-				new ActionableDynamicQuery.PerformActionMethod<Group>() {
+				(Group group) -> {
+					if (!PortalUtil.isSystemGroup(group.getGroupKey()) &&
+						!group.isCompany() && !group.isStagingGroup()) {
 
-					@Override
-					public void performAction(Group group)
-						throws PortalException {
-
-						if (!PortalUtil.isSystemGroup(group.getGroupKey()) &&
-							!group.isCompany()) {
-
-							deleteGroup(group);
-						}
+						deleteGroup(group);
 					}
-
 				});
 		}
 
@@ -1693,28 +1760,15 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 				organizationLocalService.getActionableDynamicQuery();
 
 			_actionableDynamicQuery.setAddCriteriaMethod(
-				new ActionableDynamicQuery.AddCriteriaMethod() {
+				dynamicQuery -> {
+					Property property = PropertyFactoryUtil.forName(
+						"parentOrganizationId");
 
-					@Override
-					public void addCriteria(DynamicQuery dynamicQuery) {
-						Property property = PropertyFactoryUtil.forName(
-							"parentOrganizationId");
-
-						dynamicQuery.add(property.eq(_parentOrganizationId));
-					}
-
+					dynamicQuery.add(property.eq(_parentOrganizationId));
 				});
 			_actionableDynamicQuery.setPerformActionMethod(
-				new ActionableDynamicQuery.PerformActionMethod<Organization>() {
-
-					@Override
-					public void performAction(Organization organization)
-						throws PortalException {
-
-						deleteOrganization(organization);
-					}
-
-				});
+				(Organization organization) -> deleteOrganization(
+					organization));
 		}
 
 		protected void deleteOrganization(Organization organization)
@@ -1748,6 +1802,26 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 	}
 
+	protected class DeleteSystemEventActionableDynamicQuery {
+
+		protected DeleteSystemEventActionableDynamicQuery(long companyId) {
+			_actionableDynamicQuery =
+				systemEventLocalService.getActionableDynamicQuery();
+
+			_actionableDynamicQuery.setCompanyId(companyId);
+			_actionableDynamicQuery.setPerformActionMethod(
+				(SystemEvent systemEvent) ->
+					systemEventLocalService.deleteSystemEvent(systemEvent));
+		}
+
+		protected void performActions() throws PortalException {
+			_actionableDynamicQuery.performActions();
+		}
+
+		private ActionableDynamicQuery _actionableDynamicQuery;
+
+	}
+
 	protected class DeleteUserGroupActionableDynamicQuery {
 
 		protected DeleteUserGroupActionableDynamicQuery(long companyId) {
@@ -1756,16 +1830,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 			_actionableDynamicQuery.setCompanyId(companyId);
 			_actionableDynamicQuery.setPerformActionMethod(
-				new ActionableDynamicQuery.PerformActionMethod<UserGroup>() {
-
-					@Override
-					public void performAction(UserGroup userGroup)
-						throws PortalException {
-
-						userGroupLocalService.deleteUserGroup(userGroup);
-					}
-
-				});
+				(UserGroup userGroup) -> userGroupLocalService.deleteUserGroup(
+					userGroup));
 		}
 
 		protected void performActions() throws PortalException {
@@ -1803,33 +1869,10 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	private static final Log _log = LogFactoryUtil.getLog(
 		CompanyLocalServiceImpl.class);
 
-	@BeanReference(type = CompanyProviderWrapper.class)
-	private CompanyProviderWrapper _companyProviderWrapper;
-
 	private final Set<Company> _pendingCompanies = new HashSet<>();
 	private final ServiceTracker
 		<PortalInstanceLifecycleManager, PortalInstanceLifecycleManager>
 			_serviceTracker;
-
-	private static class CustomCompanyProvider implements CompanyProvider {
-
-		public CustomCompanyProvider(long companyId) {
-			_companyId = companyId;
-		}
-
-		@Override
-		public long getCompanyId() {
-			return _companyId;
-		}
-
-		@Override
-		public String getCompanyIdName() {
-			return "companyId";
-		}
-
-		private final long _companyId;
-
-	}
 
 	private class PortalInstanceLifecycleManagerServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer

@@ -14,23 +14,23 @@
 
 package com.liferay.push.notifications.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
 import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
-
 import com.liferay.push.notifications.service.PushNotificationsDeviceServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * Provides the HTTP utility for the
- * {@link PushNotificationsDeviceServiceUtil} service utility. The
+ * <code>PushNotificationsDeviceServiceUtil</code> service
+ * utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it requires an additional
- * {@link HttpPrincipal} parameter.
+ * <code>HttpPrincipal</code> parameter.
  *
  * <p>
  * The benefits of using the HTTP utility is that it is fast and allows for
@@ -49,23 +49,24 @@ import com.liferay.push.notifications.service.PushNotificationsDeviceServiceUtil
  *
  * @author Bruno Farache
  * @see PushNotificationsDeviceServiceSoap
- * @see HttpPrincipal
- * @see PushNotificationsDeviceServiceUtil
  * @generated
  */
 @ProviderType
 public class PushNotificationsDeviceServiceHttp {
-	public static com.liferay.push.notifications.model.PushNotificationsDevice addPushNotificationsDevice(
-		HttpPrincipal httpPrincipal, java.lang.String token,
-		java.lang.String platform)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(PushNotificationsDeviceServiceUtil.class,
-					"addPushNotificationsDevice",
-					_addPushNotificationsDeviceParameterTypes0);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey, token,
-					platform);
+	public static com.liferay.push.notifications.model.PushNotificationsDevice
+			addPushNotificationsDevice(
+				HttpPrincipal httpPrincipal, String token, String platform)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				PushNotificationsDeviceServiceUtil.class,
+				"addPushNotificationsDevice",
+				_addPushNotificationsDeviceParameterTypes0);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, token, platform);
 
 			Object returnObj = null;
 
@@ -73,14 +74,19 @@ public class PushNotificationsDeviceServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
-			return (com.liferay.push.notifications.model.PushNotificationsDevice)returnObj;
+			return (com.liferay.push.notifications.model.
+				PushNotificationsDevice)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -89,16 +95,19 @@ public class PushNotificationsDeviceServiceHttp {
 		}
 	}
 
-	public static com.liferay.push.notifications.model.PushNotificationsDevice deletePushNotificationsDevice(
-		HttpPrincipal httpPrincipal, long pushNotificationsDeviceId)
+	public static com.liferay.push.notifications.model.PushNotificationsDevice
+			deletePushNotificationsDevice(
+				HttpPrincipal httpPrincipal, long pushNotificationsDeviceId)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(PushNotificationsDeviceServiceUtil.class,
-					"deletePushNotificationsDevice",
-					_deletePushNotificationsDeviceParameterTypes1);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					pushNotificationsDeviceId);
+		try {
+			MethodKey methodKey = new MethodKey(
+				PushNotificationsDeviceServiceUtil.class,
+				"deletePushNotificationsDevice",
+				_deletePushNotificationsDeviceParameterTypes1);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, pushNotificationsDeviceId);
 
 			Object returnObj = null;
 
@@ -106,14 +115,19 @@ public class PushNotificationsDeviceServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
-			return (com.liferay.push.notifications.model.PushNotificationsDevice)returnObj;
+			return (com.liferay.push.notifications.model.
+				PushNotificationsDevice)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -122,13 +136,16 @@ public class PushNotificationsDeviceServiceHttp {
 		}
 	}
 
-	public static com.liferay.push.notifications.model.PushNotificationsDevice deletePushNotificationsDevice(
-		HttpPrincipal httpPrincipal, java.lang.String token)
+	public static com.liferay.push.notifications.model.PushNotificationsDevice
+			deletePushNotificationsDevice(
+				HttpPrincipal httpPrincipal, String token)
 		throws com.liferay.portal.kernel.exception.PortalException {
+
 		try {
-			MethodKey methodKey = new MethodKey(PushNotificationsDeviceServiceUtil.class,
-					"deletePushNotificationsDevice",
-					_deletePushNotificationsDeviceParameterTypes2);
+			MethodKey methodKey = new MethodKey(
+				PushNotificationsDeviceServiceUtil.class,
+				"deletePushNotificationsDevice",
+				_deletePushNotificationsDeviceParameterTypes2);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, token);
 
@@ -138,14 +155,19 @@ public class PushNotificationsDeviceServiceHttp {
 				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 
-			return (com.liferay.push.notifications.model.PushNotificationsDevice)returnObj;
+			return (com.liferay.push.notifications.model.
+				PushNotificationsDevice)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -154,25 +176,31 @@ public class PushNotificationsDeviceServiceHttp {
 		}
 	}
 
-	public static void sendPushNotification(HttpPrincipal httpPrincipal,
-		long[] toUserIds, java.lang.String payload)
+	public static void sendPushNotification(
+			HttpPrincipal httpPrincipal, long[] toUserIds, String payload)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(PushNotificationsDeviceServiceUtil.class,
-					"sendPushNotification", _sendPushNotificationParameterTypes3);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					toUserIds, payload);
+		try {
+			MethodKey methodKey = new MethodKey(
+				PushNotificationsDeviceServiceUtil.class,
+				"sendPushNotification", _sendPushNotificationParameterTypes3);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, toUserIds, payload);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
@@ -182,26 +210,32 @@ public class PushNotificationsDeviceServiceHttp {
 		}
 	}
 
-	public static void sendPushNotification(HttpPrincipal httpPrincipal,
-		java.lang.String platform, java.util.List<java.lang.String> tokens,
-		java.lang.String payload)
+	public static void sendPushNotification(
+			HttpPrincipal httpPrincipal, String platform,
+			java.util.List<String> tokens, String payload)
 		throws com.liferay.portal.kernel.exception.PortalException {
-		try {
-			MethodKey methodKey = new MethodKey(PushNotificationsDeviceServiceUtil.class,
-					"sendPushNotification", _sendPushNotificationParameterTypes4);
 
-			MethodHandler methodHandler = new MethodHandler(methodKey,
-					platform, tokens, payload);
+		try {
+			MethodKey methodKey = new MethodKey(
+				PushNotificationsDeviceServiceUtil.class,
+				"sendPushNotification", _sendPushNotificationParameterTypes4);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, platform, tokens, payload);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
 			}
 			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				if (e instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						e;
 				}
 
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					e);
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
@@ -211,18 +245,22 @@ public class PushNotificationsDeviceServiceHttp {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(PushNotificationsDeviceServiceHttp.class);
-	private static final Class<?>[] _addPushNotificationsDeviceParameterTypes0 = new Class[] {
-			java.lang.String.class, java.lang.String.class
+	private static Log _log = LogFactoryUtil.getLog(
+		PushNotificationsDeviceServiceHttp.class);
+
+	private static final Class<?>[] _addPushNotificationsDeviceParameterTypes0 =
+		new Class[] {String.class, String.class};
+	private static final Class<?>[]
+		_deletePushNotificationsDeviceParameterTypes1 = new Class[] {
+			long.class
 		};
-	private static final Class<?>[] _deletePushNotificationsDeviceParameterTypes1 =
-		new Class[] { long.class };
-	private static final Class<?>[] _deletePushNotificationsDeviceParameterTypes2 =
-		new Class[] { java.lang.String.class };
-	private static final Class<?>[] _sendPushNotificationParameterTypes3 = new Class[] {
-			long[].class, java.lang.String.class
+	private static final Class<?>[]
+		_deletePushNotificationsDeviceParameterTypes2 = new Class[] {
+			String.class
 		};
-	private static final Class<?>[] _sendPushNotificationParameterTypes4 = new Class[] {
-			java.lang.String.class, java.util.List.class, java.lang.String.class
-		};
+	private static final Class<?>[] _sendPushNotificationParameterTypes3 =
+		new Class[] {long[].class, String.class};
+	private static final Class<?>[] _sendPushNotificationParameterTypes4 =
+		new Class[] {String.class, java.util.List.class, String.class};
+
 }

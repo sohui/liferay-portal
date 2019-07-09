@@ -14,14 +14,9 @@
 
 package com.liferay.portal.kernel.dao.jdbc;
 
-import com.liferay.portal.kernel.dao.db.DB;
-import com.liferay.portal.kernel.dao.db.DBManagerUtil;
-import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.jndi.JNDIUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.upgrade.dao.orm.UpgradeOptimizedConnectionProvider;
-import com.liferay.portal.kernel.upgrade.dao.orm.UpgradeOptimizedConnectionProviderRegistryUtil;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -123,7 +118,7 @@ public class DataAccess {
 	}
 
 	public static Connection getConnection() throws SQLException {
-		DataSource dataSource = _pacl.getDataSource();
+		DataSource dataSource = InfrastructureUtil.getDataSource();
 
 		return dataSource.getConnection();
 	}
@@ -131,29 +126,30 @@ public class DataAccess {
 	public static Connection getConnection(String location)
 		throws NamingException, SQLException {
 
-		DataSource dataSource = _pacl.getDataSource(location);
+		Properties properties = PropsUtil.getProperties(
+			PropsKeys.JNDI_ENVIRONMENT, true);
+
+		Context context = new InitialContext(properties);
+
+		DataSource dataSource = (DataSource)JNDIUtil.lookup(context, location);
 
 		return dataSource.getConnection();
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #getConnection()}
+	 */
+	@Deprecated
 	public static Connection getUpgradeOptimizedConnection()
 		throws SQLException {
-
-		DB db = DBManagerUtil.getDB();
-
-		DBType dbType = db.getDBType();
-
-		UpgradeOptimizedConnectionProvider upgradeOptimizedConnectionProvider =
-			UpgradeOptimizedConnectionProviderRegistryUtil.
-				getUpgradeOptimizedConnectionProvider(dbType);
-
-		if (upgradeOptimizedConnectionProvider != null) {
-			return upgradeOptimizedConnectionProvider.getConnection();
-		}
 
 		return getConnection();
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public interface PACL {
 
 		public DataSource getDataSource();
@@ -163,28 +159,5 @@ public class DataAccess {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(DataAccess.class);
-
-	private static final PACL _pacl = new NoPACL();
-
-	private static class NoPACL implements PACL {
-
-		@Override
-		public DataSource getDataSource() {
-			return InfrastructureUtil.getDataSource();
-		}
-
-		@Override
-		public DataSource getDataSource(String location)
-			throws NamingException {
-
-			Properties properties = PropsUtil.getProperties(
-				PropsKeys.JNDI_ENVIRONMENT, true);
-
-			Context context = new InitialContext(properties);
-
-			return (DataSource)JNDIUtil.lookup(context, location);
-		}
-
-	}
 
 }

@@ -8,25 +8,40 @@
 <tr><td rowspan="1" colspan="3">Dropdown</td></tr>
 </thead>
 <tbody>
+<tr>
+	<td>EMPTY_MESSAGE_DROPDOWN</td>
+	<td>//div[contains(@class,'empty-result-message')]//button[contains(@class,'dropdown-toggle')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENTRIES</td>
+	<td>//a[contains(@class,'dropdown') and contains(.,'Entries')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESULT</td>
+	<td>//div[contains(@class,'dropdown-menu')]//ul//li/button[text()='${key_option}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECTED_VALUE</td>
+	<td>//div[@class='option-selected']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TRIGGER</td>
+	<td>//a[*[name()='svg'][contains(@class,'icon-caret-double')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--FILTER-->
 <tr>
-	<td>FILTER</td>
-	<td>//*[@data-qa-id='filter']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILTER_STATUS</td>
-	<td>//*[@data-qa-id='filterstatus']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILTER_ORDER</td>
-	<td>//*[@data-qa-id='filterorder-by']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FILTER_VALUES</td>
-	<td>//*[@data-qa-id='filterValues']/li[contains(.,'${key_filterValue}')]/a</td>
+	<td>FILTER_AND_ORDER</td>
+	<td>//button[*[normalize-space(text())='Filter and Order']]</td>
 	<td></td>
 </tr>
 </tbody>

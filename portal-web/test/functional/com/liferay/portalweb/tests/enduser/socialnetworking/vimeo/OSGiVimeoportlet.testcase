@@ -1,33 +1,38 @@
-<definition component-name="portal-plugins-osgi">
-	<property name="portal.release" value="true" />
-	<property name="plugins.deployment.type" value="osgi" />
-	<property name="testray.main.component.name" value="Social Networking" />
+@component-name = "portal-plugins-osgi"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property plugins.deployment.type = "osgi";
+	property testray.main.component.name = "Social Networking";
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Test Page" />
-		</execute>
-	</set-up>
+	setUp {
+		User.firstLoginPG();
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-	<command name="VimeoPortletSmoke" priority="4">
-		<property name="portlet.plugins.includes" value="vimeo-portlet" />
+		SitePages.addPublicPage(pageName = "Test Page");
+	}
 
-		<var name="appName" value="Vimeo" />
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Page" />
-		</execute>
+	@priority = "4"
+	test VimeoPortletSmoke {
+		property portlet.plugins.includes = "vimeo-portlet";
+		var appName = "Vimeo";
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Vimeo" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Page");
 
-		<execute function="AntCommand#antCommand" locator1="build-test.xml" value1="remove-plugin -Dplugin.name=vimeo-portlet" />
-	</command>
-</definition>
+		Portlet.addPG(portletName = "Vimeo");
+
+		AntCommand.antCommand(
+			locator1 = "build-test.xml",
+			value1 = "remove-plugin -Dplugin.name=vimeo-portlet");
+	}
+
+}

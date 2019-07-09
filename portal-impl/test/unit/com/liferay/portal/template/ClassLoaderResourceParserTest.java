@@ -14,10 +14,15 @@
 
 package com.liferay.portal.template;
 
+import com.liferay.petra.lang.ClassLoaderPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -38,7 +43,7 @@ public class ClassLoaderResourceParserTest {
 
 	@SuppressWarnings("deprecation")
 	@Test
-	public void testGetURL() {
+	public void testGetURL() throws MalformedURLException {
 		ClassLoaderResourceParser classLoaderResourceParser =
 			new ClassLoaderResourceParser();
 
@@ -55,11 +60,6 @@ public class ClassLoaderResourceParserTest {
 			classLoaderResourceParser.getURL(
 				TemplateConstants.THEME_LOADER_SEPARATOR));
 
-		Class<?> clazz = getClass();
-
-		classLoaderResourceParser = new ClassLoaderResourceParser(
-			clazz.getClassLoader());
-
 		String templateId = "DummyFile";
 
 		Assert.assertNull(classLoaderResourceParser.getURL(templateId));
@@ -72,13 +72,39 @@ public class ClassLoaderResourceParserTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
 			Assert.assertEquals(
 				"Loading " + templateId, logRecord.getMessage());
 		}
+
+		String contextName = "test-context";
+
+		URL dummyURL = new URL("file://");
+
+		ClassLoaderPool.register(
+			contextName,
+			new ClassLoader() {
+
+				@Override
+				public URL getResource(String name) {
+					if (name.equals(templateId)) {
+						return dummyURL;
+					}
+
+					return null;
+				}
+
+			});
+
+		Assert.assertSame(
+			dummyURL,
+			classLoaderResourceParser.getURL(
+				StringBundler.concat(
+					contextName, TemplateConstants.CLASS_LOADER_SEPARATOR,
+					templateId)));
 	}
 
 }

@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.dao.db;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,8 +30,11 @@ public abstract class BaseDBFactory implements DBFactory {
 		String majorVersion = StringUtil.toHexString(dbMajorVersion);
 		String minorVersion = StringUtil.toHexString(dbMinorVersion);
 
-		String version = majorVersion.concat(StringPool.POUND).concat(
-			minorVersion);
+		String version = majorVersion.concat(
+			StringPool.POUND
+		).concat(
+			minorVersion
+		);
 
 		DB db = _dbs.get(version);
 

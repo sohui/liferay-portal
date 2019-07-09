@@ -14,10 +14,10 @@
 
 package com.liferay.util.xml;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.IOException;
@@ -32,10 +32,12 @@ import org.dom4j.io.XMLWriter;
 import org.xml.sax.XMLReader;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Alan Zimmerman
- * @see com.liferay.petra.xml.Dom4jUtil
+ * @author     Brian Wing Shun Chan
+ * @author     Alan Zimmerman
+ * @see        com.liferay.petra.xml.Dom4jUtil
+ * @deprecated As of Judson (7.1.x)
  */
+@Deprecated
 public class Dom4jUtil {
 
 	public static String toString(Node node) throws IOException {
@@ -111,8 +113,8 @@ public class Dom4jUtil {
 
 		XMLReader xmlReader = null;
 
-		if (SecureXMLFactoryProviderUtil.getSecureXMLFactoryProvider()
-				!= null) {
+		if (SecureXMLFactoryProviderUtil.getSecureXMLFactoryProvider() !=
+				null) {
 
 			xmlReader = SecureXMLFactoryProviderUtil.newXMLReader();
 		}

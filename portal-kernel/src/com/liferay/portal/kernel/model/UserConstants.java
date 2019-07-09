@@ -14,19 +14,18 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.DigesterUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
+import com.liferay.users.admin.kernel.file.uploads.UserFileUploadsSettings;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Amos Fong
@@ -50,66 +49,36 @@ public class UserConstants {
 	public static final String USERS_EMAIL_ADDRESS_AUTO_SUFFIX = PropsUtil.get(
 		PropsKeys.USERS_EMAIL_ADDRESS_AUTO_SUFFIX);
 
-	/**
-	 * @deprecated As of 7.0.0 replaced by {@link #getPortraitURL(String,
-	 *             boolean, long, String)}
-	 */
-	@Deprecated
-	public static String getPortraitURL(
-		String imagePath, boolean male, long portraitId) {
-
-		if (!GetterUtil.getBoolean(
-				PropsUtil.get(PropsKeys.USERS_IMAGE_CHECK_TOKEN))) {
-
-			return getPortraitURL(imagePath, male, portraitId, null);
-		}
-
-		if (portraitId <= 0) {
-			return getPortraitURL(imagePath, male, 0, StringPool.BLANK);
-		}
-
-		try {
-			User user = UserLocalServiceUtil.fetchUserByPortraitId(portraitId);
-
-			if (user == null) {
-				return getPortraitURL(imagePath, male, 0, StringPool.BLANK);
-			}
-
-			return getPortraitURL(
-				imagePath, male, portraitId, user.getUserUuid());
-		}
-		catch (Exception e) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
-			}
-		}
-
-		return StringPool.BLANK;
-	}
-
 	public static String getPortraitURL(
 		String imagePath, boolean male, long portraitId, String userUuid) {
 
-		StringBundler sb = new StringBundler(9);
+		StringBundler sb = new StringBundler(8);
 
 		sb.append(imagePath);
-		sb.append("/user_");
 
-		if (male) {
-			sb.append("male");
+		boolean contactMaleEnabled = PrefsPropsUtil.getBoolean(
+			CompanyThreadLocal.getCompanyId(),
+			PropsKeys.
+				FIELD_ENABLE_COM_LIFERAY_PORTAL_KERNEL_MODEL_CONTACT_MALE);
+
+		if (contactMaleEnabled) {
+			if (male) {
+				sb.append("/user_male_portrait");
+			}
+			else {
+				sb.append("/user_female_portrait");
+			}
 		}
 		else {
-			sb.append("female");
+			sb.append("/user_portrait");
 		}
 
-		sb.append("_portrait?img_id=");
+		sb.append("?img_id=");
 		sb.append(portraitId);
 
-		if (GetterUtil.getBoolean(
-				PropsUtil.get(PropsKeys.USERS_IMAGE_CHECK_TOKEN))) {
-
+		if (_userFileUploadsSettings.isImageCheckToken()) {
 			sb.append("&img_id_token=");
-			sb.append(HttpUtil.encodeURL(DigesterUtil.digest(userUuid)));
+			sb.append(URLCodec.encodeURL(DigesterUtil.digest(userUuid)));
 		}
 
 		sb.append("&t=");
@@ -118,6 +87,9 @@ public class UserConstants {
 		return sb.toString();
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(UserConstants.class);
+	private static volatile UserFileUploadsSettings _userFileUploadsSettings =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			UserFileUploadsSettings.class, UserConstants.class,
+			"_userFileUploadsSettings", false);
 
 }

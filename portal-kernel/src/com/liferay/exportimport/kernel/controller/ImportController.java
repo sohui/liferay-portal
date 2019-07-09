@@ -19,9 +19,12 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 
 import java.io.File;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Daniel Kocsis
  */
+@ProviderType
 public interface ImportController extends ExportImportController {
 
 	public void importDataDeletions(

@@ -14,21 +14,25 @@
 
 package com.liferay.portal.kernel.dao.jdbc;
 
+import com.liferay.petra.concurrent.NoticeableThreadPoolExecutor;
+import com.liferay.petra.concurrent.ThreadPoolHandlerAdapter;
+import com.liferay.petra.executor.PortalExecutorManager;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
-import com.liferay.portal.kernel.nio.intraband.CancelingPortalExecutorManagerUtilAdvice;
-import com.liferay.portal.kernel.nio.intraband.PortalExecutorManagerUtilAdvice;
+import com.liferay.portal.kernel.nio.intraband.PortalExecutorManagerInvocationHandler;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.SwappableSecurityManager;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
+import com.liferay.portal.kernel.test.rule.NewEnvTestRule;
+import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtilAdvice;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.test.rule.AdviseWith;
-import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -41,15 +45,22 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,12 +76,25 @@ public class AutoBatchPreparedStatementUtilTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
+			CodeCoverageAssertor.INSTANCE, NewEnvTestRule.INSTANCE);
 
-	@AdviseWith(adviceClasses = {PropsUtilAdvice.class})
+	@Before
+	public void setUp() {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+
+		Registry registry = RegistryUtil.getRegistry();
+
+		registry.registerService(
+			PortalExecutorManager.class,
+			(PortalExecutorManager)ProxyUtil.newProxyInstance(
+				AutoBatchPreparedStatementUtilTest.class.getClassLoader(),
+				new Class<?>[] {PortalExecutorManager.class},
+				new PortalExecutorManagerInvocationHandler()));
+	}
+
 	@Test
 	public void testCINITFailure() throws ClassNotFoundException {
-		PropsUtilAdvice.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
+		PropsTestUtil.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
 
 		final NoSuchMethodException nsme = new NoSuchMethodException();
 		final AtomicInteger counter = new AtomicInteger();
@@ -98,51 +122,63 @@ public class AutoBatchPreparedStatementUtilTest {
 		}
 	}
 
-	@AdviseWith(
-		adviceClasses = {
-			CancelingPortalExecutorManagerUtilAdvice.class,
-			PropsUtilAdvice.class
-		}
-	)
 	@Test
 	public void testConcurrentCancellationException() {
-		PropsUtilAdvice.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
+		Registry registry = RegistryUtil.getRegistry();
+
+		registry.registerService(
+			PortalExecutorManager.class,
+			(PortalExecutorManager)ProxyUtil.newProxyInstance(
+				AutoBatchPreparedStatementUtilTest.class.getClassLoader(),
+				new Class<?>[] {PortalExecutorManager.class},
+				(proxy, method, args) -> {
+					if (Objects.equals(method.getName(), "getPortalExecutor")) {
+						return new NoticeableThreadPoolExecutor(
+							1, 1, 60, TimeUnit.SECONDS,
+							new LinkedBlockingQueue<>(1),
+							Executors.defaultThreadFactory(),
+							new ThreadPoolExecutor.AbortPolicy(),
+							new ThreadPoolHandlerAdapter()) {
+
+							@Override
+							public void execute(Runnable runnable) {
+								Future<?> future = (Future<?>)runnable;
+
+								future.cancel(true);
+							}
+
+						};
+					}
+
+					return null;
+				}),
+			Collections.singletonMap("service.ranking", Integer.MAX_VALUE));
+
+		PropsTestUtil.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
 
 		doTestConcurrentCancellationException(true);
 		doTestConcurrentCancellationException(false);
 	}
 
-	@AdviseWith(
-		adviceClasses = {
-			PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class
-		}
-	)
 	@Test
 	public void testConcurrentExecutionException() {
-		PropsUtilAdvice.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
+		PropsTestUtil.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
 
 		doTestConcurrentExecutionExceptions(true);
 		doTestConcurrentExecutionExceptions(false);
 	}
 
-	@AdviseWith(
-		adviceClasses = {
-			PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class
-		}
-	)
 	@Test
 	public void testConcurrentWaitingForFutures() throws SQLException {
-		PropsUtilAdvice.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
+		PropsTestUtil.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
 
 		doTestConcurrentWaitingForFutures(true);
 		doTestConcurrentWaitingForFutures(false);
 	}
 
-	@AdviseWith(adviceClasses = {PropsUtilAdvice.class}
-	)
 	@Test
 	public void testConstructor() throws ReflectiveOperationException {
-		PropsUtilAdvice.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
+		PropsTestUtil.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
 
 		Constructor<AutoBatchPreparedStatementUtil> constructor =
 			AutoBatchPreparedStatementUtil.class.getDeclaredConstructor();
@@ -154,27 +190,17 @@ public class AutoBatchPreparedStatementUtilTest {
 		constructor.newInstance();
 	}
 
-	@AdviseWith(
-		adviceClasses = {
-			PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class
-		}
-	)
 	@Test
 	public void testNotSupportBatchUpdates() throws Exception {
-		PropsUtilAdvice.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
+		PropsTestUtil.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "0");
 
 		doTestNotSupportBatchUpdates();
 		doTestNotSupportBatchUpdatesConcurrent();
 	}
 
-	@AdviseWith(
-		adviceClasses = {
-			PortalExecutorManagerUtilAdvice.class, PropsUtilAdvice.class
-		}
-	)
 	@Test
 	public void testSupportBatchUpdates() throws Exception {
-		PropsUtilAdvice.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "2");
+		PropsTestUtil.setProps(PropsKeys.HIBERNATE_JDBC_BATCH_SIZE, "2");
 
 		doTestSupportBaseUpdates();
 		doTestSupportBaseUpdatesConcurrent();
@@ -206,7 +232,8 @@ public class AutoBatchPreparedStatementUtilTest {
 
 			Throwable[] throwables = t.getSuppressed();
 
-			Assert.assertEquals(1, throwables.length);
+			Assert.assertEquals(
+				Arrays.toString(throwables), 1, throwables.length);
 
 			Throwable throwable = throwables[0];
 
@@ -216,7 +243,7 @@ public class AutoBatchPreparedStatementUtilTest {
 			return;
 		}
 
-		Assert.fail();
+		throw new IllegalStateException("Should have returned from catch");
 	}
 
 	protected void doTestConcurrentExecutionExceptions(
@@ -226,7 +253,7 @@ public class AutoBatchPreparedStatementUtilTest {
 			new PreparedStatementInvocationHandler(supportBatchUpdates);
 
 		Set<Throwable> throwables = Collections.newSetFromMap(
-			new IdentityHashMap<Throwable, Boolean>());
+			new IdentityHashMap<>());
 
 		try (PreparedStatement preparedStatement =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
@@ -260,17 +287,21 @@ public class AutoBatchPreparedStatementUtilTest {
 			preparedStatement.executeBatch();
 		}
 		catch (Throwable t) {
-			Assert.assertTrue(throwables.contains(t));
+			Assert.assertTrue(throwables.toString(), throwables.contains(t));
 
 			Throwable[] suppressedThrowables = t.getSuppressed();
 
-			Assert.assertEquals(1, suppressedThrowables.length);
-			Assert.assertTrue(throwables.contains(suppressedThrowables[0]));
+			Assert.assertEquals(
+				Arrays.toString(suppressedThrowables), 1,
+				suppressedThrowables.length);
+			Assert.assertTrue(
+				throwables.toString(),
+				throwables.contains(suppressedThrowables[0]));
 
 			return;
 		}
 
-		Assert.fail();
+		throw new IllegalStateException("Should have returned from catch");
 	}
 
 	protected void doTestConcurrentWaitingForFutures(
@@ -415,6 +446,7 @@ public class AutoBatchPreparedStatementUtilTest {
 			Assert.assertEquals(
 				Integer.valueOf(0),
 				ReflectionTestUtil.getFieldValue(invocationHandler, "_count"));
+
 			Assert.assertTrue(methods.toString(), methods.isEmpty());
 
 			// Protection for executing empty batch
@@ -519,6 +551,7 @@ public class AutoBatchPreparedStatementUtilTest {
 			Assert.assertEquals(
 				Integer.valueOf(0),
 				ReflectionTestUtil.getFieldValue(invocationHandler, "_count"));
+
 			Assert.assertTrue(methods.toString(), methods.isEmpty());
 
 			// Protection for executing empty batch

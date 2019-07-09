@@ -14,9 +14,9 @@
 
 package com.liferay.util.ant;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.IOException;
 
@@ -40,10 +40,9 @@ public class SystemLogger extends DefaultLogger {
 
 		StringBundler sb = new StringBundler();
 
-		try {
-			UnsyncBufferedReader unsyncBufferedReader =
+		try (UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(
-					new UnsyncStringReader(event.getMessage()));
+					new UnsyncStringReader(event.getMessage()))) {
 
 			String line = unsyncBufferedReader.readLine();
 

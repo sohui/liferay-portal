@@ -14,6 +14,7 @@
 
 package com.liferay.taglib.util;
 
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -38,9 +39,8 @@ public class PositionTagSupport extends BaseBodyTagSupport implements BodyTag {
 		if (position.equals(_POSITION_AUTO)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public boolean isPositionInLine() {
@@ -49,9 +49,8 @@ public class PositionTagSupport extends BaseBodyTagSupport implements BodyTag {
 		if (position.equals(_POSITION_INLINE)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public void setPosition(String position) {
@@ -63,26 +62,42 @@ public class PositionTagSupport extends BaseBodyTagSupport implements BodyTag {
 	}
 
 	protected String getPositionValue() {
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
 
 		String position = _position;
 
-		String fragmentId = ParamUtil.getString(request, "p_f_id");
+		String fragmentId = ParamUtil.getString(httpServletRequest, "p_f_id");
 
 		if (Validator.isNotNull(fragmentId)) {
 			position = _POSITION_INLINE;
 		}
 
 		if (Validator.isNull(position)) {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
-			if (themeDisplay.isStateExclusive() || themeDisplay.isIsolated()) {
+			if (themeDisplay.isIsolated() ||
+				themeDisplay.isLifecycleResource() ||
+				themeDisplay.isStateExclusive()) {
+
 				position = _POSITION_INLINE;
 			}
 			else {
 				position = _POSITION_AUTO;
+			}
+
+			PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+			String portletId = portletDisplay.getId();
+
+			if (Validator.isNotNull(portletId) &&
+				themeDisplay.isPortletEmbedded(
+					themeDisplay.getScopeGroupId(), themeDisplay.getLayout(),
+					portletId)) {
+
+				position = _POSITION_INLINE;
 			}
 		}
 

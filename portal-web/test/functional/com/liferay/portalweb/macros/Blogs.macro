@@ -1,542 +1,555 @@
-<definition>
-	<command name="addDraft">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+definition {
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+	macro addDraft {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute macro="BlogsEntry#saveAsDraft" />
-	</command>
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-	<command name="addDraftViaAutoSave">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		BlogsEntry.saveAsDraft();
+	}
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+	macro addDraftViaAutoSave {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute macro="BlogsEntry#autoSaveDraft" />
-	</command>
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-	<command name="addEntry">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		BlogsEntry.autoSaveDraft();
+	}
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+	macro addEntry {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		BlogsEntry.addEntryContent(
+			embedVideo = "${embedVideo}",
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}",
+			videoService = "${videoService}");
 
-	<command name="addEntryWithCategory">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		if (isSet(readingTime)) {
+			var key_readingTime = "${readingTime}";
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+			AssertTextEquals(
+				locator1 = "BlogsEditEntry#STATUS_READING_TIME",
+				value1 = "${readingTime}");
+		}
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Categorization" />
-		</execute>
+		PortletEntry.publish();
+	}
 
-		<execute macro="AssetCategorization#addCategory">
-			<var name="categoryName" value="${categoryName}" />
-			<var name="vocabularyName" value="${vocabularyName}" />
-		</execute>
+	macro addEntryWithCategory {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-	<command name="addEntryWithCoverImageFromDMFolders">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		Panel.expandPanel(panel = "Categorization");
 
-		<execute macro="BlogsEntry#addTitle">
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		AssetCategorization.addCategory(
+			categoryName = "${categoryName}",
+			vocabularyName = "${vocabularyName}");
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		PortletEntry.publish();
+	}
 
-		<execute function="Click" locator1="BlogsEditEntry#COVER_IMAGE" />
+	macro addEntryWithCoverImageFromDMFolders {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute function="AssertClick" locator1="BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE" value1="Select File" />
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
 
-		<execute macro="ItemSelector#selectDMImage">
-			<var name="dmFolderName" value="${dmFolderName}" />
-			<var name="dmSubFolderName" value="${dmSubFolderName}" />
-			<var name="imageFileName" value="${imageFileName}" />
-		</execute>
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute function="Pause" locator1="1000" />
+		BlogsNavigator.gotoSelectFile();
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		ItemSelector.selectDMImage(
+			dmFolderName = "${dmFolderName}",
+			dmSubFolderName = "${dmSubFolderName}",
+			imageFileName = "${imageFileName}",
+			navTab = "${navTab}");
 
-	<command name="addEntryWithHTML">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		Pause(locator1 = "1000");
 
-		<execute macro="BlogsEntry#addTitle">
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		Button.clickPublish();
+	}
 
-		<execute macro="BlogsEntry#addSubtitle">
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-		</execute>
+	macro addEntryWithHTML {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute function="Click" locator1="AlloyEditor#CONTENT_FIELD" />
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
 
-		<execute function="Click" locator1="Button#EDITOR_SWITCH" />
+		BlogsEntry.addSubtitle(entrySubtitle = "${entrySubtitle}");
 
-		<execute function="Type#sendKeysAceEditor" locator1="TextArea#ACE_EDITOR" value1="${entryContent}" />
+		AlloyEditor.addSourceContent(content = "${entryContent}");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		PortletEntry.publish();
+	}
 
-	<command name="addEntryWithPermissions">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+	macro addEntryWithPermissions {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Permissions" />
-		</execute>
+		Panel.expandPanel(panel = "Permissions");
 
-		<execute macro="BlogsEntry#entryAddPermissions">
-			<var name="viewableBy" value="${viewableBy}" />
-		</execute>
+		BlogsEntry.entryAddPermissions(viewableBy = "${viewableBy}");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		PortletEntry.publish();
+	}
 
-	<command name="addEntryWithTag">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+	macro addEntryWithTag {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Categorization" />
-		</execute>
+		Panel.expandPanel(panel = "Categorization");
 
-		<execute macro="AssetCategorization#addTag">
-			<var name="tagName" value="${tagName}" />
-		</execute>
+		AssetCategorization.addTag(tagName = "${tagName}");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		SelectFrameTop(value1 = "relative=top");
 
-	<command name="addEntryWithTags">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		Button.clickPublish();
+	}
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+	macro addEntryWithTags {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Categorization" />
-		</execute>
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<for list="${tagNameList}" param="tagName">
-			<execute macro="AssetCategorization#addTag">
-				<var name="tagName" value="${tagName}" />
-			</execute>
-		</for>
+		Panel.expandPanel(panel = "Categorization");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		for (var tagName : list "${tagNameList}") {
+			AssetCategorization.addTag(tagName = "${tagName}");
+		}
 
-	<command name="addEntryWithUploadedCoverImage">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		SelectFrameTop(value1 = "relative=top");
 
-		<execute macro="BlogsEntry#addTitle">
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		Button.clickPublish();
+	}
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+	macro addEntryWithUploadedCoverImage {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute function="Click" locator1="BlogsEditEntry#COVER_IMAGE" />
+		Pause(locator1 = "5000");
 
-		<execute function="AssertClick" locator1="BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE" value1="Select File" />
+		BlogsNavigator.gotoSelectFile();
 
-		<execute macro="ItemSelector#uploadFile">
-			<var name="navTab" value="${navTab}" />
-			<var name="uploadFileName" value="${uploadFileName}" />
-		</execute>
+		ItemSelector.uploadFile(
+			navTab = "${navTab}",
+			uploadFileName = "${uploadFileName}");
 
-		<execute function="Pause" locator1="1000" />
-	</command>
+		Pause(locator1 = "5000");
 
-	<command name="addViaAP">
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
 
-		<execute function="AssertClick" locator1="MenuItem#BLOGS_ENTRY" value1="Blogs Entry" />
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		AssertVisible(
+			key_coverImageName = "${coverImageName}",
+			locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_UNPUBLISHED");
+	}
 
-		<execute function="Type#typeEditor" locator1="AlloyEditor#TITLE_FIELD" value1="${entryTitle}" />
-		<execute function="Type#typeEditor" locator1="AlloyEditor#CONTENT_FIELD" value1="${entryContent}" />
+	macro addViaAP {
+		AssetPublisherPortlet.addAsset(assetType = "Blogs Entry");
 
-		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
+		AlloyEditor.addTitleAndContent(
+			content = "${entryContent}",
+			title = "${entryTitle}");
 
-		<execute function="SelectFrameTop" value1="relative=top" />
+		AssertClick(
+			locator1 = "Button#PUBLISH",
+			value1 = "Publish");
 
-		<execute function="Pause" locator1="5000" />
+		SelectFrameTop(value1 = "relative=top");
 
-		<var name="key_assetTitle" value="${entryTitle}" />
+		Pause(locator1 = "5000");
 
-		<execute function="AssertTextEquals" locator1="AP#ASSET_ABSTRACT_TITLE" value1="${entryTitle}" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="AP#ASSET_ABSTRACT_DESCRIPTION" value1="${entryContent}" />
-	</command>
+		var key_assetTitle = "${entryTitle}";
 
-	<command name="addWithCustomAbstract">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		AssertTextEquals(
+			locator1 = "AP#ASSET_ABSTRACT_TITLE",
+			value1 = "${entryTitle}");
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		AssertTextEquals.assertPartialText(
+			locator1 = "AP#ASSET_ABSTRACT_DESCRIPTION",
+			value1 = "${entryContent}");
+	}
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Configuration" />
-		</execute>
+	macro addViaAPSelectScope {
+		AssetPublisherPortlet.addAsset(
+			assetType = "Blogs Entry",
+			siteScope = "${siteScope}");
 
-		<execute function="Click" locator1="Radio#CUSTOM_ABSTRACT" />
+		AlloyEditor.addTitleAndContent(
+			content = "${entryContent}",
+			title = "${entryTitle}");
 
-		<execute function="Click" locator1="AlloyEditor#DESCRIPTION_FIELD" />
+		AssertClick(
+			locator1 = "Button#PUBLISH",
+			value1 = "Publish");
 
-		<execute function="Type#typeEditor" locator1="AlloyEditor#DESCRIPTION_FIELD" value1="${entryAbstractDescription}" />
+		SelectFrameTop(value1 = "relative=top");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		Pause(locator1 = "5000");
 
-	<command name="addWithCustomAbstractImage">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		var key_assetTitle = "${entryTitle}";
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		AssertTextEquals(
+			locator1 = "AP#ASSET_ABSTRACT_TITLE",
+			value1 = "${entryTitle}");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Configuration" />
-		</execute>
+		AssertTextEquals.assertPartialText(
+			locator1 = "AP#ASSET_ABSTRACT_DESCRIPTION",
+			value1 = "${entryContent}");
+	}
 
-		<execute function="Click" locator1="Radio#CUSTOM_ABSTRACT" />
+	macro addWithCustomAbstract {
+		BlogsNavigator.gotoAddEntry();
 
-		<execute function="Click" locator1="Button#SELECT" />
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute function="AssertClick" locator1="MenuItem#BASIC_DOCUMENT" value1="Basic Document" />
+		Panel.expandPanel(panel = "Configuration");
 
-		<execute function="UploadCommonFile" locator1="TextInput#FILE" value1="${dmDocumentFile}" />
+		BlogsEntry.addCustomAbstract(entryAbstractDescription = "${entryAbstractDescription}");
 
-		<execute function="Type" locator1="TextInput#TITLE" value1="${dmDocumentTitle}" />
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${dmDocumentDescription}" />
+		PortletEntry.publish();
+	}
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+	macro addWithDefaultAbstract {
+		BlogsNavigator.gotoAddEntry();
 
-	<command name="addWithDefaultAbstract">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		Panel.expandPanel(panel = "Configuration");
 
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Configuration" />
-		</execute>
+		AssertChecked(
+			locator1 = "Radio#FIRST_400_ABSTRACT",
+			value1 = "Use the first 400 characters of the entry content.");
 
-		<execute function="AssertChecked" locator1="Radio#FIRST_400_ABSTRACT" value1="Use the first 400 characters of the entry content." />
+		PortletEntry.publish();
+	}
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+	macro addWithInvalidContent {
+		BlogsNavigator.gotoAddEntry();
 
-	<command name="addWithInvalidContent">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryInvalidContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryInvalidContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		BlogsEntry.publishWithInvalidContent();
+	}
 
-		<execute macro="BlogsEntry#publishWithInvalidContent" />
-	</command>
+	macro addWithInvalidTitle {
+		BlogsNavigator.gotoAddEntry();
 
-	<command name="addWithInvalidTitle">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryInvalidTitle}");
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryInvalidTitle}" />
-		</execute>
+		BlogsEntry.publishWithInvalidTitle();
+	}
 
-		<execute macro="BlogsEntry#publishWithInvalidTitle" />
-	</command>
+	macro addWithInvalidTitleLength {
+		BlogsNavigator.gotoAddEntry();
 
-	<command name="addWithInvalidTitleLength">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryInvalidTitleLength}");
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryInvalidTitleLength}" />
-		</execute>
+		BlogsEntry.publishWithInvalidTitleLength();
+	}
 
-		<execute macro="BlogsEntry#publishWithInvalidTitleLength" />
-	</command>
+	macro addWithWorkflow {
+		BlogsNavigator.gotoAddEntry();
 
-	<command name="addWithWorkflow">
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute macro="BlogsEntry#addEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		BlogsEntry.publishWithWorkflow();
+	}
 
-		<execute macro="BlogsEntry#publishWithWorkflow" />
-	</command>
+	macro addWithWorkflowViaAP {
+		AssetPublisherPortlet.addAsset(assetType = "Blogs Entry");
 
-	<command name="addWithWorkflowViaAP">
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+		AlloyEditor.addTitleAndContent(
+			content = "${entryContent}",
+			title = "${entryTitle}");
 
-		<execute function="AssertClick" locator1="MenuItem#BLOGS_ENTRY" value1="Blogs Entry" />
+		AssertClick(
+			locator1 = "Button#SUBMIT_FOR_PUBLICATION",
+			value1 = "Submit for Publication");
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		Pause(locator1 = "5000");
 
-		<execute function="Type#typeEditor" locator1="AlloyEditor#TITLE_FIELD" value1="${entryTitle}" />
-		<execute function="Type#typeEditor" locator1="AlloyEditor#CONTENT_FIELD" value1="${entryContent}" />
+		SelectFrame(value1 = "relative=top");
+	}
 
-		<execute function="AssertClick" locator1="Button#SUBMIT_FOR_PUBLICATION" value1="Submit for Publication" />
+	macro assertNoPublishOption {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-		<execute function="Pause" locator1="5000" />
+		var key_entryTitle = "${entryTitle}";
 
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
+		Blogs.viewEntryTitle(entryTitle = "${entryTitle}");
 
-	<command name="disableSocialBookmarkSites">
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+		Click(
+			key_listEntry = "${entryTitle}",
+			locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
 
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="Blogs" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+		MenuItem.viewNotPresent(menuItem = "Publish to Live");
+	}
 
-		<execute macro="BlogsConfiguration#selectConfigurationIFrame" />
+	macro clickEllipsisItemCP {
+		LexiconCard.clickEllipsisItem(
+			card = "${entryTitle}",
+			item = "${item}");
+	}
 
-		<execute macro="BlogsConfiguration#uncheckSocialBookmarks" />
+	macro clickEllipsisItemPG {
+		Click(
+			key_entryTitle = "${entryTitle}",
+			locator1 = "Blogs#WIDGET_VIEW_ENTRY_ELLIPSIS");
 
-		<execute macro="IFrame#saveConfiguration" />
-	</command>
+		MenuItem.clickNoError(menuItem = "${item}");
+	}
 
-	<command name="editDraftPG">
-		<execute macro="BlogsNavigator#gotoEditPG">
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+	macro disableSocialBookmarkSites {
+		Navigator.gotoPage(pageName = "Blogs Page");
 
-		<execute macro="BlogsEntry#editEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entryContentEdit" value="${entryContentEdit}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entrySubtitleEdit" value="${entrySubtitleEdit}" />
-			<var name="entryTitle" value="${entryTitle}" />
-			<var name="entryTitleEdit" value="${entryTitleEdit}" />
-		</execute>
+		Portlet.gotoPortletOptions(
+			portletName = "Blogs",
+			portletOption = "Configuration");
 
-		<execute function="AssertClick" locator1="Button#SAVE_AS_DRAFT" value1="Save as Draft" />
+		BlogsConfiguration.selectConfigurationIFrame();
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		for (var socialBookmarkSite : list "${disableSocialBookmarkSites}") {
+			AddSelection(
+				locator1 = "SocialBookmarks#ENABLE_SOCIAL_BOOKMARK_CURRENT_SELECT",
+				value1 = "${socialBookmarkSite}");
 
-	<command name="editEntryPG">
-		<execute macro="BlogsNavigator#gotoEditPG">
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+			Click(locator1 = "Button#MOVE_CURRENT_TO_AVAILABLE");
 
-		<execute macro="BlogsEntry#editEntryContent">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entryContentEdit" value="${entryContentEdit}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entrySubtitleEdit" value="${entrySubtitleEdit}" />
-			<var name="entryTitle" value="${entryTitle}" />
-			<var name="entryTitleEdit" value="${entryTitleEdit}" />
-		</execute>
+			AssertTextEquals.assertPartialText(
+				locator1 = "SocialBookmarks#ENABLE_SOCIAL_BOOKMARK_AVAILABLE_SELECT",
+				value1 = "${socialBookmarkSite}");
+		}
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		IFrame.saveConfiguration();
+	}
 
-	<command name="enableSocialBookmarkSites">
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+	macro editDraftPG {
+		BlogsNavigator.gotoEditPG(entryTitle = "${entryTitle}");
 
-		<execute macro="Portlet#gotoPortletOptions">
-			<var name="portletName" value="Blogs" />
-			<var name="portletOption" value="Configuration" />
-		</execute>
+		BlogsEntry.editEntryContent(
+			entryContent = "${entryContent}",
+			entryContentEdit = "${entryContentEdit}",
+			entrySubtitle = "${entrySubtitle}",
+			entrySubtitleEdit = "${entrySubtitleEdit}",
+			entryTitle = "${entryTitle}",
+			entryTitleEdit = "${entryTitleEdit}");
 
-		<execute macro="BlogsConfiguration#selectConfigurationIFrame" />
+		AssertClick(
+			locator1 = "Button#SAVE_AS_DRAFT",
+			value1 = "Save as Draft");
 
-		<execute macro="BlogsConfiguration#checkSocialBookmarks" />
+		Alert.viewSuccessMessage();
+	}
 
-		<for list="${socialBookmarkSites}" param="socialBookmarkSite">
-			<execute macro="BlogsConfiguration#enableSocialBookmarkSites">
-				<var name="socialBookmarkSite" value="${socialBookmarkSite}" />
-				<var name="socialBookmarkSites" value="${socialBookmarkSite}" />
-			</execute>
-		</for>
+	macro editEntryPG {
+		BlogsNavigator.gotoEditPG(entryTitle = "${entryTitle}");
 
-		<execute macro="IFrame#saveConfiguration" />
-	</command>
+		BlogsEntry.editEntryContent(
+			entryContent = "${entryContent}",
+			entryContentEdit = "${entryContentEdit}",
+			entrySubtitle = "${entrySubtitle}",
+			entrySubtitleEdit = "${entrySubtitleEdit}",
+			entryTitle = "${entryTitle}",
+			entryTitleEdit = "${entryTitleEdit}");
 
-	<command name="publishDraftCP">
-		<execute macro="BlogsNavigator#gotoEditCP">
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		if ("${sendEmailEntryUpdated}" == "true") {
+			Panel.expandPanel(panel = "Configuration");
 
-		<execute macro="BlogsEntry#viewEntry">
-			<var name="entryContent" value="${entryContent}" />
-			<var name="entrySubtitle" value="${entrySubtitle}" />
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+			Check.checkToggleSwitch(
+				key_toggleSwitchLabel = "Send Email Entry Updated",
+				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+		}
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		PortletEntry.publish();
+	}
 
-	<command name="subscribePG">
-		<execute function="AssertClick" locator1="Blogs#SUBSCRIBE_LINK" value1="Subscribe" />
+	macro enableSocialBookmarkSites {
+		Navigator.gotoPage(pageName = "Blogs Page");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		Portlet.gotoPortletOptions(
+			portletName = "Blogs",
+			portletOption = "Configuration");
 
-	<command name="tearDownConfigurationDisplaySettingsPG">
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		BlogsConfiguration.selectConfigurationIFrame();
 
-		<execute macro="BlogsNavigator#gotoConfigurationSetupPG" />
+		for (var socialBookmarkSite : list "${socialBookmarkSites}") {
+			BlogsConfiguration.enableSocialBookmarkSites(
+				enableSocialBookmarkSites = "${enableSocialBookmarkSites}",
+				socialBookmarkSite = "${socialBookmarkSite}");
+		}
 
-		<execute macro="BlogsConfiguration#selectDisplayTemplate">
-			<var name="displayTemplate" value="Abstract" />
-		</execute>
+		IFrame.saveConfiguration();
+	}
 
-		<execute macro="IFrame#saveConfiguration" />
-	</command>
+	macro publishDraftCP {
+		BlogsNavigator.gotoEditCP(entryTitle = "${entryTitle}");
 
-	<command name="tearDownConfigurationScopePG">
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		BlogsEntry.viewEntry(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
 
-		<execute macro="BlogsNavigator#gotoConfigurationSetupPG" />
+		PortletEntry.publish();
+	}
 
-		<execute macro="BlogsNavigator#gotoConfigurationScopePG" />
+	macro publishViaSAP {
+		Blogs.clickEllipsisItemCP(
+			entryTitle = "${entryTitle}",
+			item = "Publish to Live");
 
-		<execute macro="BlogsConfiguration#selectScopePG">
-			<var name="scopeSelection" value="Liferay" />
-		</execute>
-	</command>
+		AssertConfirm(value1 = "${confirmMessage}");
 
-	<command name="tearDownCP">
-		<execute macro="Navigator#openURL" />
+		AssertTextEquals(
+			locator1 = "Staging#PROCESS_SUCCESSFUL",
+			value1 = "Successful");
+	}
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Blogs" />
-		</execute>
+	macro subscribePG {
+		AssertClick(
+			locator1 = "Blogs#SUBSCRIBE_LINK",
+			value1 = "Subscribe");
 
-		<if>
-			<condition function="IsElementPresent#isVisible" locator1="Blogs#ENTRY_TABLE_ALL_CHECKBOX" />
-			<then>
-				<execute function="Click" locator1="Blogs#ENTRY_TABLE_ALL_CHECKBOX" />
+		Alert.viewSuccessMessage();
+	}
 
-				<execute function="AssertClick" locator1="Button#MOVE_TO_THE_RECYCLE_BIN" value1="Move to the Recycle Bin" />
+	macro tearDownConfigurationDisplaySettingsPG {
+		Navigator.gotoPage(pageName = "${pageName}");
 
-				<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-			</then>
-		</if>
+		BlogsNavigator.gotoConfigurationSetupPG();
 
-		<execute macro="Navigator#openURL" />
+		BlogsConfiguration.selectDisplayTemplate(displayTemplate = "Abstract");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Recycle Bin" />
-		</execute>
+		IFrame.saveConfiguration();
+	}
 
-		<execute macro="RecycleBin#emptyCP" />
-	</command>
+	macro tearDownConfigurationScopePG {
+		Navigator.gotoPage(pageName = "${pageName}");
 
-	<command name="tearDownSubscribePG">
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		BlogsNavigator.gotoConfigurationSetupPG();
 
-		<execute function="AssertClick" locator1="Link#UNSUBSCRIBE" value1="Unsubscribe" />
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		BlogsNavigator.gotoConfigurationScopePG();
 
-	<command name="unsubscribePG">
-		<execute function="AssertClick" locator1="Link#UNSUBSCRIBE" value1="Unsubscribe" />
+		BlogsConfiguration.selectScopePG(scopeSelection = "Liferay");
+	}
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+	macro tearDownCP {
+		Navigator.openURL();
 
-	<command name="viewControlsPG">
-		<execute function="AssertTextEquals" locator1="Blogs#ADD_BLOGS_ENTRY" value1="Add Blog Entry" />
-		<execute function="AssertTextEquals" locator1="Link#SUBSCRIBE" value1="Subscribe" />
-		<execute function="AssertTextEquals" locator1="Link#RSS" value1="RSS" />
-	</command>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Blogs");
 
-	<command name="viewNoEntryCP">
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="No entries were found." />
-	</command>
+		if (IsElementPresent.isVisible(locator1 = "Blogs#ENTRY_TABLE_ALL_CHECKBOX")) {
+			Click(locator1 = "Blogs#ENTRY_TABLE_ALL_CHECKBOX");
 
-	<command name="viewNoPermissionCP">
-		<execute function="AssertTextEquals" locator1="BasePortlet#CONTROL_PANEL_TITLE" value1="Blogs" />
-		<execute function="AssertElementPresent" locator1="NavBar#CONTAINER" />
-		<execute function="AssertTextEquals" locator1="Message#INFO" value1="No entries were found." />
-	</command>
+			AssertClick(
+				locator1 = "Button#MOVE_TO_RECYCLE_BIN",
+				value1 = "Move to Recycle Bin");
 
-	<command name="viewNoPermissionPG">
-		<execute function="AssertTextEquals" locator1="BasePortlet#CONTROL_PANEL_TITLE" value1="Blogs" />
-		<execute function="AssertElementNotPresent" locator1="Blogs#ADD_BLOGS_ENTRY" value1="Add Blog Entry" />
-		<execute function="AssertElementNotPresent" locator1="MenuItem#PERMISSIONS" value1="Permissions" />
-		<execute function="AssertElementNotPresent" locator1="Link#SUBSCRIBE" />
-		<execute function="AssertTextEquals" locator1="Link#RSS" value1="RSS" />
-	</command>
+			AssertElementPresent(locator1 = "Message#SUCCESS");
+		}
 
-	<command name="viewPermissionCP">
-		<execute function="AssertTextEquals" locator1="Blogs#PERMISSIONS" value1="Permissions" />
-	</command>
-</definition>
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Recycle Bin",
+			panel = "Site Administration",
+			portlet = "Recycle Bin");
+
+		RecycleBin.emptyCP();
+	}
+
+	macro tearDownSubscribePG {
+		Navigator.gotoPage(pageName = "${pageName}");
+
+		AssertClick(
+			locator1 = "Blogs#UNSUBSCRIBE_LINK",
+			value1 = "Unsubscribe");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro viewControlsPG {
+		var key_text = "New Entry";
+
+		AssertTextEquals(
+			locator1 = "Button#ANY",
+			value1 = "New Entry");
+
+		AssertTextEquals(
+			locator1 = "Blogs#SUBSCRIBE_LINK",
+			value1 = "Subscribe");
+
+		var key_text = "RSS";
+
+		AssertTextEquals(
+			locator1 = "Button#ANY",
+			value1 = "RSS");
+	}
+
+	macro viewEntryNotPresent {
+		LexiconList.viewListEntryNotPresent(listEntry = "${entryTitle}");
+	}
+
+	macro viewEntryPresent {
+		LexiconCard.viewCardPresent(card = "${entryTitle}");
+	}
+
+	macro viewEntryTitle {
+		LexiconList.viewListEntryTitleLink(listEntry = "${entryTitle}");
+	}
+
+	macro viewNoEntryCP {
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "No entries were found.");
+	}
+
+}

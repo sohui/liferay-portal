@@ -26,15 +26,17 @@ public class UnsyncCharArrayReader extends Reader {
 
 	public UnsyncCharArrayReader(char[] chars) {
 		buffer = chars;
+
 		capacity = chars.length;
 		index = 0;
 	}
 
 	public UnsyncCharArrayReader(char[] chars, int offset, int length) {
 		buffer = chars;
-		capacity = Math.min(chars.length, offset + length);
 		index = offset;
 		markIndex = offset;
+
+		capacity = Math.min(chars.length, offset + length);
 	}
 
 	@Override
@@ -65,9 +67,8 @@ public class UnsyncCharArrayReader extends Reader {
 		if (index >= capacity) {
 			return -1;
 		}
-		else {
-			return buffer[index++];
-		}
+
+		return buffer[index++];
 	}
 
 	@Override
@@ -138,9 +139,8 @@ public class UnsyncCharArrayReader extends Reader {
 		if (capacity > index) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override

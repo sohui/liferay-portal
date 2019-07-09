@@ -14,13 +14,13 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * This class is used by SOAP remote services.
@@ -30,6 +30,7 @@ import java.util.List;
  */
 @ProviderType
 public class PortletItemSoap implements Serializable {
+
 	public static PortletItemSoap toSoapModel(PortletItem model) {
 		PortletItemSoap soapModel = new PortletItemSoap();
 
@@ -76,7 +77,8 @@ public class PortletItemSoap implements Serializable {
 	}
 
 	public static PortletItemSoap[] toSoapModels(List<PortletItem> models) {
-		List<PortletItemSoap> soapModels = new ArrayList<PortletItemSoap>(models.size());
+		List<PortletItemSoap> soapModels = new ArrayList<PortletItemSoap>(
+			models.size());
 
 		for (PortletItem model : models) {
 			soapModels.add(toSoapModel(model));
@@ -195,4 +197,5 @@ public class PortletItemSoap implements Serializable {
 	private String _name;
 	private String _portletId;
 	private long _classNameId;
+
 }

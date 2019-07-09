@@ -1,14 +1,18 @@
 <#if entries?has_content>
 	<ul class="tag-items tag-list">
-		<#assign scopeGroupId = getterUtil.getLong(scopeGroupId, themeDisplay.getScopeGroupId()) />
-		<#assign classNameId = getterUtil.getLong(classNameId, 0) />
+		<#assign
+			scopeGroupId = getterUtil.getLong(scopeGroupId, themeDisplay.getScopeGroupId())
+			classNameId = getterUtil.getLong(classNameId, 0)
 
-		<#assign maxCount = 1 />
-		<#assign minCount = 1 />
+			maxCount = 1
+			minCount = 1
+		/>
 
 		<#list entries as entry>
-			<#assign maxCount = liferay.max(maxCount, entry.getAssetCount()) />
-			<#assign minCount = liferay.min(minCount, entry.getAssetCount()) />
+			<#assign
+				maxCount = liferay.max(maxCount, entry.getAssetCount())
+				minCount = liferay.min(minCount, entry.getAssetCount())
+			/>
 		</#list>
 
 		<#assign multiplier = 1 />
@@ -34,7 +38,7 @@
 				${tagURL.setParameter("resetCur", "true")}
 				${tagURL.setParameter("tag", entry.getName())}
 
-				<a class ="tag" style="color: ${color};" href="${tagURL}">
+				<a class="tag" href="${tagURL}" style="color: ${color};">
 					${entry.getName()}
 
 					<#if getterUtil.getBoolean(showAssetCount)>

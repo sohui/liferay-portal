@@ -14,13 +14,13 @@
 
 package com.liferay.portal.dao.db;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.db.Index;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.IOException;
@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,7 @@ public class PostgreSQLDB extends BaseDB {
 		sb.append(" as on delete to ");
 		sb.append(tableName);
 		sb.append(" do also select case when exists(select 1 from ");
-		sb.append("pg_catalog.pg_largeobject where (loid = old.");
+		sb.append("pg_catalog.pg_largeobject_metadata where (oid = old.");
 		sb.append(columnName);
 		sb.append(")) then lo_unlink(old.");
 		sb.append(columnName);
@@ -78,7 +79,7 @@ public class PostgreSQLDB extends BaseDB {
 		sb.append(" and old.");
 		sb.append(columnName);
 		sb.append(" is not null do also select case when exists(select 1 ");
-		sb.append("from pg_catalog.pg_largeobject where (loid = old.");
+		sb.append("from pg_catalog.pg_largeobject_metadata where (oid = old.");
 		sb.append(columnName);
 		sb.append(")) then lo_unlink(old.");
 		sb.append(columnName);
@@ -133,7 +134,7 @@ public class PostgreSQLDB extends BaseDB {
 				String indexName = rs.getString("indexname");
 				String tableName = rs.getString("tablename");
 				String indexSQL = StringUtil.toLowerCase(
-					rs.getString("indexdef").trim());
+					StringUtil.trim(rs.getString("indexdef")));
 
 				boolean unique = true;
 
@@ -161,8 +162,6 @@ public class PostgreSQLDB extends BaseDB {
 			String sqlDir, String databaseName, int population)
 		throws IOException {
 
-		String suffix = getSuffix(population);
-
 		StringBundler sb = new StringBundler(14);
 
 		sb.append("drop database ");
@@ -176,7 +175,7 @@ public class PostgreSQLDB extends BaseDB {
 			sb.append("\\c ");
 			sb.append(databaseName);
 			sb.append(";\n\n");
-			sb.append(getCreateTablesContent(sqlDir, suffix));
+			sb.append(getCreateTablesContent(sqlDir, getSuffix(population)));
 			sb.append("\n\n");
 			sb.append(readFile(sqlDir + "/indexes/indexes-postgresql.sql"));
 			sb.append("\n\n");
@@ -189,6 +188,11 @@ public class PostgreSQLDB extends BaseDB {
 	@Override
 	protected String getServerName() {
 		return "postgresql";
+	}
+
+	@Override
+	protected int[] getSQLTypes() {
+		return _SQL_TYPES;
 	}
 
 	@Override
@@ -274,6 +278,11 @@ public class PostgreSQLDB extends BaseDB {
 		"--", "true", "false", "'01/01/1970'", "current_timestamp", " oid",
 		" bytea", " bool", " timestamp", " double precision", " integer",
 		" bigint", " text", " text", " varchar", "", "commit"
+	};
+
+	private static final int[] _SQL_TYPES = {
+		Types.BIGINT, Types.BINARY, Types.BIT, Types.TIMESTAMP, Types.DOUBLE,
+		Types.INTEGER, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR
 	};
 
 	private static final boolean _SUPPORTS_QUERYING_AFTER_EXCEPTION = false;

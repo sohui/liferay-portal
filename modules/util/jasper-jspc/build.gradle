@@ -2,8 +2,12 @@ sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 dependencies {
-	compile group: "com.liferay", name: "com.liferay.portal.osgi.web.servlet.jsp.compiler", version: "2.0.0"
-	compile group: "javax.servlet", name: "javax.servlet-api", version: "3.0.1"
+	compile(group: "com.liferay", name: "com.liferay.portal.servlet.jsp.compiler", version: "1.0.5") {
+		exclude group: "com.liferay.portal"
+		exclude group: "javax.servlet"
+		exclude group: "javax.servlet.jsp", module: "jsp-api"
+	}
+
 	compile group: "org.apache.ant", name: "ant", version: "1.9.4"
 }
 

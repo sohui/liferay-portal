@@ -80,8 +80,9 @@ public class FabricAgentRegistryTest {
 
 		List<FabricAgent> fabricAgents = fabricAgentRegistry.getFabricAgents();
 
-		Assert.assertEquals(1, fabricAgents.size());
-		Assert.assertTrue(fabricAgents.contains(fabricAgent1));
+		Assert.assertEquals(fabricAgents.toString(), 1, fabricAgents.size());
+		Assert.assertTrue(
+			fabricAgents.toString(), fabricAgents.contains(fabricAgent1));
 
 		FabricAgent fabricAgent2 = new LocalFabricAgent(
 			new EmbeddedProcessExecutor());
@@ -98,9 +99,12 @@ public class FabricAgentRegistryTest {
 
 		fabricAgents = fabricAgentRegistry.getFabricAgents();
 
-		Assert.assertEquals(2, fabricAgents.size());
-		Assert.assertTrue(fabricAgents.contains(fabricAgent1));
-		Assert.assertTrue(fabricAgents.contains(fabricAgent2));
+		Assert.assertEquals(fabricAgents.toString(), 2, fabricAgents.size());
+		Assert.assertTrue(
+			fabricAgents.toString(), fabricAgents.contains(fabricAgent1));
+		Assert.assertTrue(
+			fabricAgents.toString(), fabricAgents.contains(fabricAgent2));
+
 		Assert.assertTrue(
 			fabricAgentRegistry.unregisterFabricAgent(fabricAgent1, recorder));
 
@@ -113,8 +117,10 @@ public class FabricAgentRegistryTest {
 
 		fabricAgents = fabricAgentRegistry.getFabricAgents();
 
-		Assert.assertEquals(1, fabricAgents.size());
-		Assert.assertTrue(fabricAgents.contains(fabricAgent2));
+		Assert.assertEquals(fabricAgents.toString(), 1, fabricAgents.size());
+		Assert.assertTrue(
+			fabricAgents.toString(), fabricAgents.contains(fabricAgent2));
+
 		Assert.assertTrue(
 			fabricAgentRegistry.unregisterFabricAgent(fabricAgent2, null));
 
@@ -127,7 +133,7 @@ public class FabricAgentRegistryTest {
 
 		fabricAgents = fabricAgentRegistry.getFabricAgents();
 
-		Assert.assertTrue(fabricAgents.isEmpty());
+		Assert.assertTrue(fabricAgents.toString(), fabricAgents.isEmpty());
 	}
 
 	@Test
@@ -145,8 +151,11 @@ public class FabricAgentRegistryTest {
 		List<FabricAgentListener> fabricAgentListeners =
 			fabricAgentRegistry.getFabricAgentListeners();
 
-		Assert.assertEquals(1, fabricAgentListeners.size());
-		Assert.assertTrue(fabricAgentListeners.contains(recorder1));
+		Assert.assertEquals(
+			fabricAgentListeners.toString(), 1, fabricAgentListeners.size());
+		Assert.assertTrue(
+			fabricAgentListeners.toString(),
+			fabricAgentListeners.contains(recorder1));
 
 		Recorder recorder2 = new Recorder();
 
@@ -157,9 +166,15 @@ public class FabricAgentRegistryTest {
 
 		fabricAgentListeners = fabricAgentRegistry.getFabricAgentListeners();
 
-		Assert.assertEquals(2, fabricAgentListeners.size());
-		Assert.assertTrue(fabricAgentListeners.contains(recorder1));
-		Assert.assertTrue(fabricAgentListeners.contains(recorder2));
+		Assert.assertEquals(
+			fabricAgentListeners.toString(), 2, fabricAgentListeners.size());
+		Assert.assertTrue(
+			fabricAgentListeners.toString(),
+			fabricAgentListeners.contains(recorder1));
+		Assert.assertTrue(
+			fabricAgentListeners.toString(),
+			fabricAgentListeners.contains(recorder2));
+
 		Assert.assertTrue(
 			fabricAgentRegistry.unregisterFabricAgentListener(recorder1));
 		Assert.assertFalse(
@@ -167,8 +182,12 @@ public class FabricAgentRegistryTest {
 
 		fabricAgentListeners = fabricAgentRegistry.getFabricAgentListeners();
 
-		Assert.assertEquals(1, fabricAgentListeners.size());
-		Assert.assertTrue(fabricAgentListeners.contains(recorder2));
+		Assert.assertEquals(
+			fabricAgentListeners.toString(), 1, fabricAgentListeners.size());
+		Assert.assertTrue(
+			fabricAgentListeners.toString(),
+			fabricAgentListeners.contains(recorder2));
+
 		Assert.assertTrue(
 			fabricAgentRegistry.unregisterFabricAgentListener(recorder2));
 		Assert.assertFalse(
@@ -176,7 +195,8 @@ public class FabricAgentRegistryTest {
 
 		fabricAgentListeners = fabricAgentRegistry.getFabricAgentListeners();
 
-		Assert.assertTrue(fabricAgentListeners.isEmpty());
+		Assert.assertTrue(
+			fabricAgentListeners.toString(), fabricAgentListeners.isEmpty());
 	}
 
 	private static class Recorder implements FabricAgentListener, Runnable {
@@ -199,8 +219,7 @@ public class FabricAgentRegistryTest {
 		}
 
 		public void validate(Object... objects) {
-			Assert.assertArrayEquals(
-				objects, _objects.toArray(new Object[_objects.size()]));
+			Assert.assertArrayEquals(objects, _objects.toArray(new Object[0]));
 
 			_objects.clear();
 		}

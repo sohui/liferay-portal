@@ -17,12 +17,12 @@ package com.liferay.portal.management;
 import com.liferay.portal.kernel.management.ManageAction;
 import com.liferay.portal.kernel.management.ManageActionException;
 import com.liferay.portal.kernel.management.PortalManager;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 
 /**
  * @author Shuyang Zhou
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
-@DoPrivileged
+@Deprecated
 public class BasePortalManager implements PortalManager {
 
 	@Override

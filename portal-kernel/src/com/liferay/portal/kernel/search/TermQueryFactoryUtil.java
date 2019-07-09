@@ -18,7 +18,7 @@ package com.liferay.portal.kernel.search;
  * @author     Brian Wing Shun Chan
  * @author     Michael C. Han
  * @author     Raymond Augé
- * @deprecated As of 7.0.0 , replaced by {@link
+ * @deprecated As of Wilberforce (7.0.x), , replaced by {@link
  *             com.liferay.portal.kernel.search.generic.TermQueryImpl}
  */
 @Deprecated
@@ -27,13 +27,17 @@ public class TermQueryFactoryUtil {
 	public static TermQuery create(
 		SearchContext searchContext, String field, long value) {
 
-		return getTermQueryFactory(searchContext).create(field, value);
+		TermQueryFactory termQueryFactory = getTermQueryFactory(searchContext);
+
+		return termQueryFactory.create(field, value);
 	}
 
 	public static TermQuery create(
 		SearchContext searchContext, String field, String value) {
 
-		return getTermQueryFactory(searchContext).create(field, value);
+		TermQueryFactory termQueryFactory = getTermQueryFactory(searchContext);
+
+		return termQueryFactory.create(field, value);
 	}
 
 	public static TermQueryFactory getTermQueryFactory(

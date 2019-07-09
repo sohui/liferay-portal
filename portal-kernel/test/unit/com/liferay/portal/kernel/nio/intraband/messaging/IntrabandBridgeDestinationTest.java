@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.nio.intraband.messaging;
 
+import com.liferay.petra.lang.ClassLoaderPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.messaging.BaseDestination;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBus;
@@ -35,7 +37,6 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
 import com.liferay.portal.kernel.test.rule.NewEnvTestRule;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -121,6 +122,8 @@ public class IntrabandBridgeDestinationTest {
 
 		_mockRegistrationReference = new MockRegistrationReference(
 			_mockIntraband);
+
+		ClassLoaderPool.unregister(ClassLoaderPool.class.getClassLoader());
 	}
 
 	@Test
@@ -461,7 +464,11 @@ public class IntrabandBridgeDestinationTest {
 
 		String spiId = spiConfiguration.getSPIId();
 
-		return spiProviderName.concat(StringPool.POUND).concat(spiId);
+		return spiProviderName.concat(
+			StringPool.POUND
+		).concat(
+			spiId
+		);
 	}
 
 	private static final String _RECEIVE_KEY = "RECEIVE_KEY";

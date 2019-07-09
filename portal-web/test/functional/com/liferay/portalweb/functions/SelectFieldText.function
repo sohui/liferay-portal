@@ -1,21 +1,17 @@
-<definition default="selectFieldText" summary="Selecting all text at '${locator1}'">
-	<command name="selectFieldText">
-		<execute function="WaitForSPARefresh" />
+@default = "selectFieldText"
+@summary = "Selecting all text at '${locator1}'"
+definition {
 
-		<execute function="Click" />
+	function selectFieldText {
+		WaitForSPARefresh();
 
-		<execute selenium="selectFieldText" />
+		Click();
 
-		<execute selenium="assertJavaScriptErrors" />
+		selenium.selectFieldText();
 
-		<execute selenium="assertLiferayErrors" />
-	</command>
+		selenium.assertJavaScriptErrors();
 
-	<command name="selectFieldTextNoError">
-		<execute function="WaitForSPARefresh" />
+		selenium.assertLiferayErrors();
+	}
 
-		<execute function="Click" />
-
-		<execute selenium="selectFieldText" />
-	</command>
-</definition>
+}

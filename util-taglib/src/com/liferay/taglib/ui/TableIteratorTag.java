@@ -14,10 +14,9 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.ServerDetector;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.PortalIncludeUtil;
 
@@ -35,10 +34,10 @@ public class TableIteratorTag extends TagSupport {
 	@Override
 	public int doAfterBody() throws JspException {
 		try {
-			HttpServletRequest request =
+			HttpServletRequest httpServletRequest =
 				(HttpServletRequest)pageContext.getRequest();
 
-			request.setAttribute(
+			httpServletRequest.setAttribute(
 				"liferay-ui:table-iterator:listPos", String.valueOf(_listPos));
 
 			PortalIncludeUtil.include(pageContext, getBodyPage());
@@ -53,9 +52,8 @@ public class TableIteratorTag extends TagSupport {
 
 				return EVAL_BODY_AGAIN;
 			}
-			else {
-				return SKIP_BODY;
-			}
+
+			return SKIP_BODY;
 		}
 		catch (Exception e) {
 			throw new JspException(e);
@@ -75,17 +73,15 @@ public class TableIteratorTag extends TagSupport {
 			throw new JspException(e);
 		}
 		finally {
-			if (!ServerDetector.isResin()) {
-				_startPage = null;
-				_bodyPage = null;
-				_endPage = null;
-				_list = null;
-				_listPos = 0;
-				_rowLength = 0;
-				_rowPadding = "0";
-				_rowValign = "middle";
-				_rowBreak = null;
-			}
+			_startPage = null;
+			_bodyPage = null;
+			_endPage = null;
+			_list = null;
+			_listPos = 0;
+			_rowLength = 0;
+			_rowPadding = "0";
+			_rowValign = "middle";
+			_rowBreak = null;
 		}
 	}
 
@@ -93,20 +89,22 @@ public class TableIteratorTag extends TagSupport {
 	public int doStartTag() throws JspException {
 		try {
 			if (!_list.isEmpty()) {
-				HttpServletRequest request =
+				HttpServletRequest httpServletRequest =
 					(HttpServletRequest)pageContext.getRequest();
 
-				request.setAttribute("liferay-ui:table-iterator:list", _list);
-				request.setAttribute(
+				httpServletRequest.setAttribute(
+					"liferay-ui:table-iterator:list", _list);
+				httpServletRequest.setAttribute(
+					"liferay-ui:table-iterator:rowBreak", _rowBreak);
+				httpServletRequest.setAttribute(
 					"liferay-ui:table-iterator:rowLength",
 					String.valueOf(_rowLength));
-				request.setAttribute(
+				httpServletRequest.setAttribute(
 					"liferay-ui:table-iterator:rowPadding", _rowPadding);
-				request.setAttribute(
+				httpServletRequest.setAttribute(
 					"liferay-ui:table-iterator:rowValign", _rowValign);
-				request.setAttribute(
-					"liferay-ui:table-iterator:rowBreak", _rowBreak);
-				request.setAttribute("liferay-ui:table-iterator:width", _width);
+				httpServletRequest.setAttribute(
+					"liferay-ui:table-iterator:width", _width);
 
 				PortalIncludeUtil.include(pageContext, getStartPage());
 
@@ -117,9 +115,8 @@ public class TableIteratorTag extends TagSupport {
 
 				return EVAL_BODY_INCLUDE;
 			}
-			else {
-				return SKIP_BODY;
-			}
+
+			return SKIP_BODY;
 		}
 		catch (Exception e) {
 			throw new JspException(e);
@@ -130,9 +127,8 @@ public class TableIteratorTag extends TagSupport {
 		if (Validator.isNull(_bodyPage)) {
 			return _BODY_PAGE;
 		}
-		else {
-			return _bodyPage;
-		}
+
+		return _bodyPage;
 	}
 
 	public void setBodyPage(String bodyPage) {
@@ -178,18 +174,16 @@ public class TableIteratorTag extends TagSupport {
 		if (Validator.isNull(_endPage)) {
 			return _END_PAGE;
 		}
-		else {
-			return _endPage;
-		}
+
+		return _endPage;
 	}
 
 	protected String getStartPage() {
 		if (Validator.isNull(_startPage)) {
 			return _START_PAGE;
 		}
-		else {
-			return _startPage;
-		}
+
+		return _startPage;
 	}
 
 	private static final String _BODY_PAGE =

@@ -16,6 +16,8 @@ package com.liferay.portal.upgrade.v7_0_1;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.util.RawMetadataProcessor;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -116,6 +118,39 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 
 			if (newDDMStructureId == 0) {
 				return;
+			}
+
+			StringBundler sb = new StringBundler(5);
+
+			sb.append("select fileVersionId, DDMStructureId from ");
+			sb.append("DLFileEntryMetadata where fileVersionId in (select ");
+			sb.append("fileVersionId from DLFileEntryMetadata group by ");
+			sb.append("fileVersionId having count(*) >= 2) and ");
+			sb.append("DDMStructureId = ?");
+
+			try (PreparedStatement ps1 = connection.prepareStatement(
+					sb.toString());
+				PreparedStatement ps2 =
+					AutoBatchPreparedStatementUtil.concurrentAutoBatch(
+						connection,
+						"delete from DLFileEntryMetadata where fileVersionId " +
+							"= ? and DDMStructureId = ?")) {
+
+				ps1.setLong(1, oldDDMStructureId);
+
+				ResultSet resultSet = ps1.executeQuery();
+
+				while (resultSet.next()) {
+					long fileVersionId = resultSet.getLong("fileVersionId");
+					long ddmStructureId = resultSet.getLong("DDMStructureId");
+
+					ps2.setLong(1, fileVersionId);
+					ps2.setLong(2, ddmStructureId);
+
+					ps2.addBatch();
+				}
+
+				ps2.executeBatch();
 			}
 
 			try (PreparedStatement ps = connection.prepareStatement(

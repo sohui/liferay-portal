@@ -51,6 +51,10 @@ public class StartupHelperUtil {
 		return getStartupHelper().isVerified();
 	}
 
+	public static void printPatchLevel() {
+		getStartupHelper().printPatchLevel();
+	}
+
 	public static void setDbNew(boolean dbNew) {
 		getStartupHelper().setDbNew(dbNew);
 	}
@@ -81,10 +85,23 @@ public class StartupHelperUtil {
 		getStartupHelper().upgradeProcess(buildNumber);
 	}
 
+	public static void verifyProcess(boolean verified) throws VerifyException {
+		getStartupHelper().verifyProcess(verified);
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #verifyProcess(boolean)}
+	 */
+	@Deprecated
 	public static void verifyProcess(boolean newBuildNumber, boolean verified)
 		throws VerifyException {
 
 		getStartupHelper().verifyProcess(newBuildNumber, verified);
+	}
+
+	public static void verifyRequiredSchemaVersion() throws Exception {
+		_startupHelper.verifyRequiredSchemaVersion();
 	}
 
 	public void setStartupHelper(StartupHelper startupHelper) {

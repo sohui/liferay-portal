@@ -42,9 +42,6 @@ public class GetMethodImpl implements Method {
 
 		try {
 			WebDAVStorage storage = webDAVRequest.getWebDAVStorage();
-			HttpServletRequest request = webDAVRequest.getHttpServletRequest();
-			HttpServletResponse response =
-				webDAVRequest.getHttpServletResponse();
 
 			Resource resource = storage.getResource(webDAVRequest);
 
@@ -72,13 +69,18 @@ public class GetMethodImpl implements Method {
 				is = flashMagicBytesUtilResult.getInputStream();
 
 				try {
+					HttpServletRequest httpServletRequest =
+						webDAVRequest.getHttpServletRequest();
+					HttpServletResponse httpServletResponse =
+						webDAVRequest.getHttpServletResponse();
+
 					ServletResponseUtil.sendFileWithRangeHeader(
-						request, response, fileName, is, resource.getSize(),
-						resource.getContentType());
+						httpServletRequest, httpServletResponse, fileName, is,
+						resource.getSize(), resource.getContentType());
 				}
 				catch (Exception e) {
 					if (_log.isWarnEnabled()) {
-						_log.warn(e);
+						_log.warn(e, e);
 					}
 				}
 

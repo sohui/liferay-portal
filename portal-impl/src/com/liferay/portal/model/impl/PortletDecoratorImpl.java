@@ -14,13 +14,13 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.model.PortletDecorator;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 public class PortletDecoratorImpl implements PortletDecorator {
 
@@ -62,9 +62,8 @@ public class PortletDecoratorImpl implements PortletDecorator {
 		if (getPortletDecoratorId().equals(portletDecoratorId)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -77,9 +76,8 @@ public class PortletDecoratorImpl implements PortletDecorator {
 		if (Validator.isNull(_name)) {
 			return _portletDecoratorId;
 		}
-		else {
-			return _name;
-		}
+
+		return _name;
 	}
 
 	@Override
@@ -94,16 +92,15 @@ public class PortletDecoratorImpl implements PortletDecorator {
 
 			int pos = _cssClass.indexOf(CharPool.SPACE);
 
-			if (pos > 0) {
-				if (_portletDecoratorThumbnailPath.endsWith(
-						_cssClass.substring(0, pos))) {
+			if ((pos > 0) &&
+				_portletDecoratorThumbnailPath.endsWith(
+					_cssClass.substring(0, pos))) {
 
-					String subclassPath = StringUtil.replace(
-						_cssClass, CharPool.SPACE, CharPool.SLASH);
+				String subclassPath = StringUtil.replace(
+					_cssClass, CharPool.SPACE, CharPool.SLASH);
 
-					return _portletDecoratorThumbnailPath +
-						subclassPath.substring(pos);
-				}
+				return _portletDecoratorThumbnailPath +
+					subclassPath.substring(pos);
 			}
 		}
 

@@ -14,10 +14,10 @@
 
 package com.liferay.portlet.ratings.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.ratings.kernel.model.RatingsStats;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the RatingsStats service. Represents a row in the &quot;RatingsStats&quot; database table, with each column mapped to a property of this class.
@@ -32,12 +32,13 @@ import com.liferay.ratings.kernel.service.RatingsStatsLocalServiceUtil;
  * @generated
  */
 @ProviderType
-public abstract class RatingsStatsBaseImpl extends RatingsStatsModelImpl
-	implements RatingsStats {
+public abstract class RatingsStatsBaseImpl
+	extends RatingsStatsModelImpl implements RatingsStats {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a ratings stats model instance should use the {@link RatingsStats} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a ratings stats model instance should use the <code>RatingsStats</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class RatingsStatsBaseImpl extends RatingsStatsModelImpl
 			RatingsStatsLocalServiceUtil.updateRatingsStats(this);
 		}
 	}
+
 }

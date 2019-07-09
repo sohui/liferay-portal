@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.jsonwebservice;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.lang.reflect.Method;
 
 import java.util.List;
@@ -35,20 +33,20 @@ public class JSONWebServiceActionsManagerUtil {
 	}
 
 	public static JSONWebServiceAction getJSONWebServiceAction(
-			HttpServletRequest request)
+			HttpServletRequest httpServletRequest)
 		throws NoSuchJSONWebServiceException {
 
 		return getJSONWebServiceActionsManager().getJSONWebServiceAction(
-			request);
+			httpServletRequest);
 	}
 
 	public static JSONWebServiceAction getJSONWebServiceAction(
-			HttpServletRequest request, String path, String method,
+			HttpServletRequest httpServletRequest, String path, String method,
 			Map<String, Object> parameterMap)
 		throws NoSuchJSONWebServiceException {
 
 		return getJSONWebServiceActionsManager().getJSONWebServiceAction(
-			request, path, method, parameterMap);
+			httpServletRequest, path, method, parameterMap);
 	}
 
 	public static JSONWebServiceActionMapping getJSONWebServiceActionMapping(
@@ -60,9 +58,6 @@ public class JSONWebServiceActionsManagerUtil {
 
 	public static List<JSONWebServiceActionMapping>
 		getJSONWebServiceActionMappings(String contextName) {
-
-		PortalRuntimePermission.checkGetBeanProperty(
-			JSONWebServiceActionsManagerUtil.class);
 
 		return _jsonWebServiceActionsManager.getJSONWebServiceActionMappings(
 			contextName);
@@ -122,8 +117,6 @@ public class JSONWebServiceActionsManagerUtil {
 
 	public void setJSONWebServiceActionsManager(
 		JSONWebServiceActionsManager jsonWebServiceActionsManager) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_jsonWebServiceActionsManager = jsonWebServiceActionsManager;
 	}

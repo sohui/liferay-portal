@@ -14,6 +14,8 @@
 
 package com.liferay.portal.resiliency.spi.agent;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
@@ -25,7 +27,6 @@ import com.liferay.portal.kernel.resiliency.spi.agent.AcceptorServlet;
 import com.liferay.portal.kernel.resiliency.spi.agent.SPIAgent;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.ReadOnlyServletResponse;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.InetAddressUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -70,11 +71,17 @@ public class HttpClientSPIAgent implements SPIAgent {
 		socketBlockingQueue = new ArrayBlockingQueue<>(
 			PropsValues.PORTAL_RESILIENCY_SPI_AGENT_CLIENT_POOL_MAX_SIZE);
 
-		String httpServletRequestContentString =
-			"POST " + SPI_AGENT_CONTEXT_PATH + MAPPING_PATTERN +
-				" HTTP/1.1\r\nHost: localhost:" +
-					spiConfiguration.getConnectorPort() + "\r\n" +
-						"Content-Length: 8\r\n\r\n";
+		StringBundler sb = new StringBundler(7);
+
+		sb.append("POST ");
+		sb.append(SPI_AGENT_CONTEXT_PATH);
+		sb.append(MAPPING_PATTERN);
+		sb.append(" HTTP/1.1\r\nHost: localhost:");
+		sb.append(spiConfiguration.getConnectorPort());
+		sb.append("\r\n");
+		sb.append("Content-Length: 8\r\n\r\n");
+
+		String httpServletRequestContentString = sb.toString();
 
 		httpServletRequestContent = httpServletRequestContentString.getBytes(
 			Charset.forName("US-ASCII"));
@@ -115,14 +122,15 @@ public class HttpClientSPIAgent implements SPIAgent {
 	}
 
 	@Override
-	public HttpServletRequest prepareRequest(HttpServletRequest request)
+	public HttpServletRequest prepareRequest(
+			HttpServletRequest httpServletRequest)
 		throws IOException {
 
 		SPIAgentRequest spiAgentRequest = SPIAgentRequest.readFrom(
-			request.getInputStream());
+			httpServletRequest.getInputStream());
 
 		HttpServletRequest spiAgentHttpServletRequest =
-			spiAgentRequest.populateRequest(request);
+			spiAgentRequest.populateRequest(httpServletRequest);
 
 		spiAgentHttpServletRequest.setAttribute(
 			WebKeys.SPI_AGENT_REQUEST, spiAgentRequest);
@@ -132,18 +140,20 @@ public class HttpClientSPIAgent implements SPIAgent {
 
 	@Override
 	public HttpServletResponse prepareResponse(
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		HttpServletResponse spiAgentHttpServletResponse =
 			new BufferCacheServletResponse(
-				new ReadOnlyServletResponse(response));
+				new ReadOnlyServletResponse(httpServletResponse));
 
-		request.setAttribute(WebKeys.SPI_AGENT_ORIGINAL_RESPONSE, response);
+		httpServletRequest.setAttribute(
+			WebKeys.SPI_AGENT_ORIGINAL_RESPONSE, httpServletResponse);
 
-		Portlet portlet = (Portlet)request.getAttribute(
+		Portlet portlet = (Portlet)httpServletRequest.getAttribute(
 			WebKeys.SPI_AGENT_PORTLET);
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			WebKeys.SPI_AGENT_RESPONSE,
 			new SPIAgentResponse(portlet.getContextName()));
 
@@ -152,7 +162,8 @@ public class HttpClientSPIAgent implements SPIAgent {
 
 	@Override
 	public void service(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws PortalResiliencyException {
 
 		Socket socket = null;
@@ -160,7 +171,8 @@ public class HttpClientSPIAgent implements SPIAgent {
 		try {
 			socket = borrowSocket();
 
-			SPIAgentRequest spiAgentRequest = new SPIAgentRequest(request);
+			SPIAgentRequest spiAgentRequest = new SPIAgentRequest(
+				httpServletRequest);
 
 			OutputStream outputStream = socket.getOutputStream();
 
@@ -177,7 +189,7 @@ public class HttpClientSPIAgent implements SPIAgent {
 			SPIAgentResponse spiAgentResponse = SPIAgentResponse.readFrom(
 				dataInputStream);
 
-			spiAgentResponse.populate(request, response);
+			spiAgentResponse.populate(httpServletRequest, httpServletResponse);
 
 			returnSocket(socket, forceCloseSocket);
 
@@ -202,69 +214,69 @@ public class HttpClientSPIAgent implements SPIAgent {
 
 	@Override
 	public void transferResponse(
-			HttpServletRequest request, HttpServletResponse response,
-			Exception exception)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, Exception exception)
 		throws IOException {
 
-		SPIAgentRequest spiAgentRequest = (SPIAgentRequest)request.getAttribute(
-			WebKeys.SPI_AGENT_REQUEST);
+		SPIAgentRequest spiAgentRequest =
+			(SPIAgentRequest)httpServletRequest.getAttribute(
+				WebKeys.SPI_AGENT_REQUEST);
 
-		request.removeAttribute(WebKeys.SPI_AGENT_REQUEST);
+		httpServletRequest.removeAttribute(WebKeys.SPI_AGENT_REQUEST);
 
 		File requestBodyFile = spiAgentRequest.requestBodyFile;
 
-		if (requestBodyFile != null) {
-			if (!requestBodyFile.delete()) {
-				requestBodyFile.deleteOnExit();
-			}
+		if ((requestBodyFile != null) && !requestBodyFile.delete()) {
+			requestBodyFile.deleteOnExit();
 		}
 
 		SPIAgentResponse spiAgentResponse =
-			(SPIAgentResponse)request.getAttribute(WebKeys.SPI_AGENT_RESPONSE);
+			(SPIAgentResponse)httpServletRequest.getAttribute(
+				WebKeys.SPI_AGENT_RESPONSE);
 
-		request.removeAttribute(WebKeys.SPI_AGENT_RESPONSE);
+		httpServletRequest.removeAttribute(WebKeys.SPI_AGENT_RESPONSE);
 
 		if (exception != null) {
 			spiAgentResponse.setException(exception);
 		}
 		else {
 			BufferCacheServletResponse bufferCacheServletResponse =
-				(BufferCacheServletResponse)response;
+				(BufferCacheServletResponse)httpServletResponse;
 
 			spiAgentResponse.captureResponse(
-				request, bufferCacheServletResponse);
+				httpServletRequest, bufferCacheServletResponse);
 		}
 
-		HttpServletResponse originalResponse =
-			(HttpServletResponse)request.getAttribute(
+		HttpServletResponse originalHttpServletResponse =
+			(HttpServletResponse)httpServletRequest.getAttribute(
 				WebKeys.SPI_AGENT_ORIGINAL_RESPONSE);
 
-		request.removeAttribute(WebKeys.SPI_AGENT_ORIGINAL_RESPONSE);
+		httpServletRequest.removeAttribute(WebKeys.SPI_AGENT_ORIGINAL_RESPONSE);
 
-		originalResponse.setContentLength(8);
+		originalHttpServletResponse.setContentLength(8);
 
 		spiAgentResponse.writeTo(
-			registrationReference, originalResponse.getOutputStream());
+			registrationReference,
+			originalHttpServletResponse.getOutputStream());
 	}
 
 	protected Socket borrowSocket() throws IOException {
 		Socket socket = socketBlockingQueue.poll();
 
-		if (socket != null) {
-			if (socket.isClosed() || !socket.isConnected() ||
-				socket.isInputShutdown() || socket.isOutputShutdown()) {
+		if ((socket != null) &&
+			(socket.isClosed() || !socket.isConnected() ||
+			 socket.isInputShutdown() || socket.isOutputShutdown())) {
 
-				try {
-					socket.close();
-				}
-				catch (IOException ioe) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(ioe, ioe);
-					}
-				}
-
-				socket = null;
+			try {
+				socket.close();
 			}
+			catch (IOException ioe) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(ioe, ioe);
+				}
+			}
+
+			socket = null;
 		}
 
 		if (socket == null) {

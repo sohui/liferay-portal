@@ -14,45 +14,31 @@
 	<td></td>
 </tr>
 <tr>
-	<td>BREADCRUMB</td>
-	<td>//ul[contains(@class,'breadcrumb')]//a</td>
-	<td></td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
 </tr>
 <!--EDIT_TABS-->
 <tr>
-	<td>IDENTIFICATION</td>
-	<td>//li[contains(@class,'tab')]/a[contains(.,'Identification')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>MISCELLANEOUS</td>
-	<td>//li[contains(@class,'tab')]/a[contains(.,'Miscellaneous')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>ORGANIZATION_INFORMATION</td>
 	<td>//li[contains(@class,'tab')]/a[contains(.,'Organization Information')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>USER_INFORMATION</td>
-	<td>//li[contains(@class,'tab')]/a[contains(.,'User Information')]</td>
+	<td>ORGANIZATION_COUNTRY_NAME</td>
+	<td>//select[contains(@id,'countryId') and contains(.,'${key_countryName}')]</td>
 	<td></td>
 </tr>
+<!--MY_ORGANIZATION-->
 <tr>
-	<td></td>
-	<td></td>
+	<td>MY_ORGANIZATION_PORTLET</td>
+	<td>//div[contains(@class,'MyOrganizationsPortlet')]//div[@class='portlet-body']</td>
 	<td></td>
 </tr>
 <!--ORGANIZATION_TABLE-->
 <tr>
 	<td>ORGANIZATION_TABLE_NAME</td>
-	<td>//tr[contains(.,'${key_orgName}')]/td[count(//div[contains(@id,'organizationsSearchContainer')]//th[contains(.,'Name')]/preceding-sibling::th) + 1]//a</td>
+	<td>//td[contains(@class,'name') and contains(.,'${key_orgName}')]//a[1]</td>
 	<td></td>
 </tr>
 <tr>
@@ -66,13 +52,19 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ORGANIZATION_TABLE_ACTIONS</td>
-	<td>//tr[contains(.,'${key_orgName}')]/td//div/a</td>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--USERS_AND_SUBORGANIZATIONS_TABLE-->
+<tr>
+	<td>USERS_AND_SUBORGANIZATIONS_TABLE_NAME</td>
+	<td>//td[contains(@class,'name') and contains(.,'${key_userFullName}')]//a[1]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>ORGANIZATION_TABLE_SUBORGANIZATION_COUNT</td>
-	<td>//tr[contains(.,'${key_orgName}')]/td[2]//em</td>
+	<td>USERS_AND_SUBORGANIZATIONS_TABLE_NAME_GENERIC</td>
+	<td>//div[contains(@id,'organizationUsersSearchContainer')]//tr/td[2]//a</td>
 	<td></td>
 </tr>
 <tr>
@@ -82,18 +74,13 @@
 </tr>
 <!--USER_TABLE-->
 <tr>
-	<td>USER_TABLE_CHECKBOX</td>
-	<td>//tr[contains(.,'${key_userScreenName}')]/td[1]//input</td>
-	<td></td>
-</tr>
-<tr>
 	<td>USER_TABLE_NAME</td>
-	<td>//tr[contains(.,'${key_userScreenName}')]/td[2]//strong</td>
+	<td>//tr[contains(.,'${key_userScreenName}')]/td[2]/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>USER_TABLE_SCREEN_NAME</td>
-	<td>//tr[contains(.,'${key_userScreenName}')]/td[3]//a</td>
+	<td>//tr[contains(.,'${key_userScreenName}')]/td[3]/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -101,15 +88,56 @@
 	<td>//tr[contains(.,'${key_userScreenName}')]/td[7]//span/a[contains(.,'Impersonate User')]</td>
 	<td></td>
 </tr>
+<!--USER_ADDRESS_TABLE-->
 <tr>
-	<td></td>
-	<td></td>
+	<td>USER_ADDRESS_TABLE</td>
+	<td>//tr[contains(.,'${key_primaryValue}')]/td[2]/div[1]</td>
 	<td></td>
 </tr>
-<!--USER_TABLE_HEADER-->
 <tr>
-	<td>USER_TABLE_HEADER_FIRST_NAME</td>
-	<td>//div[contains(@id,'usersSearchContainer')]//th[contains(.,'First Name')]</td>
+	<td>USER_ADDRESS_TABLE_ADDRESS_TYPE</td>
+	<td>//tr[contains(.,'${key_primaryValue}')]/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_ADDRESS_PRIMARY_TABLE</td>
+	<td>//tr[contains(.,'${key_primaryValue}')]//span/span[contains(.,'PRIMARY')]</td>
+	<td></td>
+</tr>
+<!--USER_CONTACT_INFORMATION_TABLE-->
+<tr>
+	<td>USER_CONTACT_INFORMATION_CONTAINER_TABLE</td>
+	<td>//table[contains(@data-searchcontainerid,'${key_searchContainerType}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_CONTACT_INFORMATION_TYPE_TABLE</td>
+	<td>//table[contains(@data-searchcontainerid,'${key_searchContainerType}')]//tr[1]/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_CONTACT_INFORMATION_PHONE_NUMBER_TABLE</td>
+	<td>//table[contains(@data-searchcontainerid,'${key_searchContainerType}')]//tr[1]/td[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_CONTACT_INFORMATION_EXTENSION_TABLE</td>
+	<td>//table[contains(@data-searchcontainerid,'${key_searchContainerType}')]//tr[1]/td[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_CONTACT_INFORMATION_EMAIL_ADDRESS_TABLE</td>
+	<td>//table[contains(@data-searchcontainerid,'${key_searchContainerType}')]//tr[1]/td[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_CONTACT_INFORMATION_WEBSITE_TABLE</td>
+	<td>//table[contains(@data-searchcontainerid,'${key_searchContainerType}')]//tr[1]/td[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_CONTACT_INFORMATION_PRIMARY_TABLE</td>
+	<td>//table[contains(@data-searchcontainerid,'${key_searchContainerType}')]//tr[contains(.,'${key_contactInfoPrimaryValue}')]/td/span/span[contains(.,'PRIMARY')]</td>
 	<td></td>
 </tr>
 </tbody>

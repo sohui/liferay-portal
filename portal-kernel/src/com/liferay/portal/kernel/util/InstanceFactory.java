@@ -47,6 +47,10 @@ public class InstanceFactory {
 			Thread currentThread = Thread.currentThread();
 
 			classLoader = currentThread.getContextClassLoader();
+
+			if (classLoader == null) {
+				classLoader = ClassLoader.getSystemClassLoader();
+			}
 		}
 
 		Class<?> clazz = classLoader.loadClass(className);
@@ -59,9 +63,8 @@ public class InstanceFactory {
 
 			return constructor.newInstance(arguments);
 		}
-		else {
-			return clazz.newInstance();
-		}
+
+		return clazz.newInstance();
 	}
 
 	public static Object newInstance(String className) throws Exception {

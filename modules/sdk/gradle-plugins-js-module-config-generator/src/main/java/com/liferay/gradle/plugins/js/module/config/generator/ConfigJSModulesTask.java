@@ -17,6 +17,7 @@ package com.liferay.gradle.plugins.js.module.config.generator;
 import com.liferay.gradle.plugins.node.tasks.ExecuteNodeScriptTask;
 import com.liferay.gradle.util.FileUtil;
 import com.liferay.gradle.util.GradleUtil;
+import com.liferay.gradle.util.Validator;
 
 import groovy.lang.Closure;
 
@@ -36,8 +37,6 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Optional;
-import org.gradle.api.tasks.OutputDirectory;
-import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.SkipWhenEmpty;
 import org.gradle.api.tasks.util.PatternFilterable;
 import org.gradle.api.tasks.util.PatternSet;
@@ -83,7 +82,7 @@ public class ConfigJSModulesTask
 	}
 
 	@Override
-	public void executeNode() {
+	public void executeNode() throws Exception {
 		Project project = getProject();
 
 		final File outputDir = getOutputDir();
@@ -121,6 +120,12 @@ public class ConfigJSModulesTask
 		return GradleUtil.toString(_configVariable);
 	}
 
+	@Input
+	@Optional
+	public String getCustomDefine() {
+		return GradleUtil.toString(_customDefine);
+	}
+
 	@Override
 	public Set<String> getExcludes() {
 		return _patternFilterable.getExcludes();
@@ -149,16 +154,15 @@ public class ConfigJSModulesTask
 		return GradleUtil.toString(_moduleFormat);
 	}
 
-	@OutputDirectory
 	public File getOutputDir() {
 		return new File(getTemporaryDir(), "files");
 	}
 
-	@OutputFile
 	public File getOutputFile() {
 		return GradleUtil.toFile(getProject(), _outputFile);
 	}
 
+	@Input
 	public File getSourceDir() {
 		return GradleUtil.toFile(getProject(), _sourceDir);
 	}
@@ -168,11 +172,13 @@ public class ConfigJSModulesTask
 	public FileCollection getSourceFiles() {
 		Project project = getProject();
 
-		if (_sourceDir == null) {
+		File sourceDir = getSourceDir();
+
+		if (sourceDir == null) {
 			return project.files();
 		}
 
-		FileTree fileTree = project.fileTree(_sourceDir);
+		FileTree fileTree = project.fileTree(sourceDir);
 
 		return fileTree.matching(_patternFilterable);
 	}
@@ -224,6 +230,10 @@ public class ConfigJSModulesTask
 
 	public void setConfigVariable(Object configVariable) {
 		_configVariable = configVariable;
+	}
+
+	public void setCustomDefine(Object customDefine) {
+		_customDefine = customDefine;
 	}
 
 	@Override
@@ -321,6 +331,13 @@ public class ConfigJSModulesTask
 		completeArgs.add("--moduleConfig");
 		completeArgs.add(FileUtil.getAbsolutePath(getModuleConfigFile()));
 
+		String customDefine = getCustomDefine();
+
+		if (Validator.isNotNull(customDefine)) {
+			completeArgs.add("--namespace");
+			completeArgs.add(customDefine);
+		}
+
 		completeArgs.add("--output");
 		completeArgs.add(FileUtil.getAbsolutePath(getOutputFile()));
 
@@ -335,6 +352,7 @@ public class ConfigJSModulesTask
 	}
 
 	private Object _configVariable;
+	private Object _customDefine = "Liferay.Loader";
 	private boolean _ignorePath;
 	private boolean _keepFileExtension;
 	private boolean _lowerCase;

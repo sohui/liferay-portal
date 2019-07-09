@@ -41,10 +41,10 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Tomas Polesovsky
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class SyncSAPEntryActivator {
 
-	public static final Object[][] SAP_ENTRY_OBJECT_ARRAYS = new Object[][] {
+	public static final Object[][] SAP_ENTRY_OBJECT_ARRAYS = {
 		{
 			"SYNC_DEFAULT",
 			"com.liferay.sync.service.SyncDLObjectService#getSyncContext", true
@@ -62,10 +62,6 @@ public class SyncSAPEntryActivator {
 	protected void addSAPEntry(long companyId) throws PortalException {
 		for (Object[] sapEntryObjectArray : SAP_ENTRY_OBJECT_ARRAYS) {
 			String name = String.valueOf(sapEntryObjectArray[0]);
-			String allowedServiceSignatures = String.valueOf(
-				sapEntryObjectArray[1]);
-			boolean defaultSAPEntry = GetterUtil.getBoolean(
-				sapEntryObjectArray[2]);
 
 			SAPEntry sapEntry = _sapEntryLocalService.fetchSAPEntry(
 				companyId, name);
@@ -73,6 +69,11 @@ public class SyncSAPEntryActivator {
 			if (sapEntry != null) {
 				continue;
 			}
+
+			String allowedServiceSignatures = String.valueOf(
+				sapEntryObjectArray[1]);
+			boolean defaultSAPEntry = GetterUtil.getBoolean(
+				sapEntryObjectArray[2]);
 
 			Map<Locale, String> map = new HashMap<>();
 
@@ -113,7 +114,7 @@ public class SyncSAPEntryActivator {
 			}
 			catch (PortalException pe) {
 				_log.error(
-					"Unable to add SAP entry for company " +
+					"Unable to add service access policy entry for company " +
 						company.getCompanyId(),
 					pe);
 			}

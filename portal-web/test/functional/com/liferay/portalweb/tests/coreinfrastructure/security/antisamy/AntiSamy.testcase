@@ -1,0 +1,87 @@
+@component-name = "portal-security"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "AntiSamy";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			WikiPage.tearDownCP();
+
+			Page.tearDownCP();
+		}
+	}
+
+	@priority = "4"
+	test AssertNoWikiJavascript {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "AntiSamy Test Page");
+
+		Navigator.gotoPage(pageName = "AntiSamy Test Page");
+
+		Portlet.addPG(portletName = "Wiki");
+
+		var wikiPageContent = '''
+				<p id='demo'>PASS</p>
+
+				<script type='text/javascript'>
+					document.getElementById('demo').innerHTML = 'FAIL';
+				</script>
+			''';
+
+		WikiPage.addFrontPagePG(
+			htmlSource = "true",
+			wikiPageContent = "${wikiPageContent}");
+
+		WikiPage.viewPG(
+			wikiPageContent = "PASS",
+			wikiPageTitle = "FrontPage");
+	}
+
+	@priority = "4"
+	test AssertWebContentJavascript {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Web Content Display Page");
+
+		Navigator.gotoPage(pageName = "Web Content Display Page");
+
+		Portlet.addPG(portletName = "Web Content Display");
+
+		var webContentContent = '''
+				<p id='demo'>FAIL</p>
+
+				<script type='text/javascript'>
+					document.getElementById('demo').innerHTML = 'PASS';
+				</script>
+			''';
+
+		WebContent.addPGViaWCD(
+			webContentContent = "${webContentContent}",
+			webContentTitle = "WC WebContent Title");
+
+		WebContent.viewPGViaWCD(
+			webContentContent = "PASS",
+			webContentTitle = "Web Content Title");
+	}
+
+}

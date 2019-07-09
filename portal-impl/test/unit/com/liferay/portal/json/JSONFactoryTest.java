@@ -14,15 +14,22 @@
 
 package com.liferay.portal.json;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.json.jabsorb.serializer.LiferayJSONDeserializationWhitelist;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONSerializer;
 import com.liferay.portal.kernel.test.AssertUtils;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.test.CaptureHandler;
+import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,9 +44,21 @@ public class JSONFactoryTest {
 	public void setUp() throws Exception {
 		JSONInit.init();
 
+		JSONFactoryImpl jsonFactoryImpl = new JSONFactoryImpl();
+
+		LiferayJSONDeserializationWhitelist
+			liferayJSONDeserializationWhitelist =
+				jsonFactoryImpl.getLiferayJSONDeserializationWhitelist();
+
+		liferayJSONDeserializationWhitelist.register(
+			FooBean.class.getName(), FooBean1.class.getName(),
+			FooBean2.class.getName(), FooBean3.class.getName(),
+			FooBean4.class.getName(), FooBean5.class.getName(),
+			FooBean6.class.getName());
+
 		JSONFactoryUtil jsonFactoryUtil = new JSONFactoryUtil();
 
-		jsonFactoryUtil.setJSONFactory(new JSONFactoryImpl());
+		jsonFactoryUtil.setJSONFactory(jsonFactoryImpl);
 	}
 
 	@Test
@@ -77,6 +96,36 @@ public class JSONFactoryTest {
 		Object values = deserializedMap.get("key");
 
 		Assert.assertTrue(values instanceof Integer[]);
+	}
+
+	@Test
+	public void testDeserializeNonwhitelistedClass() {
+		String json = JSONFactoryUtil.serialize(new JSONFactoryTest());
+
+		try (CaptureHandler captureHandler =
+				JDKLoggerTestUtil.configureJDKLogger(
+					LiferayJSONDeserializationWhitelist.class.getName(),
+					Level.WARNING)) {
+
+			Object object = JSONFactoryUtil.deserialize(json);
+
+			Assert.assertTrue(
+				object.getClass() + " is not an instance of Map",
+				object instanceof Map);
+
+			List<LogRecord> logRecords = captureHandler.getLogRecords();
+
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
+
+			LogRecord logRecord = logRecords.get(0);
+
+			Assert.assertTrue(
+				logRecord.getMessage(),
+				StringUtil.startsWith(
+					logRecord.getMessage(),
+					"Unable to deserialize " +
+						JSONFactoryTest.class.getName()));
+		}
 	}
 
 	@Test
@@ -160,35 +209,39 @@ public class JSONFactoryTest {
 			"{\"\u0063lass\":\"java.lang.Thread\"}");
 
 		Assert.assertEquals(HashMap.class, object.getClass());
-		Assert.assertTrue(((Map<?, ?>)object).containsKey("class"));
+
+		Map<?, ?> map = (Map<?, ?>)object;
+
+		Assert.assertTrue(map.containsKey("class"));
 
 		JSONFactoryUtil.looseDeserialize(
 			"{\"class\":\"" + JSONFactoryUtil.class.getName() + "\"}");
 
-		Map<?, ?> map = (Map<?, ?>)JSONFactoryUtil.looseDeserialize(
+		map = (Map<?, ?>)JSONFactoryUtil.looseDeserialize(
 			"{\"class\":\"" + JSONFactoryUtil.class.getName() +
 				"\",\"foo\": \"boo\"}");
 
 		Assert.assertNotNull(map);
-		Assert.assertEquals(2, map.size());
+		Assert.assertEquals(map.toString(), 2, map.size());
 		Assert.assertEquals(
 			"com.liferay.portal.kernel.json.JSONFactoryUtil", map.get("class"));
 		Assert.assertEquals("boo", map.get("foo"));
 
 		map = (Map<?, ?>)JSONFactoryUtil.looseDeserialize(
-			"{\"class\":\"" + JSONFactoryUtil.class.getName() +
-				"\",\"foo\": \"boo\",\"jsonFactory\":{\"class\":\"" +
-					JSONFactoryImpl.class.getName() + "\"}}");
+			StringBundler.concat(
+				"{\"class\":\"", JSONFactoryUtil.class.getName(),
+				"\",\"foo\": \"boo\",\"jsonFactory\":{\"class\":\"",
+				JSONFactoryImpl.class.getName(), "\"}}"));
 
 		Assert.assertNotNull(map);
-		Assert.assertEquals(3, map.size());
+		Assert.assertEquals(map.toString(), 3, map.size());
 		Assert.assertEquals(JSONFactoryUtil.class.getName(), map.get("class"));
 		Assert.assertEquals("boo", map.get("foo"));
 
 		map = (Map<?, ?>)map.get("jsonFactory");
 
 		Assert.assertNotNull(map);
-		Assert.assertEquals(1, map.size());
+		Assert.assertEquals(map.toString(), 1, map.size());
 		Assert.assertEquals(JSONFactoryImpl.class.getName(), map.get("class"));
 	}
 
@@ -273,20 +326,23 @@ public class JSONFactoryTest {
 
 	protected void checkJSONPrimitiveArrays(String json) {
 		Assert.assertTrue(
-			json.contains("\"doubleArray\":" + _DOUBLE_ARRAY_STRING));
-		Assert.assertTrue(json.contains("\"longArray\":" + _LONG_ARRAY_STRING));
+			json, json.contains("\"doubleArray\":" + _DOUBLE_ARRAY_STRING));
 		Assert.assertTrue(
-			json.contains("\"integerArray\":" + _INTEGER_ARRAY_STRING));
+			json, json.contains("\"longArray\":" + _LONG_ARRAY_STRING));
+		Assert.assertTrue(
+			json, json.contains("\"integerArray\":" + _INTEGER_ARRAY_STRING));
 	}
 
 	protected void checkJSONPrimitives(String json) {
-		Assert.assertTrue(json.contains("\"longValue\":" + _LONG_VALUE));
-		Assert.assertTrue(json.contains("\"integerValue\":" + _INTEGER_VALUE));
-		Assert.assertTrue(json.contains("\"doubleValue\":" + _DOUBLE_VALUE));
+		Assert.assertTrue(json, json.contains("\"longValue\":" + _LONG_VALUE));
+		Assert.assertTrue(
+			json, json.contains("\"integerValue\":" + _INTEGER_VALUE));
+		Assert.assertTrue(
+			json, json.contains("\"doubleValue\":" + _DOUBLE_VALUE));
 	}
 
 	protected void checkJSONSerializableArgument(String json) {
-		Assert.assertTrue(json.contains("serializable"));
+		Assert.assertTrue(json, json.contains("serializable"));
 	}
 
 	protected void checkPrimitiveArrays(FooBean3 fooBean3) {

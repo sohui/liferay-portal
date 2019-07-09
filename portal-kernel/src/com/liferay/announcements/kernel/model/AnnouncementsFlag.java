@@ -14,30 +14,34 @@
 
 package com.liferay.announcements.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the AnnouncementsFlag service. Represents a row in the &quot;AnnouncementsFlag&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see AnnouncementsFlagModel
- * @see com.liferay.portlet.announcements.model.impl.AnnouncementsFlagImpl
- * @see com.liferay.portlet.announcements.model.impl.AnnouncementsFlagModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.announcements.model.impl.AnnouncementsFlagImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.announcements.model.impl.AnnouncementsFlagImpl"
+)
 @ProviderType
-public interface AnnouncementsFlag extends AnnouncementsFlagModel, PersistedModel {
+public interface AnnouncementsFlag
+	extends AnnouncementsFlagModel, PersistedModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.announcements.model.impl.AnnouncementsFlagImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.announcements.model.impl.AnnouncementsFlagImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<AnnouncementsFlag, Long> FLAG_ID_ACCESSOR = new Accessor<AnnouncementsFlag, Long>() {
+	public static final Accessor<AnnouncementsFlag, Long> FLAG_ID_ACCESSOR =
+		new Accessor<AnnouncementsFlag, Long>() {
+
 			@Override
 			public Long get(AnnouncementsFlag announcementsFlag) {
 				return announcementsFlag.getFlagId();
@@ -52,5 +56,7 @@ public interface AnnouncementsFlag extends AnnouncementsFlagModel, PersistedMode
 			public Class<AnnouncementsFlag> getTypeClass() {
 				return AnnouncementsFlag.class;
 			}
+
 		};
+
 }

@@ -14,14 +14,14 @@
 
 package com.liferay.portal.kernel.scheduler;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.proxy.MessagingProxy;
 import com.liferay.portal.kernel.messaging.proxy.ProxyMode;
 import com.liferay.portal.kernel.scheduler.messaging.SchedulerResponse;
 
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Michael C. Han
@@ -54,36 +54,14 @@ public interface SchedulerEngine {
 
 	public static final String MESSAGE = "MESSAGE";
 
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public static final String MESSAGE_LISTENER_CLASS_NAME =
-		"MESSAGE_LISTENER_CLASS_NAME";
-
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public static final String MESSAGE_LISTENER_UUID = "MESSAGE_LISTENER_UUID";
-
 	public static final String NEXT_FIRE_TIME = "NEXT_FIRE_TIME";
-
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public static final String PORTLET_ID = "PORTLET_ID";
 
 	public static final String PREVIOUS_FIRE_TIME = "PREVIOUS_FIRE_TIME";
 
-	/**
-	 * @deprecated As of 7.0.0
-	 */
-	@Deprecated
-	public static final String RECEIVER_KEY = "RECEIVER_KEY";
-
 	public static final String SCHEDULER = "SCHEDULER";
+
+	public static final String SCHEDULER_CLUSTER_INVOKING =
+		"scheduler.cluster.invoking";
 
 	public static final String SCRIPT = "SCRIPT";
 
@@ -153,6 +131,10 @@ public interface SchedulerEngine {
 		throws SchedulerException;
 
 	public void update(Trigger trigger, StorageType storageType)
+		throws SchedulerException;
+
+	@MessagingProxy(mode = ProxyMode.SYNC)
+	public void validateTrigger(Trigger trigger, StorageType storageType)
 		throws SchedulerException;
 
 }

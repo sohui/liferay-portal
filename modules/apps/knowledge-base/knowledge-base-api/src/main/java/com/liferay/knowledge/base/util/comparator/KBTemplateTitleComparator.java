@@ -40,15 +40,16 @@ public class KBTemplateTitleComparator extends OrderByComparator<KBTemplate> {
 
 	@Override
 	public int compare(KBTemplate kbTemplate1, KBTemplate kbTemplate2) {
-		int value = StringUtil.toLowerCase(kbTemplate1.getTitle()).compareTo(
-			StringUtil.toLowerCase(kbTemplate2.getTitle()));
+		String lowerCaseTitle1 = StringUtil.toLowerCase(kbTemplate1.getTitle());
+		String lowerCaseTitle2 = StringUtil.toLowerCase(kbTemplate2.getTitle());
+
+		int value = lowerCaseTitle1.compareTo(lowerCaseTitle2);
 
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	@Override
@@ -56,9 +57,8 @@ public class KBTemplateTitleComparator extends OrderByComparator<KBTemplate> {
 		if (_ascending) {
 			return ORDER_BY_ASC;
 		}
-		else {
-			return ORDER_BY_DESC;
-		}
+
+		return ORDER_BY_DESC;
 	}
 
 	@Override

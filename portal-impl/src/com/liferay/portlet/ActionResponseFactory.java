@@ -16,28 +16,42 @@ package com.liferay.portlet;
 
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.portlet.LiferayActionResponse;
+import com.liferay.portlet.internal.ActionRequestImpl;
+import com.liferay.portlet.internal.ActionResponseImpl;
 
-import javax.portlet.PortletMode;
-import javax.portlet.WindowState;
+import javax.portlet.ActionRequest;
+import javax.portlet.PortletException;
+import javax.portlet.filter.ActionRequestWrapper;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
+@ProviderType
 public class ActionResponseFactory {
 
-	public static ActionResponseImpl create(
-			ActionRequestImpl actionRequestImpl, HttpServletResponse response,
-			String portletName, User user, Layout layout,
-			WindowState windowState, PortletMode portletMode)
-		throws Exception {
+	public static LiferayActionResponse create(
+			ActionRequest actionRequest,
+			HttpServletResponse httpServletResponse, User user, Layout layout)
+		throws PortletException {
+
+		while (actionRequest instanceof ActionRequestWrapper) {
+			ActionRequestWrapper actionRequestWrapper =
+				(ActionRequestWrapper)actionRequest;
+
+			actionRequest = actionRequestWrapper.getRequest();
+		}
 
 		ActionResponseImpl actionResponseImpl = new ActionResponseImpl();
 
 		actionResponseImpl.init(
-			actionRequestImpl, response, portletName, user, layout, windowState,
-			portletMode);
+			(ActionRequestImpl)actionRequest, httpServletResponse, user, layout,
+			true);
 
 		return actionResponseImpl;
 	}

@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
-
-import java.io.InputStream;
-
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.petra.process.CollectorOutputProcessor;
+import com.liferay.petra.process.ProcessUtil;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.util.Date;
 import java.util.Map;
@@ -67,54 +67,35 @@ public class ThreadUtil {
 	}
 
 	private static String _getThreadDumpFromJstack() {
-		UnsyncByteArrayOutputStream outputStream =
-			new UnsyncByteArrayOutputStream();
+		String vendorURL = System.getProperty("java.vendor.url");
+
+		if ((!vendorURL.equals("http://java.oracle.com/") &&
+			 !vendorURL.equals("http://java.sun.com/")) ||
+			!HeapUtil.isSupported()) {
+
+			return StringPool.BLANK;
+		}
 
 		try {
-			String vendorURL = System.getProperty("java.vendor.url");
+			NoticeableFuture<Map.Entry<byte[], byte[]>> noticeableFuture =
+				ProcessUtil.execute(
+					CollectorOutputProcessor.INSTANCE, "jstack", "-l",
+					String.valueOf(HeapUtil.getProcessId()));
 
-			if (!vendorURL.equals("http://java.oracle.com/") &&
-				!vendorURL.equals("http://java.sun.com/")) {
+			Map.Entry<byte[], byte[]> entry = noticeableFuture.get();
 
-				return StringPool.BLANK;
-			}
-
-			RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-
-			String name = runtimeMXBean.getName();
-
-			if (Validator.isNull(name)) {
-				return StringPool.BLANK;
-			}
-
-			int pos = name.indexOf(CharPool.AT);
-
-			if (pos == -1) {
-				return StringPool.BLANK;
-			}
-
-			String pidString = name.substring(0, pos);
-
-			if (!Validator.isNumber(pidString)) {
-				return StringPool.BLANK;
-			}
-
-			Runtime runtime = Runtime.getRuntime();
-
-			int pid = GetterUtil.getInteger(pidString);
-
-			String[] cmd = new String[] {"jstack", String.valueOf(pid)};
-
-			Process process = runtime.exec(cmd);
-
-			InputStream inputStream = process.getInputStream();
-
-			StreamUtil.transfer(inputStream, outputStream);
+			return new String(entry.getKey());
 		}
 		catch (Exception e) {
-		}
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to use jstack to get thread dump for process " +
+						HeapUtil.getProcessId(),
+					e);
+			}
 
-		return outputStream.toString();
+			return StringPool.BLANK;
+		}
 	}
 
 	private static String _getThreadDumpFromStackTrace() {
@@ -123,8 +104,9 @@ public class ThreadUtil {
 				System.getProperty("java.vm.version");
 
 		StringBundler sb = new StringBundler(
-			"Full thread dump of " + jvm + " on " + String.valueOf(new Date()) +
-				"\n\n");
+			StringBundler.concat(
+				"Full thread dump of ", jvm, " on ", String.valueOf(new Date()),
+				"\n\n"));
 
 		Map<Thread, StackTraceElement[]> stackTraces =
 			Thread.getAllStackTraces();
@@ -142,7 +124,11 @@ public class ThreadUtil {
 			if (thread.getThreadGroup() != null) {
 				sb.append(StringPool.SPACE);
 				sb.append(StringPool.OPEN_PARENTHESIS);
-				sb.append(thread.getThreadGroup().getName());
+
+				ThreadGroup threadGroup = thread.getThreadGroup();
+
+				sb.append(threadGroup.getName());
+
 				sb.append(StringPool.CLOSE_PARENTHESIS);
 			}
 
@@ -154,9 +140,9 @@ public class ThreadUtil {
 			sb.append(thread.getState());
 			sb.append("\n");
 
-			for (int i = 0; i < elements.length; i++) {
+			for (StackTraceElement element : elements) {
 				sb.append("\t");
-				sb.append(elements[i]);
+				sb.append(element);
 				sb.append("\n");
 			}
 
@@ -165,5 +151,7 @@ public class ThreadUtil {
 
 		return sb.toString();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(ThreadUtil.class);
 
 }

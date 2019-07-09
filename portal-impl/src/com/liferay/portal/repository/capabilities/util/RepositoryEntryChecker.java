@@ -15,6 +15,7 @@
 package com.liferay.portal.repository.capabilities.util;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.repository.DocumentRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -33,8 +34,9 @@ public class RepositoryEntryChecker {
 
 		if (dlFileEntry.getRepositoryId() != repositoryId) {
 			throw new SystemException(
-				"File entry " + dlFileEntry.getFileEntryId() + " does not " +
-					"belong to repository " + repositoryId);
+				StringBundler.concat(
+					"File entry ", dlFileEntry.getFileEntryId(),
+					" does not belong to repository ", repositoryId));
 		}
 
 		return dlFileEntry;
@@ -45,8 +47,9 @@ public class RepositoryEntryChecker {
 
 		if (fileEntry.getRepositoryId() != repositoryId) {
 			throw new SystemException(
-				"File entry " + fileEntry.getFileEntryId() + " does not " +
-					"belong to repository " + repositoryId);
+				StringBundler.concat(
+					"File entry ", fileEntry.getFileEntryId(),
+					" does not belong to repository ", repositoryId));
 		}
 
 		return fileEntry;

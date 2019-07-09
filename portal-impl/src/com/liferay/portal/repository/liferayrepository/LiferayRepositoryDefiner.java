@@ -14,8 +14,7 @@
 
 package com.liferay.portal.repository.liferayrepository;
 
-import com.liferay.document.library.kernel.service.DLAppHelperLocalServiceUtil;
-import com.liferay.document.library.kernel.service.DLSyncEventLocalServiceUtil;
+import com.liferay.document.library.kernel.util.DLValidatorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.DocumentRepository;
 import com.liferay.portal.kernel.repository.LocalRepository;
@@ -23,6 +22,8 @@ import com.liferay.portal.kernel.repository.Repository;
 import com.liferay.portal.kernel.repository.RepositoryFactory;
 import com.liferay.portal.kernel.repository.capabilities.BulkOperationCapability;
 import com.liferay.portal.kernel.repository.capabilities.CommentCapability;
+import com.liferay.portal.kernel.repository.capabilities.DynamicCapability;
+import com.liferay.portal.kernel.repository.capabilities.PortalCapabilityLocator;
 import com.liferay.portal.kernel.repository.capabilities.ProcessorCapability;
 import com.liferay.portal.kernel.repository.capabilities.RelatedModelCapability;
 import com.liferay.portal.kernel.repository.capabilities.SyncCapability;
@@ -33,27 +34,12 @@ import com.liferay.portal.kernel.repository.model.FileContentReference;
 import com.liferay.portal.kernel.repository.model.ModelValidator;
 import com.liferay.portal.kernel.repository.registry.BaseRepositoryDefiner;
 import com.liferay.portal.kernel.repository.registry.CapabilityRegistry;
+import com.liferay.portal.kernel.repository.registry.RepositoryDefiner;
 import com.liferay.portal.kernel.repository.registry.RepositoryFactoryRegistry;
-import com.liferay.portal.kernel.repository.util.ModelValidatorUtil;
-import com.liferay.portal.repository.capabilities.LiferayBulkOperationCapability;
-import com.liferay.portal.repository.capabilities.LiferayCommentCapability;
-import com.liferay.portal.repository.capabilities.LiferayProcessorCapability;
-import com.liferay.portal.repository.capabilities.LiferayRelatedModelCapability;
-import com.liferay.portal.repository.capabilities.LiferaySyncCapability;
-import com.liferay.portal.repository.capabilities.LiferayThumbnailCapability;
-import com.liferay.portal.repository.capabilities.LiferayTrashCapability;
-import com.liferay.portal.repository.capabilities.LiferayWorkflowCapability;
-import com.liferay.portal.repository.capabilities.util.DLAppServiceAdapter;
-import com.liferay.portal.repository.capabilities.util.DLFileEntryServiceAdapter;
-import com.liferay.portal.repository.capabilities.util.DLFileVersionServiceAdapter;
-import com.liferay.portal.repository.capabilities.util.DLFolderServiceAdapter;
-import com.liferay.portal.repository.capabilities.util.GroupServiceAdapter;
-import com.liferay.portal.repository.capabilities.util.RepositoryEntryChecker;
-import com.liferay.portal.repository.capabilities.util.RepositoryEntryConverter;
-import com.liferay.portal.repository.capabilities.util.RepositoryServiceAdapter;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.trash.kernel.service.TrashEntryLocalServiceUtil;
-import com.liferay.trash.kernel.service.TrashVersionLocalServiceUtil;
+
+import java.util.function.BiFunction;
 
 /**
  * @author Adolfo Pérez
@@ -61,6 +47,22 @@ import com.liferay.trash.kernel.service.TrashVersionLocalServiceUtil;
 public class LiferayRepositoryDefiner extends BaseRepositoryDefiner {
 
 	public static final String CLASS_NAME = LiferayRepository.class.getName();
+
+	public static BiFunction
+		<PortalCapabilityLocator, RepositoryFactory, RepositoryDefiner>
+			getFactoryBiFunction() {
+
+		return LiferayRepositoryDefiner::new;
+	}
+
+	public LiferayRepositoryDefiner(
+		PortalCapabilityLocator portalCapabilityLocator,
+		RepositoryFactory repositoryFactory) {
+
+		_portalCapabilityLocator = portalCapabilityLocator;
+		_repositoryFactory = new LiferayRepositoryFactoryWrapper(
+			repositoryFactory);
+	}
 
 	@Override
 	public String getClassName() {
@@ -78,62 +80,46 @@ public class LiferayRepositoryDefiner extends BaseRepositoryDefiner {
 
 		DocumentRepository documentRepository = capabilityRegistry.getTarget();
 
-		DLFileEntryServiceAdapter dlFileEntryServiceAdapter =
-			DLFileEntryServiceAdapter.create(documentRepository);
-		DLFolderServiceAdapter dlFolderServiceAdapter =
-			DLFolderServiceAdapter.create(documentRepository);
-
-		BulkOperationCapability bulkOperationCapability =
-			new LiferayBulkOperationCapability(
-				documentRepository, dlFileEntryServiceAdapter,
-				dlFolderServiceAdapter);
-
 		capabilityRegistry.addExportedCapability(
-			BulkOperationCapability.class, bulkOperationCapability);
+			BulkOperationCapability.class,
+			_portalCapabilityLocator.getBulkOperationCapability(
+				documentRepository));
 
-		RepositoryEntryConverter repositoryEntryConverter =
-			new RepositoryEntryConverter();
-		RepositoryEntryChecker repositoryEntryChecker =
-			new RepositoryEntryChecker(documentRepository);
+		if (PropsValues.DL_FILE_ENTRY_COMMENTS_ENABLED) {
+			capabilityRegistry.addExportedCapability(
+				CommentCapability.class,
+				_portalCapabilityLocator.getCommentCapability(
+					documentRepository));
+		}
 
 		capabilityRegistry.addExportedCapability(
 			RelatedModelCapability.class,
-			new LiferayRelatedModelCapability(
-				repositoryEntryConverter, repositoryEntryChecker));
+			_portalCapabilityLocator.getRelatedModelCapability(
+				documentRepository));
 		capabilityRegistry.addExportedCapability(
 			ThumbnailCapability.class,
-			new LiferayThumbnailCapability(
-				repositoryEntryConverter, repositoryEntryChecker));
-
-		TrashCapability trashCapability = new LiferayTrashCapability(
-			DLAppHelperLocalServiceUtil.getService(),
-			DLAppServiceAdapter.create(documentRepository),
-			dlFileEntryServiceAdapter, dlFolderServiceAdapter,
-			RepositoryServiceAdapter.create(documentRepository),
-			TrashEntryLocalServiceUtil.getService(),
-			TrashVersionLocalServiceUtil.getService());
-
+			_portalCapabilityLocator.getThumbnailCapability(
+				documentRepository));
 		capabilityRegistry.addExportedCapability(
-			TrashCapability.class, trashCapability);
-
+			TrashCapability.class,
+			_portalCapabilityLocator.getTrashCapability(documentRepository));
 		capabilityRegistry.addExportedCapability(
 			WorkflowCapability.class,
-			new LiferayWorkflowCapability(
-				dlFileEntryServiceAdapter,
-				DLFileVersionServiceAdapter.create(documentRepository)));
-
-		if (PropsValues.DL_FILE_ENTRY_COMMENTS_ENABLED) {
-			capabilityRegistry.addSupportedCapability(
-				CommentCapability.class, _commentCapability);
-		}
+			_portalCapabilityLocator.getWorkflowCapability(
+				documentRepository, WorkflowCapability.OperationMode.FULL));
 
 		capabilityRegistry.addSupportedCapability(
-			ProcessorCapability.class, _processorCapability);
+			DynamicCapability.class,
+			_portalCapabilityLocator.getDynamicCapability(
+				documentRepository, getClassName()));
+		capabilityRegistry.addSupportedCapability(
+			ProcessorCapability.class,
+			_portalCapabilityLocator.getProcessorCapability(
+				documentRepository,
+				ProcessorCapability.ResourceGenerationStrategy.REUSE));
 		capabilityRegistry.addSupportedCapability(
 			SyncCapability.class,
-			new LiferaySyncCapability(
-				GroupServiceAdapter.create(documentRepository),
-				DLSyncEventLocalServiceUtil.getService()));
+			_portalCapabilityLocator.getSyncCapability(documentRepository));
 	}
 
 	@Override
@@ -143,15 +129,7 @@ public class LiferayRepositoryDefiner extends BaseRepositoryDefiner {
 		repositoryFactoryRegistry.setRepositoryFactory(_repositoryFactory);
 	}
 
-	public void setRepositoryFactory(RepositoryFactory repositoryFactory) {
-		_repositoryFactory = new LiferayRepositoryFactoryWrapper(
-			repositoryFactory);
-	}
-
-	private final CommentCapability _commentCapability =
-		new LiferayCommentCapability();
-	private final ProcessorCapability _processorCapability =
-		new LiferayProcessorCapability();
+	private final PortalCapabilityLocator _portalCapabilityLocator;
 	private RepositoryFactory _repositoryFactory;
 
 	private static class LiferayRepositoryFactoryWrapper
@@ -167,29 +145,45 @@ public class LiferayRepositoryDefiner extends BaseRepositoryDefiner {
 		public LocalRepository createLocalRepository(long repositoryId)
 			throws PortalException {
 
-			LocalRepository localRepository =
-				_repositoryFactory.createLocalRepository(repositoryId);
-
-			ModelValidator<FileContentReference> modelValidator =
-				ModelValidatorUtil.getDefaultDLFileEntryModelValidator();
-
 			return new ModelValidatorLocalRepositoryWrapper(
-				localRepository, modelValidator);
+				_repositoryFactory.createLocalRepository(repositoryId),
+				_modelValidator);
 		}
 
 		@Override
 		public Repository createRepository(long repositoryId)
 			throws PortalException {
 
-			Repository repository = _repositoryFactory.createRepository(
-				repositoryId);
-
-			ModelValidator<FileContentReference> modelValidator =
-				ModelValidatorUtil.getDefaultDLFileEntryModelValidator();
-
 			return new ModelValidatorRepositoryWrapper(
-				repository, modelValidator);
+				_repositoryFactory.createRepository(repositoryId),
+				_modelValidator);
 		}
+
+		private static final ModelValidator<FileContentReference>
+			_modelValidator = fileContentReference -> {
+				if (Validator.isNotNull(
+						fileContentReference.getSourceFileName())) {
+
+					DLValidatorUtil.validateFileName(
+						fileContentReference.getSourceFileName());
+				}
+
+				if ((fileContentReference.getFileEntryId() == 0) ||
+					Validator.isNotNull(
+						fileContentReference.getSourceFileName())) {
+
+					DLValidatorUtil.validateFileExtension(
+						fileContentReference.getSourceFileName());
+
+					DLValidatorUtil.validateSourceFileExtension(
+						fileContentReference.getExtension(),
+						fileContentReference.getSourceFileName());
+				}
+
+				DLValidatorUtil.validateFileSize(
+					fileContentReference.getSourceFileName(),
+					fileContentReference.getSize());
+			};
 
 		private final RepositoryFactory _repositoryFactory;
 

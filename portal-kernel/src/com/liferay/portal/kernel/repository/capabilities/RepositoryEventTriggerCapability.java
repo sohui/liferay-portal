@@ -16,9 +16,12 @@ package com.liferay.portal.kernel.repository.capabilities;
 
 import com.liferay.portal.kernel.repository.event.RepositoryEventTrigger;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Adolfo Pérez
  */
+@ProviderType
 public interface RepositoryEventTriggerCapability
 	extends Capability, RepositoryEventTrigger {
 }

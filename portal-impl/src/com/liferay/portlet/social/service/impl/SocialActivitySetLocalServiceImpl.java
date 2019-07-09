@@ -72,7 +72,11 @@ public class SocialActivitySetLocalServiceImpl
 		}
 
 		SocialActivitySet activitySet =
-			socialActivitySetPersistence.findByPrimaryKey(activitySetId);
+			socialActivitySetPersistence.fetchByPrimaryKey(activitySetId);
+
+		if (activitySet == null) {
+			return;
+		}
 
 		if (activitySet.getActivityCount() == 1) {
 			socialActivitySetPersistence.remove(activitySetId);
@@ -134,6 +138,11 @@ public class SocialActivitySetLocalServiceImpl
 
 		return socialActivitySetFinder.findByOrganizationId(
 			organizationId, start, end);
+	}
+
+	@Override
+	public int getOrganizationActivitySetsCount(long organizationId) {
+		return socialActivitySetFinder.countByOrganizationId(organizationId);
 	}
 
 	@Override
@@ -227,8 +236,8 @@ public class SocialActivitySetLocalServiceImpl
 		SocialActivity activity = socialActivityPersistence.findByPrimaryKey(
 			activityId);
 
-		activitySet.setModifiedDate(activity.getCreateDate());
 		activitySet.setUserId(activity.getUserId());
+		activitySet.setModifiedDate(activity.getCreateDate());
 
 		activitySet.setActivityCount(activitySet.getActivityCount() + 1);
 

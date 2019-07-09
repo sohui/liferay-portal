@@ -14,10 +14,7 @@
 
 package com.liferay.announcements.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.announcements.kernel.model.AnnouncementsEntry;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
@@ -27,6 +24,10 @@ import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
+import java.util.Date;
+
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the remote service interface for AnnouncementsEntry. Methods of this
  * service are expected to have security checks based on the propagated JAAS
@@ -34,47 +35,74 @@ import com.liferay.portal.kernel.transaction.Transactional;
  *
  * @author Brian Wing Shun Chan
  * @see AnnouncementsEntryServiceUtil
- * @see com.liferay.portlet.announcements.service.base.AnnouncementsEntryServiceBaseImpl
- * @see com.liferay.portlet.announcements.service.impl.AnnouncementsEntryServiceImpl
  * @generated
  */
 @AccessControlled
 @JSONWebService
 @ProviderType
-@Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
-	PortalException.class, SystemException.class})
+@Transactional(
+	isolation = Isolation.PORTAL,
+	rollbackFor = {PortalException.class, SystemException.class}
+)
 public interface AnnouncementsEntryService extends BaseService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this interface directly. Always use {@link AnnouncementsEntryServiceUtil} to access the announcements entry remote service. Add custom service methods to {@link com.liferay.portlet.announcements.service.impl.AnnouncementsEntryServiceImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify or reference this interface directly. Always use {@link AnnouncementsEntryServiceUtil} to access the announcements entry remote service. Add custom service methods to <code>com.liferay.portlet.announcements.service.impl.AnnouncementsEntryServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public AnnouncementsEntry addEntry(long plid, long classNameId,
-		long classPK, java.lang.String title, java.lang.String content,
-		java.lang.String url, java.lang.String type, int displayDateMonth,
-		int displayDateDay, int displayDateYear, int displayDateHour,
-		int displayDateMinute, boolean displayImmediately,
-		int expirationDateMonth, int expirationDateDay, int expirationDateYear,
-		int expirationDateHour, int expirationDateMinute, int priority,
-		boolean alert) throws PortalException;
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #addEntry(long,
+	 long, String, String, String, String, Date, Date, int,
+	 boolean)}
+	 */
+	@Deprecated
+	public AnnouncementsEntry addEntry(
+			long plid, long classNameId, long classPK, String title,
+			String content, String url, String type, int displayDateMonth,
+			int displayDateDay, int displayDateYear, int displayDateHour,
+			int displayDateMinute, boolean displayImmediately,
+			int expirationDateMonth, int expirationDateDay,
+			int expirationDateYear, int expirationDateHour,
+			int expirationDateMinute, int priority, boolean alert)
+		throws PortalException;
+
+	public AnnouncementsEntry addEntry(
+			long classNameId, long classPK, String title, String content,
+			String url, String type, Date displayDate, Date expirationDate,
+			int priority, boolean alert)
+		throws PortalException;
+
+	public void deleteEntry(long entryId) throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public AnnouncementsEntry getEntry(long entryId) throws PortalException;
 
-	public AnnouncementsEntry updateEntry(long entryId, java.lang.String title,
-		java.lang.String content, java.lang.String url, java.lang.String type,
-		int displayDateMonth, int displayDateDay, int displayDateYear,
-		int displayDateHour, int displayDateMinute, boolean displayImmediately,
-		int expirationDateMonth, int expirationDateDay, int expirationDateYear,
-		int expirationDateHour, int expirationDateMinute, int priority)
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public String getOSGiServiceIdentifier();
+
+	public AnnouncementsEntry updateEntry(
+			long entryId, String title, String content, String url, String type,
+			Date displayDate, Date expirationDate, int priority)
 		throws PortalException;
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public java.lang.String getOSGiServiceIdentifier();
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateEntry(long,
+	 String, String, String, String, Date, Date, int)}
+	 */
+	@Deprecated
+	public AnnouncementsEntry updateEntry(
+			long entryId, String title, String content, String url, String type,
+			int displayDateMonth, int displayDateDay, int displayDateYear,
+			int displayDateHour, int displayDateMinute,
+			boolean displayImmediately, int expirationDateMonth,
+			int expirationDateDay, int expirationDateYear,
+			int expirationDateHour, int expirationDateMinute, int priority)
+		throws PortalException;
 
-	public void deleteEntry(long entryId) throws PortalException;
 }

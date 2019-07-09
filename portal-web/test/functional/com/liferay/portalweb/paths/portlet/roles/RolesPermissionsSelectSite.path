@@ -11,7 +11,7 @@
 <!--SELECT_SITE-->
 <tr>
 	<td>SELECT_SITE_IFRAME</td>
-	<td>//iframe[contains(@id,'selectGroupcomliferaybookmarksmodelBookmarksEntryVIEW_iframe_')]</td>
+	<td>//iframe[contains(@id,'selectGroup')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -23,16 +23,6 @@
 <tr>
 	<td>SCOPE_SITES_TABLE_NAME</td>
 	<td>//tr[contains(.,'${key_siteNameScope}')]/td[1]//a</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SCOPE_SITES_TABLE_TYPE</td>
-	<td>//tr[contains(.,'${key_siteNameScope}')]/td[2]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SCOPE_SITES_TABLE_CHOOSE_BUTTON</td>
-	<td>//tr[contains(.,'${key_siteNameScope}')]/td[3]//button[contains(.,'Choose')]</td>
 	<td></td>
 </tr>
 </tbody>

@@ -15,13 +15,11 @@
 package com.liferay.knowledge.base.service.persistence.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-
 import com.liferay.knowledge.base.exception.NoSuchTemplateException;
 import com.liferay.knowledge.base.model.KBTemplate;
 import com.liferay.knowledge.base.service.KBTemplateLocalServiceUtil;
 import com.liferay.knowledge.base.service.persistence.KBTemplatePersistence;
 import com.liferay.knowledge.base.service.persistence.KBTemplateUtil;
-
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
@@ -30,25 +28,15 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.TransactionalTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.junit.runner.RunWith;
+import com.liferay.portal.test.rule.TransactionalTestRule;
 
 import java.io.Serializable;
 
@@ -60,16 +48,27 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 /**
  * @generated
  */
 @RunWith(Arquillian.class)
 public class KBTemplatePersistenceTest {
+
 	@ClassRule
 	@Rule
-	public static final AggregateTestRule aggregateTestRule = new AggregateTestRule(new LiferayIntegrationTestRule(),
-			PersistenceTestRule.INSTANCE,
-			new TransactionalTestRule(Propagation.REQUIRED));
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(), PersistenceTestRule.INSTANCE,
+			new TransactionalTestRule(
+				Propagation.REQUIRED, "com.liferay.knowledge.base.service"));
 
 	@Before
 	public void setUp() {
@@ -108,7 +107,8 @@ public class KBTemplatePersistenceTest {
 
 		_persistence.remove(newKBTemplate);
 
-		KBTemplate existingKBTemplate = _persistence.fetchByPrimaryKey(newKBTemplate.getPrimaryKey());
+		KBTemplate existingKBTemplate = _persistence.fetchByPrimaryKey(
+			newKBTemplate.getPrimaryKey());
 
 		Assert.assertNull(existingKBTemplate);
 	}
@@ -146,58 +146,60 @@ public class KBTemplatePersistenceTest {
 
 		_kbTemplates.add(_persistence.update(newKBTemplate));
 
-		KBTemplate existingKBTemplate = _persistence.findByPrimaryKey(newKBTemplate.getPrimaryKey());
+		KBTemplate existingKBTemplate = _persistence.findByPrimaryKey(
+			newKBTemplate.getPrimaryKey());
 
-		Assert.assertEquals(existingKBTemplate.getUuid(),
-			newKBTemplate.getUuid());
-		Assert.assertEquals(existingKBTemplate.getKbTemplateId(),
+		Assert.assertEquals(
+			existingKBTemplate.getUuid(), newKBTemplate.getUuid());
+		Assert.assertEquals(
+			existingKBTemplate.getKbTemplateId(),
 			newKBTemplate.getKbTemplateId());
-		Assert.assertEquals(existingKBTemplate.getGroupId(),
-			newKBTemplate.getGroupId());
-		Assert.assertEquals(existingKBTemplate.getCompanyId(),
-			newKBTemplate.getCompanyId());
-		Assert.assertEquals(existingKBTemplate.getUserId(),
-			newKBTemplate.getUserId());
-		Assert.assertEquals(existingKBTemplate.getUserName(),
-			newKBTemplate.getUserName());
-		Assert.assertEquals(Time.getShortTimestamp(
-				existingKBTemplate.getCreateDate()),
+		Assert.assertEquals(
+			existingKBTemplate.getGroupId(), newKBTemplate.getGroupId());
+		Assert.assertEquals(
+			existingKBTemplate.getCompanyId(), newKBTemplate.getCompanyId());
+		Assert.assertEquals(
+			existingKBTemplate.getUserId(), newKBTemplate.getUserId());
+		Assert.assertEquals(
+			existingKBTemplate.getUserName(), newKBTemplate.getUserName());
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingKBTemplate.getCreateDate()),
 			Time.getShortTimestamp(newKBTemplate.getCreateDate()));
-		Assert.assertEquals(Time.getShortTimestamp(
-				existingKBTemplate.getModifiedDate()),
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingKBTemplate.getModifiedDate()),
 			Time.getShortTimestamp(newKBTemplate.getModifiedDate()));
-		Assert.assertEquals(existingKBTemplate.getTitle(),
-			newKBTemplate.getTitle());
-		Assert.assertEquals(existingKBTemplate.getContent(),
-			newKBTemplate.getContent());
-		Assert.assertEquals(Time.getShortTimestamp(
-				existingKBTemplate.getLastPublishDate()),
+		Assert.assertEquals(
+			existingKBTemplate.getTitle(), newKBTemplate.getTitle());
+		Assert.assertEquals(
+			existingKBTemplate.getContent(), newKBTemplate.getContent());
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingKBTemplate.getLastPublishDate()),
 			Time.getShortTimestamp(newKBTemplate.getLastPublishDate()));
 	}
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUUID_G() throws Exception {
-		_persistence.countByUUID_G(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUUID_G("", RandomTestUtil.nextLong());
 
-		_persistence.countByUUID_G(StringPool.NULL, 0L);
+		_persistence.countByUUID_G("null", 0L);
 
 		_persistence.countByUUID_G((String)null, 0L);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
 	}
@@ -213,7 +215,8 @@ public class KBTemplatePersistenceTest {
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		KBTemplate newKBTemplate = addKBTemplate();
 
-		KBTemplate existingKBTemplate = _persistence.findByPrimaryKey(newKBTemplate.getPrimaryKey());
+		KBTemplate existingKBTemplate = _persistence.findByPrimaryKey(
+			newKBTemplate.getPrimaryKey());
 
 		Assert.assertEquals(existingKBTemplate, newKBTemplate);
 	}
@@ -227,28 +230,29 @@ public class KBTemplatePersistenceTest {
 
 	@Test
 	public void testFindAll() throws Exception {
-		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			getOrderByComparator());
+		_persistence.findAll(
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
 	@Test
 	public void testFilterFindByGroupId() throws Exception {
-		_persistence.filterFindByGroupId(0, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, getOrderByComparator());
+		_persistence.filterFindByGroupId(
+			0, QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
 	protected OrderByComparator<KBTemplate> getOrderByComparator() {
-		return OrderByComparatorFactoryUtil.create("KBTemplate", "uuid", true,
-			"kbTemplateId", true, "groupId", true, "companyId", true, "userId",
-			true, "userName", true, "createDate", true, "modifiedDate", true,
-			"title", true, "lastPublishDate", true);
+		return OrderByComparatorFactoryUtil.create(
+			"KBTemplate", "uuid", true, "kbTemplateId", true, "groupId", true,
+			"companyId", true, "userId", true, "userName", true, "createDate",
+			true, "modifiedDate", true, "title", true, "lastPublishDate", true);
 	}
 
 	@Test
 	public void testFetchByPrimaryKeyExisting() throws Exception {
 		KBTemplate newKBTemplate = addKBTemplate();
 
-		KBTemplate existingKBTemplate = _persistence.fetchByPrimaryKey(newKBTemplate.getPrimaryKey());
+		KBTemplate existingKBTemplate = _persistence.fetchByPrimaryKey(
+			newKBTemplate.getPrimaryKey());
 
 		Assert.assertEquals(existingKBTemplate, newKBTemplate);
 	}
@@ -265,6 +269,7 @@ public class KBTemplatePersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereAllPrimaryKeysExist()
 		throws Exception {
+
 		KBTemplate newKBTemplate1 = addKBTemplate();
 		KBTemplate newKBTemplate2 = addKBTemplate();
 
@@ -273,18 +278,20 @@ public class KBTemplatePersistenceTest {
 		primaryKeys.add(newKBTemplate1.getPrimaryKey());
 		primaryKeys.add(newKBTemplate2.getPrimaryKey());
 
-		Map<Serializable, KBTemplate> kbTemplates = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBTemplate> kbTemplates =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(2, kbTemplates.size());
-		Assert.assertEquals(newKBTemplate1,
-			kbTemplates.get(newKBTemplate1.getPrimaryKey()));
-		Assert.assertEquals(newKBTemplate2,
-			kbTemplates.get(newKBTemplate2.getPrimaryKey()));
+		Assert.assertEquals(
+			newKBTemplate1, kbTemplates.get(newKBTemplate1.getPrimaryKey()));
+		Assert.assertEquals(
+			newKBTemplate2, kbTemplates.get(newKBTemplate2.getPrimaryKey()));
 	}
 
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereNoPrimaryKeysExist()
 		throws Exception {
+
 		long pk1 = RandomTestUtil.nextLong();
 
 		long pk2 = RandomTestUtil.nextLong();
@@ -294,7 +301,8 @@ public class KBTemplatePersistenceTest {
 		primaryKeys.add(pk1);
 		primaryKeys.add(pk2);
 
-		Map<Serializable, KBTemplate> kbTemplates = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBTemplate> kbTemplates =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertTrue(kbTemplates.isEmpty());
 	}
@@ -302,6 +310,7 @@ public class KBTemplatePersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereSomePrimaryKeysExist()
 		throws Exception {
+
 		KBTemplate newKBTemplate = addKBTemplate();
 
 		long pk = RandomTestUtil.nextLong();
@@ -311,52 +320,57 @@ public class KBTemplatePersistenceTest {
 		primaryKeys.add(newKBTemplate.getPrimaryKey());
 		primaryKeys.add(pk);
 
-		Map<Serializable, KBTemplate> kbTemplates = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBTemplate> kbTemplates =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(1, kbTemplates.size());
-		Assert.assertEquals(newKBTemplate,
-			kbTemplates.get(newKBTemplate.getPrimaryKey()));
+		Assert.assertEquals(
+			newKBTemplate, kbTemplates.get(newKBTemplate.getPrimaryKey()));
 	}
 
 	@Test
-	public void testFetchByPrimaryKeysWithNoPrimaryKeys()
-		throws Exception {
+	public void testFetchByPrimaryKeysWithNoPrimaryKeys() throws Exception {
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
-		Map<Serializable, KBTemplate> kbTemplates = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBTemplate> kbTemplates =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertTrue(kbTemplates.isEmpty());
 	}
 
 	@Test
-	public void testFetchByPrimaryKeysWithOnePrimaryKey()
-		throws Exception {
+	public void testFetchByPrimaryKeysWithOnePrimaryKey() throws Exception {
 		KBTemplate newKBTemplate = addKBTemplate();
 
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
 		primaryKeys.add(newKBTemplate.getPrimaryKey());
 
-		Map<Serializable, KBTemplate> kbTemplates = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBTemplate> kbTemplates =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(1, kbTemplates.size());
-		Assert.assertEquals(newKBTemplate,
-			kbTemplates.get(newKBTemplate.getPrimaryKey()));
+		Assert.assertEquals(
+			newKBTemplate, kbTemplates.get(newKBTemplate.getPrimaryKey()));
 	}
 
 	@Test
 	public void testActionableDynamicQuery() throws Exception {
 		final IntegerWrapper count = new IntegerWrapper();
 
-		ActionableDynamicQuery actionableDynamicQuery = KBTemplateLocalServiceUtil.getActionableDynamicQuery();
+		ActionableDynamicQuery actionableDynamicQuery =
+			KBTemplateLocalServiceUtil.getActionableDynamicQuery();
 
-		actionableDynamicQuery.setPerformActionMethod(new ActionableDynamicQuery.PerformActionMethod<KBTemplate>() {
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod<KBTemplate>() {
+
 				@Override
 				public void performAction(KBTemplate kbTemplate) {
 					Assert.assertNotNull(kbTemplate);
 
 					count.increment();
 				}
+
 			});
 
 		actionableDynamicQuery.performActions();
@@ -365,17 +379,18 @@ public class KBTemplatePersistenceTest {
 	}
 
 	@Test
-	public void testDynamicQueryByPrimaryKeyExisting()
-		throws Exception {
+	public void testDynamicQueryByPrimaryKeyExisting() throws Exception {
 		KBTemplate newKBTemplate = addKBTemplate();
 
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(KBTemplate.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBTemplate.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.add(RestrictionsFactoryUtil.eq("kbTemplateId",
-				newKBTemplate.getKbTemplateId()));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"kbTemplateId", newKBTemplate.getKbTemplateId()));
 
-		List<KBTemplate> result = _persistence.findWithDynamicQuery(dynamicQuery);
+		List<KBTemplate> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
 
 		Assert.assertEquals(1, result.size());
 
@@ -386,32 +401,34 @@ public class KBTemplatePersistenceTest {
 
 	@Test
 	public void testDynamicQueryByPrimaryKeyMissing() throws Exception {
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(KBTemplate.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBTemplate.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.add(RestrictionsFactoryUtil.eq("kbTemplateId",
-				RandomTestUtil.nextLong()));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"kbTemplateId", RandomTestUtil.nextLong()));
 
-		List<KBTemplate> result = _persistence.findWithDynamicQuery(dynamicQuery);
+		List<KBTemplate> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
 
 		Assert.assertEquals(0, result.size());
 	}
 
 	@Test
-	public void testDynamicQueryByProjectionExisting()
-		throws Exception {
+	public void testDynamicQueryByProjectionExisting() throws Exception {
 		KBTemplate newKBTemplate = addKBTemplate();
 
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(KBTemplate.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBTemplate.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.setProjection(ProjectionFactoryUtil.property(
-				"kbTemplateId"));
+		dynamicQuery.setProjection(
+			ProjectionFactoryUtil.property("kbTemplateId"));
 
 		Object newKbTemplateId = newKBTemplate.getKbTemplateId();
 
-		dynamicQuery.add(RestrictionsFactoryUtil.in("kbTemplateId",
-				new Object[] { newKbTemplateId }));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.in(
+				"kbTemplateId", new Object[] {newKbTemplateId}));
 
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -424,14 +441,15 @@ public class KBTemplatePersistenceTest {
 
 	@Test
 	public void testDynamicQueryByProjectionMissing() throws Exception {
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(KBTemplate.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBTemplate.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.setProjection(ProjectionFactoryUtil.property(
-				"kbTemplateId"));
+		dynamicQuery.setProjection(
+			ProjectionFactoryUtil.property("kbTemplateId"));
 
-		dynamicQuery.add(RestrictionsFactoryUtil.in("kbTemplateId",
-				new Object[] { RandomTestUtil.nextLong() }));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.in(
+				"kbTemplateId", new Object[] {RandomTestUtil.nextLong()}));
 
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -444,14 +462,18 @@ public class KBTemplatePersistenceTest {
 
 		_persistence.clearCache();
 
-		KBTemplate existingKBTemplate = _persistence.findByPrimaryKey(newKBTemplate.getPrimaryKey());
+		KBTemplate existingKBTemplate = _persistence.findByPrimaryKey(
+			newKBTemplate.getPrimaryKey());
 
-		Assert.assertTrue(Objects.equals(existingKBTemplate.getUuid(),
-				ReflectionTestUtil.invoke(existingKBTemplate,
-					"getOriginalUuid", new Class<?>[0])));
-		Assert.assertEquals(Long.valueOf(existingKBTemplate.getGroupId()),
-			ReflectionTestUtil.<Long>invoke(existingKBTemplate,
-				"getOriginalGroupId", new Class<?>[0]));
+		Assert.assertTrue(
+			Objects.equals(
+				existingKBTemplate.getUuid(),
+				ReflectionTestUtil.invoke(
+					existingKBTemplate, "getOriginalUuid", new Class<?>[0])));
+		Assert.assertEquals(
+			Long.valueOf(existingKBTemplate.getGroupId()),
+			ReflectionTestUtil.<Long>invoke(
+				existingKBTemplate, "getOriginalGroupId", new Class<?>[0]));
 	}
 
 	protected KBTemplate addKBTemplate() throws Exception {
@@ -487,4 +509,5 @@ public class KBTemplatePersistenceTest {
 	private List<KBTemplate> _kbTemplates = new ArrayList<KBTemplate>();
 	private KBTemplatePersistence _persistence;
 	private ClassLoader _dynamicQueryClassLoader;
+
 }

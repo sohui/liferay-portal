@@ -29,9 +29,49 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class InputSearchTag extends BaseValidatorTagSupport {
 
+	public String getButtonLabel() {
+		return _buttonLabel;
+	}
+
+	public String getCssClass() {
+		return _cssClass;
+	}
+
+	public String getId() {
+		return _id;
+	}
+
 	@Override
 	public String getInputName() {
 		return _name;
+	}
+
+	public String getMarkupView() {
+		return _markupView;
+	}
+
+	public String getName() {
+		return _name;
+	}
+
+	public String getPlaceholder() {
+		return _placeholder;
+	}
+
+	public String getTitle() {
+		return _title;
+	}
+
+	public boolean isAutoFocus() {
+		return _autoFocus;
+	}
+
+	public boolean isShowButton() {
+		return _showButton;
+	}
+
+	public boolean isUseNamespace() {
+		return _useNamespace;
 	}
 
 	public void setAutoFocus(boolean autoFocus) {
@@ -93,14 +133,14 @@ public class InputSearchTag extends BaseValidatorTagSupport {
 	@Override
 	protected String getPage() {
 		if (Validator.isNotNull(_markupView)) {
-			return "/html/taglib/ui/input_search/" + _markupView +"/page.jsp";
+			return "/html/taglib/ui/input_search/" + _markupView + "/page.jsp";
 		}
 
 		return "/html/taglib/ui/input_search/page.jsp";
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
 		String buttonLabel = _buttonLabel;
 
 		ResourceBundle resourceBundle = TagResourceBundleUtil.getResourceBundle(
@@ -134,18 +174,20 @@ public class InputSearchTag extends BaseValidatorTagSupport {
 			title = LanguageUtil.get(resourceBundle, "search");
 		}
 
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-search:autoFocus", String.valueOf(_autoFocus));
-		request.setAttribute(
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-search:buttonLabel", buttonLabel);
-		request.setAttribute("liferay-ui:input-search:cssClass", cssClass);
-		request.setAttribute("liferay-ui:input-search:id", id);
-		request.setAttribute("liferay-ui:input-search:name", _name);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-search:cssClass", cssClass);
+		httpServletRequest.setAttribute("liferay-ui:input-search:id", id);
+		httpServletRequest.setAttribute("liferay-ui:input-search:name", _name);
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-search:placeholder", placeholder);
-		request.setAttribute("liferay-ui:input-search:showButton", _showButton);
-		request.setAttribute("liferay-ui:input-search:title", title);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:input-search:showButton", _showButton);
+		httpServletRequest.setAttribute("liferay-ui:input-search:title", title);
+		httpServletRequest.setAttribute(
 			"liferay-ui:input-search:useNamespace", _useNamespace);
 	}
 

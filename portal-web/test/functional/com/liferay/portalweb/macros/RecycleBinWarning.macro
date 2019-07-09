@@ -1,13 +1,13 @@
-<definition>
-	<command name="renameEntry">
-		<execute function="Type" locator1="TextInput#NEW_NAME" value1="${renamedTrashEntryTitle}" />
-	</command>
+definition {
 
-	<command name="selectOverwrite">
-		<execute function="Check" locator1="Radio#OVERWRITE" />
-	</command>
+	macro renameEntry {
+		Type(
+			locator1 = "TextInput#NEW_NAME",
+			value1 = "${renamedTrashEntryTitle}");
+	}
 
-	<command name="selectRename">
-		<execute function="Check" locator1="Radio#KEEP" />
-	</command>
-</definition>
+	macro selectRename {
+		Check(locator1 = "Radio#KEEP");
+	}
+
+}

@@ -14,10 +14,10 @@
 
 package com.liferay.portlet.announcements.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.announcements.kernel.model.AnnouncementsFlag;
 import com.liferay.announcements.kernel.service.AnnouncementsFlagLocalServiceUtil;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model base implementation for the AnnouncementsFlag service. Represents a row in the &quot;AnnouncementsFlag&quot; database table, with each column mapped to a property of this class.
@@ -34,10 +34,11 @@ import com.liferay.announcements.kernel.service.AnnouncementsFlagLocalServiceUti
 @ProviderType
 public abstract class AnnouncementsFlagBaseImpl
 	extends AnnouncementsFlagModelImpl implements AnnouncementsFlag {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. All methods that expect a announcements flag model instance should use the {@link AnnouncementsFlag} interface instead.
+	 * Never modify or reference this class directly. All methods that expect a announcements flag model instance should use the <code>AnnouncementsFlag</code> interface instead.
 	 */
 	@Override
 	public void persist() {
@@ -48,4 +49,5 @@ public abstract class AnnouncementsFlagBaseImpl
 			AnnouncementsFlagLocalServiceUtil.updateAnnouncementsFlag(this);
 		}
 	}
+
 }

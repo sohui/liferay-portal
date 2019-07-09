@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
+
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
@@ -210,6 +212,14 @@ public class DateUtil {
 
 		return DateFormatFactoryUtil.getSimpleDateFormat(
 			pattern, TimeZoneUtil.getTimeZone(StringPool.UTC));
+	}
+
+	public static int getYear(Date date) {
+		Calendar cal = Calendar.getInstance();
+
+		cal.setTime(date);
+
+		return cal.get(Calendar.YEAR);
 	}
 
 	public static boolean isFormatAmPm(Locale locale) {

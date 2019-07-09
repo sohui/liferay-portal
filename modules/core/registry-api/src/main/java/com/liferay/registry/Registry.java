@@ -18,20 +18,40 @@ import com.liferay.registry.dependency.ServiceDependencyManager;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Function;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public interface Registry {
+
+	public <S, R> R callService(Class<S> serviceClass, Function<S, R> function);
+
+	public <S, R> R callService(String className, Function<S, R> function);
+
+	public <T> ServiceReference<T>[] getAllServiceReferences(
+			String className, String filterString)
+		throws Exception;
 
 	public Filter getFilter(String filterString) throws RuntimeException;
 
 	public Registry getRegistry() throws SecurityException;
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public <T> T getService(Class<T> clazz);
 
 	public <T> T getService(ServiceReference<T> serviceReference);
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public <T> T getService(String className);
 
 	public Collection<ServiceDependencyManager> getServiceDependencyManagers();
@@ -55,6 +75,8 @@ public interface Registry {
 
 	public <T> T[] getServices(String className, String filterString)
 		throws Exception;
+
+	public String getSymbolicName(ClassLoader classLoader);
 
 	public <T> ServiceRegistration<T> registerService(
 		Class<T> clazz, T service);
@@ -88,8 +110,7 @@ public interface Registry {
 	public <S, T> ServiceTracker<S, T> trackServices(Filter filter);
 
 	public <S, T> ServiceTracker<S, T> trackServices(
-		Filter filter,
-		ServiceTrackerCustomizer<S, T> serviceTrackerCustomizer);
+		Filter filter, ServiceTrackerCustomizer<S, T> serviceTrackerCustomizer);
 
 	public <S, T> ServiceTracker<S, T> trackServices(String className);
 

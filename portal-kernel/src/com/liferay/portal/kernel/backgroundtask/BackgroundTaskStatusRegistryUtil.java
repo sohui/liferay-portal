@@ -14,8 +14,7 @@
 
 package com.liferay.portal.kernel.backgroundtask;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.portal.kernel.util.ProxyFactory;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Michael C. Han
@@ -25,35 +24,46 @@ public class BackgroundTaskStatusRegistryUtil {
 	public static BackgroundTaskStatus getBackgroundTaskStatus(
 		long backgroundTaskId) {
 
-		return getBackgroundTaskStatusRegistry().getBackgroundTaskStatus(
+		return _getBackgroundTaskStatusRegistry().getBackgroundTaskStatus(
 			backgroundTaskId);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #_getBackgroundTaskStatusRegistry()}
+	 */
+	@Deprecated
 	public static BackgroundTaskStatusRegistry
 		getBackgroundTaskStatusRegistry() {
 
-		PortalRuntimePermission.checkGetBeanProperty(
-			BackgroundTaskStatusRegistryUtil.class);
-
-		return _backgroundTaskStatusRegistry;
+		return _getBackgroundTaskStatusRegistry();
 	}
 
 	public static BackgroundTaskStatus registerBackgroundTaskStatus(
 		long backgroundTaskId) {
 
-		return getBackgroundTaskStatusRegistry().registerBackgroundTaskStatus(
+		return _getBackgroundTaskStatusRegistry().registerBackgroundTaskStatus(
 			backgroundTaskId);
 	}
 
 	public static BackgroundTaskStatus unregisterBackgroundTaskStatus(
 		long backgroundTaskId) {
 
-		return getBackgroundTaskStatusRegistry().unregisterBackgroundTaskStatus(
-			backgroundTaskId);
+		return _getBackgroundTaskStatusRegistry().
+			unregisterBackgroundTaskStatus(backgroundTaskId);
 	}
 
-	private static final BackgroundTaskStatusRegistry
-		_backgroundTaskStatusRegistry = ProxyFactory.newServiceTrackedInstance(
-			BackgroundTaskStatusRegistry.class);
+	private static BackgroundTaskStatusRegistry
+		_getBackgroundTaskStatusRegistry() {
+
+		return _backgroundTaskStatusRegistry;
+	}
+
+	private static volatile BackgroundTaskStatusRegistry
+		_backgroundTaskStatusRegistry =
+			ServiceProxyFactory.newServiceTrackedInstance(
+				BackgroundTaskStatusRegistry.class,
+				BackgroundTaskStatusRegistryUtil.class,
+				"_backgroundTaskStatusRegistry", false);
 
 }

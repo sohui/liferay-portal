@@ -14,30 +14,29 @@
 
 package com.liferay.portal.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.UserNotificationEvent;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing UserNotificationEvent in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see UserNotificationEvent
  * @generated
  */
 @ProviderType
-public class UserNotificationEventCacheModel implements CacheModel<UserNotificationEvent>,
-	Externalizable, MVCCModel {
+public class UserNotificationEventCacheModel
+	implements CacheModel<UserNotificationEvent>, Externalizable, MVCCModel {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -48,10 +47,13 @@ public class UserNotificationEventCacheModel implements CacheModel<UserNotificat
 			return false;
 		}
 
-		UserNotificationEventCacheModel userNotificationEventCacheModel = (UserNotificationEventCacheModel)obj;
+		UserNotificationEventCacheModel userNotificationEventCacheModel =
+			(UserNotificationEventCacheModel)obj;
 
-		if ((userNotificationEventId == userNotificationEventCacheModel.userNotificationEventId) &&
-				(mvccVersion == userNotificationEventCacheModel.mvccVersion)) {
+		if ((userNotificationEventId ==
+				userNotificationEventCacheModel.userNotificationEventId) &&
+			(mvccVersion == userNotificationEventCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -112,23 +114,25 @@ public class UserNotificationEventCacheModel implements CacheModel<UserNotificat
 
 	@Override
 	public UserNotificationEvent toEntityModel() {
-		UserNotificationEventImpl userNotificationEventImpl = new UserNotificationEventImpl();
+		UserNotificationEventImpl userNotificationEventImpl =
+			new UserNotificationEventImpl();
 
 		userNotificationEventImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
-			userNotificationEventImpl.setUuid(StringPool.BLANK);
+			userNotificationEventImpl.setUuid("");
 		}
 		else {
 			userNotificationEventImpl.setUuid(uuid);
 		}
 
-		userNotificationEventImpl.setUserNotificationEventId(userNotificationEventId);
+		userNotificationEventImpl.setUserNotificationEventId(
+			userNotificationEventId);
 		userNotificationEventImpl.setCompanyId(companyId);
 		userNotificationEventImpl.setUserId(userId);
 
 		if (type == null) {
-			userNotificationEventImpl.setType(StringPool.BLANK);
+			userNotificationEventImpl.setType("");
 		}
 		else {
 			userNotificationEventImpl.setType(type);
@@ -140,7 +144,7 @@ public class UserNotificationEventCacheModel implements CacheModel<UserNotificat
 		userNotificationEventImpl.setDelivered(delivered);
 
 		if (payload == null) {
-			userNotificationEventImpl.setPayload(StringPool.BLANK);
+			userNotificationEventImpl.setPayload("");
 		}
 		else {
 			userNotificationEventImpl.setPayload(payload);
@@ -181,12 +185,11 @@ public class UserNotificationEventCacheModel implements CacheModel<UserNotificat
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
@@ -199,7 +202,7 @@ public class UserNotificationEventCacheModel implements CacheModel<UserNotificat
 		objectOutput.writeLong(userId);
 
 		if (type == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(type);
@@ -214,7 +217,7 @@ public class UserNotificationEventCacheModel implements CacheModel<UserNotificat
 		objectOutput.writeBoolean(delivered);
 
 		if (payload == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(payload);
@@ -238,4 +241,5 @@ public class UserNotificationEventCacheModel implements CacheModel<UserNotificat
 	public String payload;
 	public boolean actionRequired;
 	public boolean archived;
+
 }

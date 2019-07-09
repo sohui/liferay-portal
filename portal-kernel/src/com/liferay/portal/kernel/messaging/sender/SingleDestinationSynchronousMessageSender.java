@@ -18,8 +18,10 @@ import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusException;
 
 /**
- * @author Michael C. Han
+ * @author     Michael C. Han
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public interface SingleDestinationSynchronousMessageSender {
 
 	public Object send(Message message) throws MessageBusException;

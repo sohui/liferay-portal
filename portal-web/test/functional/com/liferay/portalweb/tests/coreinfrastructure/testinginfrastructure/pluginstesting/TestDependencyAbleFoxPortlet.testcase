@@ -1,63 +1,47 @@
-<definition component-name="portal-test-plugins">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Test Plugins" />
-	<property name="portlet.plugins.includes" value="test-dependency-able-portlet,test-dependency-baker-portlet,test-dependency-charlie-portlet,test-dependency-dog-portlet,test-dependency-easy-portlet,test-dependency-fox-portlet" />
+@component-name = "portal-test-plugins"
+definition {
 
-	<set-up>
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Test Plugins";
+	property portlet.plugins.includes = "test-dependency-able-portlet,test-dependency-baker-portlet,test-dependency-charlie-portlet,test-dependency-dog-portlet";
 
-	<tear-down>
-		<execute macro="Page#tearDownPG" />
-	</tear-down>
+	setUp {
+		User.firstLoginPG();
+	}
 
-	<command name="ViewDependencyAbleFox" priority="4">
-		<execute macro="Page#add">
-			<var name="pageName" value="Test Dependency Page" />
-		</execute>
+	tearDown {
+		Page.tearDownCP();
+	}
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Test Dependency Able" />
-		</execute>
+	@priority = "4"
+	test ViewDependencyAbleFox {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Dependency Page" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Test Dependency Page");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Test Dependency Baker" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Dependency Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Dependency Page" />
-		</execute>
+		Portlet.addPG(portletName = "Test Dependency Able");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Test Dependency Charlie" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Dependency Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Dependency Page" />
-		</execute>
+		Portlet.addPG(portletName = "Test Dependency Baker");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Test Dependency Dog" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Dependency Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Dependency Page" />
-		</execute>
+		Portlet.addPG(portletName = "Test Dependency Charlie");
 
-		<execute macro="Portlet#viewCannotAddPG">
-			<var name="portletName" value="Test Dependency Easy" />
-		</execute>
+		Navigator.gotoPage(pageName = "Test Dependency Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Test Dependency Page" />
-		</execute>
+		Portlet.addPG(portletName = "Test Dependency Dog");
 
-		<execute macro="Portlet#viewCannotAddPG">
-			<var name="portletName" value="Test Dependency Fox" />
-		</execute>
-	</command>
-</definition>
+		Navigator.gotoPage(pageName = "Test Dependency Page");
+
+		Portlet.viewCannotAddPG(portletName = "Test Dependency Fox");
+	}
+
+}

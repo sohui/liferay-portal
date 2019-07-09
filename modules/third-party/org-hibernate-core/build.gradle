@@ -1,6 +1,7 @@
 import com.liferay.gradle.plugins.patcher.PatchTask
 
 apply plugin: "com.liferay.patcher"
+apply plugin: "nebula.optional-base"
 
 task deployJar(type: Copy)
 task patch(type: PatchTask)
@@ -35,6 +36,13 @@ patch {
 	}
 
 	fileNames "org/hibernate/cache/UpdateTimestampsCache.java"
+	fileNames "org/hibernate/cfg/Configuration.java"
+	fileNames "org/hibernate/cfg/SettingsFactory.java"
+	fileNames "org/hibernate/engine/jdbc/BlobProxy.java"
+	fileNames "org/hibernate/engine/jdbc/ClobProxy.java"
+	fileNames "org/hibernate/engine/jdbc/NClobProxy.java"
+	fileNames "org/hibernate/engine/jdbc/SerializableBlobProxy.java"
+	fileNames "org/hibernate/engine/jdbc/SerializableClobProxy.java"
 	fileNames "org/hibernate/intercept/FieldInterceptionHelper.java"
 
 	originalLibModuleName = "hibernate-core"

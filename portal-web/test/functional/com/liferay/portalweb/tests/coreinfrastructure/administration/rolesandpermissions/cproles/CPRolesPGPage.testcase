@@ -1,38 +1,45 @@
-<definition component-name="portal-permissions">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Permissions" />
+@component-name = "portal-permissions"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Roles";
+	property testray.main.component.name = "Roles";
 
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	setUp {
+		TestCase.setUpPortalInstance();
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		User.firstLoginPG();
+	}
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-		</if>
-	</tear-down>
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-	<command name="RemoveNoGuestInlineView" priority="5">
-		<property name="portal.acceptance" value="false" />
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+	}
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Welcome" />
-		</execute>
+	@priority = "5"
+	test RemoveNoGuestInlineView {
+		property portal.acceptance = "true";
 
-		<execute macro="PermissionsInline#gotoPagePG">
-			<var name="pageName" value="Welcome" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<var name="key_roleName" value="guest" />
+		SitePages.gotoPageMenuItem(
+			menuItem = "Permissions",
+			pageName = "Home");
 
-		<execute function="Click" locator1="Permissions#INLINE_PERMISSIONS_VIEW_CHECKBOX" />
-		<execute function="AssertChecked" locator1="Permissions#INLINE_PERMISSIONS_VIEW_CHECKBOX" />
-	</command>
-</definition>
+		IFrame.selectPermissionsFrame();
+
+		var key_roleTitle = "guest";
+
+		Click(locator1 = "Permissions#INLINE_PERMISSIONS_VIEW_CHECKBOX");
+
+		AssertChecked(locator1 = "Permissions#INLINE_PERMISSIONS_VIEW_CHECKBOX");
+	}
+
+}

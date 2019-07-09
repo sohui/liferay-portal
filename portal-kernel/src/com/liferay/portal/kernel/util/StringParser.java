@@ -14,8 +14,9 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceValueHashMap;
-import com.liferay.portal.kernel.memory.FinalizeManager;
+import com.liferay.petra.concurrent.ConcurrentReferenceValueHashMap;
+import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.string.StringPool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +35,12 @@ import java.util.regex.Pattern;
 public class StringParser {
 
 	public static StringParser create(String chunk) {
-		StringParser stringParser = _stringParserFragmentsCache.get(chunk);
+		StringParser stringParser = _stringParserCache.get(chunk);
 
 		if (stringParser == null) {
 			stringParser = new StringParser(chunk);
 
-			_stringParserFragmentsCache.put(chunk, stringParser);
+			_stringParserCache.put(chunk, stringParser);
 		}
 
 		return stringParser;
@@ -84,7 +85,7 @@ public class StringParser {
 	 *         appropriate
 	 */
 	public String build(Map<String, String> parameters) {
-		String s = _builder;
+		Builder builder = null;
 
 		for (StringParserFragment stringParserFragment :
 				_stringParserFragments) {
@@ -103,7 +104,11 @@ public class StringParser {
 				return null;
 			}
 
-			s = StringUtil.replace(s, stringParserFragment.getToken(), value);
+			if (builder == null) {
+				builder = _builderFactory.create();
+			}
+
+			builder.setTokenValue(value);
 		}
 
 		for (StringParserFragment stringParserFragment :
@@ -112,7 +117,11 @@ public class StringParser {
 			parameters.remove(stringParserFragment.getName());
 		}
 
-		return s;
+		if (builder == null) {
+			return _builderFactory._pattern;
+		}
+
+		return builder.toString();
 	}
 
 	/**
@@ -177,8 +186,7 @@ public class StringParser {
 	 * <code>
 	 * Hi {name}! How are you?
 	 * </code>
-	 * </pre>
-	 * </p>
+	 * </pre></p>
 	 *
 	 * <p>
 	 * This pattern would match the string &quot;Hi Tom! How are you?&quot;. The
@@ -193,8 +201,7 @@ public class StringParser {
 	 * <code>
 	 * Hi {name:[a-z]+}! How are you?
 	 * </code>
-	 * </pre>
-	 * </p>
+	 * </pre></p>
 	 *
 	 * <p>
 	 * By default, a fragment will match anything except a forward slash or a
@@ -212,8 +219,7 @@ public class StringParser {
 	 * <code>
 	 * /view_page/{%path:.*}
 	 * </code>
-	 * </pre>
-	 * </p>
+	 * </pre></p>
 	 *
 	 * <p>
 	 * The format of the path fragment has also been specified to match anything
@@ -226,8 +232,7 @@ public class StringParser {
 	 * <code>
 	 * /view_page/root/home/mysite/pages/index.htm
 	 * </code>
-	 * </pre>
-	 * </p>
+	 * </pre></p>
 	 *
 	 * <p>
 	 * <code>path</code> would be set to
@@ -248,7 +253,23 @@ public class StringParser {
 
 		_stringParserFragments = new ArrayList<>(matcher.groupCount());
 
+		int pos = 0;
+
+		List<String> builderParts = new ArrayList<>();
+
+		String originalPattern = pattern;
+
 		while (matcher.find()) {
+			int start = matcher.start();
+
+			if (pos < start) {
+				builderParts.add(originalPattern.substring(pos, start));
+			}
+
+			pos = matcher.end();
+
+			builderParts.add(null);
+
 			String chunk = matcher.group();
 
 			StringParserFragment stringParserFragment =
@@ -259,14 +280,21 @@ public class StringParser {
 			pattern = StringUtil.replace(
 				pattern, chunk, stringParserFragment.getToken());
 
+			String stringParserFragmentPattern =
+				stringParserFragment.getPattern();
+
 			regex = StringUtil.replace(
 				regex, escapeRegex(chunk),
 				StringPool.OPEN_PARENTHESIS.concat(
-					stringParserFragment.getPattern().concat(
+					stringParserFragmentPattern.concat(
 						StringPool.CLOSE_PARENTHESIS)));
 		}
 
-		_builder = pattern;
+		if (pos < originalPattern.length()) {
+			builderParts.add(originalPattern.substring(pos));
+		}
+
+		_builderFactory = new BuilderFactory(pattern, builderParts);
 
 		_pattern = Pattern.compile(regex);
 	}
@@ -275,13 +303,64 @@ public class StringParser {
 		"[\\{\\}\\(\\)\\[\\]\\*\\+\\?\\$\\^\\.\\#\\\\]");
 	private static final Pattern _fragmentPattern = Pattern.compile(
 		"\\{.+?\\}");
-	private static final Map<String, StringParser> _stringParserFragmentsCache =
+	private static final Map<String, StringParser> _stringParserCache =
 		new ConcurrentReferenceValueHashMap<>(
 			FinalizeManager.SOFT_REFERENCE_FACTORY);
 
-	private final String _builder;
+	private final BuilderFactory _builderFactory;
 	private final Pattern _pattern;
 	private StringEncoder _stringEncoder;
 	private final List<StringParserFragment> _stringParserFragments;
+
+	private static class Builder {
+
+		public void setTokenValue(String value) {
+			if (_parts[_index] == null) {
+				_parts[_index++] = value;
+			}
+			else {
+				_index++;
+
+				_parts[_index++] = value;
+			}
+		}
+
+		@Override
+		public String toString() {
+			StringBundler sb = new StringBundler(_parts);
+
+			return sb.toString();
+		}
+
+		private Builder(String[] parts) {
+			_parts = parts;
+		}
+
+		private int _index;
+		private final String[] _parts;
+
+	}
+
+	private static class BuilderFactory {
+
+		public Builder create() {
+			return new Builder(_parts.clone());
+		}
+
+		private BuilderFactory(String pattern, List<String> parts) {
+			_pattern = pattern;
+
+			if (parts.isEmpty()) {
+				_parts = null;
+			}
+			else {
+				_parts = parts.toArray(new String[0]);
+			}
+		}
+
+		private final String[] _parts;
+		private final String _pattern;
+
+	}
 
 }

@@ -37,8 +37,8 @@ public class FIFOUtil {
 
 			if (result != 0) {
 				throw new Exception(
-					"Unable to create FIFO with command \"mkfifo\", " +
-						"external process returned " + result);
+					"Unable to create FIFO with command \"mkfifo\", external " +
+						"process returned " + result);
 			}
 		}
 		finally {
@@ -68,10 +68,8 @@ public class FIFOUtil {
 				createFIFO(tempFIFOFile);
 			}
 			finally {
-				if (!tempFIFOFile.delete()) {
-					if (tempFIFOFile.exists()) {
-						tempFIFOFile.deleteOnExit();
-					}
+				if (!tempFIFOFile.delete() && tempFIFOFile.exists()) {
+					tempFIFOFile.deleteOnExit();
 				}
 			}
 

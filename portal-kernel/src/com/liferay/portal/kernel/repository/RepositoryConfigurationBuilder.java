@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.repository;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -95,8 +95,7 @@ public class RepositoryConfigurationBuilder {
 		@Override
 		public String getLabel(Locale locale) {
 			ResourceBundle resourceBundle =
-				_resourceBundleLoader.loadResourceBundle(
-					LanguageUtil.getLanguageId(locale));
+				_resourceBundleLoader.loadResourceBundle(locale);
 
 			return LanguageUtil.get(resourceBundle, _labelKey);
 		}

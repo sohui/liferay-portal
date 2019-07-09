@@ -15,11 +15,11 @@
 package com.liferay.expando.kernel.util;
 
 import com.liferay.expando.kernel.model.ExpandoColumnConstants;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -79,6 +79,12 @@ public class ExpandoConverterUtil {
 		else if (type == ExpandoColumnConstants.LONG_ARRAY) {
 			return GetterUtil.getLongValues(StringUtil.split(attribute));
 		}
+		else if (type == ExpandoColumnConstants.NUMBER) {
+			return GetterUtil.getNumber(attribute);
+		}
+		else if (type == ExpandoColumnConstants.NUMBER_ARRAY) {
+			return GetterUtil.getNumberValues(StringUtil.split(attribute));
+		}
 		else if (type == ExpandoColumnConstants.SHORT) {
 			return GetterUtil.getShort(attribute);
 		}
@@ -91,9 +97,8 @@ public class ExpandoConverterUtil {
 		else if (type == ExpandoColumnConstants.STRING_LOCALIZED) {
 			return (Serializable)LocalizationUtil.getLocalizationMap(attribute);
 		}
-		else {
-			return attribute;
-		}
+
+		return attribute;
 	}
 
 	public static Serializable getAttributeFromStringArray(
@@ -139,6 +144,12 @@ public class ExpandoConverterUtil {
 		else if (type == ExpandoColumnConstants.LONG_ARRAY) {
 			return GetterUtil.getLongValues(attribute);
 		}
+		else if (type == ExpandoColumnConstants.NUMBER) {
+			return GetterUtil.getNumber(attribute[0]);
+		}
+		else if (type == ExpandoColumnConstants.NUMBER_ARRAY) {
+			return GetterUtil.getNumberValues(attribute);
+		}
 		else if (type == ExpandoColumnConstants.SHORT) {
 			return GetterUtil.getShort(attribute[0]);
 		}
@@ -148,9 +159,8 @@ public class ExpandoConverterUtil {
 		else if (type == ExpandoColumnConstants.STRING) {
 			return attribute[0];
 		}
-		else {
-			return attribute;
-		}
+
+		return attribute;
 	}
 
 	public static String getStringFromAttribute(
@@ -165,6 +175,7 @@ public class ExpandoConverterUtil {
 			(type == ExpandoColumnConstants.FLOAT) ||
 			(type == ExpandoColumnConstants.INTEGER) ||
 			(type == ExpandoColumnConstants.LONG) ||
+			(type == ExpandoColumnConstants.NUMBER) ||
 			(type == ExpandoColumnConstants.SHORT)) {
 
 			return String.valueOf(attribute);
@@ -174,6 +185,7 @@ public class ExpandoConverterUtil {
 				 (type == ExpandoColumnConstants.FLOAT_ARRAY) ||
 				 (type == ExpandoColumnConstants.INTEGER_ARRAY) ||
 				 (type == ExpandoColumnConstants.LONG_ARRAY) ||
+				 (type == ExpandoColumnConstants.NUMBER_ARRAY) ||
 				 (type == ExpandoColumnConstants.SHORT_ARRAY) ||
 				 (type == ExpandoColumnConstants.STRING_ARRAY)) {
 
@@ -189,9 +201,8 @@ public class ExpandoConverterUtil {
 			return StringUtil.merge(
 				ArrayUtil.toStringArray((Date[])attribute, _getDateFormat()));
 		}
-		else {
-			return attribute.toString();
-		}
+
+		return attribute.toString();
 	}
 
 	private static Date _getDate(String dateString) {

@@ -14,37 +14,38 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.UserServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portal.service.http.UserServiceSoap
  * @generated
  */
 @ProviderType
 public class UserSoap implements Serializable {
+
 	public static UserSoap toSoapModel(User model) {
 		UserSoap soapModel = new UserSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
+		soapModel.setExternalReferenceCode(model.getExternalReferenceCode());
 		soapModel.setUserId(model.getUserId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setCreateDate(model.getCreateDate());
 		soapModel.setModifiedDate(model.getModifiedDate());
-		soapModel.setDefaultUser(model.getDefaultUser());
+		soapModel.setDefaultUser(model.isDefaultUser());
 		soapModel.setContactId(model.getContactId());
 		soapModel.setPassword(model.getPassword());
-		soapModel.setPasswordEncrypted(model.getPasswordEncrypted());
-		soapModel.setPasswordReset(model.getPasswordReset());
+		soapModel.setPasswordEncrypted(model.isPasswordEncrypted());
+		soapModel.setPasswordReset(model.isPasswordReset());
 		soapModel.setPasswordModifiedDate(model.getPasswordModifiedDate());
 		soapModel.setDigest(model.getDigest());
 		soapModel.setReminderQueryQuestion(model.getReminderQueryQuestion());
@@ -71,10 +72,10 @@ public class UserSoap implements Serializable {
 		soapModel.setLastLoginIP(model.getLastLoginIP());
 		soapModel.setLastFailedLoginDate(model.getLastFailedLoginDate());
 		soapModel.setFailedLoginAttempts(model.getFailedLoginAttempts());
-		soapModel.setLockout(model.getLockout());
+		soapModel.setLockout(model.isLockout());
 		soapModel.setLockoutDate(model.getLockoutDate());
-		soapModel.setAgreedToTermsOfUse(model.getAgreedToTermsOfUse());
-		soapModel.setEmailAddressVerified(model.getEmailAddressVerified());
+		soapModel.setAgreedToTermsOfUse(model.isAgreedToTermsOfUse());
+		soapModel.setEmailAddressVerified(model.isEmailAddressVerified());
 		soapModel.setStatus(model.getStatus());
 
 		return soapModel;
@@ -142,6 +143,14 @@ public class UserSoap implements Serializable {
 
 	public void setUuid(String uuid) {
 		_uuid = uuid;
+	}
+
+	public String getExternalReferenceCode() {
+		return _externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_externalReferenceCode = externalReferenceCode;
 	}
 
 	public long getUserId() {
@@ -490,6 +499,7 @@ public class UserSoap implements Serializable {
 
 	private long _mvccVersion;
 	private String _uuid;
+	private String _externalReferenceCode;
 	private long _userId;
 	private long _companyId;
 	private Date _createDate;
@@ -530,4 +540,5 @@ public class UserSoap implements Serializable {
 	private boolean _agreedToTermsOfUse;
 	private boolean _emailAddressVerified;
 	private int _status;
+
 }

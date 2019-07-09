@@ -14,6 +14,7 @@
 
 package com.liferay.portal.fabric.netty.fileserver.handlers;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.fabric.netty.fileserver.FileHelperUtil;
 
 import io.netty.buffer.ByteBuf;
@@ -47,7 +48,7 @@ public class FileServerTestUtil {
 	}
 
 	public static void cleanUp() {
-		FileHelperUtil.delete(true, paths.toArray(new Path[paths.size()]));
+		FileHelperUtil.delete(true, paths.toArray(new Path[0]));
 
 		paths.clear();
 	}
@@ -82,20 +83,19 @@ public class FileServerTestUtil {
 	 * <pre>
 	 * folder
 	 *      |
-	 *      |->subFolder1
+	 *      |->subfolder1
 	 *      |           |
 	 *      |           |->file1
 	 *      |           |->file2
 	 *      |
-	 *      |->subFolder2
+	 *      |->subfolder2
 	 *      |           |
 	 *      |           |->file3
 	 *      |
-	 *      |->subFolder3
+	 *      |->subfolder3
 	 *                  |
-	 *                  |->subFolder4
-	 * </pre>
-	 * </p>
+	 *                  |->subfolder4
+	 * </pre></p>
 	 *
 	 * @param  folder the folder
 	 * @return the folder with new subfolders and files included in its
@@ -107,24 +107,24 @@ public class FileServerTestUtil {
 
 		paths.add(Files.createDirectories(folder));
 
-		Path subFolder1 = folder.resolve("subFolder1");
+		Path subfolder1 = folder.resolve("subfolder1");
 
-		Files.createDirectory(subFolder1);
+		Files.createDirectory(subfolder1);
 
-		createFileWithData(subFolder1.resolve("file1"));
-		createFileWithData(subFolder1.resolve("file2"));
+		createFileWithData(subfolder1.resolve("file1"));
+		createFileWithData(subfolder1.resolve("file2"));
 
-		Path subFolder2 = subFolder1.resolve("subFolder2");
+		Path subfolder2 = subfolder1.resolve("subfolder2");
 
-		Files.createDirectory(subFolder2);
+		Files.createDirectory(subfolder2);
 
-		createFileWithData(subFolder2.resolve("file3"));
+		createFileWithData(subfolder2.resolve("file3"));
 
-		Path subFolder3 = folder.resolve("subFolder3");
+		Path subfolder3 = folder.resolve("subfolder3");
 
-		Files.createDirectory(subFolder3);
+		Files.createDirectory(subfolder3);
 
-		Files.createDirectory(subFolder3.resolve("subFolder4"));
+		Files.createDirectory(subfolder3.resolve("subfolder4"));
 
 		return folder;
 	}
@@ -194,8 +194,9 @@ public class FileServerTestUtil {
 			Assert.assertTrue(
 				otherFile + " is not file", Files.isRegularFile(otherFile));
 			Assert.assertArrayEquals(
-				"File content does not match, file1 " + file + ", file2 " +
-					otherFile,
+				StringBundler.concat(
+					"File content does not match, file1 ", file, ", file2 ",
+					otherFile),
 				Files.readAllBytes(file), Files.readAllBytes(otherFile));
 
 			return FileVisitResult.CONTINUE;

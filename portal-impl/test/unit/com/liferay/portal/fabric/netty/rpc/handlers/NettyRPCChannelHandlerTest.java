@@ -18,7 +18,7 @@ import com.liferay.portal.fabric.netty.rpc.RPCSerializable;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 
 import java.lang.reflect.Constructor;
@@ -48,17 +48,17 @@ public class NettyRPCChannelHandlerTest {
 		final AtomicReference<Channel> channelReference =
 			new AtomicReference<>();
 
-		RPCSerializable rpcSerializable =
-			new RPCSerializable(System.currentTimeMillis()) {
+		RPCSerializable rpcSerializable = new RPCSerializable(
+			System.currentTimeMillis()) {
 
-				@Override
-				public void execute(Channel channel) {
-					channelReference.set(channel);
-				}
+			@Override
+			public void execute(Channel channel) {
+				channelReference.set(channel);
+			}
 
-				private static final long serialVersionUID = 1L;
+			private static final long serialVersionUID = 1L;
 
-			};
+		};
 
 		embeddedChannel.writeInbound(rpcSerializable);
 
@@ -68,7 +68,8 @@ public class NettyRPCChannelHandlerTest {
 	@Test
 	public void testStructure() throws ReflectiveOperationException {
 		Assert.assertNotNull(
-			NettyRPCChannelHandler.class.getAnnotation(Sharable.class));
+			NettyRPCChannelHandler.class.getAnnotation(
+				ChannelHandler.Sharable.class));
 
 		Field instanceField = NettyRPCChannelHandler.class.getField("INSTANCE");
 

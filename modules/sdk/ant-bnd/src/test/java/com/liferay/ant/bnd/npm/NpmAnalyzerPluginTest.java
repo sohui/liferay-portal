@@ -16,14 +16,21 @@ package com.liferay.ant.bnd.npm;
 
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.URLResource;
 
 import aQute.lib.filter.Filter;
 
-import com.liferay.ant.bnd.npm.NpmAnalyzerPlugin.NpmModule;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import java.net.URL;
+
+import java.nio.charset.StandardCharsets;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,7 +46,8 @@ public class NpmAnalyzerPluginTest {
 
 		URL url = getResource("dependencies/package.json");
 
-		NpmModule npmModule = npmAnalyzerPlugin.getNpmModule(url.openStream());
+		NpmAnalyzerPlugin.NpmModule npmModule = npmAnalyzerPlugin.getNpmModule(
+			url.openStream());
 
 		Assert.assertNotNull(npmModule);
 		Assert.assertEquals("liferay", npmModule.name);
@@ -294,7 +302,7 @@ public class NpmAnalyzerPluginTest {
 
 		jar.putResource(
 			"package.json",
-			new URLResource(getResource("dependencies/package.json")));
+			new EmbeddedResource(getString("dependencies/package.json"), 0));
 
 		analyzer.setJar(jar);
 
@@ -330,8 +338,8 @@ public class NpmAnalyzerPluginTest {
 
 		jar.putResource(
 			"package.json",
-			new URLResource(
-				getResource("dependencies/package.bad.version.json")));
+			new EmbeddedResource(
+				getString("dependencies/package.bad.version.json"), 0));
 
 		analyzer.setJar(jar);
 
@@ -358,9 +366,7 @@ public class NpmAnalyzerPluginTest {
 
 		Jar jar = new Jar("test");
 
-		jar.putResource(
-			"package.json",
-			new URLResource(getResource("dependencies/package.empty.json")));
+		jar.putResource("package.json", new EmbeddedResource("", 0));
 
 		analyzer.setJar(jar);
 
@@ -388,6 +394,21 @@ public class NpmAnalyzerPluginTest {
 		Class<?> clazz = getClass();
 
 		return clazz.getResource(path);
+	}
+
+	protected String getString(String path) throws Exception {
+		Class<?> clazz = getClass();
+
+		try (InputStream inputStream = clazz.getResourceAsStream(path);
+			InputStreamReader inputStreamReader = new InputStreamReader(
+				inputStream, StandardCharsets.UTF_8);
+			BufferedReader bufferedReader = new BufferedReader(
+				inputStreamReader)) {
+
+			Stream<String> stream = bufferedReader.lines();
+
+			return stream.collect(Collectors.joining("\n"));
+		}
 	}
 
 }

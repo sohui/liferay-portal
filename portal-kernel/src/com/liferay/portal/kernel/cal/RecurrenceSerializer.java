@@ -14,8 +14,14 @@
 
 package com.liferay.portal.kernel.cal;
 
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.CalendarFactoryUtil;
+import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+
+import java.text.Format;
 
 import java.util.Calendar;
 
@@ -32,7 +38,6 @@ public class RecurrenceSerializer {
 
 		DayAndPosition[] byDay = recurrence.getByDay();
 		int[] byMonthDay = recurrence.getByMonthDay();
-		int[] byMonth = recurrence.getByMonth();
 
 		String startDateSecond = String.valueOf(dtStart.get(Calendar.SECOND));
 		String startDateMinute = String.valueOf(dtStart.get(Calendar.MINUTE));
@@ -52,7 +57,7 @@ public class RecurrenceSerializer {
 			dayOfWeek = StringPool.QUESTION;
 		}
 		else if (frequency == Recurrence.DAILY) {
-			dayOfMonth = 1 + StringPool.FORWARD_SLASH + interval;
+			dayOfMonth = 1 + _getIntervalValue(interval, Recurrence.DAILY);
 			month = StringPool.STAR;
 			dayOfWeek = StringPool.QUESTION;
 			year = StringPool.STAR;
@@ -66,7 +71,7 @@ public class RecurrenceSerializer {
 						dayOfWeek += StringPool.COMMA;
 					}
 
-					dayOfWeek += byDay[i].getDayOfWeek();
+					dayOfWeek += getDayOfWeek(byDay[i]);
 				}
 			}
 		}
@@ -83,15 +88,15 @@ public class RecurrenceSerializer {
 						dayOfWeek += StringPool.COMMA;
 					}
 
-					dayOfWeek += byDay[i].getDayOfWeek();
+					dayOfWeek += getDayOfWeek(byDay[i]);
 				}
 			}
 
-			dayOfWeek += StringPool.FORWARD_SLASH + interval;
+			dayOfWeek += _getIntervalValue(interval, Recurrence.WEEKLY);
 		}
 		else if (frequency == Recurrence.MONTHLY) {
 			dayOfMonth = StringPool.QUESTION;
-			month = 1 + StringPool.FORWARD_SLASH + interval;
+			month = 1 + _getIntervalValue(interval, Recurrence.MONTHLY);
 			dayOfWeek = StringPool.QUESTION;
 			year = StringPool.STAR;
 
@@ -102,18 +107,19 @@ public class RecurrenceSerializer {
 				String pos = String.valueOf(byDay[0].getDayPosition());
 
 				if (pos.equals("-1")) {
-					dayOfWeek = byDay[0].getDayOfWeek() + "L";
+					dayOfWeek = getDayOfWeek(byDay[0]) + "L";
 				}
 				else {
-					dayOfWeek =
-						byDay[0].getDayOfWeek() + StringPool.POUND + pos;
+					dayOfWeek = getDayOfWeek(byDay[0]) + StringPool.POUND + pos;
 				}
 			}
 		}
 		else if (frequency == Recurrence.YEARLY) {
+			int[] byMonth = recurrence.getByMonth();
+
 			dayOfMonth = StringPool.QUESTION;
 			dayOfWeek = StringPool.QUESTION;
-			year += StringPool.FORWARD_SLASH + interval;
+			year += _getIntervalValue(interval, Recurrence.YEARLY);
 
 			if ((byMonth != null) && (byMonth.length == 1)) {
 				month = String.valueOf(byMonth[0] + 1);
@@ -125,11 +131,11 @@ public class RecurrenceSerializer {
 					String pos = String.valueOf(byDay[0].getDayPosition());
 
 					if (pos.equals("-1")) {
-						dayOfWeek = byDay[0].getDayOfWeek() + "L";
+						dayOfWeek = getDayOfWeek(byDay[0]) + "L";
 					}
 					else {
 						dayOfWeek =
-							byDay[0].getDayOfWeek() + StringPool.POUND + pos;
+							getDayOfWeek(byDay[0]) + StringPool.POUND + pos;
 					}
 				}
 			}
@@ -152,6 +158,28 @@ public class RecurrenceSerializer {
 		sb.append(year);
 
 		return sb.toString();
+	}
+
+	protected static String getDayOfWeek(DayAndPosition dayPos) {
+		Calendar calendar = CalendarFactoryUtil.getCalendar();
+
+		calendar.set(Calendar.DAY_OF_WEEK, dayPos.getDayOfWeek());
+
+		Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(
+			"EEE", LocaleUtil.US);
+
+		return StringUtil.toUpperCase(format.format(calendar));
+	}
+
+	private static String _getIntervalValue(int interval, int period) {
+		if ((interval <= 0) && (period == Recurrence.WEEKLY)) {
+			return StringPool.BLANK;
+		}
+		else if (interval <= 0) {
+			return StringPool.FORWARD_SLASH + 1;
+		}
+
+		return StringPool.FORWARD_SLASH + interval;
 	}
 
 }

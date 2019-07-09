@@ -15,6 +15,9 @@
 package com.liferay.portal.upgrade.v7_0_0;
 
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
+import com.liferay.document.library.kernel.model.DLFileEntryConstants;
+import com.liferay.portal.kernel.dao.db.DBType;
+import com.liferay.portal.kernel.dao.db.DBTypeToSQLMap;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -39,6 +42,36 @@ import java.util.Arrays;
  */
 public class UpgradeAsset extends UpgradeProcess {
 
+	protected void deleteOrphanedAssetEntries() throws Exception {
+		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+			long classNameId = PortalUtil.getClassNameId(
+				DLFileEntryConstants.getClassName());
+
+			StringBundler sb = new StringBundler(5);
+
+			sb.append("delete from AssetEntry where classNameId = ");
+			sb.append(classNameId);
+			sb.append(" and classPK not in (select fileVersionId from ");
+			sb.append("DLFileVersion) and classPK not in (select fileEntryId ");
+			sb.append("from DLFileEntry)");
+
+			DBTypeToSQLMap dbTypeToSQLMap = new DBTypeToSQLMap(sb.toString());
+
+			sb = new StringBundler(6);
+
+			sb.append("delete from AssetEntry where classNameId = ");
+			sb.append(classNameId);
+			sb.append(" and not exists (select null from DLFileVersion where ");
+			sb.append("fileVersionId = AssetEntry.classPK) and not exists ");
+			sb.append("(select null from DLFileEntry where fileEntryId = ");
+			sb.append("AssetEntry.classPK)");
+
+			dbTypeToSQLMap.add(DBType.POSTGRESQL, sb.toString());
+
+			runSQL(dbTypeToSQLMap);
+		}
+	}
+
 	@Override
 	protected void doUpgrade() throws Exception {
 		alter(
@@ -46,6 +79,7 @@ public class UpgradeAsset extends UpgradeProcess {
 			new AlterColumnType("description", "TEXT null"),
 			new AlterColumnType("summary", "TEXT null"));
 
+		deleteOrphanedAssetEntries();
 		updateAssetEntries();
 		updateAssetVocabularies();
 	}
@@ -68,47 +102,31 @@ public class UpgradeAsset extends UpgradeProcess {
 	}
 
 	protected void updateAssetEntries() throws Exception {
-		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			long classNameId = PortalUtil.getClassNameId(
-				"com.liferay.journal.model.JournalArticle");
+		StringBundler sb = new StringBundler(10);
 
-			StringBundler sb = new StringBundler(9);
+		sb.append("update AssetEntry set listable = ? where classNameId = ? ");
+		sb.append("and classPK in (select JournalArticle.resourcePrimKey as ");
+		sb.append("resourcePrimKey from (select ");
+		sb.append("JournalArticle.resourcePrimKey as primKey, ");
+		sb.append("max(JournalArticle.version) as maxVersion from ");
+		sb.append("JournalArticle group by JournalArticle.resourcePrimKey) ");
+		sb.append("TEMP_TABLE inner join JournalArticle on ");
+		sb.append("(JournalArticle.resourcePrimKey = TEMP_TABLE.primKey and ");
+		sb.append("JournalArticle.indexable = ? and JournalArticle.status = ");
+		sb.append("0 and JournalArticle.version = TEMP_TABLE.maxVersion))");
 
-			sb.append("select JournalArticle.resourcePrimKey from (select ");
-			sb.append("JournalArticle.resourcePrimkey as primKey, ");
-			sb.append("max(JournalArticle.version) as maxVersion from ");
-			sb.append("JournalArticle group by ");
-			sb.append("JournalArticle.resourcePrimkey) temp_table inner join ");
-			sb.append("JournalArticle on (JournalArticle.indexable = ?) and ");
-			sb.append("(JournalArticle.status = 0) and ");
-			sb.append("(JournalArticle.resourcePrimkey = temp_table.primKey) ");
-			sb.append("and (JournalArticle.version = temp_table.maxVersion)");
+		long classNameId = PortalUtil.getClassNameId(
+			"com.liferay.portlet.journal.model.JournalArticle");
 
-			try (PreparedStatement ps1 = connection.prepareStatement(
-					sb.toString())) {
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			PreparedStatement ps1 = connection.prepareStatement(
+				sb.toString())) {
 
-				ps1.setBoolean(1, false);
+			ps1.setBoolean(1, false);
+			ps1.setLong(2, classNameId);
+			ps1.setBoolean(3, false);
 
-				try (PreparedStatement ps2 =
-						AutoBatchPreparedStatementUtil.concurrentAutoBatch(
-							connection,
-							"update AssetEntry set listable = ? where " +
-								"classNameId = ? and classPK = ?");
-					ResultSet rs = ps1.executeQuery()) {
-
-					while (rs.next()) {
-						long classPK = rs.getLong("resourcePrimKey");
-
-						ps2.setBoolean(1, false);
-						ps2.setLong(2, classNameId);
-						ps2.setLong(3, classPK);
-
-						ps2.addBatch();
-					}
-
-					ps2.executeBatch();
-				}
-			}
+			ps1.execute();
 		}
 	}
 
@@ -125,9 +143,11 @@ public class UpgradeAsset extends UpgradeProcess {
 
 			while (rs.next()) {
 				long vocabularyId = rs.getLong("vocabularyId");
+
 				String settings = rs.getString("settings_");
 
 				ps2.setString(1, upgradeVocabularySettings(settings));
+
 				ps2.setLong(2, vocabularyId);
 
 				ps2.addBatch();
@@ -138,7 +158,7 @@ public class UpgradeAsset extends UpgradeProcess {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void updateAssetVocabulary(long vocabularyId, String settings)

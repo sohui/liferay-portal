@@ -35,20 +35,14 @@ public interface Renderer {
 
 	public String getIconCssClass() throws PortalException;
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public String getIconPath(PortletRequest portletRequest);
-
 	public String getSummary(
 		PortletRequest portletRequest, PortletResponse portletResponse);
 
 	public String getTitle(Locale locale);
 
 	public boolean include(
-			HttpServletRequest request, HttpServletResponse response,
-			String template)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse, String template)
 		throws Exception;
 
 }

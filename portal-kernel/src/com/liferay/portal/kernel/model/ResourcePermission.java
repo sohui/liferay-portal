@@ -14,54 +14,57 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the ResourcePermission service. Represents a row in the &quot;ResourcePermission&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see ResourcePermissionModel
- * @see com.liferay.portal.model.impl.ResourcePermissionImpl
- * @see com.liferay.portal.model.impl.ResourcePermissionModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.ResourcePermissionImpl")
 @ProviderType
-public interface ResourcePermission extends ResourcePermissionModel,
-	PersistedModel {
+public interface ResourcePermission
+	extends PersistedModel, ResourcePermissionModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.ResourcePermissionImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.ResourcePermissionImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<ResourcePermission, Long> RESOURCE_PERMISSION_ID_ACCESSOR =
-		new Accessor<ResourcePermission, Long>() {
-			@Override
-			public Long get(ResourcePermission resourcePermission) {
-				return resourcePermission.getResourcePermissionId();
-			}
+	public static final Accessor<ResourcePermission, Long>
+		RESOURCE_PERMISSION_ID_ACCESSOR =
+			new Accessor<ResourcePermission, Long>() {
 
-			@Override
-			public Class<Long> getAttributeClass() {
-				return Long.class;
-			}
+				@Override
+				public Long get(ResourcePermission resourcePermission) {
+					return resourcePermission.getResourcePermissionId();
+				}
 
-			@Override
-			public Class<ResourcePermission> getTypeClass() {
-				return ResourcePermission.class;
-			}
-		};
+				@Override
+				public Class<Long> getAttributeClass() {
+					return Long.class;
+				}
 
-	public void addResourceAction(java.lang.String actionId)
+				@Override
+				public Class<ResourcePermission> getTypeClass() {
+					return ResourcePermission.class;
+				}
+
+			};
+
+	public void addResourceAction(String actionId)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public boolean hasAction(ResourceAction resourceAction);
 
-	public boolean hasActionId(java.lang.String actionId);
+	public boolean hasActionId(String actionId);
 
-	public void removeResourceAction(java.lang.String actionId)
+	public void removeResourceAction(String actionId)
 		throws com.liferay.portal.kernel.exception.PortalException;
+
 }

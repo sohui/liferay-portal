@@ -1,3067 +1,3211 @@
-<definition component-name="portal-web-forms-and-data-lists">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Dynamic Data Lists" />
+@component-name = "portal-web-forms-and-data-lists"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Dynamic Data Lists";
 
-		<execute macro="User#firstLoginPG" />
-	</set-up>
+	setUp {
+		TestCase.setUpPortalInstance();
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		User.firstLoginPG();
+	}
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="User#firstLoginPG" />
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-				<execute macro="DDLTemplate#tearDownTemplateCP" />
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.firstLoginPG();
 
-				<execute macro="DDLTemplate#tearDownTemplateCP">
-					<var name="ddlDataDefinitionName" value="Data Definition Clone With Form Template" />
-				</execute>
+			DDLTemplate.tearDownTemplateCP();
 
-				<execute macro="DDLList#tearDownCP" />
+			DDLTemplate.tearDownTemplateCP(ddlDataDefinitionName = "Data Definition Clone With Form Template");
 
-				<execute macro="DDLDataDefinition#tearDownCP" />
+			DDLList.tearDownCP();
 
-				<execute macro="DMDocument#tearDownCP" />
+			DDLDataDefinition.tearDownCP();
 
-				<execute macro="User#tearDownCP" />
+			DMDocument.tearDownCP();
 
-				<execute macro="Page#tearDownPG" />
+			User.tearDownCP();
 
-				<execute macro="Site#tearDownCP" />
-			</else>
-		</if>
-	</tear-down>
+			Page.tearDownCP();
 
-	<command name="AddDataDefinitionWithoutANameAndAssertErrorMessage" priority="3">
-		<execute macro="Navigator#openURL" />
+			Site.tearDownCP();
+		}
+	}
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+	@priority = "3"
+	test AddDataDefinitionWithoutANameAndAssertErrorMessage {
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "");
 
-		<execute macro="DDLDataDefinition#clickSave" />
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="Alert#viewRequiredField" />
-	</command>
+		DDLDataDefinition.clickSave();
 
-	<command name="AddListWithoutDataDefinitionAndAssertErrorMessage" priority="3">
-		<var name="ddlDataDefinitionName" value="To Do" />
-		<var name="ddlListName" value="List Name" />
+		Alert.viewRequiredField();
+	}
 
-		<execute macro="Navigator#openURL" />
+	@priority = "3"
+	test AddListWithoutDataDefinitionAndAssertErrorMessage {
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute function="Click" locator1="Button#PLUS" />
+		LexiconEntry.gotoAdd();
 
-		<execute function="Type#clickAtSendKeys" locator1="TextInput#NAME" value1="${ddlListName}" />
-		<execute macro="Button#clickSave" />
+		Type.clickAtType(
+			locator1 = "TextInput#NAME",
+			value1 = "List Name");
 
-		<execute macro="Alert#viewRequestFailedToComplete" />
+		Button.clickSave();
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a valid definition." />
-	</command>
+		Alert.viewRequestFailedToComplete();
 
-	<command name="AddListWithXSSWorkflowDefinition" priority="4">
-		<description message="This is a use case for LPS-50557." />
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#ERROR_1",
+			value1 = "Please enter a valid definition.");
+	}
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Workflow Definition" />
-		</execute>
+	@description = "This is a use case for LPS-50557."
+	@priority = "4"
+	test AddListWithXSSWorkflowDefinition {
+		ProductMenu.gotoPortlet(
+			category = "Workflow",
+			panel = "Control Panel",
+			portlet = "Process Builder");
 
-		<execute macro="Workflow#uploadDefinition">
-			<var name="workflowDefinitionFile" value="workflow_definition_xss.xml" />
-			<var name="workflowDefinitionTitle" value="New Uploaded Definition" />
-		</execute>
+		Workflow.uploadDefinition(
+			workflowDefinitionFile = "workflow_definition_xss.xml",
+			workflowDefinitionTitle = "New Uploaded Definition");
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLList#addCP" />
+		DDLList.addCP();
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="To Do" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "To Do");
 
-		<execute macro="DDLList#save" />
+		DDLDataDefinition.save();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLList#viewCP" />
-	</command>
+		DDLList.viewCP();
+	}
 
-	<command name="AddRecord" priority="4">
-		<var name="ddlDataDefinitionName" value="DDL Definition" />
-		<var name="ddlListName" value="DDL List" />
-		<var name="ddlRecordFieldData" value="Record Text" />
-		<var name="field" value="Text" />
-		<var name="fieldFieldLabel" value="Text Label" />
-		<var name="fieldName" value="TextName" />
-		<var name="pageName" value="Dynamic Data Lists Display Page" />
+	@priority = "4"
+	test AddRecord {
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "DDL Definition Description",
+			ddlDataDefinitionName = "DDL Definition");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionDescription" value="${ddlDataDefinitionName} Description" />
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="${field}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLDataDefinition#save" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLList.addCP(
+			ddlListDescription = "DDL List Description",
+			ddlListName = "DDL List");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListDescription" value="${ddlListName} Description" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "DDL Definition");
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLList#save" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "DDL Definition",
+			ddlListName = "DDL List");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Record Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="PortletEntry#publish" />
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Dynamic Data Lists Display" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLList#selectViaDDLDisplayPG">
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLList.selectViaDDLDisplayPG(ddlListName = "DDL List");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DDLRecord.addViaDDLDisplayPG(ddlDataDefinitionName = "DDL Definition");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Record Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
 
-		<execute macro="PortletEntry#publish" />
+		PortletEntry.publish();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLNavigator#gotoListRecords">
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLNavigator.gotoListRecords(ddlListName = "DDL List");
 
-		<execute macro="DDLRecord#viewFirstFieldCP">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
-			<var name="field" value="${field}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
-	</command>
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "Record Text",
+			field = "Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
+	}
 
-	<command name="AddRecordBlankDateField" priority="3">
-		<description message="This is a use case for LPS-51513." />
+	@description = "This is a use case for LPS-51513."
+	@priority = "3"
+	test AddRecordBlankDateField {
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Date",
+			fieldFieldLabel = "Date",
+			fieldName = "Date");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Date" />
-			<var name="fieldFieldLabel" value="Date" />
-			<var name="fieldName" value="Date" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLDataDefinition#save" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.viewCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLDataDefinition#viewCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DynamicDataMapping.viewField(
+			fieldFieldLabel = "Date",
+			fieldName = "Date");
 
-		<execute macro="DynamicDataMapping#viewField">
-			<var name="fieldFieldLabel" value="Date" />
-			<var name="fieldName" value="Date" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLList.addCP(ddlListName = "List Name");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLList#save" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "List Name");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DDLRecord.populateFieldDate(
+			ddlRecordFieldData = "04/01/2017",
+			fieldName = "Date");
 
-		<execute macro="DDLRecord#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2017" />
-			<var name="fieldName" value="Date" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="PortletEntry#publish" />
+		DDLRecord.viewFieldCP(
+			ddlRecordFieldData = "4/1/17",
+			fieldFieldLabel = "Date");
 
-		<execute macro="DDLRecord#viewFieldCP">
-			<var name="ddlRecordFieldData" value="4/1/17" />
-			<var name="fieldFieldLabel" value="Date" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "List Name");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DDLRecord.populateFieldDate(
+			ddlRecordFieldData = "",
+			fieldName = "Date");
 
-		<execute macro="DDLRecord#populateFieldDate">
-			<var name="ddlRecordFieldData" value="" />
-			<var name="fieldName" value="Date" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="PortletEntry#publish" />
+		DDLRecord.viewFieldCP(
+			ddlRecordFieldData = "4/1/17",
+			fieldFieldLabel = "Date");
 
-		<execute macro="DDLRecord#viewFieldCP">
-			<var name="ddlRecordFieldData" value="4/1/17" />
-			<var name="fieldFieldLabel" value="Date" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLNavigator.gotoListRecords(ddlListName = "List Name");
 
-		<execute macro="DDLNavigator#gotoListRecords">
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DDLRecord.viewSecondFieldCP(
+			ddlRecordFieldData = "",
+			fieldFieldLabel = "Date");
+	}
 
-		<execute macro="DDLRecord#viewSecondFieldCP">
-			<var name="ddlRecordFieldData" value="" />
-			<var name="fieldFieldLabel" value="Date" />
-		</execute>
-	</command>
+	@description = "This is a use case for LPS-66229."
+	@priority = "3"
+	test AddRecordWithBlankDocumentsAndMediaField {
+		Navigator.openURL();
 
-	<command name="AddRecordWithRepeatableTextField" priority="5">
-		<description message="This is a use case for LPS-65069." />
-		<property name="portal.acceptance" value="true" />
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Navigator#openURL" />
+		SitePages.addPublicPage(pageName = "DDL Page");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLDataDefinition#addCP" />
+		Portlet.addPG(
+			pageName = "DDL Page",
+			portletName = "Dynamic Data Lists Display");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLList.addViaDDLDisplayPG();
 
-		<execute macro="DynamicDataMapping#editFieldRepeatable">
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		DDLDataDefinition.addViaDDLDisplayPG();
 
-		<execute macro="DDLDataDefinition#save" />
+		DynamicDataMapping.addField(
+			field = "Documents and Media",
+			fieldFieldLabel = "Documents and Media",
+			fieldName = "DocumentsAndMedia");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.saveViaDDLDisplayPG();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG();
 
-		<execute macro="DDLList#addCP" />
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="DDLDataDefinition#selectCP" />
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLList#save" />
+		DDLRecord.addViaDDLDisplayPG();
 
-		<execute macro="Navigator#openURL" />
+		PortletEntry.publish();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLRecord#addCP" />
+		DDLRecord.viewViaDDLDisplayTable(
+			ddlRecordFieldData = "",
+			fieldFieldLabel = "Documents and Media");
+	}
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Text" />
-		</execute>
+	@description = "This is a use case for LPS-66229."
+	@priority = "3"
+	test AddRecordWithBlankLinkToPageField {
+		Navigator.openURL();
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Content" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="DDLRecord#viewTextFieldRepeated">
-			<var name="ddlRecordFieldData1" value="Content" />
-			<var name="ddlRecordFieldData2" value="Content 2" />
-		</execute>
+		SitePages.addPublicPage(pageName = "DDL Page");
 
-		<execute macro="PortletEntry#publish" />
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="Navigator#openURL" />
+		Portlet.addPG(
+			pageName = "DDL Page",
+			portletName = "Dynamic Data Lists Display");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="DDL Page" />
-		</execute>
+		DDLList.addViaDDLDisplayPG();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="DDL Page" />
-		</execute>
+		DDLDataDefinition.addViaDDLDisplayPG();
 
-		<execute macro="Portlet#addPG">
-			<var name="pageName" value="DDL Page" />
-			<var name="portletName" value="Dynamic Data Lists Display" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Link to Page",
+			fieldFieldLabel = "Link to Page",
+			fieldName = "LinkToPage");
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListName" value="Dynamic Data List 2" />
-		</execute>
+		DDLDataDefinition.saveViaDDLDisplayPG();
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG" />
+		DDLDataDefinition.selectViaDDLDisplayPG();
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="DDL Page" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlListName" value="Dynamic Data List 2" />
-		</execute>
+		DDLRecord.addViaDDLDisplayPG();
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Text" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Content" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLRecord#viewTextFieldRepeated">
-			<var name="ddlRecordFieldData1" value="Content" />
-			<var name="ddlRecordFieldData2" value="Content 2" />
-		</execute>
+		DDLRecord.viewViaDDLDisplayTable(
+			ddlRecordFieldData = "",
+			fieldFieldLabel = "Link to Page");
+	}
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+	@description = "This is a use case for LPS-66229."
+	@priority = "3"
+	test AddRecordWithBlankWebContentField {
+		Navigator.openURL();
 
-	<command name="AddRepeatableFieldAndAssertOrderInTranslation" priority="4">
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		SitePages.addPublicPage(pageName = "DDL Page");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		Portlet.addPG(
+			pageName = "DDL Page",
+			portletName = "Dynamic Data Lists Display");
 
-		<execute macro="DynamicDataMapping#editFieldRepeatable">
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		DDLList.addViaDDLDisplayPG();
 
-		<execute macro="DDLDataDefinition#save" />
+		DDLDataDefinition.addViaDDLDisplayPG();
 
-		<execute macro="Navigator#openURL" />
+		DynamicDataMapping.addField(
+			field = "Web Content",
+			fieldFieldLabel = "Web Content",
+			fieldName = "WebContent");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.saveViaDDLDisplayPG();
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG();
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="DDLList#save" />
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.addViaDDLDisplayPG();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLRecord.viewViaDDLDisplayTable(
+			ddlRecordFieldData = "",
+			fieldFieldLabel = "Web Content");
+	}
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Content" />
-			<var name="fieldName" value="Text" />
-		</execute>
+	@description = "This is a use case for LPS-66439."
+	@priority = "5"
+	test AddRecordWithPopulatedWebContentField {
+		Navigator.openURL();
 
-		<execute macro="DDLRecord#saveAsDraftCP" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Web Content");
 
-		<execute macro="Navigator#openURL" />
+		WebContentNavigator.gotoAddCP();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		WebContent.addCP(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
 
-		<execute macro="DDLRecord#editCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-			<var name="ddlRecordFieldData" value="Content, Content 2" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DDLRecord#addTranslation">
-			<var name="localizedLanguage" value="Catalan (Spain)" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="DDLRecord#populateTranslationFieldText">
-			<var name="ddlRecordFieldData" value="Contenido" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		SitePages.addPublicPage(pageName = "DDL Page");
 
-		<execute macro="PortletEntry#publish" />
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="Navigator#openURL" />
+		Portlet.addPG(
+			pageName = "DDL Page",
+			portletName = "Dynamic Data Lists Display");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLList.addViaDDLDisplayPG();
 
-		<execute macro="DDLRecord#editCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-			<var name="ddlRecordFieldData" value="Content, Content 2" />
-		</execute>
+		DDLDataDefinition.addViaDDLDisplayPG();
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Text" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Web Content",
+			fieldFieldLabel = "Web Content",
+			fieldName = "WebContent");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Content" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLDataDefinition.saveViaDDLDisplayPG();
 
-		<execute macro="PortletEntry#publish" />
+		DDLDataDefinition.selectViaDDLDisplayPG();
 
-		<execute macro="Navigator#openURL" />
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLRecord#editCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-			<var name="ddlRecordFieldData" value="Content, Content 2, Content 3" />
-		</execute>
+		DDLRecord.addViaDDLDisplayPG();
 
-		<execute macro="DDLRecord#editTranslation">
-			<var name="localizedLanguage" value="Catalan (Spain)" />
-		</execute>
+		DDLRecord.populateFieldWebContentChooseFromWebContentLibrary(
+			fieldName = "WebContent",
+			webContentTitle = "WC WebContent Title");
 
-		<execute macro="DDLRecord#viewTextFieldRepeated">
-			<var name="ddlRecordFieldData1" value="Contenido" />
-			<var name="ddlRecordFieldData2" value="Content 2" />
-			<var name="ddlRecordFieldData3" value="Contenido 2" />
-		</execute>
-	</command>
+		PortletEntry.publish();
 
-	<command name="AddXSSToHTMLField" priority="4">
-		<description message="This is a use case for LPS-50549." />
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<var name="ddlRecordFieldData1">
-			<![CDATA[<img src=x onerror=alert(/xss/) />]]>
-		</var>
+		DDLRecord.viewViaDDLDisplayPG(
+			ddlRecordFieldData = "WC WebContent Title",
+			fieldFieldLabel = "Web Content");
+	}
 
-		<var name="ddlRecordFieldData2"><![CDATA['+alert('xss')+'"+alert("xss")+"]]></var>
+	@description = "This is a use case for LPS-65069."
+	@priority = "5"
+	test AddRecordWithRepeatableTextField {
+		property portal.acceptance = "true";
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#addCP" />
+		DDLDataDefinition.addCP();
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="HTML" />
-			<var name="fieldFieldLabel" value="HTML" />
-			<var name="fieldName" value="HTML" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DynamicDataMapping#editFieldPredefinedValue">
-			<var name="field" value="HTML" />
-			<var name="fieldFieldLabel" value="HTML" />
-			<var name="fieldName" value="HTML" />
-			<var name="fieldPredefinedValue" value="${ddlRecordFieldData2}" />
-		</execute>
+		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Text");
 
-		<execute macro="DDLDataDefinition#save" />
+		DDLDataDefinition.save();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#viewCP">
-			<var name="fieldFieldLabel" value="HTML" />
-		</execute>
+		DDLList.addCP();
 
-		<execute macro="DynamicDataMapping#viewField">
-			<var name="field" value="HTML" />
-			<var name="fieldFieldLabel" value="HTML" />
-			<var name="fieldName" value="HTML" />
-		</execute>
+		DDLDataDefinition.selectCP();
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.save();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLList#addCP" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#selectCP" />
+		DDLRecord.addCP();
 
-		<execute macro="DDLList#save" />
+		DDLRecord.addRepeatableField(fieldName = "Text");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Content",
+			fieldName = "Text");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.viewTextFieldRepeated(
+			ddlRecordFieldData1 = "Content",
+			ddlRecordFieldData2 = "Content 2");
 
-		<execute macro="DDLRecord#addCP" />
+		PortletEntry.publish();
 
-		<execute macro="DDLRecord#populateFieldHTML">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData1}" />
-			<var name="fieldFieldLabel" value="HTML" />
-			<var name="fieldName" value="HTML" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="PortletEntry#publish" />
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Navigator#openURL" />
+		SitePages.addPublicPage(pageName = "DDL Page");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLNavigator#gotoListRecords" />
+		Portlet.addPG(
+			pageName = "DDL Page",
+			portletName = "Dynamic Data Lists Display");
 
-		<execute macro="DDLRecord#gotoRecordPreview" />
+		DDLList.addViaDDLDisplayPG(ddlListName = "Dynamic Data List 2");
 
-		<execute macro="DDLRecord#viewInvalidHTMLfield" />
+		DDLDataDefinition.selectViaDDLDisplayPG();
 
-		<execute macro="Navigator#openURL" />
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "DDL Page");
 
-		<execute macro="DDLRecord#deleteCP">
-			<var name="ddlRecordFieldData" value="(Preview)" />
-		</execute>
+		DDLRecord.addViaDDLDisplayPG();
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.addRepeatableField(fieldName = "Text");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Content",
+			fieldName = "Text");
 
-		<execute macro="DDLRecord#addCP" />
+		DDLRecord.viewTextFieldRepeated(
+			ddlRecordFieldData1 = "Content",
+			ddlRecordFieldData2 = "Content 2");
 
-		<execute macro="PortletEntry#publish" />
+		PortletEntry.publish();
+	}
 
-		<execute macro="Navigator#openURL" />
+	@priority = "4"
+	test AddRepeatableFieldAndAssertOrderInTranslation {
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLNavigator#gotoListRecords" />
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLRecord#viewFirstFieldCP">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData2}" />
-			<var name="field" value="HTML" />
-			<var name="fieldFieldLabel" value="HTML" />
-			<var name="fieldName" value="HTML" />
-		</execute>
-	</command>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-	<command name="AssertConfigurationMenulist" priority="2">
-		<var name="ddlDataDefinitionName" value="To Do" />
-		<var name="ddlListName" value="List Name" />
-		<var name="pageName" value="Dynamic Data Lists Display Page" />
-		<var name="portletName" value="Dynamic Data Lists Display" />
+		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Text");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLList.addCP(ddlListName = "Dynamic Data List");
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		DDLDataDefinition.save();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDisplayPortlet#configureListViewPG">
-			<var name="configureCheckBoxName" value="TEMPLATES_EDITABLE_CHECKBOX" />
-			<var name="configureChecked" value="false" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "Dynamic Data List");
 
-		<execute macro="DDLDisplayPortlet#configureListViewPG">
-			<var name="configureCheckBoxName" value="TEMPLATES_SPREADSHEET_VIEW_CHECKBOX" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLRecord.addRepeatableField(fieldName = "Text");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Content",
+			fieldName = "Text");
 
-		<execute macro="DDLDisplayPortlet#assertCannotEditSpreadsheet" />
+		DDLRecord.saveAsDraftCP();
 
-		<execute macro="Portlet#viewPortletOptionsMenulist" />
-	</command>
+		Navigator.openURL();
 
-	<command name="AssertDecimalFieldInvalidDataErrorMessage" priority="3">
-		<var name="ddlDataDefinitionName" value="Decimal Invalid Value Data Definition Name" />
-		<var name="ddlInvalidRecordFieldData" value="0.987a" />
-		<var name="ddlListName" value="List Name" />
-		<var name="field" value="Decimal" />
-		<var name="fieldFieldLabel" value="Decimal" />
-		<var name="fieldName" value="Decimal" />
-		<var name="pageName" value="Dynamic Data Lists Display Page" />
-		<var name="portletName" value="Dynamic Data Lists Display" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLRecord.editCP(
+			ddlListName = "Dynamic Data List",
+			ddlRecordFieldData = "Content, Content 2");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		PortletEntry.changeLocale(locale = "es-ES");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
-		</execute>
+		DDLRecord.populateTranslationFieldText(
+			ddlRecordFieldData = "Contenido",
+			fieldName = "Text");
 
-		<execute macro="Navigator#openURL" />
+		PortletEntry.publish();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="${field}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		DDLRecord.editCP(
+			ddlListName = "Dynamic Data List",
+			ddlRecordFieldData = "Content, Content 2");
 
-		<execute macro="DDLDataDefinition#save" />
+		DDLRecord.addRepeatableField(fieldName = "Text");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Content",
+			fieldName = "Text");
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		PortletEntry.changeLocale(locale = "es-ES");
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLRecord.editCP(
+			ddlListName = "Dynamic Data List",
+			ddlRecordFieldData = "Content, Content 2, Content 3");
 
-		<var name="key_fieldName" value="${fieldName}" />
+		PortletEntry.changeLocale(locale = "es-ES");
 
-		<execute function="Type" locator1="DDLEditRecord#DECIMAL_FIELD" value1="${ddlInvalidRecordFieldData}" />
+		DDLRecord.viewTextFieldRepeated(
+			ddlRecordFieldData1 = "Contenido",
+			ddlRecordFieldData2 = "Content 2",
+			ddlRecordFieldData3 = "Contenido 2");
+	}
 
-		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
-		<execute function="AssertTextEquals" locator1="DDLEditRecord#RECORD_FIELD_ALERT" value1="Please enter a valid number." />
-	</command>
+	@description = "This is a use case for LPS-69273."
+	@priority = "4"
+	test AddRepeatableFieldAsNonAdminUser {
+		JSONRole.addRegularRole(
+			roleKey = "DDMRegRole Name",
+			roleTitle = "DDMRegRole Name");
 
-	<command name="AssertFieldAfterNavigatingToManageTemplates" priority="3">
-		<description message="This is a use case for LPS-48736." />
+		for (var resourceActionIndex : list "VIEW,ADD_RECORD") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com.liferay.dynamic.data.lists.model.DDLRecordSet",
+				roleTitle = "DDMRegRole Name");
+		}
 
-		<var name="ddlDataDefinitionName" value="Data Definition Title" />
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_SITE_ADMINISTRATION",
+			resourceName = "com.liferay.portal.kernel.model.Group",
+			roleTitle = "DDMRegRole Name");
 
-		<execute macro="Navigator#openURL" />
+		for (var resourceActionIndex : list "VIEW,PREFERENCES,PERMISSIONS,CONFIGURATION,ACCESS_IN_CONTROL_PANEL") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "${resourceActionIndex}",
+				resourceName = "com_liferay_dynamic_data_lists_web_portlet_DDLPortlet",
+				roleTitle = "DDMRegRole Name");
+		}
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		User.addCP(
+			userEmailAddress = "userea1@liferay.com",
+			userFirstName = "userfn1",
+			userLastName = "userln1",
+			userScreenName = "usersn1");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="DDLDataDefinition#save" />
+		User.editPasswordCP(
+			userEmailAddress = "userea1@liferay.com",
+			userScreenName = "usersn1");
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="${ddlDataDefinitionName}" />
-		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
-		<execute function="Click#waitForMenuToggleJSClick" locator1="DDMSelectStructure#DDM_STRUCTURE_ELLIPSIS_1" />
-		<execute function="AssertClick" locator1="MenuItem#MANAGE_TEMPLATES" value1="Manage Templates" />
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
 
-		<execute function="Click" locator1="Icon#ANGLE_LEFT_BACK" />
+		Role.assignRegRoleCP(
+			roleTitle = "DDMRegRole Name",
+			userScreenName = "usersn1");
 
-		<var name="key_ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
+		Navigator.openURL();
 
-		<execute function="Click" locator1="DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK" value1="${ddlDataDefinitionName}" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute function="AssertTextEquals" locator1="Portlet#HEADER" value1="${ddlDataDefinitionName}" />
+		DDLDataDefinition.addCP();
 
-		<execute function="AssertTextEquals" locator1="TextInput#NAME" value1="${ddlDataDefinitionName}" />
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DynamicDataMapping#viewField">
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
-	</command>
+		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Text");
 
-	<command name="AssertGuestCannotEditRecord" priority="4">
-		<var name="ddlDataDefinitionDescription" value="Data Definition Description" />
-		<var name="ddlDataDefinitionName" value="Data Definition" />
-		<var name="ddlListDescription" value="List Description" />
-		<var name="ddlListName" value="List Name" />
-		<var name="ddlRecordFieldData1" value="Text" />
-		<var name="ddlRecordFieldData1Edit" value="Text Edit" />
-		<var name="ddlRecordFieldData2" value="Document_1.doc" />
-		<var name="document" value="Document_1.doc" />
-		<var name="field1" value="Text" />
-		<var name="field2" value="Documents and Media" />
-		<var name="fieldFieldLabel1" value="Text" />
-		<var name="fieldFieldLabel2" value="Document" />
-		<var name="fieldName1" value="Text" />
-		<var name="fieldName2" value="Document" />
-		<var name="localizedLanguage" value="Catalan (Spain)" />
-		<var name="pageName" value="Dynamic Data Lists Display Page" />
-		<var name="portletName" value="Dynamic Data Lists Display" />
+		DDLDataDefinition.save();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionDescription" value="${ddlDataDefinitionDescription}" />
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DDLList.addCP();
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="${field1}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel1}" />
-			<var name="fieldName" value="${fieldName1}" />
-		</execute>
+		DDLDataDefinition.selectCP();
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="${field2}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel2}" />
-			<var name="fieldName" value="${fieldName2}" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLDataDefinition#save" />
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea1@liferay.com",
+			userLoginFullName = "userfn1 userln1");
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLNavigator#gotoDataDefinitionPermissions">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DDLRecord.addCP();
 
-		<execute macro="DDLDataDefinition#editPermissionsCP">
-			<var name="addOrRemoveViewPermission" value="Add" />
-			<var name="roleList" value="Guest" />
-		</execute>
+		DDLRecord.addRepeatableField(fieldName = "Text");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Content",
+			fieldName = "Text");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLRecord.viewTextFieldRepeated(
+			ddlRecordFieldData1 = "Content",
+			ddlRecordFieldData2 = "Content 2");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		PortletEntry.publish();
+	}
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
-		</execute>
+	@description = "This is a use case for LPS-68216."
+	@priority = "4"
+	test AddSelectFieldWithTranslationAndViewInSpreadsheetView {
+		var portalURL = PropsUtil.get("portal.url");
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListDescription" value="${ddlListDescription}" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Select",
+			fieldFieldLabel = "SelectENG",
+			fieldName = "Select");
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DynamicDataMapping.editFieldOptions(
+			field = "Select",
+			fieldFieldLabel = "SelectENG",
+			fieldName = "Select",
+			fieldOptionsNames = "ENGOption1",
+			fieldOptionsValues = "Value 1");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData1}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel1}" />
-			<var name="fieldName" value="${fieldName1}" />
-		</execute>
+		Form.addTranslation(localizedLanguage = "Japanese (Japan)");
 
-		<execute macro="DDLRecord#populateFieldDocumentsAndMediaChooseFromDocumentLibrary">
-			<var name="document" value="${document}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel2}" />
-			<var name="fieldName" value="${fieldName2}" />
-		</execute>
+		DynamicDataMapping.editField(
+			field = "Select",
+			fieldFieldLabel = "SelectENG",
+			fieldFieldLabelEdit = "SelectJA");
 
-		<execute macro="PortletEntry#publish" />
+		DynamicDataMapping.editFieldOptions(
+			field = "Select",
+			fieldFieldLabel = "SelectJA",
+			fieldName = "Select",
+			fieldOptionsNames = "JAOption1",
+			fieldOptionsValues = "Value 1");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLNavigator#gotoView" />
+		Navigator.openURL();
 
-		<execute function="Pause" locator1="1000" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#getCurrentURL">
-			<return from="currentURL" name="adminViewURL" />
-			<var name="adminViewURL" value="${adminViewURL}" />
-		</execute>
+		DDLList.addCP(ddlListName = "DDL List");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLRecord#editPG" />
+		DDLDataDefinition.save();
 
-		<execute function="Pause" locator1="1000" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#getCurrentURL">
-			<return from="currentURL" name="adminEditURL" />
-			<var name="adminEditURL" value="${adminEditURL}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="User#logoutPG" />
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "DDL List");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLRecord.populateFieldSelect(
+			ddlRecordFieldData = "ENGOption1",
+			fieldFieldLabel = "SelectENG",
+			fieldName = "Select");
 
-		<execute macro="DDLRecord#viewViaDDLDisplayPG">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData1}" />
-			<var name="ddlRecordFieldDataTableDisplay" value="${ddlRecordFieldData1}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel1}" />
-			<var name="userRole" value="Guest" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="Portlet#viewCannotEdit" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="DDLRecord#viewSecondRecordViaDDLDisplayTemplate">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData2}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel2}" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Page");
 
-		<execute macro="Portlet#viewCannotEdit" />
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Page");
 
-		<execute macro="Navigator#openSpecificURL">
-			<var name="url" value="${adminEditURL}" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="DDLRecord#editTranslation">
-			<var name="localizedLanguage" value="Catalan (Spain)" />
-		</execute>
+		DDLList.selectViaDDLDisplayPG(ddlListName = "DDL List");
 
-		<execute macro="Portlet#viewCannotPublish" />
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLDisplayPortlet.configureListViewPG(
+			configureCheckBoxName = "TEMPLATES_SPREADSHEET_VIEW_CHECKBOX",
+			configureChecked = "true",
+			ddlListName = "DDL List");
 
-		<execute macro="Navigator#openSpecificURL">
-			<var name="url" value="${adminEditURL}" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Page");
 
-		<execute macro="DDLRecord#viewTranslationNotAvailable">
-			<var name="localizedLanguage" value="${localizedLanguage}" />
-		</execute>
+		DDLDisplayPortlet.viewFieldSelectViaSpreadsheetView(
+			ddlRecordFieldData = "ENGOption1",
+			ddlRecordRow = "1",
+			fieldName = "Select");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData1Edit}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel1}" />
-			<var name="fieldName" value="${fieldName1}" />
-		</execute>
+		Navigator.openSpecificURL(url = "${portalURL}/ja/");
 
-		<execute macro="Portlet#viewCannotPublish" />
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Page");
 
-		<execute macro="Navigator#openSpecificURL">
-			<var name="url" value="${adminEditURL}" />
-		</execute>
+		DDLDisplayPortlet.viewFieldSelectViaSpreadsheetView(
+			ddlRecordFieldData = "JAOption1",
+			ddlRecordRow = "1",
+			fieldName = "Select");
+	}
 
-		<execute macro="DDLRecord#populateFieldDocumentsAndMediaChooseFromDocumentLibrary">
-			<var name="fieldName" value="${fieldName2}" />
-			<var name="userRole" value="Guest" />
-		</execute>
+	@description = "This is a use case for LPS-50549."
+	@priority = "4"
+	test AddXSSToHTMLField {
 
-		<execute macro="Navigator#openSpecificURL">
-			<var name="url" value="${adminEditURL}" />
-		</execute>
+		var ddlRecordFieldData1 = '''<img src=x onerror=alert(/xss/) />''';
 
-		<execute macro="DDLRecord#clearFieldDocumentsAndMedia">
-			<var name="fieldName" value="${fieldName2}" />
-		</execute>
+		var ddlRecordFieldData2 = ''''+alert('xss')+'"+alert("xss")+"''';
 
-		<execute macro="Portlet#viewCannotPublish" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openSpecificURL">
-			<var name="url" value="${adminEditURL}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Portlet#viewCannotSaveAsDraft" />
-	</command>
+		DDLDataDefinition.addCP();
 
-	<command name="AssertIntegerFieldInvalidDataErrorMessage" priority="3">
-		<var name="ddlDataDefinitionName" value="Integer Invalid Value Data Definition Name" />
-		<var name="ddlInvalidRecordFieldData" value="aaaa" />
-		<var name="ddlListName" value="List Name" />
-		<var name="field" value="Integer" />
-		<var name="fieldFieldLabel" value="Integer" />
-		<var name="fieldName" value="Integer" />
-		<var name="pageName" value="Dynamic Data Lists Display Page" />
-		<var name="portletName" value="Dynamic Data Lists Display" />
+		DynamicDataMapping.addField(
+			field = "HTML",
+			fieldFieldLabel = "HTML",
+			fieldName = "HTML");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DynamicDataMapping.editFieldPredefinedValue(
+			field = "HTML",
+			fieldFieldLabel = "HTML",
+			fieldName = "HTML",
+			fieldPredefinedValue = "${ddlRecordFieldData2}");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.viewCP(fieldFieldLabel = "HTML");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DynamicDataMapping.viewField(
+			field = "HTML",
+			fieldFieldLabel = "HTML",
+			fieldName = "HTML");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="${field}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#save" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLList.addCP();
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLDataDefinition.selectCP();
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLRecord.addCP();
 
-		<var name="key_fieldName" value="${fieldName}" />
+		DDLRecord.populateFieldHTML(
+			ddlRecordFieldData = "${ddlRecordFieldData1}",
+			fieldFieldLabel = "HTML",
+			fieldName = "HTML");
 
-		<execute function="Type" locator1="DDLEditRecord#INTEGER_FIELD" value1="${ddlInvalidRecordFieldData}" />
+		PortletEntry.publish();
 
-		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
-		<execute function="AssertTextEquals" locator1="DDLEditRecord#RECORD_FIELD_ALERT" value1="Please enter only digits." />
-	</command>
+		Navigator.openURL();
 
-	<command name="AssertNumberFieldInvalidDataErrorMessage" priority="4">
-		<var name="ddlDataDefinitionName" value="Number Predefined Value Data Definition Name" />
-		<var name="ddlInvalidRecordFieldData" value="555b" />
-		<var name="ddlListName" value="List Name" />
-		<var name="field" value="Number" />
-		<var name="fieldFieldLabel" value="Number" />
-		<var name="fieldName" value="Number" />
-		<var name="pageName" value="Dynamic Data Lists Display Page" />
-		<var name="portletName" value="Dynamic Data Lists Display" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLNavigator.gotoListRecords();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLRecord.gotoRecordPreview();
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="${portletName}" />
-		</execute>
+		DDLRecord.viewInvalidHTMLfield();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DDLRecord.deleteCP(ddlRecordFieldData = "(Preview)");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="${field}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#save" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLRecord.addCP();
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
+		DDLNavigator.gotoListRecords();
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "${ddlRecordFieldData2}",
+			field = "HTML",
+			fieldFieldLabel = "HTML",
+			fieldName = "HTML");
+	}
 
-		<var name="key_fieldName" value="${fieldName}" />
+	@priority = "2"
+	test AssertConfigurationMenulist {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute function="Type" locator1="DDLEditRecord#NUMBER_FIELD" value1="${ddlInvalidRecordFieldData}" />
-		<execute function="AssertClick" locator1="Button#PUBLISH" value1="Publish" />
-		<execute function="AssertTextEquals" locator1="DDLEditRecord#RECORD_FIELD_ALERT" value1="Please enter a valid number." />
-	</command>
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
 
-	<command name="AssertUserCannotDeleteEntryAfterPermissionRemoved" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea1@liferay.com" />
-			<var name="userFirstName" value="userfn1" />
-			<var name="userLastName" value="userln1" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		DDLList.addViaDDLDisplayPG(ddlListName = "List Name");
 
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="userea1@liferay.com" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "To Do");
 
-		<execute macro="Navigator#openURL" />
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionDescription" value="Data Definition Description" />
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		DDLDisplayPortlet.configureListViewPG(
+			configureCheckBoxName = "TEMPLATES_EDITABLE_CHECKBOX",
+			configureChecked = "false",
+			ddlListName = "List Name");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLDataDefinition#save" />
+		DDLDisplayPortlet.configureListViewPG(
+			configureCheckBoxName = "TEMPLATES_SPREADSHEET_VIEW_CHECKBOX",
+			ddlListName = "List Name");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Data Definition Page Name" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Dynamic Data Lists Display" />
-		</execute>
+		DDLDisplayPortlet.assertCannotEditSpreadsheet();
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListDescription" value="DDL List Description" />
-			<var name="ddlListName" value="DDL List Name" />
-		</execute>
+		Portlet.viewPortletOptionsMenulist();
+	}
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+	@priority = "3"
+	test AssertDecimalFieldInvalidDataErrorMessage {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Data Definition Page Name" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-			<var name="ddlListName" value="DDL List Name" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="PortletEntry#publish" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Decimal Invalid Value Data Definition Name");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Decimal",
+			fieldFieldLabel = "Decimal",
+			fieldName = "Decimal");
 
-		<execute macro="DDLList#editPermissions">
-			<var name="ddlListName" value="DDL List Name" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="Role#definePermissionPG">
-			<var name="permissionDefinitionKey" value="CONTENT_PERMISSIONS_DELETE_CHECKBOX" />
-			<var name="roleName" value="Guest" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Data Definition Page Name" />
-		</execute>
+		DDLList.addViaDDLDisplayPG(ddlListName = "List Name");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "Decimal Invalid Value Data Definition Name");
 
-		<execute macro="User#impersonateCP">
-			<var name="userScreenName" value="usersn1" />
-		</execute>
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="Navigator#_gotoPage">
-			<var name="pageName" value="Data Definition Page Name" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLList#viewDeleteRecordOptionViaDDLDisplayPG">
-			<var name="ddlListRecordName" value="Text" />
-		</execute>
+		DDLRecord.addViaDDLDisplayPG(
+			ddlDataDefinitionName = "Decimal Invalid Value Data Definition Name",
+			ddlListName = "List Name");
 
-		<execute macro="Navigator#closeSpecificWindow">
-			<var name="closeWindowTitle" value="Data Definition Page Name - Liferay" />
-			<var name="selectWindowTitle" value="Users and Organizations - Control Panel - Liferay" />
-		</execute>
+		var key_fieldName = "Decimal";
 
-		<execute macro="Navigator#openURL" />
+		Type(
+			locator1 = "TextInput#DDM",
+			value1 = "0.987a");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		AssertClick(
+			locator1 = "Button#PUBLISH",
+			value1 = "Publish");
 
-		<execute macro="DDLList#editPermissions">
-			<var name="ddlListName" value="DDL List Name" />
-		</execute>
+		AssertTextEquals(
+			locator1 = "DDLEditRecord#RECORD_FIELD_ALERT",
+			value1 = "Please enter a valid number.");
+	}
 
-		<execute macro="Role#removePermissionPG">
-			<var name="permissionDefinitionKey" value="CONTENT_PERMISSIONS_DELETE_CHECKBOX" />
-			<var name="roleName" value="Guest" />
-		</execute>
+	@description = "This is a use case for LPS-48736."
+	@priority = "3"
+	test AssertFieldAfterNavigatingToManageTemplates {
+		Navigator.openURL();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Data Definition Page Name" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Title");
 
-		<execute macro="User#impersonateCP">
-			<var name="userScreenName" value="usersn1" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="Navigator#_gotoPage">
-			<var name="pageName" value="Data Definition Page Name" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLList#assertCannotDeleteRecordViaDDLDisplayPG" />
-	</command>
+		Search.searchCP(searchTerm = "Data Definition Title");
 
-	<command name="AssertUserUpdateRejectedRecord" priority="4">
-		<execute macro="Page#add">
-			<var name="pageName" value="Dynamic Data Lists Display Page" />
-		</execute>
+		Click.waitForMenuToggleJSClick(locator1 = "DDMSelectStructure#DDM_STRUCTURE_ELLIPSIS_1");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Dynamic Data Lists Display Page" />
-		</execute>
+		MenuItem.click(menuItem = "Manage Templates");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Dynamic Data Lists Display" />
-		</execute>
+		Click(locator1 = "Icon#ANGLE_LEFT_BACK");
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListName" value="DDL List" />
-			<var name="workflowDefinition" value="Single Approver (Version 1)" />
-		</execute>
+		var key_ddlDataDefinitionName = "Data Definition Title";
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="To Do" />
-		</execute>
+		Click(
+			locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK",
+			value1 = "Data Definition Title");
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Edit Data Definition Title");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Dynamic Data Lists Display Page" />
-		</execute>
+		AssertTextEquals(
+			locator1 = "TextInput#NAME",
+			value1 = "Data Definition Title");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		DynamicDataMapping.viewField(
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+	}
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_DYNAMIC_DATA_LISTS_RESOURCE_PERMISSIONS_DYNAMIC_DATA_LISTS_RECORD_SET_ADD_RECORD_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add Record" />
-			<var name="roleName" value="Authenticated" />
-			<var name="roleUser" value="User" />
-		</execute>
+	@priority = "4"
+	test AssertGuestCannotEditRecord {
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_DYNAMIC_DATA_LISTS_RESOURCE_PERMISSIONS_DYNAMIC_DATA_LISTS_RECORD_SET_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
-			<var name="roleName" value="Authenticated" />
-			<var name="roleUser" value="User" />
-		</execute>
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "Data Definition Description",
+			ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_DYNAMIC_DATA_LISTS_RESOURCE_PERMISSIONS_DYNAMIC_DATA_LISTS_RECORD_SET_UPDATE_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Update" />
-			<var name="roleName" value="Authenticated" />
-			<var name="roleUser" value="User" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Documents and Media",
+			fieldFieldLabel = "Document",
+			fieldName = "Document");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="CONTROL_PANEL_GENERAL_PERMISSIONS_GO_TO_CONTROL_PANEL_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View Control Panel Menu" />
-			<var name="roleName" value="Authenticated" />
-			<var name="roleUser" value="User" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="USER_MY_ACCOUNT_MY_WORKFLOW_TASKS_ACCESS_IN_MY_ACCOUNT_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Access in My Account" />
-			<var name="roleName" value="Authenticated" />
-			<var name="roleUser" value="User" />
-		</execute>
+		DDLNavigator.gotoDataDefinitionPermissions(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		DDLDataDefinition.editPermissionsCP(
+			addOrRemoveViewPermission = "Add",
+			roleList = "Guest");
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="USER_MY_ACCOUNT_MY_WORKFLOW_TASKS_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
-			<var name="roleName" value="Authenticated" />
-			<var name="roleUser" value="User" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="User#logoutPG" />
+		DDLList.addViaDDLDisplayPG(
+			ddlListDescription = "List Description",
+			ddlListName = "List Name");
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Dynamic Data Lists Display Page" />
-		</execute>
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="To Do" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="DDL Record Title" />
-			<var name="fieldFieldLabel" value="Title" />
-			<var name="fieldName" value="title" />
-		</execute>
+		DDLRecord.addViaDDLDisplayPG(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "List Name");
 
-		<execute macro="DDLRecord#submitForPublication" />
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="User#logoutPG" />
+		DDLRecord.populateFieldDocumentsAndMediaChooseFromDocumentLibrary(
+			document = "Document_1.doc",
+			fieldFieldLabel = "Document",
+			fieldName = "Document");
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="Workflow#assignToMeTaskByActions">
-			<var name="ddlDataDefinitionName" value="To Do" />
-			<var name="workflowAssetTitle" value="New To Do for List: DDL List" />
-			<var name="workflowAssetType" value="Dynamic Data Lists Record" />
-			<var name="workflowTask" value="Review" />
-		</execute>
+		DDLNavigator.gotoView();
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
+		Pause(locator1 = "1000");
 
-		<execute macro="Workflow#rejectTaskByActions">
-			<var name="ddlDataDefinitionName" value="To Do" />
-			<var name="workflowAssetTitle" value="New To Do for List: DDL List" />
-			<var name="workflowAssetType" value="Dynamic Data Lists Record" />
-			<var name="workflowTask" value="Review" />
-		</execute>
+		var adminViewURL = Navigator.getCurrentURL(adminViewURL = "${adminViewURL}");
 
-		<execute macro="User#logoutPG" />
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
+		DDLRecord.editPG();
 
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
+		Pause(locator1 = "1000");
 
-		<execute macro="Workflow#viewRejectedTask">
-			<var name="ddlDataDefinitionName" value="To Do" />
-			<var name="workflowAssetTitle" value="New To Do for List: DDL List" />
-			<var name="workflowAssetType" value="Dynamic Data Lists Record" />
-		</execute>
+		var adminEditURL = Navigator.getCurrentURL(adminEditURL = "${adminEditURL}");
 
-		<execute macro="Workflow#viewTaskAssignedToMeDetails">
-			<var name="workflowAssetContent" value="DDL Record Title" />
-			<var name="workflowAssetTitle" value="New To Do for List: DDL List" />
-			<var name="workflowAssignedTo" value="userfn userln" />
-			<var name="workflowTask" value="Update" />
-		</execute>
+		User.logoutPG();
 
-		<execute macro="DDLNavigator#gotoDDLRecordEditViaWorkflow">
-			<var name="userName" value="userfn userln" />
-			<var name="workflowStatus" value="Pending (Update)" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="User#logoutPG" />
+		DDLRecord.viewViaDDLDisplayPG(
+			ddlRecordFieldData = "Text",
+			ddlRecordFieldDataTableDisplay = "Text",
+			fieldFieldLabel = "Text",
+			userRole = "Guest");
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
-	</command>
+		Portlet.viewCannotEdit();
 
-	<command name="CreateSiteAndViewDefaultDataDefinitions" priority="3">
-		<description message="This is a use case for LPS-50557." />
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
+		DDLRecord.viewSecondRecordViaDDLDisplayTemplate(
+			ddlRecordFieldData = "Document_1.doc",
+			fieldFieldLabel = "Document");
 
-		<execute macro="Site#addBlankCP">
-			<var name="siteName" value="Site Name" />
-		</execute>
+		Portlet.viewCannotEdit();
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
+		Navigator.openSpecificURL(url = "${adminEditURL}");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		PortletEntry.changeLocale(locale = "es-ES");
 
-		<execute macro="DDLNavigator#gotoManageDataDefinitions" />
+		Portlet.viewCannotPublish();
 
-		<for list="Contacts,Events,Inventory,Issues Tracking,Meeting Minutes,To Do" param="ddlDataDefinitionName">
-			<execute macro="DDLDataDefinition#viewName">
-				<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-			</execute>
-		</for>
-	</command>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-	<command name="DeleteStructure" priority="3">
-		<var name="ddlDataDefinitionName" value="DDL Definition" />
-		<var name="ddlListName" value="DDL List" />
-		<var name="ddlRecordFieldData" value="Record Text" />
-		<var name="field" value="Text" />
-		<var name="fieldFieldLabel" value="Text Label" />
-		<var name="fieldName" value="TextName" />
-		<var name="pageName" value="Dynamic Data Lists Display Page" />
+		Navigator.openSpecificURL(url = "${adminEditURL}");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.viewTranslationNotAvailable(localizedLanguage = "Catalan (Spain)");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text Edit",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionDescription" value="${ddlDataDefinitionName} Description" />
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		Portlet.viewCannotPublish();
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="${field}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		Navigator.openSpecificURL(url = "${adminEditURL}");
 
-		<execute macro="DDLDataDefinition#save" />
+		DDLRecord.populateFieldDocumentsAndMediaChooseFromDocumentLibrary(
+			fieldName = "Document",
+			userRole = "Guest");
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openSpecificURL(url = "${adminEditURL}");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.clearFieldDocumentsAndMedia(fieldName = "Document");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListDescription" value="${ddlListName} Description" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		Portlet.viewCannotPublish();
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		Navigator.openSpecificURL(url = "${adminEditURL}");
 
-		<execute macro="DDLList#save" />
+		Portlet.viewCannotSaveAsDraft();
+	}
 
-		<execute macro="Navigator#openURL" />
+	@priority = "3"
+	test AssertIntegerFieldInvalidDataErrorMessage {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
-			<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-			<var name="fieldName" value="${fieldName}" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="PortletEntry#publish" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Integer Invalid Value Data Definition Name");
 
-		<execute macro="DDLDataDefinition#deleteNoCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Integer",
+			fieldFieldLabel = "Integer",
+			fieldName = "Integer");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.save();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLList#deleteCP">
-			<var name="ddlListName" value="${ddlListName}" />
-		</execute>
+		DDLList.addViaDDLDisplayPG(ddlListName = "List Name");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "Integer Invalid Value Data Definition Name");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="DDLDataDefinition#deleteCP">
-			<var name="ddlDataDefinitionName" value="${ddlDataDefinitionName}" />
-		</execute>
-	</command>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-	<command name="EditDefaultLanguageAndPublishRecord" priority="3">
-		<description message="This is a use case for LPS-59154 and LPS-62523." />
+		DDLRecord.addViaDDLDisplayPG(
+			ddlDataDefinitionName = "Integer Invalid Value Data Definition Name",
+			ddlListName = "List Name");
 
-		<execute macro="Navigator#openURL" />
+		var key_fieldName = "Integer";
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Instance Settings" />
-		</execute>
+		Type(
+			locator1 = "TextInput#DDM",
+			value1 = "aaaa");
 
-		<execute macro="PortalSettings#configureCurrentLanguagesCP">
-			<var name="defaultPortalLanguage" value="Spanish (Spain)" />
-		</execute>
+		AssertClick(
+			locator1 = "Button#PUBLISH",
+			value1 = "Publish");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		AssertTextEquals(
+			locator1 = "DDLEditRecord#RECORD_FIELD_ALERT",
+			value1 = "Please enter only digits.");
+	}
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+	@priority = "4"
+	test AssertNumberFieldInvalidDataErrorMessage {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLDataDefinition#save" />
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="Navigator#openURL" />
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Number Predefined Value Data Definition Name");
 
-		<execute macro="DDLList#save" />
+		DynamicDataMapping.addField(
+			field = "Number",
+			fieldFieldLabel = "Number",
+			fieldName = "Number");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.save();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DDLList.addViaDDLDisplayPG(ddlListName = "List Name");
 
-		<execute macro="DDLRecord#viewDefaultLanguage">
-			<var name="defaultLanguage" value="Spanish (Spain)" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "Number Predefined Value Data Definition Name");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text Spanish" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="DDLRecord#editTranslation">
-			<var name="localizedLanguage" value="English (United States)" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text English" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLRecord.addViaDDLDisplayPG(
+			ddlDataDefinitionName = "Number Predefined Value Data Definition Name",
+			ddlListName = "List Name");
 
-		<execute macro="PortletEntry#publish" />
+		var key_fieldName = "Number";
 
-		<execute macro="DDLRecord#viewFieldCP">
-			<var name="ddlRecordFieldData" value="Text English" />
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		Type(
+			locator1 = "TextInput#DDM",
+			value1 = "555b");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		AssertClick(
+			locator1 = "Button#PUBLISH",
+			value1 = "Publish");
 
-		<execute macro="DDLRecord#editCP">
-			<var name="ddlListName" value="List Name" />
-			<var name="ddlRecordFieldData" value="Text English" />
-		</execute>
+		AssertTextEquals(
+			locator1 = "DDLEditRecord#RECORD_FIELD_ALERT",
+			value1 = "Please enter a valid number.");
+	}
 
-		<execute macro="DDLRecord#removeTranslation">
-			<var name="localizedLanguage" value="English (United States)" />
-		</execute>
+	@priority = "4"
+	test AssertUserCannotDeleteEntryAfterPermissionRemoved {
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
-		<execute macro="DDLRecord#addTranslation">
-			<var name="localizedLanguage" value="Hebrew (Israel)" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="DDLRecord#editTranslation">
-			<var name="localizedLanguage" value="Hebrew (Israel)" />
-		</execute>
+		User.addCP(
+			userEmailAddress = "userea1@liferay.com",
+			userFirstName = "userfn1",
+			userLastName = "userln1",
+			userScreenName = "usersn1");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text Hebrew" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="PortletEntry#publish" />
+		User.editPasswordCP(
+			userEmailAddress = "userea1@liferay.com",
+			userScreenName = "usersn1");
 
-		<execute macro="DDLRecord#viewFieldCP">
-			<var name="ddlRecordFieldData" value="Text Spanish" />
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Dynamic Data Lists Display Page" />
-		</execute>
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "Data Definition Description",
+			ddlDataDefinitionName = "Data Definition Name");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Dynamic Data Lists Display Page" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Dynamic Data Lists Display" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLList#addViaDDLDisplayPG">
-			<var name="ddlListName" value="List Name Display" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="DDLDataDefinition#selectViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Data Definition Page Name");
 
-		<execute macro="DDLList#saveViaDDLDisplayPG" />
+		Navigator.gotoPage(pageName = "Data Definition Page Name");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Dynamic Data Lists Display Page" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="DDLRecord#addViaDDLDisplayPG">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLList.addViaDDLDisplayPG(
+			ddlListDescription = "DDL List Description",
+			ddlListName = "DDL List Name");
 
-		<execute macro="DDLRecord#viewDefaultLanguage">
-			<var name="defaultLanguage" value="Spanish (Spain)" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "Data Definition Name");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text Spanish" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="DDLRecord#editTranslation">
-			<var name="localizedLanguage" value="English (United States)" />
-		</execute>
+		Navigator.gotoPage(pageName = "Data Definition Page Name");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text English" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLRecord.addViaDDLDisplayPG(
+			ddlDataDefinitionName = "Data Definition Name",
+			ddlListName = "DDL List Name");
 
-		<execute macro="PortletEntry#publish" />
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLRecord#viewViaDDLDisplayPG">
-			<var name="ddlListName" value="List Name Display" />
-			<var name="ddlRecordFieldData" value="Text English" />
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Dynamic Data Lists Display Page" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLRecord#editPG" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#removeTranslation">
-			<var name="localizedLanguage" value="English (United States)" />
-		</execute>
+		DDLList.editPermissions(ddlListName = "DDL List Name");
 
-		<execute macro="DDLRecord#addTranslation">
-			<var name="localizedLanguage" value="Hebrew (Israel)" />
-		</execute>
+		Role.definePermissionPG(
+			permissionDefinitionKey = "CONTENT_PERMISSIONS_DELETE_CHECKBOX",
+			roleTitle = "Guest");
 
-		<execute macro="DDLRecord#editTranslation">
-			<var name="localizedLanguage" value="Hebrew (Israel)" />
-		</execute>
+		Navigator.gotoPage(pageName = "Data Definition Page Name");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text Hebrew" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="PortletEntry#publish" />
+		User.impersonateCP(
+			siteName = "${siteName}",
+			userScreenName = "usersn1");
 
-		<execute macro="DDLRecord#viewViaDDLDisplayPG">
-			<var name="ddlListName" value="List Name Display" />
-			<var name="ddlRecordFieldData" value="Text Spanish" />
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
-	</command>
+		Navigator._gotoPage(pageName = "Data Definition Page Name");
 
-	<command name="EditListRecordWithNestedFieldViaSpreadsheetView" priority="3">
-		<description message="This is a use case for LPS-59272." />
+		DDLList.viewDeleteRecordOptionViaDDLDisplayPG(ddlListRecordName = "Text");
 
-		<execute macro="Navigator#openURL" />
+		Navigator.closeSpecificWindow(
+			closeWindowTitle = "Data Definition Page Name - ${siteName}",
+			selectWindowTitle = "Users and Organizations - Control Panel - ${siteName}");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLList.editPermissions(ddlListName = "DDL List Name");
 
-		<execute macro="DynamicDataMapping#addFieldNested">
-			<var name="field" value="Select" />
-			<var name="fieldFieldLabel" value="Select" />
-			<var name="fieldName" value="Select" />
-		</execute>
+		Role.removePermissionPG(
+			permissionDefinitionKey = "CONTENT_PERMISSIONS_DELETE_CHECKBOX",
+			roleTitle = "Guest");
 
-		<execute macro="DDLDataDefinition#save" />
+		Navigator.gotoPage(pageName = "Data Definition Page Name");
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		User.impersonateCP(
+			siteName = "${siteName}",
+			userScreenName = "usersn1");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListDescription" value="List Description" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		Navigator._gotoPage(pageName = "Data Definition Page Name");
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		DDLList.assertCannotDeleteRecordViaDDLDisplayPG();
+	}
 
-		<execute macro="DDLList#save" />
+	@priority = "4"
+	test AssertUserUpdateRejectedRecord {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="Navigator#openURL" />
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLList.addViaDDLDisplayPG(
+			ddlListName = "DDL List",
+			workflowDefinition = "Single Approver");
 
-		<execute macro="DDLRecord#populateFieldSelect">
-			<var name="ddlRecordFieldData" value="option 1" />
-			<var name="fieldName" value="Select" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "To Do");
 
-		<execute macro="PortletEntry#publish" />
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ADD_RECORD",
+			resourceName = "com.liferay.dynamic.data.lists.model.DDLRecordSet",
+			roleTitle = "User");
 
-		<execute macro="DDLNavigator#gotoSpreadsheetView">
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW",
+			resourceName = "com.liferay.dynamic.data.lists.model.DDLRecordSet",
+			roleTitle = "User");
 
-		<execute macro="DDLRecord#populateFieldTextViaSpreadsheetView">
-			<var name="ddlRecordFieldData" value="Text Edit" />
-			<var name="ddlRecordRow" value="1" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "UPDATE",
+			resourceName = "com.liferay.dynamic.data.lists.model.DDLRecordSet",
+			roleTitle = "User");
 
-		<execute macro="DDLRecord#populateFieldSelectViaSpreadsheetView">
-			<var name="ddlRecordFieldData" value="option 2" />
-			<var name="ddlRecordRow" value="1" />
-			<var name="fieldName" value="Select" />
-		</execute>
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "90",
+			roleTitle = "User");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_portal_workflow_task_web_portlet_MyWorkflowTaskPortlet",
+			roleTitle = "User");
 
-		<execute macro="DDLList#viewCP">
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW",
+			resourceName = "com_liferay_portal_workflow_task_web_portlet_MyWorkflowTaskPortlet",
+			roleTitle = "User");
 
-		<execute macro="DDLRecord#viewFieldCP">
-			<var name="ddlRecordFieldData" value="Text Edit" />
-			<var name="ddlRecordNestedFieldData" value="option 2" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="nestedFieldFieldLabel" value="Select" />
-		</execute>
-	</command>
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-	<command name="FormTemplateUniqueField" priority="4">
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Users and Organizations");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		User.editPasswordCP(
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionDescription" value="DDL Definition Description" />
-			<var name="ddlDataDefinitionName" value="DDL Data Definition" />
-		</execute>
+		User.logoutPG();
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Boolean" />
-			<var name="fieldFieldLabel" value="This is a unique field" />
-			<var name="fieldName" value="ThisIsAUniqueField" />
-		</execute>
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
-		<execute macro="DDLDataDefinition#save" />
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.addViaDDLDisplayPG(ddlDataDefinitionName = "To Do");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "DDL Record Title",
+			fieldFieldLabel = "Title",
+			fieldName = "title");
 
-		<execute macro="DDLTemplate#addFormTemplateCP">
-			<var name="ddlDataDefinitionName" value="DDL Data Definition" />
-			<var name="ddlFormTemplateName" value="DDL Data Definition Form Template Name" />
-		</execute>
+		DDLRecord.submitForPublication();
 
-		<execute macro="DynamicDataMapping#viewCannotAddField">
-			<var name="field" value="This is a unique field" />
-		</execute>
+		User.logoutPG();
 
-		<execute macro="DynamicDataMapping#addFieldFormTemplateSpecific">
-			<var name="field" value="Separator" />
-		</execute>
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
-		<execute macro="DynamicDataMapping#viewCanAddField">
-			<var name="field" value="Separator" />
-		</execute>
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
-		<execute macro="DynamicDataMapping#deleteField">
-			<var name="fieldFieldLabel" value="This is a unique field" />
-			<var name="fieldName" value="ThisIsAUniqueField" />
-		</execute>
+		Workflow.assignToMeTaskByActions(
+			ddlDataDefinitionName = "To Do",
+			workflowAssetTitle = "New To Do for List: DDL List",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "Review");
 
-		<execute macro="DynamicDataMapping#addFieldFormTemplateSpecific">
-			<var name="field" value="Fieldset" />
-			<var name="fieldFieldLabel" value="This is not a unique field" />
-		</execute>
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
-		<execute macro="DynamicDataMapping#viewCanAddField">
-			<var name="field" value="Separator" />
-		</execute>
+		Workflow.rejectTaskByActions(
+			ddlDataDefinitionName = "To Do",
+			workflowAssetTitle = "New To Do for List: DDL List",
+			workflowAssetType = "Dynamic Data Lists Record",
+			workflowTask = "Review");
 
-		<execute macro="DynamicDataMapping#deleteField">
-			<var name="fieldFieldLabel" value="Separator" />
-			<var name="fieldName" value="Separator" />
-		</execute>
+		User.logoutPG();
 
-		<execute macro="DynamicDataMapping#viewCanAddField">
-			<var name="field" value="This is a unique field" />
-		</execute>
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
-		<execute macro="DynamicDataMapping#addFieldFormTemplateSpecific">
-			<var name="field" value="This is a unique field" />
-		</execute>
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
-		<execute macro="DynamicDataMapping#addFieldFormTemplateSpecific">
-			<var name="field" value="Fieldset" />
-			<var name="fieldFieldLabel" value="This is not a unique field" />
-		</execute>
+		Workflow.viewRejectedTask(
+			ddlDataDefinitionName = "To Do",
+			workflowAssetTitle = "New To Do for List: DDL List",
+			workflowAssetType = "Dynamic Data Lists Record");
 
-		<execute macro="DynamicDataMapping#viewCannotAddField">
-			<var name="field" value="This is a unique field" />
-		</execute>
+		Workflow.viewTaskAssignedToMeDetails(
+			workflowAssetContent = "DDL Record Title",
+			workflowAssetTitle = "New To Do for List: DDL List",
+			workflowAssignedTo = "userfn userln",
+			workflowTask = "Update");
 
-		<execute macro="DDLTemplate#saveFormTemplateCP" />
-	</command>
+		DDLNavigator.gotoDDLRecordEditViaWorkflow(
+			userName = "userfn userln",
+			workflowStatus = "PENDING (UPDATE)");
 
-	<command name="RemoveRepeatableDateField" priority="4">
-		<description message="This is a use case for LPS-65479." />
+		User.logoutPG();
 
-		<execute macro="Navigator#openURL" />
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+	}
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+	@description = "This is a use case for LPS-50557."
+	@priority = "3"
+	test CreateSiteAndViewDefaultDataDefinitions {
+		ProductMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
 
-		<execute macro="DDLDataDefinition#addCP" />
+		Site.addBlankCP(siteName = "Site Name");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Date" />
-			<var name="fieldFieldLabel" value="Date" />
-			<var name="fieldName" value="Date" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DynamicDataMapping#editFieldRepeatable">
-			<var name="fieldFieldLabel" value="Date" />
-		</execute>
+		DDLNavigator.gotoManageDataDefinitions();
 
-		<execute macro="DDLDataDefinition#save" />
+		for (var ddlDataDefinitionName : list "Contacts,Events,Inventory,Issues Tracking,Meeting Minutes,To Do") {
+			DDLDataDefinition.viewName(ddlDataDefinitionName = "${ddlDataDefinitionName}");
+		}
+	}
 
-		<execute macro="Navigator#openURL" />
+	@priority = "3"
+	test DeleteStructure {
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLList#addCP" />
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "DDL Definition Description",
+			ddlDataDefinitionName = "DDL Definition");
 
-		<execute macro="DDLDataDefinition#selectCP" />
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
 
-		<execute macro="DDLList#save" />
+		DDLDataDefinition.save();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#addCP" />
+		DDLList.addCP(
+			ddlListDescription = "DDL List Description",
+			ddlListName = "DDL List");
 
-		<execute macro="DDLRecord#populateFieldDate">
-			<var name="ddlRecordFieldData" value="04/01/2018" />
-			<var name="fieldFieldLabel" value="Date" />
-			<var name="fieldName" value="Date" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "DDL Definition");
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Date" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Date" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLRecord#deleteRepeatableField">
-			<var name="fieldName" value="Date" />
-			<var name="fieldNumber" value="2" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#deleteRepeatableField">
-			<var name="fieldName" value="Date" />
-			<var name="fieldNumber" value="2" />
-		</execute>
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "DDL Definition",
+			ddlListName = "DDL List");
 
-		<execute macro="DDLRecord#viewFieldRepeatedNotPresent">
-			<var name="ddlRecordFieldData" value="04/01/2018" />
-			<var name="fieldName" value="Date" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Record Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		PortletEntry.publish();
 
-	<command name="RemoveRepeatableFieldAndAssertOrderInTranslation" priority="3">
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLDataDefinition.deleteNoCP(ddlDataDefinitionName = "DDL Definition");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DynamicDataMapping#editFieldRepeatable">
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#save" />
+		DDLList.deleteCP(ddlListName = "DDL List");
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		DDLDataDefinition.deleteCP(ddlDataDefinitionName = "DDL Definition");
+	}
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+	@description = "This is a use case for LPS-59154 and LPS-62523."
+	@priority = "3"
+	test EditDefaultLanguageAndPublishRecord {
+		property test.name.skip.portal.instance = "DynamicdatalistUsecase#EditDefaultLanguageAndPublishRecord";
 
-		<execute macro="DDLList#save" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Language",
+			configurationScope = "Virtual Instance Scope");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		PortalSettings.configureCurrentLanguagesCP(defaultPortalLanguage = "Spanish (Spain)");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Text" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Content" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLRecord#saveAsDraftCP" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLList.addCP(ddlListName = "List Name");
 
-		<execute macro="DDLRecord#editCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-			<var name="ddlRecordFieldData" value="Content, Content 2, Content 3" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLRecord#addTranslation">
-			<var name="localizedLanguage" value="Catalan (Spain)" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLRecord#populateTranslationFieldText">
-			<var name="ddlRecordFieldData" value="Contenido" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="PortletEntry#publish" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "List Name");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		PortletEntry.viewLocale(locale = "es-ES");
 
-		<execute macro="DDLRecord#editCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-			<var name="ddlRecordFieldData" value="Content, Content 2, Content 3" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text Spanish",
+			fieldName = "Text");
 
-		<execute macro="DDLRecord#deleteRepeatableField">
-			<var name="fieldName" value="Text" />
-			<var name="fieldNumber" value="2" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="PortletEntry#publish" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.editCP(
+			ddlListName = "List Name",
+			ddlRecordFieldData = "Text Spanish");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		PortletEntry.changeLocale(locale = "en-US");
 
-		<execute macro="DDLRecord#editCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-			<var name="ddlRecordFieldData" value="Content, Content 3" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text English",
+			fieldName = "Text");
 
-		<execute macro="DDLRecord#editTranslation">
-			<var name="localizedLanguage" value="Catalan (Spain)" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DDLRecord#viewTextFieldRepeated">
-			<var name="ddlRecordFieldData1" value="Contenido" />
-			<var name="ddlRecordFieldData2" value="Contenido 3" />
-		</execute>
-	</command>
+		DDLRecord.viewFieldCP(
+			ddlRecordFieldData = "Text English",
+			fieldFieldLabel = "Text");
 
-	<command name="TemplateAddDeletedField" priority="3">
-		<description message="This is a use case for LPS-48743." />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.editCP(
+			ddlListName = "List Name",
+			ddlRecordFieldData = "Text English");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		PortletEntry.changeLocale(locale = "en-US");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "",
+			fieldName = "Text");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		PortletEntry.changeLocale(locale = "iw-IL");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text Box" />
-			<var name="fieldFieldLabel" value="Text Box" />
-			<var name="fieldName" value="TextBox" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text Hebrew",
+			fieldName = "Text");
 
-		<execute macro="DDLDataDefinition#save" />
+		PortletEntry.publish();
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.viewFieldCP(
+			ddlRecordFieldData = "",
+			fieldFieldLabel = "Text");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLTemplate#addFormTemplateCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlFormTemplateName" value="Form Template Name" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="DynamicDataMapping#viewCannotAddField">
-			<var name="field" value="Text Box" />
-		</execute>
+		SitePages.addPublicPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DynamicDataMapping#deleteField">
-			<var name="fieldFieldLabel" value="Text Box" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DynamicDataMapping#viewCanAddField">
-			<var name="field" value="Text Box" />
-		</execute>
+		Portlet.addPG(portletName = "Dynamic Data Lists Display");
 
-		<execute macro="DDLTemplate#saveAndContinueFormTemplateCP" />
+		DDLList.addViaDDLDisplayPG(ddlListName = "List Name Display");
 
-		<execute macro="DynamicDataMapping#viewCanAddField">
-			<var name="field" value="Text Box" />
-		</execute>
+		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DynamicDataMapping#addFieldWithoutRename">
-			<var name="field" value="Text Box" />
-			<var name="fieldFieldLabel" value="Text Box" />
-		</execute>
+		DDLList.saveViaDDLDisplayPG();
 
-		<execute macro="DynamicDataMapping#viewField">
-			<var name="fieldFieldLabel" value="Text Box" />
-			<var name="fieldName" value="TextBox" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DDLTemplate#saveFormTemplateCP" />
-	</command>
+		DDLRecord.addViaDDLDisplayPG(ddlDataDefinitionName = "Data Definition");
 
-	<command name="ViewCannotSaveWithDuplicateFieldNames" priority="4">
-		<description message="This is a use case for LPS-52865." />
+		PortletEntry.viewLocale(locale = "es-ES");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text Spanish",
+			fieldName = "Text");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		PortletEntry.changeLocale(locale = "en-US");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionDescription" value="Data Definition Description" />
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text English",
+			fieldName = "Text");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DynamicDataMapping#addFieldNested">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLRecord.viewViaDDLDisplayPG(
+			ddlListName = "List Name Display",
+			ddlRecordFieldData = "Text English",
+			fieldFieldLabel = "Text");
 
-		<execute macro="DynamicDataMapping#editFieldNestedWithDuplicateName">
-			<var name="fieldName" value="Text" />
-			<var name="fieldNameEdit" value="Text2" />
-		</execute>
+		Navigator.gotoPage(pageName = "Dynamic Data Lists Display Page");
 
-		<execute macro="DynamicDataMapping#viewFieldNameNested">
-			<var name="fieldNameNested" value="Text2" />
-		</execute>
-	</command>
+		DDLRecord.editPG();
 
-	<command name="ViewFieldsNestedInDDLRecord" priority="3">
-		<description message="This is a use case for LPS-48913." />
+		PortletEntry.changeLocale(locale = "en-US");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "remove",
+			fieldName = "Text");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		PortletEntry.changeLocale(locale = "iw-IL");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text Hebrew",
+			fieldName = "Text");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DynamicDataMapping#addFieldNested">
-			<var name="field" value="Integer" />
-			<var name="fieldFieldLabel" value="Integer" />
-			<var name="fieldName" value="Integer" />
-		</execute>
+		DDLRecord.viewViaDDLDisplayPG(
+			ddlListName = "List Name Display",
+			ddlRecordFieldData = "remove",
+			fieldFieldLabel = "Text");
+	}
 
-		<execute macro="DDLDataDefinition#save" />
+	@description = "This is a use case for LPS-59272."
+	@priority = "3"
+	test EditListRecordWithNestedFieldViaSpreadsheetView {
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListDescription" value="List Description" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		DynamicDataMapping.addFieldNested(
+			field = "Select",
+			fieldFieldLabel = "Select",
+			fieldName = "Select");
 
-		<execute macro="DDLList#save" />
+		DDLDataDefinition.save();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DDLList.addCP(
+			ddlListDescription = "List Description",
+			ddlListName = "List Name");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition Name");
 
-		<execute macro="DDLRecord#populateFieldInteger">
-			<var name="ddlRecordFieldData" value="123" />
-			<var name="fieldName" value="Integer" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="PortletEntry#publish" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition Name",
+			ddlListName = "List Name");
 
-		<execute macro="DDLNavigator#gotoListRecords">
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLRecord#viewFieldCP">
-			<var name="ddlRecordFieldData" value="Text" />
-			<var name="ddlRecordNestedFieldData" value="123" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="nestedFieldFieldLabel" value="Integer" />
-		</execute>
-	</command>
+		DDLRecord.populateFieldSelect(
+			ddlRecordFieldData = "option 1",
+			fieldName = "Select");
 
-	<command name="ViewFormTemplateFieldsAfterBackNavigation" priority="3">
-		<description message="This is a use case for LPS-48591." />
+		PortletEntry.publish();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLNavigator.gotoSpreadsheetView(ddlListName = "List Name");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLRecord.populateFieldTextViaSpreadsheetView(
+			ddlRecordFieldData = "Text Edit",
+			ddlRecordRow = "1",
+			fieldName = "Text");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text Box" />
-			<var name="fieldFieldLabel" value="Text Box" />
-			<var name="fieldName" value="TextBox" />
-		</execute>
+		DDLRecord.populateFieldSelectViaSpreadsheetView(
+			ddlRecordFieldData = "option 2",
+			ddlRecordRow = "1",
+			fieldName = "Select");
 
-		<execute macro="DDLDataDefinition#save" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLList.viewCP(ddlListName = "List Name");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.viewFieldCP(
+			ddlRecordFieldData = "Text Edit",
+			ddlRecordNestedFieldData = "option 2",
+			fieldFieldLabel = "Text",
+			nestedFieldFieldLabel = "Select");
+	}
 
-		<execute macro="DDLTemplate#addFormTemplateCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlFormTemplateName" value="Data Definition Form Template Name" />
-		</execute>
+	@priority = "4"
+	test FormTemplateUniqueField {
+		property test.name.skip.portal.instance = "DynamicdatalistsUsecase#FormTemplateUniqueField";
+		Navigator.openURL();
 
-		<execute macro="DynamicDataMapping#viewCannotAddField">
-			<var name="field" value="Text Box" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DynamicDataMapping#viewCannotAddField">
-			<var name="field" value="Text" />
-		</execute>
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "DDL Definition Description",
+			ddlDataDefinitionName = "DDL Data Definition");
 
-		<execute macro="DynamicDataMapping#viewCanAddField">
-			<var name="field" value="Separator" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Boolean",
+			fieldFieldLabel = "This is a unique field",
+			fieldName = "ThisIsAUniqueField");
 
-		<execute macro="DynamicDataMapping#viewField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DynamicDataMapping#viewField">
-			<var name="field" value="Text Box" />
-			<var name="fieldFieldLabel" value="Text Box" />
-			<var name="fieldName" value="TextBox" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DynamicDataMapping#selectDynamicDataMappingFrame" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute function="Click" locator1="Icon#ANGLE_LEFT_BACK" />
+		DDLTemplate.addFormTemplateCP(
+			ddlDataDefinitionName = "DDL Data Definition",
+			ddlFormTemplateName = "DDL Data Definition Form Template Name");
 
-		<execute function="Click" locator1="Button#PLUS" />
+		DynamicDataMapping.viewCannotAddField(field = "This is a unique field");
 
-		<execute function="AssertClick" locator1="MenuItem#ADD_FORM_TEMPLATE" value1="Add Form Template" />
+		DynamicDataMapping.addFieldFormTemplateSpecific(field = "Separator");
 
-		<execute macro="DynamicDataMapping#viewCannotAddField">
-			<var name="field" value="Text Box" />
-		</execute>
+		DynamicDataMapping.viewCanAddField(field = "Separator");
 
-		<execute macro="DynamicDataMapping#viewCannotAddField">
-			<var name="field" value="Text" />
-		</execute>
+		DynamicDataMapping.deleteField(
+			fieldFieldLabel = "This is a unique field",
+			fieldName = "ThisIsAUniqueField");
 
-		<execute macro="DynamicDataMapping#viewCanAddField">
-			<var name="field" value="Separator" />
-		</execute>
+		DynamicDataMapping.addFieldFormTemplateSpecific(
+			field = "Fieldset",
+			fieldFieldLabel = "This is not a unique field");
 
-		<execute macro="DynamicDataMapping#viewField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DynamicDataMapping.viewCanAddField(field = "Separator");
 
-		<execute macro="DynamicDataMapping#viewField">
-			<var name="field" value="Text Box" />
-			<var name="fieldFieldLabel" value="Text Box" />
-			<var name="fieldName" value="TextBox" />
-		</execute>
-	</command>
+		DynamicDataMapping.deleteField(
+			fieldFieldLabel = "Separator",
+			fieldName = "Separator");
 
-	<command name="ViewMultipleDDLRecordsInAssetPublisherAndSortByModifiedDate" priority="3">
-		<description message="This is a use case for LPS-57993" />
+		DynamicDataMapping.viewCanAddField(field = "This is a unique field");
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Asset Publisher Page" />
-		</execute>
+		DynamicDataMapping.addFieldFormTemplateSpecific(field = "This is a unique field");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Asset Publisher Page" />
-		</execute>
+		DynamicDataMapping.addFieldFormTemplateSpecific(
+			field = "Fieldset",
+			fieldFieldLabel = "This is not a unique field");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Asset Publisher" />
-		</execute>
+		DynamicDataMapping.viewCannotAddField(field = "This is a unique field");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.save();
+	}
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+	@description = "This is a use case for LPS-65479."
+	@priority = "4"
+	test RemoveRepeatableDateField {
+		property test.name.skip.portal.instance = "DynamicdatalistsUsecase#RemoveRepeatableDateField";
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#addCP" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text Label" />
-			<var name="fieldName" value="TextName" />
-		</execute>
+		DDLDataDefinition.addCP();
 
-		<execute macro="DDLDataDefinition#save" />
+		DynamicDataMapping.addField(
+			field = "Date",
+			fieldFieldLabel = "Date",
+			fieldName = "Date");
 
-		<execute macro="Navigator#openURL" />
+		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Date");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLList#addCP" />
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#selectCP" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLList#save" />
+		DDLList.addCP();
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.selectCP();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLNavigator#gotoListRecords" />
+		Navigator.openURL();
 
-		<for list="firstRecord,secondText,thirdTest" param="ddlRecordFieldData">
-			<execute macro="DDLNavigator#gotoAddListRecord" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-			<execute macro="DDLRecord#populateFieldText">
-				<var name="ddlRecordFieldData" value="${ddlRecordFieldData}" />
-				<var name="fieldFieldLabel" value="${fieldFieldLabel}" />
-				<var name="fieldName" value="TextName" />
-			</execute>
+		DDLRecord.addCP();
 
-			<execute macro="PortletEntry#publish" />
-		</for>
+		DDLRecord.populateFieldDate(
+			ddlRecordFieldData = "04/01/2018",
+			fieldFieldLabel = "Date",
+			fieldName = "Date");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Asset Publisher Page" />
-		</execute>
+		DDLRecord.addRepeatableField(fieldName = "Date");
 
-		<execute macro="AssetPublisherPortlet#viewMultipleDDLRecordsViaAP">
-			<var name="ddlRecordFieldData1" value="thirdTest" />
-			<var name="ddlRecordFieldData2" value="secondText" />
-			<var name="ddlRecordFieldData3" value="firstRecord" />
-		</execute>
+		DDLRecord.addRepeatableField(fieldName = "Date");
 
-		<execute macro="AssetPublisherPortlet#configureSelectedPG">
-			<var name="selectedAsset" value="Dynamic Data Lists Record" />
-		</execute>
+		DDLRecord.deleteRepeatableField(
+			fieldName = "Date",
+			fieldNumber = "2");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Asset Publisher Page" />
-		</execute>
+		DDLRecord.deleteRepeatableField(
+			fieldName = "Date",
+			fieldNumber = "2");
 
-		<execute macro="AssetPublisherPortlet#configureAssetDisplayOrderPG">
-			<var name="fieldNameOrder" value="Modified Date" />
-			<var name="sortOrder" value="Ascending" />
-		</execute>
+		DDLRecord.viewFieldRepeatedNotPresent(
+			ddlRecordFieldData = "04/01/2018",
+			fieldName = "Date");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Asset Publisher Page" />
-		</execute>
+		PortletEntry.publish();
+	}
 
-		<execute macro="AssetPublisherPortlet#viewMultipleDDLRecordsViaAP">
-			<var name="ddlRecordFieldData1" value="firstRecord" />
-			<var name="ddlRecordFieldData2" value="secondText" />
-			<var name="ddlRecordFieldData3" value="thirdTest" />
-		</execute>
-	</command>
+	@priority = "3"
+	test RemoveRepeatableFieldAndAssertOrderInTranslation {
+		Navigator.openURL();
 
-	<command name="ViewNestedFieldDoesNotDisplayInRecordTable" priority="3">
-		<description message="This is a use case for LPS-51538." />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionDescription" value="Data Definition Description" />
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Text");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DynamicDataMapping#addFieldNested">
-			<var name="field" value="Integer" />
-			<var name="fieldFieldLabel" value="Integer" />
-			<var name="fieldName" value="Integer" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#save" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLList.addCP(ddlListName = "Dynamic Data List");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLList#save" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "Dynamic Data List");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.addRepeatableField(fieldName = "Text");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		DDLRecord.addRepeatableField(fieldName = "Text");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Test Data" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Content",
+			fieldName = "Text");
 
-		<execute macro="DDLRecord#populateFieldInteger">
-			<var name="ddlRecordFieldData" value="253" />
-			<var name="fieldName" value="Integer" />
-		</execute>
+		DDLRecord.saveAsDraftCP();
 
-		<execute macro="PortletEntry#publish" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.editCP(
+			ddlListName = "Dynamic Data List",
+			ddlRecordFieldData = "Content, Content 2, Content 3");
 
-		<execute macro="DDLNavigator#gotoListRecords">
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		PortletEntry.changeLocale(locale = "es-ES");
 
-		<execute macro="DDLRecord#viewFieldCP">
-			<var name="ddlRecordFieldData" value="Test Data" />
-			<var name="ddlRecordNestedFieldData" value="253" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="nestedFieldFieldLabel" value="Integer" />
-		</execute>
-	</command>
+		DDLRecord.populateTranslationFieldText(
+			ddlRecordFieldData = "Contenido",
+			fieldName = "Text");
 
-	<command name="ViewNestedFieldEntryWithBlankParentField" priority="3">
-		<description message="This is a use case for LPS-48969." />
+		PortletEntry.publish();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionDescription" value="Data Definition Description" />
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLRecord.editCP(
+			ddlListName = "Dynamic Data List",
+			ddlRecordFieldData = "Content, Content 2, Content 3");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLRecord.deleteRepeatableField(
+			fieldName = "Text",
+			fieldNumber = "2");
 
-		<execute macro="DynamicDataMapping#addFieldNested">
-			<var name="field" value="Integer" />
-			<var name="fieldFieldLabel" value="Integer" />
-			<var name="fieldName" value="Integer" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DDLDataDefinition#save" />
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLRecord.editCP(
+			ddlListName = "Dynamic Data List",
+			ddlRecordFieldData = "Content, Content 3");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		PortletEntry.changeLocale(locale = "es-ES");
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-		</execute>
+		DDLRecord.viewTextFieldRepeated(
+			ddlRecordFieldData1 = "Contenido",
+			ddlRecordFieldData2 = "Contenido 3");
+	}
 
-		<execute macro="DDLList#save" />
+	@description = "This is a use case for LPS-69667."
+	@priority = "2"
+	test SelectLinkToPagePage {
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		for (var pageName : list "P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12") {
+			SitePages.addPublicPage(pageName = "${pageName}");
+		}
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition" />
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#populateFieldInteger">
-			<var name="ddlRecordFieldData" value="253" />
-			<var name="fieldName" value="Integer" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Link To Page Data Definition");
 
-		<execute macro="PortletEntry#publish" />
+		DynamicDataMapping.addField(
+			field = "Link to Page",
+			fieldFieldLabel = "Link to Page",
+			fieldName = "LinkToPage");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.save();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLNavigator#gotoListRecords">
-			<var name="ddlListName" value="Dynamic Data List" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#viewFieldCP">
-			<var name="ddlRecordFieldData" value="" />
-			<var name="ddlRecordNestedFieldData" value="253" />
-			<var name="fieldBlank" value="true" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="nestedFieldFieldLabel" value="Integer" />
-		</execute>
-	</command>
+		DDLList.addCP(ddlListName = "List Name");
 
-	<command name="ViewRepeatableNestedFields" priority="3">
-		<description message="This is a use case for LPS-63290." />
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Link To Page Data Definition");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.save();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Link To Page Data Definition",
+			ddlListName = "List Name");
 
-		<execute macro="DynamicDataMapping#addFieldNested">
-			<var name="field" value="Documents and Media" />
-			<var name="fieldFieldLabel" value="Documents and Media" />
-			<var name="fieldName" value="DocumentsAndMedia" />
-		</execute>
+		DDLRecord.populateFieldLinkToPage(
+			ddlRecordFieldData = "P10",
+			fieldName = "LinkToPage",
+			pagePrivacy = "Public");
 
-		<execute macro="DynamicDataMapping#editFieldRepeatable">
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		PortletEntry.publish();
 
-		<execute macro="DDLDataDefinition#save" />
+		DDLRecord.viewFirstFieldCP(
+			ddlRecordFieldData = "P10",
+			fieldFieldLabel = "Link to Page");
+	}
 
-		<execute macro="Navigator#openURL" />
+	@description = "This is a use case for LPS-48743."
+	@priority = "3"
+	test TemplateAddDeletedField {
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListDescription" value="List Description" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLList#save" />
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Text Box",
+			fieldName = "TextBox");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.save();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Text" />
-		</execute>
+		DDLTemplate.addFormTemplateCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlFormTemplateName = "Form Template Name");
 
-		<execute macro="DDLRecord#viewNestedFieldsRepeating">
-			<var name="nestedChildFieldFieldName" value="DocumentsAndMedia" />
-			<var name="nestedParentFieldFieldName" value="Text" />
-		</execute>
-	</command>
+		DynamicDataMapping.viewCannotAddField(field = "Text Box");
 
-	<command name="ViewRequiredNestedDocumentsAndMediaField" priority="3">
-		<description message="This is a use case for LPS-60155." />
+		DynamicDataMapping.deleteField(fieldFieldLabel = "Text Box");
 
-		<execute macro="Navigator#openURL" />
+		DynamicDataMapping.viewCanAddField(field = "Text Box");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLTemplate.saveAndContinueFormTemplateCP();
 
-		<execute macro="DDLDataDefinition#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		DynamicDataMapping.viewCanAddField(field = "Text Box");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		DynamicDataMapping.addFieldWithoutRename(
+			field = "Text Box",
+			fieldFieldLabel = "Text Box");
 
-		<execute macro="DynamicDataMapping#editFieldRepeatable">
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		DynamicDataMapping.viewField(
+			fieldFieldLabel = "Text Box",
+			fieldName = "TextBox");
 
-		<execute macro="DynamicDataMapping#editFieldRequired">
-			<var name="fieldFieldLabel" value="Text" />
-		</execute>
+		DDLDataDefinition.save();
+	}
 
-		<execute macro="DynamicDataMapping#addFieldNested">
-			<var name="field" value="Documents and Media" />
-			<var name="fieldFieldLabel" value="Documents and Media" />
-			<var name="fieldName" value="DocumentsAndMedia" />
-		</execute>
+	@description = "This is a use case for LPS-52865."
+	@priority = "4"
+	test ViewCannotSaveWithDuplicateFieldNames {
+		property test.name.skip.portal.instance = "DynamicdatalistsUsecase#ViewCannotSaveWithDuplicateFieldNames";
+		Navigator.openURL();
 
-		<execute macro="DynamicDataMapping#editFieldRequired">
-			<var name="fieldFieldLabel" value="Documents and Media" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#save" />
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "Data Definition Description",
+			ddlDataDefinitionName = "Data Definition Name");
 
-		<execute macro="Navigator#openURL" />
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DynamicDataMapping.addFieldNested(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLList#addCP">
-			<var name="ddlListDescription" value="List Description" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		DynamicDataMapping.editFieldNestedWithDuplicateName(
+			fieldName = "Text",
+			fieldNameEdit = "Text2");
 
-		<execute macro="DDLDataDefinition#selectCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-		</execute>
+		DynamicDataMapping.viewFieldNameNested(fieldNameNested = "Text2");
+	}
 
-		<execute macro="DDLList#save" />
+	@description = "This is a use case for LPS-66228."
+	@priority = "4"
+	test ViewDisplayTemplateClassLinks {
+		property test.name.skip.portal.instance = "DynamicdatalistsUsecase#ViewDisplayTemplateClassLinks";
+		Navigator.openURL();
 
-		<execute macro="Navigator#openURL" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLNavigator.gotoManageTemplates(ddlDataDefinitionName = "Contacts");
 
-		<execute macro="DDLRecord#addCP">
-			<var name="ddlDataDefinitionName" value="Data Definition Name" />
-			<var name="ddlListName" value="List Name" />
-		</execute>
+		LexiconEntry.gotoAddMenuItem(menuItem = "Add Display Template");
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
-		<execute macro="DDLRecord#populateFieldDocumentsAndMediaChooseFromDocumentLibrary">
-			<var name="document" value="Document_1.txt" />
-			<var name="fieldName" value="DocumentsAndMedia" />
-		</execute>
+		for (var fieldName : list "Device,Company,PermissionChecker") {
+			var key_fieldName = "${fieldName}";
 
-		<execute macro="DDLRecord#addRepeatableField">
-			<var name="fieldName" value="Text" />
-		</execute>
+			if ("${fieldName}" == "PermissionChecker") {
+				MouseOver(locator1 = "DDMEditTemplate#SCRIPT_UTIL");
+			}
+			else {
+				MouseOver(locator1 = "DDMEditTemplate#SCRIPT_VARIABLE");
+			}
 
-		<execute macro="DDLRecord#populateFieldText">
-			<var name="ddlRecordFieldData" value="Text" />
-			<var name="fieldName" value="Text" />
-		</execute>
+			AssertClick(
+				locator1 = "JavaDocs#TOOLTIP_JAVA_CLASS_LINK",
+				value1 = "${fieldName}");
 
-		<execute macro="Button#clickPublish" />
+			SelectWindow.selectPopUp(locator1 = "null");
 
-		<execute macro="Alert#viewRequiredField" />
+			AssertTextEquals(
+				locator1 = "JavaDocs#JAVA_CLASS_NAME",
+				value1 = "${fieldName}");
 
-		<execute macro="DDLRecord#populateFieldDocumentsAndMediaChooseFromDocumentLibrary">
-			<var name="document" value="Document_1.txt" />
-			<var name="fieldName" value="DocumentsAndMedia" />
-			<var name="parentFieldName" value="Text" />
-		</execute>
+			Close.closeAndSelectWindow(locator1 = "title=New Template for Structure: Contacts - ${siteName}");
+		}
+	}
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+	@description = "This is a use case for LPS-48913."
+	@priority = "3"
+	test ViewFieldsNestedInDDLRecord {
+		Navigator.openURL();
 
-	<command name="ViewUniqueFieldLabels" priority="4">
-		<description message="This is a use case for LPS-51684." />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
 
-		<execute macro="DDLDataDefinition#addCP" />
+		DynamicDataMapping.addFieldNested(
+			field = "Integer",
+			fieldFieldLabel = "Integer",
+			fieldName = "Integer");
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text1" />
-			<var name="fieldName" value="Text1" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text2" />
-			<var name="fieldName" value="Text2" />
-		</execute>
+		Navigator.openURL();
 
-		<execute macro="DDLDataDefinition#save" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="Navigator#openURL" />
+		DDLList.addCP(
+			ddlListDescription = "List Description",
+			ddlListName = "List Name");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition Name");
 
-		<execute macro="DDLDataDefinition#viewCP">
-			<var name="fieldFieldLabel" value="Text1" />
-		</execute>
+		DDLDataDefinition.save();
 
-		<execute macro="Navigator#openURL" />
+		Navigator.openURL();
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Dynamic Data Lists" />
-		</execute>
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
 
-		<execute macro="DDLDataDefinition#viewCP">
-			<var name="fieldFieldLabel" value="Text2" />
-		</execute>
-	</command>
-</definition>
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition Name",
+			ddlListName = "List Name");
+
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text",
+			fieldName = "Text");
+
+		DDLRecord.populateFieldInteger(
+			ddlRecordFieldData = "123",
+			fieldName = "Integer");
+
+		PortletEntry.publish();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords(ddlListName = "List Name");
+
+		DDLRecord.viewFieldCP(
+			ddlRecordFieldData = "Text",
+			ddlRecordNestedFieldData = "123",
+			fieldFieldLabel = "Text",
+			nestedFieldFieldLabel = "Integer");
+	}
+
+	@description = "This is a use case for LPS-48591."
+	@priority = "3"
+	test ViewFormTemplateFieldsAfterBackNavigation {
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.addField(
+			field = "Text Box",
+			fieldFieldLabel = "Text Box",
+			fieldName = "TextBox");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLTemplate.addFormTemplateCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlFormTemplateName = "Data Definition Form Template Name");
+
+		DynamicDataMapping.viewCannotAddField(field = "Text Box");
+
+		DynamicDataMapping.viewCannotAddField(field = "Text");
+
+		DynamicDataMapping.viewCanAddField(field = "Separator");
+
+		DynamicDataMapping.viewField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.viewField(
+			field = "Text Box",
+			fieldFieldLabel = "Text Box",
+			fieldName = "TextBox");
+
+		DDLTemplate.addFormTemplateViaBackButton(ddlFormTemplateName = "Data Definition Form Template Name");
+
+		DynamicDataMapping.viewCannotAddField(field = "Text Box");
+
+		DynamicDataMapping.viewCannotAddField(field = "Text");
+
+		DynamicDataMapping.viewCanAddField(field = "Separator");
+
+		DynamicDataMapping.viewField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.viewField(
+			field = "Text Box",
+			fieldFieldLabel = "Text Box",
+			fieldName = "TextBox");
+	}
+
+	@description = "This is a use case for LPS-67478 ."
+	@priority = "3"
+	test ViewLinkToPageBreadcrumb {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Parent Page Name");
+
+		SitePages.addPublicChildPage(
+			childPageName = "Child Page Name",
+			parentPageName = "Parent Page Name");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition");
+
+		DynamicDataMapping.addField(
+			field = "Link to Page",
+			fieldFieldLabel = "Link to Page",
+			fieldName = "LinkToPage");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.viewCP(
+			ddlDataDefinitionName = "Data Definition",
+			fieldFieldLabel = "Link to Page");
+
+		DynamicDataMapping.viewField(
+			field = "Link to Page",
+			fieldFieldLabel = "Link to Page",
+			fieldName = "LinkToPage");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP(ddlListName = "List Name");
+
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "List Name");
+
+		DDLRecord.populateFieldLinkToPage(
+			ddlRecordFieldData = "Child Page Name",
+			fieldName = "LinkToPage",
+			pagePrivacy = "Public",
+			parentPage = "Parent Page Name");
+
+		DDLRecord.gotoLinkToPageSelect(fieldName = "LinkToPage");
+
+		DDLRecord.viewLinkToPageBreadcrumbCount(count = "2");
+
+		DDLRecord.gotoLinkToPageNavItem(pagePrivacy = "Private");
+
+		DDLRecord.gotoLinkToPageNavItem(pagePrivacy = "Public");
+
+		DDLRecord.gotoLinkToPageChildPages(parentPage = "Parent Page Name");
+
+		DDLRecord.selectLinkToPageRadio(ddlRecordFieldData = "Child Page Name");
+
+		DDLRecord.viewLinkToPageBreadcrumbCount(count = "2");
+	}
+
+	@description = "This is a use case for LPS-57993"
+	@priority = "3"
+	test ViewMultipleDDLRecordsInAssetPublisherAndSortByModifiedDate {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			panel = "Site Administration",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(pageName = "Asset Publisher Page");
+
+		Navigator.gotoPage(pageName = "Asset Publisher Page");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP();
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text Label",
+			fieldName = "TextName");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP();
+
+		DDLDataDefinition.selectCP();
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords();
+
+		for (var ddlRecordFieldData : list "firstRecord,secondText,thirdTest") {
+			DDLNavigator.gotoAddListRecord();
+
+			DDLRecord.populateFieldText(
+				ddlRecordFieldData = "${ddlRecordFieldData}",
+				fieldFieldLabel = "${fieldFieldLabel}",
+				fieldName = "TextName");
+
+			PortletEntry.publish();
+		}
+
+		Navigator.gotoPage(pageName = "Asset Publisher Page");
+
+		AssetPublisherPortlet.viewMultipleDDLRecordsViaAP(
+			ddlRecordFieldData1 = "thirdTest",
+			ddlRecordFieldData2 = "secondText",
+			ddlRecordFieldData3 = "firstRecord");
+
+		AssetPublisherPortlet.configureSelectedPG(selectedAsset = "Dynamic Data Lists Record");
+
+		Navigator.gotoPage(pageName = "Asset Publisher Page");
+
+		AssetPublisherPortlet.configureAssetDisplayOrderPG(
+			fieldNameOrder = "Modified Date",
+			sortOrder = "Ascending");
+
+		Navigator.gotoPage(pageName = "Asset Publisher Page");
+
+		AssetPublisherPortlet.viewMultipleDDLRecordsViaAP(
+			ddlRecordFieldData1 = "firstRecord",
+			ddlRecordFieldData2 = "secondText",
+			ddlRecordFieldData3 = "thirdTest");
+	}
+
+	@description = "This is a use case for LPS-51538."
+	@priority = "3"
+	test ViewNestedFieldDoesNotDisplayInRecordTable {
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "Data Definition Description",
+			ddlDataDefinitionName = "Data Definition");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.addFieldNested(
+			field = "Integer",
+			fieldFieldLabel = "Integer",
+			fieldName = "Integer");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP(ddlListName = "Dynamic Data List");
+
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "Dynamic Data List");
+
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Test Data",
+			fieldName = "Text");
+
+		DDLRecord.populateFieldInteger(
+			ddlRecordFieldData = "253",
+			fieldName = "Integer");
+
+		PortletEntry.publish();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords(ddlListName = "Dynamic Data List");
+
+		DDLRecord.viewFieldCP(
+			ddlRecordFieldData = "Test Data",
+			ddlRecordNestedFieldData = "253",
+			fieldFieldLabel = "Text",
+			nestedFieldFieldLabel = "Integer");
+	}
+
+	@description = "This is a use case for LPS-48969."
+	@priority = "3"
+	test ViewNestedFieldEntryWithBlankParentField {
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP(
+			ddlDataDefinitionDescription = "Data Definition Description",
+			ddlDataDefinitionName = "Data Definition");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.addFieldNested(
+			field = "Integer",
+			fieldFieldLabel = "Integer",
+			fieldName = "Integer");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP(ddlListName = "Dynamic Data List");
+
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition",
+			ddlListName = "Dynamic Data List");
+
+		DDLRecord.populateFieldInteger(
+			ddlRecordFieldData = "253",
+			fieldName = "Integer");
+
+		PortletEntry.publish();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLNavigator.gotoListRecords(ddlListName = "Dynamic Data List");
+
+		DDLRecord.viewFieldCP(
+			ddlRecordFieldData = "",
+			ddlRecordNestedFieldData = "253",
+			fieldFieldLabel = "Text",
+			nestedFieldFieldLabel = "Integer");
+	}
+
+	@description = "This is a use case for LPS-63290."
+	@priority = "3"
+	test ViewRepeatableNestedFields {
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Text");
+
+		DynamicDataMapping.addFieldNested(
+			field = "Documents and Media",
+			fieldFieldLabel = "Documents and Media",
+			fieldName = "DocumentsAndMedia");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP(
+			ddlListDescription = "List Description",
+			ddlListName = "List Name");
+
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition Name");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition Name",
+			ddlListName = "List Name");
+
+		DDLRecord.addRepeatableField(fieldName = "Text");
+
+		DDLRecord.viewNestedFieldsRepeating(
+			nestedChildFieldFieldName = "DocumentsAndMedia",
+			nestedParentFieldFieldName = "Text");
+	}
+
+	@description = "This is a use case for LPS-60155."
+	@priority = "5"
+	test ViewRequiredNestedDocumentsAndMediaField {
+		property portal.acceptance = "false";
+		property testray.component.names = "Training";
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP(ddlDataDefinitionName = "Data Definition Name");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DynamicDataMapping.editFieldRepeatable(fieldFieldLabel = "Text");
+
+		DynamicDataMapping.editFieldRequired(fieldFieldLabel = "Text");
+
+		DynamicDataMapping.addFieldNested(
+			field = "Documents and Media",
+			fieldFieldLabel = "Documents and Media",
+			fieldName = "DocumentsAndMedia");
+
+		DynamicDataMapping.editFieldRequired(fieldFieldLabel = "Documents and Media");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLList.addCP(
+			ddlListDescription = "List Description",
+			ddlListName = "List Name");
+
+		DDLDataDefinition.selectCP(ddlDataDefinitionName = "Data Definition Name");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLRecord.addCP(
+			ddlDataDefinitionName = "Data Definition Name",
+			ddlListName = "List Name");
+
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text",
+			fieldName = "Text");
+
+		DDLRecord.populateFieldDocumentsAndMediaChooseFromDocumentLibrary(
+			document = "Document_1.txt",
+			fieldName = "DocumentsAndMedia");
+
+		DDLRecord.addRepeatableField(fieldName = "Text");
+
+		DDLRecord.populateFieldText(
+			ddlRecordFieldData = "Text",
+			fieldName = "Text");
+
+		Button.clickPublish();
+
+		Alert.viewRequiredField();
+
+		DDLRecord.populateFieldDocumentsAndMediaChooseFromDocumentLibrary(
+			document = "Document_1.txt",
+			fieldName = "DocumentsAndMedia",
+			parentFieldName = "Text");
+
+		PortletEntry.publish();
+	}
+
+	@description = "This is a use case for LPS-51684."
+	@priority = "4"
+	test ViewUniqueFieldLabels {
+		property test.name.skip.portal.instance = "DynamicdatalistsUsecase#ViewUniqueFieldLabels";
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.addCP();
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text1",
+			fieldName = "Text1");
+
+		DynamicDataMapping.addField(
+			field = "Text",
+			fieldFieldLabel = "Text2",
+			fieldName = "Text2");
+
+		DDLDataDefinition.save();
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.viewCP(fieldFieldLabel = "Text1");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			panel = "Site Administration",
+			portlet = "Dynamic Data Lists");
+
+		DDLDataDefinition.viewCP(fieldFieldLabel = "Text2");
+	}
+
+}

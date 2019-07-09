@@ -17,7 +17,6 @@
 <%@ include file="/html/taglib/init.jsp" %>
 
 <%
-String direction = (String)request.getAttribute("liferay-ui:icon-menu:direction");
 String id = GetterUtil.getString((String)request.getAttribute("liferay-ui:icon-menu:id"));
 boolean scroll = GetterUtil.getBoolean(request.getAttribute("liferay-ui:icon-menu:scroll"));
 %>

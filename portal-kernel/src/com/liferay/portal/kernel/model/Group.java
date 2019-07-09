@@ -14,29 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the Group service. Represents a row in the &quot;Group_&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see GroupModel
- * @see com.liferay.portal.model.impl.GroupImpl
- * @see com.liferay.portal.model.impl.GroupModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.GroupImpl")
 @ProviderType
 public interface Group extends GroupModel, PersistedModel, TreeModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.GroupImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.GroupImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<Group, Long> GROUP_ID_ACCESSOR = new Accessor<Group, Long>() {
+	public static final Accessor<Group, Long> GROUP_ID_ACCESSOR =
+		new Accessor<Group, Long>() {
+
 			@Override
 			public Long get(Group group) {
 				return group.getGroupId();
@@ -51,26 +52,17 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 			public Class<Group> getTypeClass() {
 				return Group.class;
 			}
+
 		};
 
 	public void clearStagingGroup();
 
-	public java.util.List<Group> getAncestors()
-		throws com.liferay.portal.kernel.exception.PortalException;
+	public java.util.List<Group> getAncestors();
 
 	public java.util.List<Group> getChildren(boolean site);
 
-	/**
-	* @deprecated As of 7.0.0, replaced by {@link
-	#getChildrenWithLayouts(boolean, int, int,
-	OrderByComparator)}
-	*/
-	@java.lang.Deprecated()
-	public java.util.List<Group> getChildrenWithLayouts(boolean site,
-		int start, int end);
-
-	public java.util.List<Group> getChildrenWithLayouts(boolean site,
-		int start, int end,
+	public java.util.List<Group> getChildrenWithLayouts(
+		boolean site, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<Group> obc);
 
 	public int getChildrenWithLayoutsCount(boolean site);
@@ -81,44 +73,45 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 
 	public java.util.List<Group> getDescendants(boolean site);
 
-	public java.lang.String getDescriptiveName()
+	@com.liferay.portal.kernel.json.JSON
+	public String getDescriptiveName()
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getDescriptiveName(java.util.Locale locale)
+	public String getDescriptiveName(java.util.Locale locale)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getDisplayURL(
+	public String getDisplayURL(
 		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay);
 
-	public java.lang.String getDisplayURL(
+	public String getDisplayURL(
 		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay,
 		boolean privateLayout);
 
-	public java.lang.String getIconCssClass();
+	public String getIconCssClass();
 
-	public java.lang.String getIconURL(
+	public String getIconURL(
 		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay);
 
-	public java.lang.String getLayoutRootNodeName(boolean privateLayout,
-		java.util.Locale locale);
+	public String getLayoutRootNodeName(
+		boolean privateLayout, java.util.Locale locale);
 
 	public Group getLiveGroup();
 
-	public java.lang.String getLiveParentTypeSettingsProperty(
-		java.lang.String key);
+	public String getLiveParentTypeSettingsProperty(String key);
 
-	public java.lang.String getLogoURL(
+	public String getLogoURL(
 		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay,
 		boolean useDefault);
 
 	public long getOrganizationId();
 
-	public Group getParentGroup()
-		throws com.liferay.portal.kernel.exception.PortalException;
+	public Group getParentGroup();
 
-	public com.liferay.portal.kernel.util.UnicodeProperties getParentLiveGroupTypeSettingsProperties();
+	public com.liferay.portal.kernel.util.UnicodeProperties
+		getParentLiveGroupTypeSettingsProperties();
 
-	public java.lang.String getPathFriendlyURL(boolean privateLayout,
+	public String getPathFriendlyURL(
+		boolean privateLayout,
 		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay);
 
 	public LayoutSet getPrivateLayoutSet();
@@ -131,23 +124,23 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 
 	public long getRemoteLiveGroupId();
 
-	public java.lang.String getScopeDescriptiveName(
-		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
+	public String getScopeDescriptiveName(
+			com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
-	public java.lang.String getScopeLabel(
+	public String getScopeLabel(
 		com.liferay.portal.kernel.theme.ThemeDisplay themeDisplay);
 
 	public Group getStagingGroup();
 
-	public java.lang.String getTypeLabel();
+	public String getTypeLabel();
 
-	public com.liferay.portal.kernel.util.UnicodeProperties getTypeSettingsProperties();
+	public com.liferay.portal.kernel.util.UnicodeProperties
+		getTypeSettingsProperties();
 
-	public java.lang.String getTypeSettingsProperty(java.lang.String key);
+	public String getTypeSettingsProperty(String key);
 
-	public java.lang.String getUnambiguousName(java.lang.String name,
-		java.util.Locale locale);
+	public String getUnambiguousName(String name, java.util.Locale locale);
 
 	public boolean hasAncestor(long groupId);
 
@@ -161,12 +154,6 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 
 	public boolean hasStagingGroup();
 
-	/**
-	* @deprecated As of 7.0.0, replaced by {@link #hasAncestor}
-	*/
-	@java.lang.Deprecated()
-	public boolean isChild(long groupId);
-
 	public boolean isCompany();
 
 	public boolean isCompanyStagingGroup();
@@ -175,7 +162,7 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 
 	public boolean isGuest();
 
-	public boolean isInStagingPortlet(java.lang.String portletId);
+	public boolean isInStagingPortlet(String portletId);
 
 	public boolean isLayout();
 
@@ -192,13 +179,14 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 	public boolean isRoot();
 
 	public boolean isShowSite(
-		com.liferay.portal.kernel.security.permission.PermissionChecker permissionChecker,
-		boolean privateSite)
+			com.liferay.portal.kernel.security.permission.PermissionChecker
+				permissionChecker,
+			boolean privateSite)
 		throws com.liferay.portal.kernel.exception.PortalException;
 
 	public boolean isStaged();
 
-	public boolean isStagedPortlet(java.lang.String portletId);
+	public boolean isStagedPortlet(String portletId);
 
 	public boolean isStagedRemotely();
 
@@ -211,5 +199,7 @@ public interface Group extends GroupModel, PersistedModel, TreeModel {
 	public boolean isUserPersonalSite();
 
 	public void setTypeSettingsProperties(
-		com.liferay.portal.kernel.util.UnicodeProperties typeSettingsProperties);
+		com.liferay.portal.kernel.util.UnicodeProperties
+			typeSettingsProperties);
+
 }

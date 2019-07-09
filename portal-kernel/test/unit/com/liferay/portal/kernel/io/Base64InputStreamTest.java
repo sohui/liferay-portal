@@ -21,8 +21,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Tina Tian
+ * @author     Tina Tian
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class Base64InputStreamTest {
 
 	@Test
@@ -49,17 +51,13 @@ public class Base64InputStreamTest {
 			int position = 0;
 
 			Assert.assertEquals(
-				3,
-				base64InputStream.decode(bytes, outputBuffer, position, 0));
+				3, base64InputStream.decode(bytes, outputBuffer, position, 0));
 			Assert.assertEquals(
-				2,
-				base64InputStream.decode(bytes, outputBuffer, position, 1));
+				2, base64InputStream.decode(bytes, outputBuffer, position, 1));
 			Assert.assertEquals(
-				1,
-				base64InputStream.decode(bytes, outputBuffer, position, 2));
+				1, base64InputStream.decode(bytes, outputBuffer, position, 2));
 			Assert.assertEquals(
-				-1,
-				base64InputStream.decode(bytes, outputBuffer, position, 3));
+				-1, base64InputStream.decode(bytes, outputBuffer, position, 3));
 		}
 	}
 

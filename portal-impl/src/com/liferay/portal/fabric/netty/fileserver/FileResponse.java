@@ -14,9 +14,9 @@
 
 package com.liferay.portal.fabric.netty.fileserver;
 
-import com.liferay.portal.kernel.io.PathHolder;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.process.PathHolder;
+import com.liferay.petra.string.StringBundler;
 
 import java.io.Serializable;
 
@@ -117,7 +117,7 @@ public class FileResponse implements Serializable {
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(_size > 0 ? 11 : 10);
+		StringBundler sb = new StringBundler((_size > 0) ? 11 : 10);
 
 		sb.append("{folder=");
 		sb.append(_folder);

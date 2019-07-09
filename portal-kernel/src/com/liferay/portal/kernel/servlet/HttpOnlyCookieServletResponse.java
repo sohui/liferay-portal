@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 
+import java.util.Collections;
 import java.util.Set;
 
 import javax.servlet.http.Cookie;
@@ -30,27 +31,33 @@ import javax.servlet.http.HttpServletResponseWrapper;
 public class HttpOnlyCookieServletResponse extends HttpServletResponseWrapper {
 
 	public static HttpServletResponse getHttpOnlyCookieServletResponse(
-		HttpServletResponse response) {
+		HttpServletResponse httpServletResponse) {
 
-		HttpServletResponse wrappedResponse = response;
+		HttpServletResponse wrappedHttpServletResponse = httpServletResponse;
 
-		while (wrappedResponse instanceof HttpServletResponseWrapper) {
-			if (wrappedResponse instanceof HttpOnlyCookieServletResponse) {
-				return response;
+		while (wrappedHttpServletResponse instanceof
+					HttpServletResponseWrapper) {
+
+			if (wrappedHttpServletResponse instanceof
+					HttpOnlyCookieServletResponse) {
+
+				return httpServletResponse;
 			}
 
 			HttpServletResponseWrapper httpServletResponseWrapper =
-				(HttpServletResponseWrapper)wrappedResponse;
+				(HttpServletResponseWrapper)wrappedHttpServletResponse;
 
-			wrappedResponse =
+			wrappedHttpServletResponse =
 				(HttpServletResponse)httpServletResponseWrapper.getResponse();
 		}
 
-		return new HttpOnlyCookieServletResponse(response);
+		return new HttpOnlyCookieServletResponse(httpServletResponse);
 	}
 
-	public HttpOnlyCookieServletResponse(HttpServletResponse response) {
-		super(response);
+	public HttpOnlyCookieServletResponse(
+		HttpServletResponse httpServletResponse) {
+
+		super(httpServletResponse);
 	}
 
 	@Override
@@ -62,9 +69,20 @@ public class HttpOnlyCookieServletResponse extends HttpServletResponseWrapper {
 		super.addCookie(cookie);
 	}
 
-	private static final Set<String> _cookieHttpOnlyCookieNamesExcludes =
-		SetUtil.fromArray(
+	private static final Set<String> _cookieHttpOnlyCookieNamesExcludes;
+
+	static {
+		Set<String> cookieHttpOnlyCookieNamesExcludes = SetUtil.fromArray(
 			StringUtil.split(
 				SystemProperties.get("cookie.http.only.names.excludes")));
+
+		if (cookieHttpOnlyCookieNamesExcludes.isEmpty()) {
+			_cookieHttpOnlyCookieNamesExcludes = Collections.emptySet();
+		}
+		else {
+			_cookieHttpOnlyCookieNamesExcludes =
+				cookieHttpOnlyCookieNamesExcludes;
+		}
+	}
 
 }

@@ -44,8 +44,7 @@ import com.liferay.portal.kernel.xml.Element;
  * public class MyDLProcessor implements DLProcessor {
  *
  * }
- * </pre>
- * Implementing classes are responsible for managing any storage required by the
+ * </pre>Implementing classes are responsible for managing any storage required by the
  * generated resources and for providing access to any generated assets. See
  * current implementations for examples.
  *
@@ -94,6 +93,9 @@ public interface DLProcessor {
 	 */
 	public void copy(
 		FileVersion sourceFileVersion, FileVersion destinationFileVersion);
+
+	public default void destroy() throws Exception {
+	}
 
 	/**
 	 * Exports any resources generated for the file entry into file entry

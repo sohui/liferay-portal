@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.scheduler.messaging;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.scheduler.StorageType;
 import com.liferay.portal.kernel.scheduler.Trigger;
@@ -87,6 +88,21 @@ public class SchedulerResponse implements Serializable {
 
 	public void setTrigger(Trigger trigger) {
 		_trigger = trigger;
+	}
+
+	@Override
+	public String toString() {
+		StringBundler sb = new StringBundler(7);
+
+		sb.append("{groupName=");
+		sb.append(getGroupName());
+		sb.append(", jobName=");
+		sb.append(getJobName());
+		sb.append(", storageType=");
+		sb.append(getStorageType());
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	private String _description;

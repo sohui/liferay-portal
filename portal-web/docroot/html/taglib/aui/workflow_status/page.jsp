@@ -27,6 +27,7 @@
 	<c:if test="<%= Validator.isNotNull(version) %>">
 		<span class="workflow-version">
 			<span class="workflow-label"><liferay-ui:message key="version" />:</span>
+
 			<strong class="workflow-value"><%= version %></strong>
 		</span>
 	</c:if>
@@ -36,7 +37,7 @@
 			<span class="workflow-label"><liferay-ui:message key="status" />:</span>
 		</c:if>
 
-		<strong class="label status workflow-status-<%= WorkflowConstants.getStatusLabel(status) %> <%= WorkflowConstants.getStatusCssClass(status) %> workflow-value">
+		<strong class="label status text-uppercase workflow-status-<%= WorkflowConstants.getStatusLabel(status) %> <%= WorkflowConstants.getStatusCssClass(status) %> workflow-value">
 			<liferay-ui:message key="<%= statusMessage %>" /><%= additionalText %>
 		</strong>
 	</span>

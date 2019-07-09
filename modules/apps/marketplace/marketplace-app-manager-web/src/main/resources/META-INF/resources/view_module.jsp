@@ -19,47 +19,6 @@
 <%
 String app = ParamUtil.getString(request, "app");
 
-AppDisplay appDisplay = null;
-
-List<Bundle> bundles = BundleManagerUtil.getBundles();
-
-if (Validator.isNumber(app)) {
-	appDisplay = AppDisplayFactoryUtil.getAppDisplay(bundles, Long.parseLong(app));
-}
-
-if (appDisplay == null) {
-	appDisplay = AppDisplayFactoryUtil.getAppDisplay(bundles, app);
-}
-
-String moduleGroup = ParamUtil.getString(request, "moduleGroup");
-
-ModuleGroupDisplay moduleGroupDisplay = null;
-
-if (Validator.isNotNull(moduleGroup)) {
-	moduleGroupDisplay = ModuleGroupDisplayFactoryUtil.getModuleGroupDisplay(appDisplay, moduleGroup);
-}
-
-String symbolicName = ParamUtil.getString(request, "symbolicName");
-String version = ParamUtil.getString(request, "version");
-
-Bundle bundle = BundleManagerUtil.getBundle(symbolicName, version);
-
-String pluginType = ParamUtil.getString(request, "pluginType", "components");
-
-String orderByType = ParamUtil.getString(request, "orderByType", "asc");
-
-PortletURL portletURL = renderResponse.createRenderURL();
-
-portletURL.setParameter("mvcPath", "/view_module.jsp");
-portletURL.setParameter("app", app);
-portletURL.setParameter("moduleGroup", moduleGroup);
-portletURL.setParameter("symbolicName", bundle.getSymbolicName());
-portletURL.setParameter("version", String.valueOf(bundle.getVersion()));
-portletURL.setParameter("pluginType", pluginType);
-portletURL.setParameter("orderByType", orderByType);
-
-portletDisplay.setShowBackIcon(true);
-
 PortletURL backURL = renderResponse.createRenderURL();
 
 if (Validator.isNull(app)) {
@@ -68,14 +27,21 @@ if (Validator.isNull(app)) {
 else {
 	backURL.setParameter("mvcPath", "/view_modules.jsp");
 	backURL.setParameter("app", app);
-	backURL.setParameter("moduleGroup", moduleGroup);
 }
 
+ViewModuleManagementToolbarDisplayContext viewModuleManagementToolbarDisplayContext = new ViewModuleManagementToolbarDisplayContext(liferayPortletRequest, liferayPortletResponse, request);
+
+AppDisplay appDisplay = viewModuleManagementToolbarDisplayContext.getAppDisplay();
+Bundle bundle = viewModuleManagementToolbarDisplayContext.getBundle();
+String pluginType = viewModuleManagementToolbarDisplayContext.getPluginType();
+SearchContainer searchContainer = viewModuleManagementToolbarDisplayContext.getSearchContainer();
+
+portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(backURL.toString());
 
-Dictionary<String, String> headers = bundle.getHeaders();
+Dictionary<String, String> headers = bundle.getHeaders(StringPool.BLANK);
 
-String bundleName = GetterUtil.getString(headers.get(BundleConstants.BUNDLE_NAME));
+String bundleName = GetterUtil.getString(headers.get(Constants.BUNDLE_NAME));
 
 renderResponse.setTitle(bundleName);
 
@@ -89,80 +55,26 @@ if (Validator.isNull(app)) {
 	PortalUtil.addPortletBreadcrumbEntry(request, bundleName, null);
 }
 else {
-	MarketplaceAppManagerUtil.addPortletBreadcrumbEntry(appDisplay, moduleGroupDisplay, bundle, request, renderResponse);
+	MarketplaceAppManagerUtil.addPortletBreadcrumbEntry(appDisplay, bundle, request, renderResponse);
 }
 %>
 
-<aui:nav-bar cssClass="collapse-basic-search" markupView="lexicon">
-	<aui:nav cssClass="navbar-nav">
-		<portlet:renderURL var="viewModuleComponentsURL">
-			<portlet:param name="mvcPath" value="/view_module.jsp" />
-			<portlet:param name="app" value="<%= app %>" />
-			<portlet:param name="moduleGroup" value="<%= moduleGroup %>" />
-			<portlet:param name="symbolicName" value="<%= bundle.getSymbolicName() %>" />
-			<portlet:param name="version" value="<%= bundle.getVersion().toString() %>" />
-			<portlet:param name="pluginType" value="components" />
-			<portlet:param name="orderByType" value="<%= orderByType %>" />
-		</portlet:renderURL>
+<clay:navigation-bar
+	inverted="<%= true %>"
+	navigationItems="<%= appManagerDisplayContext.getModuleNavigationItems() %>"
+/>
 
-		<aui:nav-item
-			href="<%= viewModuleComponentsURL %>"
-			label="components"
-			selected='<%= pluginType.equals("components") %>'
-		/>
+<clay:management-toolbar
+	searchActionURL="<%= viewModuleManagementToolbarDisplayContext.getSearchActionURL() %>"
+	searchContainerId="plugins"
+	searchFormName="searchFm"
+	selectable="<%= false %>"
+	showSearch="<%= true %>"
+	sortingOrder="<%= searchContainer.getOrderByType() %>"
+	sortingURL="<%= viewModuleManagementToolbarDisplayContext.getSortingURL() %>"
+/>
 
-		<portlet:renderURL var="viewModulePortletsURL">
-			<portlet:param name="mvcPath" value="/view_module.jsp" />
-			<portlet:param name="app" value="<%= app %>" />
-			<portlet:param name="moduleGroup" value="<%= moduleGroup %>" />
-			<portlet:param name="symbolicName" value="<%= bundle.getSymbolicName() %>" />
-			<portlet:param name="version" value="<%= bundle.getVersion().toString() %>" />
-			<portlet:param name="pluginType" value="portlets" />
-			<portlet:param name="orderByType" value="<%= orderByType %>" />
-		</portlet:renderURL>
-
-		<aui:nav-item
-			href="<%= viewModulePortletsURL %>"
-			label="portlets"
-			selected='<%= pluginType.equals("portlets") %>'
-		/>
-	</aui:nav>
-
-	<aui:nav-bar-search>
-		<liferay-portlet:renderURL varImpl="searchURL">
-			<portlet:param name="mvcPath" value="/view_search_results.jsp" />
-		</liferay-portlet:renderURL>
-
-		<aui:form action="<%= searchURL.toString() %>" method="get" name="fm1">
-			<liferay-portlet:renderURLParams varImpl="searchURL" />
-
-			<liferay-ui:input-search markupView="lexicon" />
-		</aui:form>
-	</aui:nav-bar-search>
-</aui:nav-bar>
-
-<liferay-frontend:management-bar
-	searchContainerId="components"
->
-	<liferay-frontend:management-bar-buttons>
-		<liferay-frontend:management-bar-display-buttons
-			displayViews='<%= new String[] {"descriptive"} %>'
-			portletURL="<%= PortletURLUtil.clone(portletURL, liferayPortletResponse) %>"
-			selectedDisplayStyle="descriptive"
-		/>
-	</liferay-frontend:management-bar-buttons>
-
-	<liferay-frontend:management-bar-filters>
-		<liferay-frontend:management-bar-sort
-			orderByCol="title"
-			orderByType="<%= orderByType %>"
-			orderColumns='<%= new String[] {"title"} %>'
-			portletURL="<%= PortletURLUtil.clone(portletURL, liferayPortletResponse) %>"
-		/>
-	</liferay-frontend:management-bar-filters>
-</liferay-frontend:management-bar>
-
-<div class="container-fluid-1280">
+<div class="container-fluid container-fluid-max-xl">
 	<liferay-ui:breadcrumb
 		showCurrentGroup="<%= false %>"
 		showGuestGroup="<%= false %>"
@@ -170,53 +82,11 @@ else {
 		showParentGroups="<%= false %>"
 	/>
 
-	<%
-	String emptyResultsMessage = "no-portlets-were-found";
-
-	if (pluginType.equals("components")) {
-		emptyResultsMessage = "no-components-were-found";
-	}
-	%>
-
 	<liferay-ui:search-container
-		emptyResultsMessage="<%= emptyResultsMessage %>"
-		iteratorURL="<%= portletURL %>"
+		id="plugins"
+		searchContainer="<%= searchContainer %>"
+		var="pluginSearch"
 	>
-		<liferay-ui:search-container-results>
-
-			<%
-			BundleContext bundleContext = bundle.getBundleContext();
-
-			List<ServiceReference<?>> serviceReferences = Collections.<ServiceReference<?>>emptyList();
-
-			if (pluginType.equals("portlets")) {
-				Collection<ServiceReference<Portlet>> serviceReferenceCollection = bundleContext.getServiceReferences(Portlet.class, "(service.bundleid=" + bundle.getBundleId() + ")");
-
-				serviceReferences = new ArrayList<ServiceReference<?>>(serviceReferenceCollection);
-
-				serviceReferences = ListUtil.sort(serviceReferences, new ModuleServiceReferenceComparator("javax.portlet.display-name", orderByType));
-			}
-			else {
-				ServiceReference<?>[] serviceReferenceArray = (ServiceReference<?>[])bundleContext.getServiceReferences((String)null, "(&(service.bundleid=" + bundle.getBundleId() + ")(component.id=*))");
-
-				serviceReferences = ListUtil.toList(serviceReferenceArray);
-
-				serviceReferences = ListUtil.sort(serviceReferences, new ModuleServiceReferenceComparator("component.name", orderByType));
-			}
-
-			int end = searchContainer.getEnd();
-
-			if (end > serviceReferences.size()) {
-				end = serviceReferences.size();
-			}
-
-			searchContainer.setResults(serviceReferences.subList(searchContainer.getStart(), end));
-
-			searchContainer.setTotal(serviceReferences.size());
-			%>
-
-		</liferay-ui:search-container-results>
-
 		<liferay-ui:search-container-row
 			className="org.osgi.framework.ServiceReference"
 			modelVar="serviceReference"
@@ -236,7 +106,9 @@ else {
 				</c:choose>
 			</liferay-ui:search-container-column-text>
 
-			<liferay-ui:search-container-column-text colspan="<%= 2 %>">
+			<liferay-ui:search-container-column-text
+				colspan="<%= 2 %>"
+			>
 
 				<%
 				String description = StringPool.BLANK;
@@ -260,16 +132,19 @@ else {
 				}
 				%>
 
-				<h5>
+				<h2 class="list-group-title">
 					<%= name %>
-				</h5>
+				</h2>
 
-				<h6 class="text-default">
-					<%= description %>
-				</h6>
+				<c:if test="Validator.isNotNull(description)">
+					<p class="list-group-text"><%= description %></p>
+				</c:if>
 			</liferay-ui:search-container-column-text>
 		</liferay-ui:search-container-row>
 
-		<liferay-ui:search-iterator displayStyle="descriptive" markupView="lexicon" />
+		<liferay-ui:search-iterator
+			displayStyle="descriptive"
+			markupView="lexicon"
+		/>
 	</liferay-ui:search-container>
 </div>

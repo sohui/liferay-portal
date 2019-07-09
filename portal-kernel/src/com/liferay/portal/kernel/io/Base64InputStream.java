@@ -14,18 +14,21 @@
 
 package com.liferay.portal.kernel.io;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * @author Tina Tian
+ * @author     Tina Tian
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class Base64InputStream extends InputStream {
 
 	public Base64InputStream(InputStream inputStream) {
 		_inputStream = inputStream;
+
 		_unitBufferIndex = 0;
 		_avaiableBytes = 0;
 		_unitBuffer = new byte[3];
@@ -164,9 +167,8 @@ public class Base64InputStream extends InputStream {
 
 			return 3;
 		}
-		else {
-			return -1;
-		}
+
+		return -1;
 	}
 
 	protected int decodeUnit(byte[] outputBuffer, int position)
@@ -203,10 +205,8 @@ public class Base64InputStream extends InputStream {
 					count++;
 				}
 
-				int returnValue = decode(
+				return decode(
 					decodeUnitBuffer, outputBuffer, position, padNumber);
-
-				return returnValue;
 			}
 
 			decodeUnitBuffer[count++] = (byte)intValue;
@@ -245,9 +245,8 @@ public class Base64InputStream extends InputStream {
 		if (character != CharPool.EQUAL) {
 			return -1;
 		}
-		else {
-			return 0;
-		}
+
+		return 0;
 	}
 
 	protected int getEncodedByte() throws IOException {

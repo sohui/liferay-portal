@@ -26,7 +26,6 @@ import javax.servlet.jsp.PageContext;
 public abstract class ConditionalTagSupport extends TagSupport {
 
 	@Override
-	@SuppressWarnings("unused")
 	public int doStartTag() throws JspTagException {
 		_result = condition();
 
@@ -37,9 +36,8 @@ public abstract class ConditionalTagSupport extends TagSupport {
 		if (_result) {
 			return EVAL_BODY_INCLUDE;
 		}
-		else {
-			return SKIP_BODY;
-		}
+
+		return SKIP_BODY;
 	}
 
 	@Override

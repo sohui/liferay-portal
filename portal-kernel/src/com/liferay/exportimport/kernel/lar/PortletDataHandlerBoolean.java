@@ -14,9 +14,12 @@
 
 package com.liferay.exportimport.kernel.lar;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public class PortletDataHandlerBoolean extends PortletDataHandlerControl {
 
 	public PortletDataHandlerBoolean(String namespace, String controlName) {

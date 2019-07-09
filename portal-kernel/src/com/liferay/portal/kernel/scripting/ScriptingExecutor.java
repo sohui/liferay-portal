@@ -32,28 +32,9 @@ public interface ScriptingExecutor {
 			Set<String> outputNames, File scriptFile)
 		throws ScriptingException;
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #eval(Set, Map, Set, File)}
-	 */
-	@Deprecated
-	public Map<String, Object> eval(
-			Set<String> allowedClasses, Map<String, Object> inputObjects,
-			Set<String> outputNames, File scriptFile,
-			ClassLoader... classloaders)
-		throws ScriptingException;
-
 	public Map<String, Object> eval(
 			Set<String> allowedClasses, Map<String, Object> inputObjects,
 			Set<String> outputNames, String script)
-		throws ScriptingException;
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #eval(Set, Map, Set, String)}
-	 */
-	@Deprecated
-	public Map<String, Object> eval(
-			Set<String> allowedClasses, Map<String, Object> inputObjects,
-			Set<String> outputNames, String script, ClassLoader... classloaders)
 		throws ScriptingException;
 
 	public String getLanguage();

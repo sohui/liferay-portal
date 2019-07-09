@@ -14,13 +14,13 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.util.UnicodeProperties;
 
 import java.io.Serializable;
 
 import java.util.Map;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -56,12 +56,6 @@ public interface LayoutType extends Serializable {
 	public boolean isSitemapable();
 
 	public boolean isURLFriendliable();
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public void setLayout(Layout layout);
 
 	public void setTypeSettingsProperty(String key, String value);
 

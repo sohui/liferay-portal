@@ -22,10 +22,12 @@ import com.liferay.portal.kernel.xml.QName;
  */
 public interface PortletQName {
 
+	public static final String PRIVATE_RENDER_PARAMETER_NAMESPACE = "priv_r_p_";
+
 	public static final String PUBLIC_RENDER_PARAMETER_NAMESPACE = "p_r_p_";
 
 	public static final String REMOVE_PUBLIC_RENDER_PARAMETER_NAMESPACE =
-		"r_p_r_p";
+		"r_p_r_p_";
 
 	public String getKey(QName qName);
 

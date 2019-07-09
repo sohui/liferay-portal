@@ -14,6 +14,8 @@
 
 package com.liferay.portal.servlet;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -22,10 +24,8 @@ import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -44,10 +44,11 @@ public class LanguageServlet extends HttpServlet {
 
 	@Override
 	public void service(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException {
 
-		String path = request.getPathInfo();
+		String path = httpServletRequest.getPathInfo();
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Path " + path);
@@ -55,10 +56,10 @@ public class LanguageServlet extends HttpServlet {
 
 		try {
 			AuthTokenUtil.checkCSRFToken(
-				request, LanguageServlet.class.getName());
+				httpServletRequest, LanguageServlet.class.getName());
 		}
 		catch (PortalException pe) {
-			_log.error("Invalid authentication token received");
+			_log.error("Invalid authentication token received", pe);
 
 			return;
 		}
@@ -109,19 +110,20 @@ public class LanguageServlet extends HttpServlet {
 		}
 
 		if (!LanguageUtil.isValidLanguageKey(locale, key)) {
-			response.setDateHeader(HttpHeaders.EXPIRES, 0);
-			response.setHeader(
+			httpServletResponse.setDateHeader(HttpHeaders.EXPIRES, 0);
+			httpServletResponse.setHeader(
 				HttpHeaders.CACHE_CONTROL,
 				HttpHeaders.CACHE_CONTROL_NO_CACHE_VALUE);
-			response.setHeader(
+			httpServletResponse.setHeader(
 				HttpHeaders.PRAGMA, HttpHeaders.PRAGMA_NO_CACHE_VALUE);
 		}
 
-		response.setContentType(ContentTypes.TEXT_PLAIN_UTF8);
-		response.setHeader(
+		httpServletResponse.setContentType(ContentTypes.TEXT_PLAIN_UTF8);
+		httpServletResponse.setHeader(
 			HttpHeaders.CONTENT_DISPOSITION, _CONTENT_DISPOSITION);
 
-		ServletResponseUtil.write(response, value.getBytes(StringPool.UTF8));
+		ServletResponseUtil.write(
+			httpServletResponse, value.getBytes(StringPool.UTF8));
 	}
 
 	private static final String _CONTENT_DISPOSITION =

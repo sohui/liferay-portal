@@ -37,7 +37,9 @@ public class ByteArrayFileInputStream extends InputStream {
 		}
 
 		this.file = file;
+
 		fileSize = file.length();
+
 		this.threshold = threshold;
 		this.deleteOnClose = deleteOnClose;
 	}
@@ -50,9 +52,8 @@ public class ByteArrayFileInputStream extends InputStream {
 		else if (fileInputStream != null) {
 			return fileInputStream.available();
 		}
-		else {
-			return 0;
-		}
+
+		return 0;
 	}
 
 	@Override
@@ -100,15 +101,13 @@ public class ByteArrayFileInputStream extends InputStream {
 			if (index < data.length) {
 				return data[index++] & 0xff;
 			}
-			else {
-				return -1;
-			}
-		}
-		else {
-			initFileInputStream();
 
-			return fileInputStream.read();
+			return -1;
 		}
+
+		initFileInputStream();
+
+		return fileInputStream.read();
 	}
 
 	@Override
@@ -187,7 +186,7 @@ public class ByteArrayFileInputStream extends InputStream {
 			return;
 		}
 
-		int arraySize = (int)this.fileSize;
+		int arraySize = (int)fileSize;
 
 		data = new byte[arraySize];
 

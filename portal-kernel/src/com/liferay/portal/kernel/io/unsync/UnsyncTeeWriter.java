@@ -18,8 +18,10 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * @author Shuyang Zhou
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class UnsyncTeeWriter extends Writer {
 
 	public UnsyncTeeWriter(Writer writer1, Writer writer2) {

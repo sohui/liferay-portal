@@ -15,6 +15,10 @@
 package com.liferay.portal.systemevent;
 
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.aop.AopMethodInvocation;
+import com.liferay.portal.kernel.aop.ChainableMethodAdvice;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.AuditedModel;
@@ -27,38 +31,69 @@ import com.liferay.portal.kernel.service.SystemEventLocalServiceUtil;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.systemevent.SystemEventHierarchyEntry;
 import com.liferay.portal.kernel.systemevent.SystemEventHierarchyEntryThreadLocal;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.spring.aop.AnnotationChainableMethodAdvice;
 
 import java.io.Serializable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import org.aopalliance.intercept.MethodInvocation;
+import java.util.Map;
 
 /**
  * @author Zsolt Berentey
  */
-public class SystemEventAdvice
-	extends AnnotationChainableMethodAdvice<SystemEvent> {
+public class SystemEventAdvice extends ChainableMethodAdvice {
 
 	@Override
-	public void afterReturning(MethodInvocation methodInvocation, Object result)
+	public Object before(
+			AopMethodInvocation aopMethodInvocation, Object[] arguments)
 		throws Throwable {
 
-		SystemEvent systemEvent = findAnnotation(methodInvocation);
+		SystemEvent systemEvent = aopMethodInvocation.getAdviceMethodContext();
 
-		if ((systemEvent == _nullSystemEvent) || !systemEvent.send()) {
+		if (systemEvent.action() != SystemEventConstants.ACTION_NONE) {
+			if (!isValid(aopMethodInvocation, arguments, _PHASE_BEFORE)) {
+				return null;
+			}
+
+			ClassedModel classedModel = (ClassedModel)arguments[0];
+
+			SystemEventHierarchyEntry systemEventHierarchyEntry =
+				SystemEventHierarchyEntryThreadLocal.push(
+					getClassName(classedModel), getClassPK(classedModel),
+					systemEvent.action());
+
+			if (systemEventHierarchyEntry != null) {
+				systemEventHierarchyEntry.setUuid(getUuid(classedModel));
+			}
+		}
+
+		return null;
+	}
+
+	@Override
+	public Object createMethodContext(
+		Class<?> targetClass, Method method,
+		Map<Class<? extends Annotation>, Annotation> annotations) {
+
+		return annotations.get(SystemEvent.class);
+	}
+
+	@Override
+	protected void afterReturning(
+			AopMethodInvocation aopMethodInvocation, Object[] arguments,
+			Object result)
+		throws Throwable {
+
+		SystemEvent systemEvent = aopMethodInvocation.getAdviceMethodContext();
+
+		if (!systemEvent.send()) {
 			return;
 		}
 
-		if (!isValid(methodInvocation, _PHASE_AFTER_RETURNING)) {
+		if (!isValid(aopMethodInvocation, arguments, _PHASE_AFTER_RETURNING)) {
 			return;
 		}
-
-		Object[] arguments = methodInvocation.getArguments();
 
 		ClassedModel classedModel = (ClassedModel)arguments[0];
 
@@ -112,52 +147,18 @@ public class SystemEventAdvice
 	}
 
 	@Override
-	public Object before(MethodInvocation methodInvocation) throws Throwable {
-		SystemEvent systemEvent = findAnnotation(methodInvocation);
+	protected void duringFinally(
+		AopMethodInvocation aopMethodInvocation, Object[] arguments) {
 
-		if (systemEvent == _nullSystemEvent) {
-			return null;
-		}
+		SystemEvent systemEvent = aopMethodInvocation.getAdviceMethodContext();
 
-		if (systemEvent.action() != SystemEventConstants.ACTION_NONE) {
-			if (!isValid(methodInvocation, _PHASE_BEFORE)) {
-				return null;
-			}
-
-			Object[] arguments = methodInvocation.getArguments();
-
-			ClassedModel classedModel = (ClassedModel)arguments[0];
-
-			SystemEventHierarchyEntry systemEventHierarchyEntry =
-				SystemEventHierarchyEntryThreadLocal.push(
-					getClassName(classedModel), getClassPK(classedModel),
-					systemEvent.action());
-
-			if (systemEventHierarchyEntry != null) {
-				systemEventHierarchyEntry.setUuid(getUuid(classedModel));
-			}
-		}
-
-		return null;
-	}
-
-	@Override
-	public void duringFinally(MethodInvocation methodInvocation) {
-		SystemEvent systemEvent = findAnnotation(methodInvocation);
-
-		if (systemEvent == _nullSystemEvent) {
-			return;
-		}
-
-		if (!isValid(methodInvocation, _PHASE_DURING_FINALLY)) {
+		if (!isValid(aopMethodInvocation, arguments, _PHASE_DURING_FINALLY)) {
 			return;
 		}
 
 		if (systemEvent.action() == SystemEventConstants.ACTION_NONE) {
 			return;
 		}
-
-		Object[] arguments = methodInvocation.getArguments();
 
 		ClassedModel classedModel = (ClassedModel)arguments[0];
 
@@ -169,11 +170,6 @@ public class SystemEventAdvice
 
 		SystemEventHierarchyEntryThreadLocal.pop(
 			getClassName(classedModel), classPK);
-	}
-
-	@Override
-	public SystemEvent getNullAnnotation() {
-		return _nullSystemEvent;
 	}
 
 	protected String getClassName(ClassedModel classedModel) {
@@ -244,7 +240,7 @@ public class SystemEventAdvice
 		try {
 			Class<?> modelClass = classedModel.getClass();
 
-			getUuidMethod = modelClass.getMethod("getUuid", new Class[0]);
+			getUuidMethod = modelClass.getMethod("getUuid", new Class<?>[0]);
 		}
 		catch (Exception e) {
 			return StringPool.BLANK;
@@ -253,15 +249,18 @@ public class SystemEventAdvice
 		return (String)getUuidMethod.invoke(classedModel, new Object[0]);
 	}
 
-	protected boolean isValid(MethodInvocation methodInvocation, int phase) {
-		Method method = methodInvocation.getMethod();
+	protected boolean isValid(
+		AopMethodInvocation aopMethodInvocation, Object[] arguments,
+		int phase) {
+
+		Method method = aopMethodInvocation.getMethod();
 
 		Class<?>[] parameterTypes = method.getParameterTypes();
 
 		if (parameterTypes.length == 0) {
 			if (_log.isDebugEnabled() && (phase == _PHASE_BEFORE)) {
 				_log.debug(
-					"The method " + methodInvocation +
+					"The method " + aopMethodInvocation +
 						" must have at least one parameter");
 			}
 
@@ -273,14 +272,12 @@ public class SystemEventAdvice
 		if (!ClassedModel.class.isAssignableFrom(parameterType)) {
 			if (_log.isDebugEnabled() && (phase == _PHASE_BEFORE)) {
 				_log.debug(
-					"The first parameter of " + methodInvocation +
+					"The first parameter of " + aopMethodInvocation +
 						" must implement ClassedModel");
 			}
 
 			return false;
 		}
-
-		Object[] arguments = methodInvocation.getArguments();
 
 		ClassedModel classedModel = (ClassedModel)arguments[0];
 
@@ -289,7 +286,7 @@ public class SystemEventAdvice
 
 			if (_log.isDebugEnabled() && (phase == _PHASE_BEFORE)) {
 				_log.debug(
-					"The first parameter of " + methodInvocation +
+					"The first parameter of " + aopMethodInvocation +
 						" must be a long");
 			}
 
@@ -308,7 +305,7 @@ public class SystemEventAdvice
 				StringBundler sb = new StringBundler(4);
 
 				sb.append("If send is true, the first parameter of ");
-				sb.append(methodInvocation);
+				sb.append(aopMethodInvocation);
 				sb.append(" must implement AuditedModel, GroupedModel, or ");
 				sb.append("StagedModel");
 
@@ -329,29 +326,5 @@ public class SystemEventAdvice
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		SystemEventAdvice.class);
-
-	private static final SystemEvent _nullSystemEvent = new SystemEvent() {
-
-		@Override
-		public Class<? extends Annotation> annotationType() {
-			return SystemEvent.class;
-		}
-
-		@Override
-		public int action() {
-			return SystemEventConstants.ACTION_NONE;
-		}
-
-		@Override
-		public boolean send() {
-			return false;
-		}
-
-		@Override
-		public int type() {
-			return 0;
-		}
-
-	};
 
 }

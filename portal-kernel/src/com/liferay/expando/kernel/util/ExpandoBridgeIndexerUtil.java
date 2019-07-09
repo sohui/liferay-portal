@@ -16,7 +16,6 @@ package com.liferay.expando.kernel.util;
 
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.portal.kernel.search.Document;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 /**
  * @author Raymond Augé
@@ -29,21 +28,25 @@ public class ExpandoBridgeIndexerUtil {
 		getExpandoBridgeIndexer().addAttributes(doc, expandoBridge);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #encodeFieldName(String, int)}
+	 */
+	@Deprecated
 	public static String encodeFieldName(String columnName) {
 		return getExpandoBridgeIndexer().encodeFieldName(columnName);
 	}
 
-	public static ExpandoBridgeIndexer getExpandoBridgeIndexer() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			ExpandoBridgeIndexerUtil.class);
+	public static String encodeFieldName(String columnName, int indexType) {
+		return getExpandoBridgeIndexer().encodeFieldName(columnName, indexType);
+	}
 
+	public static ExpandoBridgeIndexer getExpandoBridgeIndexer() {
 		return _expandoBridgeIndexer;
 	}
 
 	public void setExpandoBridgeIndexer(
 		ExpandoBridgeIndexer expandoBridgeIndexer) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_expandoBridgeIndexer = expandoBridgeIndexer;
 	}

@@ -16,17 +16,21 @@ package com.liferay.portal.security.permission;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.admin.util.OmniadminUtil;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Brian Wing Shun Chan
@@ -42,6 +46,15 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 	}
 
 	@Override
+	public long[] getGuestUserRoleIds() {
+		return PermissionChecker.DEFAULT_ROLE_IDS;
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
+	@Override
 	public List<Long> getOwnerResourceBlockIds(
 		long companyId, long groupId, String name, String actionId) {
 
@@ -53,6 +66,15 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 		return ownerRole.getRoleId();
 	}
 
+	@Override
+	public Map<Object, Object> getPermissionChecksMap() {
+		return _permissionChecksMap;
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<Long> getResourceBlockIds(
 		long companyId, long groupId, long userId, String name,
@@ -87,9 +109,26 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 
 	@Override
 	public boolean hasPermission(
+		Group group, String name, long primKey, String actionId) {
+
+		return hasPermission(group, name, String.valueOf(primKey), actionId);
+	}
+
+	@Override
+	public boolean hasPermission(
 		long groupId, String name, long primKey, String actionId) {
 
-		return hasPermission(groupId, name, String.valueOf(primKey), actionId);
+		return hasPermission(
+			GroupLocalServiceUtil.fetchGroup(groupId), name,
+			String.valueOf(primKey), actionId);
+	}
+
+	@Override
+	public boolean hasPermission(
+		long groupId, String name, String primKey, String actionId) {
+
+		return hasPermission(
+			GroupLocalServiceUtil.fetchGroup(groupId), name, primKey, actionId);
 	}
 
 	@Override
@@ -97,23 +136,23 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 		this.user = user;
 
 		if (user.isDefaultUser()) {
-			this.defaultUserId = user.getUserId();
-			this.signedIn = false;
+			defaultUserId = user.getUserId();
+			signedIn = false;
 		}
 		else {
 			try {
-				this.defaultUserId = UserLocalServiceUtil.getDefaultUserId(
+				defaultUserId = UserLocalServiceUtil.getDefaultUserId(
 					user.getCompanyId());
 			}
 			catch (Exception e) {
 				_log.error(e, e);
 			}
 
-			this.signedIn = true;
+			signedIn = true;
 		}
 
 		try {
-			this.ownerRole = RoleLocalServiceUtil.getRole(
+			ownerRole = RoleLocalServiceUtil.getRole(
 				user.getCompanyId(), RoleConstants.OWNER);
 		}
 		catch (Exception e) {
@@ -149,5 +188,7 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BasePermissionChecker.class);
+
+	private final Map<Object, Object> _permissionChecksMap = new HashMap<>();
 
 }

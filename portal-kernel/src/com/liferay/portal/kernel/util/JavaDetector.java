@@ -71,9 +71,8 @@ public class JavaDetector {
 		if (javaVersion.startsWith(_JAVA_VERSION_JDK_7)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public static boolean isJDK8() {
@@ -82,9 +81,18 @@ public class JavaDetector {
 		if (javaVersion.startsWith(_JAVA_VERSION_JDK_8)) {
 			return true;
 		}
-		else {
-			return false;
+
+		return false;
+	}
+
+	public static boolean isJDK11() {
+		String javaVersion = getJavaVersion();
+
+		if (javaVersion.startsWith(_JAVA_VERSION_JDK_11)) {
+			return true;
 		}
+
+		return false;
 	}
 
 	public static boolean isOpenJDK() {
@@ -108,7 +116,7 @@ public class JavaDetector {
 		_javaVmVersion = System.getProperty("java.vm.version");
 
 		_64bit = Objects.equals(
-			"64", System.getProperty("sun.arch.data.model"));
+			System.getProperty("sun.arch.data.model"), "64");
 
 		boolean oracle = false;
 
@@ -142,6 +150,8 @@ public class JavaDetector {
 	private static final String _JAVA_VERSION_JDK_7 = "1.7.";
 
 	private static final String _JAVA_VERSION_JDK_8 = "1.8.";
+
+	private static final String _JAVA_VERSION_JDK_11 = "11";
 
 	private static final Log _log = LogFactoryUtil.getLog(JavaDetector.class);
 

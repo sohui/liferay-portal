@@ -18,7 +18,8 @@
 			margin: 15px 0;
 		}
 
-		li, ul {
+		li,
+		ul {
 			list-style: none;
 		}
 
@@ -29,7 +30,6 @@
 		.kbarticle-root-selector {
 			select {
 				display: inline;
-				width: inherit;
 			}
 		}
 

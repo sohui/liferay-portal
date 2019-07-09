@@ -14,7 +14,7 @@
 
 package com.liferay.portal.asm;
 
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
 
 import java.io.IOException;
 
@@ -264,9 +264,9 @@ public class ASMUtil {
 		return removedMethodNodes;
 	}
 
-	private static final MethodVisitor _emptyMethodVisitor =
-		new MethodVisitor(Opcodes.ASM5) {
-		};
+	private static final MethodVisitor _emptyMethodVisitor = new MethodVisitor(
+		Opcodes.ASM5) {
+	};
 
 	private static class RenameClassRemapper extends Remapper {
 

@@ -14,13 +14,13 @@
 
 package com.liferay.portal.kernel.dao.search;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -53,6 +53,7 @@ public class RowChecker {
 
 	public RowChecker(PortletResponse portletResponse) {
 		_portletResponse = portletResponse;
+
 		_allRowIds = _portletResponse.getNamespace() + ALL_ROW_IDS;
 		_formName = _portletResponse.getNamespace() + FORM_NAME;
 		_rowIds = _portletResponse.getNamespace() + ROW_IDS;
@@ -70,9 +71,9 @@ public class RowChecker {
 		return getAllRowsCheckBox(null);
 	}
 
-	public String getAllRowsCheckBox(HttpServletRequest request) {
+	public String getAllRowsCheckBox(HttpServletRequest httpServletRequest) {
 		return getAllRowsCheckbox(
-			request, _allRowIds, StringUtil.quote(_rowIds));
+			httpServletRequest, _allRowIds, StringUtil.quote(_rowIds));
 	}
 
 	public String getAllRowsId() {
@@ -100,13 +101,21 @@ public class RowChecker {
 	}
 
 	public String getRowCheckBox(
-		HttpServletRequest request, boolean checked, boolean disabled,
-		String primaryKey) {
+		HttpServletRequest httpServletRequest, boolean checked,
+		boolean disabled, String primaryKey) {
 
 		return getRowCheckBox(
-			request, checked, disabled, _rowIds, primaryKey,
+			httpServletRequest, checked, disabled, _rowIds, primaryKey,
 			StringUtil.quote(_rowIds), StringUtil.quote(_allRowIds),
 			StringPool.BLANK);
+	}
+
+	public String getRowCheckBox(
+		HttpServletRequest httpServletRequest, ResultRow resultRow) {
+
+		return getRowCheckBox(
+			httpServletRequest, isChecked(resultRow.getObject()),
+			isDisabled(resultRow.getObject()), resultRow.getPrimaryKey());
 	}
 
 	public String getRowId() {
@@ -184,7 +193,8 @@ public class RowChecker {
 	}
 
 	protected String getAllRowsCheckbox(
-		HttpServletRequest request, String name, String checkBoxRowIds) {
+		HttpServletRequest httpServletRequest, String name,
+		String checkBoxRowIds) {
 
 		if (Validator.isNull(name)) {
 			return StringPool.BLANK;
@@ -195,7 +205,8 @@ public class RowChecker {
 		sb.append("<label><input name=\"");
 		sb.append(name);
 		sb.append("\" title=\"");
-		sb.append(LanguageUtil.get(getLocale(request), "select-all"));
+		sb.append(
+			LanguageUtil.get(getLocale(httpServletRequest), "select-all"));
 		sb.append("\" type=\"checkbox\" ");
 		sb.append(HtmlUtil.buildData(_data));
 		sb.append("onClick=\"Liferay.Util.checkAll(AUI().one(this).ancestor(");
@@ -206,12 +217,13 @@ public class RowChecker {
 		return sb.toString();
 	}
 
-	protected Locale getLocale(HttpServletRequest request) {
+	protected Locale getLocale(HttpServletRequest httpServletRequest) {
 		Locale locale = null;
 
-		if (request != null) {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+		if (httpServletRequest != null) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
 			locale = themeDisplay.getLocale();
 		}
@@ -262,8 +274,8 @@ public class RowChecker {
 	}
 
 	protected String getRowCheckBox(
-		HttpServletRequest request, boolean checked, boolean disabled,
-		String name, String value, String checkBoxRowIds,
+		HttpServletRequest httpServletRequest, boolean checked,
+		boolean disabled, String name, String value, String checkBoxRowIds,
 		String checkBoxAllRowIds, String checkBoxPostOnClick) {
 
 		StringBundler sb = new StringBundler(14);
@@ -283,7 +295,7 @@ public class RowChecker {
 		sb.append("\" name=\"");
 		sb.append(name);
 		sb.append("\" title=\"");
-		sb.append(LanguageUtil.get(request.getLocale(), "select"));
+		sb.append(LanguageUtil.get(httpServletRequest.getLocale(), "select"));
 		sb.append("\" type=\"checkbox\" value=\"");
 		sb.append(HtmlUtil.escapeAttribute(value));
 		sb.append("\" ");

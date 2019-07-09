@@ -73,10 +73,6 @@ public class PortletRatingsDefinitionUtil {
 			long companyId, long groupId, String className)
 		throws PortalException {
 
-		Group group = GroupLocalServiceUtil.getGroup(groupId);
-
-		UnicodeProperties groupTypeSettings = group.getTypeSettingsProperties();
-
 		RatingsType defaultRatingsType = getDefaultRatingsType(className);
 
 		if (defaultRatingsType != null) {
@@ -88,6 +84,11 @@ public class PortletRatingsDefinitionUtil {
 
 			String value = companyPortletPreferences.getValue(
 				propertyKey, defaultRatingsType.getValue());
+
+			Group group = GroupLocalServiceUtil.getGroup(groupId);
+
+			UnicodeProperties groupTypeSettings =
+				group.getTypeSettingsProperties();
 
 			value = groupTypeSettings.getProperty(propertyKey, value);
 
@@ -105,7 +106,7 @@ public class PortletRatingsDefinitionUtil {
 			_serviceTrackerCustomizer =
 				new ServiceTrackerCustomizer
 					<PortletRatingsDefinition,
-						PortletRatingsDefinitionValues>() {
+					 PortletRatingsDefinitionValues>() {
 
 					@Override
 					public PortletRatingsDefinitionValues addingService(

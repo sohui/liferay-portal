@@ -25,18 +25,33 @@ String id = GetterUtil.getString((String)request.getAttribute("liferay-ui:icon-m
 String message = (String)request.getAttribute("liferay-ui:icon-menu:message");
 boolean scroll = GetterUtil.getBoolean(request.getAttribute("liferay-ui:icon-menu:scroll"));
 String triggerCssClass = GetterUtil.getString((String)request.getAttribute("liferay-ui:icon-menu:triggerCssClass"));
+String triggerLabel = GetterUtil.getString((String)request.getAttribute("liferay-ui:icon-menu:triggerLabel"));
+String triggerType = GetterUtil.getString(request.getAttribute("liferay-ui:icon-menu:triggerType"));
 
 if (Validator.isNull(icon)) {
 	icon = "ellipsis-v";
 }
 %>
 
-<div class="dropdown dropdown-menu-no-arrow lfr-icon-menu <%= cssClass %>" <%= AUIUtil.buildData(data) %>>
-	<a aria-expanded="false" class="dropdown-toggle icon-monospaced <%= triggerCssClass %>" data-toggle="dropdown" href="javascript:;" id="<%= id %>" title="<%= message %>">
-		<aui:icon image="<%= icon %>" markupView="lexicon" />
-	</a>
+<div class="dropdown lfr-icon-menu <%= cssClass %>" <%= AUIUtil.buildData(data) %>>
+	<c:choose>
+		<c:when test="<%= triggerType.equals(\"button\") %>">
+			<button aria-expanded="false" aria-haspopup="true" class="btn btn-monospaced btn-secondary dropdown-toggle <%= triggerCssClass %>" id="<%= id %>" title="<%= message %>" type="button">
+				<aui:icon cssClass="inline-item" image="<%= icon %>" markupView="lexicon" />
 
-	<aui:script use="liferay-menu">
+				<c:if test="<%= Validator.isNotNull(triggerLabel) %>">
+					<span class="btn-section"><%= triggerLabel %></span>
+				</c:if>
+			</button>
+		</c:when>
+		<c:otherwise>
+			<a class="direction-<%= direction %> dropdown-toggle icon-monospaced <%= triggerCssClass %>" href="javascript:;" id="<%= id %>" title="<%= message %>">
+				<aui:icon image="<%= icon %>" markupView="lexicon" />
+			</a>
+		</c:otherwise>
+	</c:choose>
+
+	<aui:script position="inline" use="liferay-menu">
 		Liferay.Menu.register('<%= id %>');
 	</aui:script>
 

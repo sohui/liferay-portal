@@ -43,7 +43,7 @@ public class WelderFactoryUtilTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
 
 	@NewEnv(type = NewEnv.Type.NONE)
 	@Test
@@ -118,7 +118,7 @@ public class WelderFactoryUtilTest {
 
 	@AdviseWith(adviceClasses = {FIFOUtilAdvice.class, OSDetectorAdvice.class})
 	@Test
-	public void testGetWelderClassOnNonWindowsWithFIFO() {
+	public void testGetWelderClassOnNonwindowsWithFIFO() {
 		FIFOUtilAdvice._fifoSupported = true;
 		OSDetectorAdvice._windows = false;
 
@@ -127,7 +127,7 @@ public class WelderFactoryUtilTest {
 
 	@AdviseWith(adviceClasses = {FIFOUtilAdvice.class, OSDetectorAdvice.class})
 	@Test
-	public void testGetWelderClassOnNonWindowsWithoutFIFO() {
+	public void testGetWelderClassOnnonWindowsWithoutFIFO() {
 		FIFOUtilAdvice._fifoSupported = false;
 		OSDetectorAdvice._windows = false;
 
@@ -135,7 +135,7 @@ public class WelderFactoryUtilTest {
 			SocketWelder.class, WelderFactoryUtil.getWelderClass());
 	}
 
-	@AdviseWith(adviceClasses = {OSDetectorAdvice.class})
+	@AdviseWith(adviceClasses = OSDetectorAdvice.class)
 	@Test
 	public void testGetWelderClassOnWindows() {
 		OSDetectorAdvice._windows = true;
@@ -148,8 +148,8 @@ public class WelderFactoryUtilTest {
 	public static class FIFOUtilAdvice {
 
 		@Around(
-			"execution(public static boolean com.liferay.portal.kernel." +
-				"nio.intraband.welder.fifo.FIFOUtil.isFIFOSupported())"
+			"execution(public static boolean com.liferay.portal.kernel.nio." +
+				"intraband.welder.fifo.FIFOUtil.isFIFOSupported())"
 		)
 		public boolean isFIFOSupported() {
 			return _fifoSupported;

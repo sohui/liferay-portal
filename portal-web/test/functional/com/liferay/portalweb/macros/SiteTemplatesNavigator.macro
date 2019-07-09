@@ -1,23 +1,15 @@
-<definition>
-	<command name="gotoManageSiteTemplates">
-		<var name="key_siteTemplateName" value="${siteTemplateName}" />
+definition {
 
-		<execute function="Click" locator1="SiteTemplates#SITE_TEMPLATE_TABLE_ACTIONS" value1="${siteTemplateName}" />
+	macro gotoSiteTemplatesPage {
+		var key_siteTemplateName = "${siteTemplateName}";
 
-		<execute function="Click" locator1="MenuItem#MANAGE" />
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "SiteTemplates#SITE_TEMPLATE_TABLE_NAME",
+			value1 = "${siteTemplateName}");
 
-		<execute macro="ProductMenuHelper#openProductMenu" />
-	</command>
+		SelectWindow(locator1 = "Home - ${siteTemplateName} - ${siteName}");
 
-	<command name="gotoSiteTemplatesPage">
-		<var name="key_siteTemplateName" value="${siteTemplateName}" />
+		Navigator._gotoPage(pageName = "${pageName}");
+	}
 
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="SiteTemplates#SITE_TEMPLATE_TABLE_NAME" value1="${siteTemplateName}" />
-
-		<execute function="SelectWindow" locator1="home - ${siteTemplateName} - Liferay" />
-
-		<execute macro="Navigator#_gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
-	</command>
-</definition>
+}

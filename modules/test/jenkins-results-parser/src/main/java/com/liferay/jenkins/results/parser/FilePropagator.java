@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author Peter Yoo
@@ -38,8 +39,6 @@ public class FilePropagator {
 		}
 
 		_targetSlaves.addAll(targetSlaves);
-
-		_copyFromSource();
 	}
 
 	public long getAverageThreadDuration() {
@@ -50,7 +49,17 @@ public class FilePropagator {
 		return _threadsDurationTotal / _threadsCompletedCount;
 	}
 
+	public List<String> getErrorSlaves() {
+		return _errorSlaves;
+	}
+
+	public void setCleanUpCommand(String cleanUpCommand) {
+		_cleanUpCommand = cleanUpCommand;
+	}
+
 	public void start(int threadCount) {
+		_copyFromSource();
+
 		ExecutorService executorService = Executors.newFixedThreadPool(
 			threadCount);
 
@@ -61,7 +70,7 @@ public class FilePropagator {
 			long start = System.currentTimeMillis();
 
 			while (!_targetSlaves.isEmpty() || !_busySlaves.isEmpty()) {
-				synchronized(this) {
+				synchronized (this) {
 					for (String mirrorSlave : _mirrorSlaves) {
 						if (_targetSlaves.isEmpty()) {
 							break;
@@ -115,6 +124,10 @@ public class FilePropagator {
 	}
 
 	private void _copyFromSource() {
+		if (_filePropagatorTasks.isEmpty() || _targetSlaves.isEmpty()) {
+			return;
+		}
+
 		List<String> commands = new ArrayList<>();
 
 		String targetSlave = null;
@@ -136,7 +149,7 @@ public class FilePropagator {
 			}
 			else {
 				commands.add(
-					"rsync -vI " + sourceFileName + " " + targetFileName);
+					"rsync -Iqs " + sourceFileName + " " + targetFileName);
 			}
 
 			String targetDirName = targetFileName.substring(
@@ -170,17 +183,23 @@ public class FilePropagator {
 	}
 
 	private int _executeBashCommands(List<String> commands, String targetSlave)
-		throws InterruptedException, IOException {
+		throws IOException, TimeoutException {
 
-		StringBuffer sb = new StringBuffer("ssh ");
+		StringBuffer sb = new StringBuffer(
+			"ssh -o ConnectTimeout=10 -o NumberOfPasswordPrompts=0 ");
 
 		sb.append(targetSlave);
 		sb.append(" '");
 
+		if ((_cleanUpCommand != null) && !_cleanUpCommand.isEmpty()) {
+			sb.append(_cleanUpCommand);
+			sb.append("; ");
+		}
+
 		for (int i = 0; i < commands.size(); i++) {
 			sb.append(commands.get(i));
 
-			if (i < (commands.size() -1)) {
+			if (i < (commands.size() - 1)) {
 				sb.append(" && ");
 			}
 		}
@@ -196,10 +215,11 @@ public class FilePropagator {
 	private String _getMkdirCommand(String fileName) {
 		String dirName = fileName.substring(0, fileName.lastIndexOf("/") + 1);
 
-		return "mkdir -pv " + dirName;
+		return "mkdir -p " + dirName;
 	}
 
 	private final List<String> _busySlaves = new ArrayList<>();
+	private String _cleanUpCommand;
 	private final List<String> _errorSlaves = new ArrayList<>();
 	private final List<FilePropagatorTask> _filePropagatorTasks =
 		new ArrayList<>();
@@ -213,8 +233,15 @@ public class FilePropagator {
 		private FilePropagatorTask(
 			String sourceFileName, String targetFileName) {
 
-			_sourceFileName = sourceFileName;
-			_targetFileName = targetFileName;
+			_sourceFileName = _escapeParentheses(sourceFileName);
+			_targetFileName = _escapeParentheses(targetFileName);
+		}
+
+		private String _escapeParentheses(String fileName) {
+			fileName = fileName.replace(")", "\\)");
+			fileName = fileName.replace("(", "\\(");
+
+			return fileName;
 		}
 
 		private final String _sourceFileName;
@@ -228,25 +255,27 @@ public class FilePropagator {
 		public void run() {
 			long start = System.currentTimeMillis();
 
-			List<String> commands = new ArrayList<>(
-				_filePropagator._filePropagatorTasks.size());
+			List<FilePropagatorTask> filePropagatorTasks =
+				_filePropagator._filePropagatorTasks;
 
-			for (FilePropagatorTask filePropagatorTask :
-					_filePropagator._filePropagatorTasks) {
+			List<String> commands = new ArrayList<>(filePropagatorTasks.size());
 
+			for (FilePropagatorTask filePropagatorTask : filePropagatorTasks) {
 				commands.add(
 					_filePropagator._getMkdirCommand(
 						filePropagatorTask._targetFileName));
 
 				commands.add(
-					"rsync -vI " + _mirrorSlave + ":" +
+					"rsync -Iqs " + _mirrorSlave + ":" +
 						filePropagatorTask._targetFileName + " " +
 							filePropagatorTask._targetFileName);
 			}
 
 			try {
-				_successful = _filePropagator._executeBashCommands(
-					commands, _targetSlave) == 0;
+				int value = _filePropagator._executeBashCommands(
+					commands, _targetSlave);
+
+				_successful = value == 0;
 			}
 			catch (Exception e) {
 				_successful = false;
@@ -254,7 +283,7 @@ public class FilePropagator {
 
 			_duration = System.currentTimeMillis() - start;
 
-			synchronized(_filePropagator) {
+			synchronized (_filePropagator) {
 				_filePropagator._busySlaves.remove(_mirrorSlave);
 				_filePropagator._busySlaves.remove(_targetSlave);
 				_filePropagator._mirrorSlaves.add(_mirrorSlave);

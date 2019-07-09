@@ -14,31 +14,37 @@
 
 package com.liferay.portal.spring.hibernate;
 
+import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
+import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.portal.asm.ASMWrapperUtil;
 import com.liferay.portal.dao.orm.hibernate.event.MVCCSynchronizerPostUpdateEventListener;
 import com.liferay.portal.dao.orm.hibernate.event.NestableAutoFlushEventListener;
+import com.liferay.portal.dao.orm.hibernate.event.NestableFlushEventListener;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
-import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.ClassLoaderUtil;
-import com.liferay.portal.kernel.util.Converter;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PreloadClassLoader;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.InputStream;
 
+import java.lang.reflect.Field;
+
 import java.net.URL;
 
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
-import java.util.WeakHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javassist.util.proxy.ProxyFactory;
 
@@ -47,8 +53,11 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.query.QueryPlanCache;
 import org.hibernate.event.AutoFlushEventListener;
 import org.hibernate.event.EventListeners;
+import org.hibernate.event.FlushEventListener;
 import org.hibernate.event.PostUpdateEventListener;
 
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
@@ -60,6 +69,14 @@ import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
  * @author Tomas Polesovsky
  */
 public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
+
+	public PortalHibernateConfiguration() {
+		Properties properties = new Properties();
+
+		properties.put("javax.persistence.validation.mode", "none");
+
+		setHibernateProperties(properties);
+	}
 
 	@Override
 	public SessionFactory buildSessionFactory() throws Exception {
@@ -75,12 +92,6 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 		super.destroy();
 	}
 
-	public void setHibernateConfigurationConverter(
-		Converter<String> hibernateConfigurationConverter) {
-
-		_hibernateConfigurationConverter = hibernateConfigurationConverter;
-	}
-
 	public void setMvccEnabled(boolean mvccEnabled) {
 		_mvccEnabled = mvccEnabled;
 	}
@@ -91,7 +102,7 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 
 			for (String className : _PRELOAD_CLASS_NAMES) {
 				ClassLoader portalClassLoader =
-					ClassLoaderUtil.getPortalClassLoader();
+					PortalClassLoaderUtil.getClassLoader();
 
 				Class<?> clazz = portalClassLoader.loadClass(className);
 
@@ -174,6 +185,10 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 					new AutoFlushEventListener[] {
 						NestableAutoFlushEventListener.INSTANCE
 					});
+				eventListeners.setFlushEventListeners(
+					new FlushEventListener[] {
+						NestableFlushEventListener.INSTANCE
+					});
 				eventListeners.setPostUpdateEventListeners(
 					new PostUpdateEventListener[] {
 						MVCCSynchronizerPostUpdateEventListener.INSTANCE
@@ -185,6 +200,47 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 		}
 
 		return configuration;
+	}
+
+	@Override
+	protected SessionFactory newSessionFactory(Configuration configuration)
+		throws HibernateException {
+
+		SessionFactory sessionFactory = super.newSessionFactory(configuration);
+
+		if (Objects.equals(
+				PropsValues.
+					HIBERNATE_SESSION_FACTORY_IMPORTED_CLASS_NAME_REGEXP,
+				".*")) {
+
+			// For wildcard match, simply disable the optimization
+
+			return sessionFactory;
+		}
+
+		try {
+			Field queryPlanCacheField = ReflectionUtil.getDeclaredField(
+				sessionFactory.getClass(), "queryPlanCache");
+
+			QueryPlanCache queryPlanCache =
+				(QueryPlanCache)queryPlanCacheField.get(sessionFactory);
+
+			Field sessionFactoryField = ReflectionUtil.getDeclaredField(
+				QueryPlanCache.class, "factory");
+
+			sessionFactoryField.set(
+				queryPlanCache,
+				_wrapSessionFactoryImplementor(
+					(SessionFactoryImplementor)sessionFactory,
+					configuration.getImports()));
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to inject optimized query plan cache", e);
+			}
+		}
+
+		return sessionFactory;
 	}
 
 	@Override
@@ -210,16 +266,6 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 
 		if (inputStream == null) {
 			return;
-		}
-
-		if (_hibernateConfigurationConverter != null) {
-			String configurationString = StringUtil.read(inputStream);
-
-			configurationString = _hibernateConfigurationConverter.convert(
-				configurationString);
-
-			inputStream = new UnsyncByteArrayInputStream(
-				configurationString.getBytes());
 		}
 
 		configuration.addInputStream(inputStream);
@@ -256,14 +302,43 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 		}
 	}
 
+	private SessionFactoryImplementor _wrapSessionFactoryImplementor(
+		SessionFactoryImplementor sessionFactoryImplementor,
+		Map<String, String> imports) {
+
+		Object sessionFactoryDelegate = null;
+
+		if (Validator.isBlank(
+				PropsValues.
+					HIBERNATE_SESSION_FACTORY_IMPORTED_CLASS_NAME_REGEXP)) {
+
+			sessionFactoryDelegate = new NoPatternSessionFactoryDelegate(
+				imports);
+		}
+		else {
+			sessionFactoryDelegate = new PatternedSessionFactoryDelegate(
+				imports,
+				PropsValues.
+					HIBERNATE_SESSION_FACTORY_IMPORTED_CLASS_NAME_REGEXP,
+				sessionFactoryImplementor);
+		}
+
+		return ASMWrapperUtil.createASMWrapper(
+			SessionFactoryImplementor.class.getClassLoader(),
+			SessionFactoryImplementor.class, sessionFactoryDelegate,
+			sessionFactoryImplementor);
+	}
+
 	private static final String[] _PRELOAD_CLASS_NAMES =
-		PropsValues.SPRING_HIBERNATE_CONFIGURATION_PROXY_FACTORY_PRELOAD_CLASSLOADER_CLASSES;
+		PropsValues.
+			SPRING_HIBERNATE_CONFIGURATION_PROXY_FACTORY_PRELOAD_CLASSLOADER_CLASSES;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortalHibernateConfiguration.class);
 
 	private static final Map<ProxyFactory, ClassLoader>
-		_proxyFactoryClassLoaders = new WeakHashMap<>();
+		_proxyFactoryClassLoaders = new ConcurrentReferenceKeyHashMap<>(
+			FinalizeManager.WEAK_REFERENCE_FACTORY);
 
 	static {
 		ProxyFactory.classLoaderProvider =
@@ -271,36 +346,81 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 
 				@Override
 				public ClassLoader get(ProxyFactory proxyFactory) {
-					synchronized (_proxyFactoryClassLoaders) {
-						ClassLoader classLoader = _proxyFactoryClassLoaders.get(
-							proxyFactory);
+					return _proxyFactoryClassLoaders.computeIfAbsent(
+						proxyFactory,
+						(ProxyFactory pf) -> {
+							ClassLoader classLoader =
+								PortalClassLoaderUtil.getClassLoader();
 
-						if (classLoader != null) {
+							Thread currentThread = Thread.currentThread();
+
+							ClassLoader contextClassLoader =
+								currentThread.getContextClassLoader();
+
+							if (classLoader != contextClassLoader) {
+								classLoader = new PreloadClassLoader(
+									contextClassLoader,
+									getPreloadClassLoaderClasses());
+							}
+
 							return classLoader;
-						}
-
-						classLoader = ClassLoaderUtil.getPortalClassLoader();
-
-						ClassLoader contextClassLoader =
-							ClassLoaderUtil.getContextClassLoader();
-
-						if (classLoader != contextClassLoader) {
-							classLoader = new PreloadClassLoader(
-								contextClassLoader,
-								getPreloadClassLoaderClasses());
-						}
-
-						_proxyFactoryClassLoaders.put(
-							proxyFactory, classLoader);
-
-						return classLoader;
-					}
+						});
 				}
 
 			};
 	}
 
-	private Converter<String> _hibernateConfigurationConverter;
 	private boolean _mvccEnabled = true;
+
+	private static class NoPatternSessionFactoryDelegate {
+
+		public String getImportedClassName(String className) {
+			return _imports.get(className);
+		}
+
+		protected NoPatternSessionFactoryDelegate(Map<String, String> imports) {
+			_imports = new HashMap<>(imports);
+		}
+
+		private final Map<String, String> _imports;
+
+	}
+
+	private static class PatternedSessionFactoryDelegate
+		extends NoPatternSessionFactoryDelegate {
+
+		@Override
+		public String getImportedClassName(String className) {
+			String importedClassName = super.getImportedClassName(className);
+
+			if (importedClassName != null) {
+				return importedClassName;
+			}
+
+			Matcher matcher = _importedClassNamePattern.matcher(className);
+
+			if (!matcher.matches()) {
+				return null;
+			}
+
+			return _sessionFactoryImplementor.getImportedClassName(className);
+		}
+
+		private PatternedSessionFactoryDelegate(
+			Map<String, String> imports, String importedClassNameRegexp,
+			SessionFactoryImplementor sessionFactoryImplementor) {
+
+			super(imports);
+
+			_importedClassNamePattern = Pattern.compile(
+				importedClassNameRegexp);
+
+			_sessionFactoryImplementor = sessionFactoryImplementor;
+		}
+
+		private final Pattern _importedClassNamePattern;
+		private final SessionFactoryImplementor _sessionFactoryImplementor;
+
+	}
 
 }

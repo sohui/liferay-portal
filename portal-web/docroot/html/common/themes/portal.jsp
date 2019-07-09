@@ -19,29 +19,35 @@
 <%
 StringBundler sb = (StringBundler)request.getAttribute(WebKeys.LAYOUT_CONTENT);
 
-if ((sb != null) && (themeDisplay.isFacebook() || themeDisplay.isStateExclusive())) {
+if ((sb != null) && themeDisplay.isStateExclusive()) {
 	sb.writeTo(out);
 }
 else {
-	ComponentContext componentContext = (ComponentContext)request.getAttribute(ComponentConstants.COMPONENT_CONTEXT);
+	Definition definition = (Definition)request.getAttribute(TilesUtil.DEFINITION);
 
 	boolean tilesPopUp = false;
 
-	if (componentContext != null) {
-		tilesPopUp = GetterUtil.getBoolean(componentContext.getAttribute("pop_up"));
+	if (definition != null) {
+		Map<String, String> attributes = definition.getAttributes();
+
+		tilesPopUp = GetterUtil.getBoolean(attributes.get("pop_up"));
 	}
 
 	if (tilesPopUp || themeDisplay.isStatePopUp() || themeDisplay.isWidget()) {
 %>
 
-		<liferay-theme:include page="portal_pop_up.jsp" />
+		<liferay-theme:include
+			page="portal_pop_up.jsp"
+		/>
 
 	<%
 	}
 	else {
 	%>
 
-		<liferay-theme:include page="portal_normal.jsp" />
+		<liferay-theme:include
+			page="portal_normal.jsp"
+		/>
 
 <%
 	}

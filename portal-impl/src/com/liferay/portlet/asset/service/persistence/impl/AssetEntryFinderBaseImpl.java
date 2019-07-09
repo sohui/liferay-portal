@@ -16,7 +16,6 @@ package com.liferay.portlet.asset.service.persistence.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.persistence.AssetEntryPersistence;
-
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 
@@ -25,6 +24,11 @@ import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
  * @generated
  */
 public class AssetEntryFinderBaseImpl extends BasePersistenceImpl<AssetEntry> {
+
+	public AssetEntryFinderBaseImpl() {
+		setModelClass(AssetEntry.class);
+	}
+
 	/**
 	 * Returns the asset entry persistence.
 	 *
@@ -41,9 +45,11 @@ public class AssetEntryFinderBaseImpl extends BasePersistenceImpl<AssetEntry> {
 	 */
 	public void setAssetEntryPersistence(
 		AssetEntryPersistence assetEntryPersistence) {
+
 		this.assetEntryPersistence = assetEntryPersistence;
 	}
 
 	@BeanReference(type = AssetEntryPersistence.class)
 	protected AssetEntryPersistence assetEntryPersistence;
+
 }

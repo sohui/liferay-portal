@@ -14,45 +14,52 @@
 
 package com.liferay.social.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the SocialActivityAchievement service. Represents a row in the &quot;SocialActivityAchievement&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see SocialActivityAchievementModel
- * @see com.liferay.portlet.social.model.impl.SocialActivityAchievementImpl
- * @see com.liferay.portlet.social.model.impl.SocialActivityAchievementModelImpl
  * @generated
  */
-@ImplementationClassName("com.liferay.portlet.social.model.impl.SocialActivityAchievementImpl")
+@ImplementationClassName(
+	"com.liferay.portlet.social.model.impl.SocialActivityAchievementImpl"
+)
 @ProviderType
 public interface SocialActivityAchievement
-	extends SocialActivityAchievementModel, PersistedModel {
+	extends PersistedModel, SocialActivityAchievementModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.social.model.impl.SocialActivityAchievementImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portlet.social.model.impl.SocialActivityAchievementImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<SocialActivityAchievement, Long> ACTIVITY_ACHIEVEMENT_ID_ACCESSOR =
-		new Accessor<SocialActivityAchievement, Long>() {
-			@Override
-			public Long get(SocialActivityAchievement socialActivityAchievement) {
-				return socialActivityAchievement.getActivityAchievementId();
-			}
+	public static final Accessor<SocialActivityAchievement, Long>
+		ACTIVITY_ACHIEVEMENT_ID_ACCESSOR =
+			new Accessor<SocialActivityAchievement, Long>() {
 
-			@Override
-			public Class<Long> getAttributeClass() {
-				return Long.class;
-			}
+				@Override
+				public Long get(
+					SocialActivityAchievement socialActivityAchievement) {
 
-			@Override
-			public Class<SocialActivityAchievement> getTypeClass() {
-				return SocialActivityAchievement.class;
-			}
-		};
+					return socialActivityAchievement.getActivityAchievementId();
+				}
+
+				@Override
+				public Class<Long> getAttributeClass() {
+					return Long.class;
+				}
+
+				@Override
+				public Class<SocialActivityAchievement> getTypeClass() {
+					return SocialActivityAchievement.class;
+				}
+
+			};
+
 }

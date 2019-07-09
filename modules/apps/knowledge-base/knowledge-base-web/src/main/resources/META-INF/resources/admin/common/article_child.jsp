@@ -19,7 +19,13 @@
 <%
 KBArticle kbArticle = (KBArticle)request.getAttribute(KBWebKeys.KNOWLEDGE_BASE_KB_ARTICLE);
 
-int status = (Integer)request.getAttribute(KBWebKeys.KNOWLEDGE_BASE_STATUS);
+boolean portletTitleBasedNavigation = GetterUtil.getBoolean(portletConfig.getInitParameter("portlet-title-based-navigation"));
+
+int status = WorkflowConstants.STATUS_APPROVED;
+
+if (portletTitleBasedNavigation) {
+	status = WorkflowConstants.STATUS_ANY;
+}
 
 List<KBArticle> childKBArticles = KBArticleServiceUtil.getKBArticles(scopeGroupId, kbArticle.getResourcePrimKey(), status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, new KBArticlePriorityComparator(true));
 
@@ -27,20 +33,24 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 %>
 
 <c:if test="<%= !childKBArticles.isEmpty() %>">
-	<div class="kb-article-child">
-		<div class="kb-elements">
+	<h4 class="text-default">
+		<liferay-ui:message arguments="<%= childKBArticles.size() %>" key="child-articles-x" translateArguments="<%= false %>" />
+	</h4>
+
+	<div class="panel">
+		<ul class="list-group">
 
 			<%
 			for (KBArticle childrenKBArticle : childKBArticles) {
 			%>
 
-				<section class="kb-element">
-					<h2 class="kb-element-header">
+				<li class="list-group-item">
+					<h3>
 
 						<%
 						PortletURL viewKBArticleURL = null;
 
-						if (rootPortletId.equals(KBPortletKeys.KNOWLEDGE_BASE_SECTION)) {
+						if (rootPortletId.equals(KBPortletKeys.KNOWLEDGE_BASE_ADMIN) || rootPortletId.equals(KBPortletKeys.KNOWLEDGE_BASE_SEARCH) || rootPortletId.equals(KBPortletKeys.KNOWLEDGE_BASE_SECTION)) {
 							viewKBArticleURL = kbArticleURLHelper.createViewWithRedirectURL(childrenKBArticle, currentURL);
 						}
 						else {
@@ -48,27 +58,25 @@ KBArticleURLHelper kbArticleURLHelper = new KBArticleURLHelper(renderRequest, re
 						}
 						%>
 
-						<aui:a href="<%= viewKBArticleURL.toString() %>"><%= childrenKBArticle.getTitle() %></aui:a>
-					</h2>
+						<aui:a href="<%= viewKBArticleURL.toString() %>"><%= HtmlUtil.escape(childrenKBArticle.getTitle()) %></aui:a>
+					</h3>
 
-					<div class="kb-element-body">
+					<p class="text-default">
 						<c:choose>
 							<c:when test="<%= Validator.isNotNull(childrenKBArticle.getDescription()) %>">
-								<%= childrenKBArticle.getDescription() %>
+								<%= HtmlUtil.escape(childrenKBArticle.getDescription()) %>
 							</c:when>
 							<c:otherwise>
-								<p><%= StringUtil.shorten(HtmlUtil.extractText(childrenKBArticle.getContent()), 200) %></p>
-
-								<aui:a href="<%= viewKBArticleURL.toString() %>"><liferay-ui:message key="read-more" /></aui:a>
+								<%= HtmlUtil.escape(StringUtil.shorten(HtmlUtil.extractText(childrenKBArticle.getContent()), 200)) %>
 							</c:otherwise>
 						</c:choose>
-					</div>
-				</section>
+					</p>
+				</li>
 
 			<%
 			}
 			%>
 
-		</div>
+		</ul>
 	</div>
 </c:if>

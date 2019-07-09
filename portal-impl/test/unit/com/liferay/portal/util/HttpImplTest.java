@@ -14,34 +14,72 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.test.randomizerbumpers.NumericStringRandomizerBumper;
+import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.URLCodec;
 
+import java.lang.reflect.Method;
+
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * @author Miguel Pastor
  */
-@PowerMockIgnore("javax.xml.datatype.*")
-@PrepareForTest({PortalUtil.class})
-@RunWith(PowerMockRunner.class)
-public class HttpImplTest extends PowerMockito {
+public class HttpImplTest {
+
+	@ClassRule
+	public static final CodeCoverageAssertor codeCoverageAssertor =
+		new CodeCoverageAssertor() {
+
+			@Override
+			public void appendAssertClasses(List<Class<?>> assertClasses) {
+				assertClasses.clear();
+			}
+
+			@Override
+			public List<Method> getAssertMethods()
+				throws ReflectiveOperationException {
+
+				return Arrays.asList(
+					HttpImpl.class.getDeclaredMethod(
+						"_shortenURL", String.class, int.class, String.class,
+						String.class, String.class));
+			}
+
+		};
+
+	@BeforeClass
+	public static void setUpClass() {
+		PortalUtil portalUtil = new PortalUtil();
+
+		portalUtil.setPortal(
+			new PortalImpl() {
+
+				@Override
+				public String[] stripURLAnchor(String url, String separator) {
+					return new String[] {url, StringPool.BLANK};
+				}
+
+			});
+	}
 
 	@Test
 	public void testAddBooleanParameter() {
@@ -129,6 +167,54 @@ public class HttpImplTest extends PowerMockito {
 	}
 
 	@Test
+	public void testGetDomainWithInvalidURLs() {
+		Assert.assertEquals("", _httpImpl.getDomain("foo.foo.1"));
+		Assert.assertEquals("", _httpImpl.getDomain("test:test@/a/b"));
+		Assert.assertEquals("", _httpImpl.getDomain("https://:foo.com"));
+		Assert.assertEquals("", _httpImpl.getDomain("https://test:foo.com"));
+	}
+
+	@Test
+	public void testGetDomainWithRelativeURLs() {
+		Assert.assertEquals("", _httpImpl.getDomain("/a/b?key1=value1#anchor"));
+	}
+
+	@Test
+	public void testGetDomainWithValidURLs() {
+		Assert.assertEquals("foo.com", _httpImpl.getDomain("foo.com"));
+		Assert.assertEquals("foo.com", _httpImpl.getDomain(" foo.com"));
+		Assert.assertEquals("foo.com", _httpImpl.getDomain("foo.com "));
+		Assert.assertEquals("foo.com", _httpImpl.getDomain("https://foo.com"));
+		Assert.assertEquals(
+			"www.foo.com", _httpImpl.getDomain("https://www.foo.com"));
+		Assert.assertEquals(
+			"www.foo.com", _httpImpl.getDomain("https://@www.foo.com"));
+		Assert.assertEquals(
+			"www.foo.com", _httpImpl.getDomain("https://test@www.foo.com"));
+		Assert.assertEquals(
+			"www.foo.com", _httpImpl.getDomain("https://:@www.foo.com"));
+		Assert.assertEquals(
+			"www.foo.com", _httpImpl.getDomain("https://:test@www.foo.com"));
+		Assert.assertEquals(
+			"www.foo.com", _httpImpl.getDomain("https://test:@www.foo.com"));
+		Assert.assertEquals(
+			"www.foo.com",
+			_httpImpl.getDomain("https://test:test@www.foo.com"));
+		Assert.assertEquals(
+			"www.foo.com",
+			_httpImpl.getDomain("https://test:test@www.foo.com:8080"));
+		Assert.assertEquals(
+			"www.foo.com",
+			_httpImpl.getDomain(" https://test:test@www.foo.com:8080"));
+		Assert.assertEquals(
+			"www.foo.com",
+			_httpImpl.getDomain("https://test:test@www.foo.com:8080 "));
+		Assert.assertEquals(
+			"www.foo.com",
+			_httpImpl.getDomain("https://www.foo.com/a/b?key1=value1#anchor"));
+	}
+
+	@Test
 	public void testGetParameterMapWithCorrectQuery() {
 		Map<String, String[]> parameterMap = _httpImpl.getParameterMap(
 			"a=1&b=2");
@@ -160,7 +246,20 @@ public class HttpImplTest extends PowerMockito {
 	}
 
 	@Test
+	public void testGetProtocols() {
+		Assert.assertEquals("https", _httpImpl.getProtocol(" https://foo.com"));
+		Assert.assertEquals("https", _httpImpl.getProtocol("https://foo.com"));
+		Assert.assertEquals("HtTps", _httpImpl.getProtocol("HtTps://foo.com"));
+		Assert.assertEquals("a012", _httpImpl.getProtocol("a012://foo.com"));
+		Assert.assertEquals("", _httpImpl.getProtocol("://foo.com"));
+		Assert.assertEquals("", _httpImpl.getProtocol("1a://foo.com"));
+		Assert.assertEquals("", _httpImpl.getProtocol("#%://foo.com"));
+		Assert.assertEquals("", _httpImpl.getProtocol("foo.com"));
+	}
+
+	@Test
 	public void testNormalizePath() {
+		Assert.assertEquals("/api/axis", _httpImpl.normalizePath("/api/axis?"));
 		Assert.assertEquals("/", _httpImpl.normalizePath("/.."));
 		Assert.assertEquals(
 			"/api/axis", _httpImpl.normalizePath("/api/%61xis"));
@@ -194,6 +293,45 @@ public class HttpImplTest extends PowerMockito {
 		Assert.assertEquals(
 			"/api/axis?foo=bar&bar=foo",
 			_httpImpl.normalizePath("./api///////%2e/axis?foo=bar&bar=foo"));
+	}
+
+	@Test
+	public void testParameterMapFromString() {
+		Map<String, String[]> expectedParameterMap = new HashMap<>();
+
+		expectedParameterMap.put("key1", new String[] {"value1", "value2"});
+		expectedParameterMap.put("key2", new String[] {"value3"});
+
+		StringBundler sb = new StringBundler(12);
+
+		for (Map.Entry<String, String[]> entry :
+				expectedParameterMap.entrySet()) {
+
+			String key = entry.getKey();
+
+			for (String value : entry.getValue()) {
+				sb.append(key);
+				sb.append(StringPool.EQUAL);
+				sb.append(value);
+				sb.append(StringPool.AMPERSAND);
+			}
+		}
+
+		sb.setIndex(sb.index() - 1);
+
+		Map<String, String[]> actualParameterMap = _httpImpl.getParameterMap(
+			sb.toString());
+
+		Assert.assertEquals(
+			"Actual parameter map size: " + actualParameterMap.size(),
+			expectedParameterMap.size(), actualParameterMap.size());
+
+		for (Map.Entry<String, String[]> entry :
+				actualParameterMap.entrySet()) {
+
+			Assert.assertArrayEquals(
+				expectedParameterMap.get(entry.getKey()), entry.getValue());
+		}
 	}
 
 	@Test
@@ -237,9 +375,173 @@ public class HttpImplTest extends PowerMockito {
 		Assert.assertEquals(
 			"/TestServlet/one/two",
 			_httpImpl.removePathParameters(
-				"/TestServlet/one;test=$one@two/two;jsessionid=ae01b0f2af" +
-					";test2=123,456"));
+				"/TestServlet/one;test=$one@two/two;jsessionid=ae01b0f2af;" +
+					"test2=123,456"));
 		Assert.assertEquals("/", _httpImpl.removePathParameters("/;?"));
+		Assert.assertEquals("/", _httpImpl.removePathParameters("//;/;?"));
+		Assert.assertEquals("//", _httpImpl.removePathParameters("///;?"));
+		Assert.assertEquals(
+			"/TestServlet/one",
+			_httpImpl.removePathParameters("/TestServlet/;x=y/one"));
+		Assert.assertEquals(
+			"/TestServlet/one",
+			_httpImpl.removePathParameters("/;x=y/TestServlet/one/;x=y"));
+
+		try {
+			_httpImpl.removePathParameters(";x=y");
+
+			Assert.fail();
+		}
+		catch (IllegalArgumentException iae) {
+			Assert.assertEquals("Unable to handle URI: ;x=y", iae.getMessage());
+		}
+	}
+
+	@Test
+	public void testRemoveProtocol() {
+		Assert.assertEquals(
+			"#^&://abc.com", _httpImpl.removeProtocol("#^&://abc.com"));
+		Assert.assertEquals(
+			"/^&://abc.com", _httpImpl.removeProtocol("/^&://abc.com"));
+		Assert.assertEquals(
+			"ftp.foo.com", _httpImpl.removeProtocol("ftp://ftp.foo.com"));
+		Assert.assertEquals(
+			"///foo.com", _httpImpl.removeProtocol("http://///foo.com"));
+		Assert.assertEquals(
+			"////foo.com", _httpImpl.removeProtocol("////foo.com"));
+		Assert.assertEquals(
+			"http://foo.com",
+			_httpImpl.removeProtocol("http://http://foo.com"));
+		Assert.assertEquals(
+			"/\\www.google.com", _httpImpl.removeProtocol("/\\www.google.com"));
+		Assert.assertEquals(
+			"/\\//\\/www.google.com",
+			_httpImpl.removeProtocol("/\\//\\/www.google.com"));
+		Assert.assertEquals(
+			"/path/name", _httpImpl.removeProtocol("/path/name"));
+		Assert.assertEquals(
+			"./path/name", _httpImpl.removeProtocol("./path/name"));
+		Assert.assertEquals(
+			"../path/name", _httpImpl.removeProtocol("../path/name"));
+		Assert.assertEquals(
+			"foo.com?redirect=http%3A%2F%2Ffoo2.com",
+			_httpImpl.removeProtocol(
+				"http://foo.com?redirect=http%3A%2F%2Ffoo2.com"));
+		Assert.assertEquals(
+			"www.google.com/://localhost",
+			_httpImpl.removeProtocol("http://www.google.com/://localhost"));
+		Assert.assertEquals(
+			"a:b@foo.com", _httpImpl.removeProtocol("http://a:b@foo.com"));
+		Assert.assertEquals(
+			"a:b@foo.com", _httpImpl.removeProtocol(" http://a:b@foo.com"));
+		Assert.assertEquals(
+			"a:b@foo.com", _httpImpl.removeProtocol("a:b@foo.com"));
+		Assert.assertEquals(
+			":@foo.com", _httpImpl.removeProtocol("http://:@foo.com"));
+		Assert.assertEquals(":@foo.com", _httpImpl.removeProtocol(":@foo.com"));
+		Assert.assertEquals(
+			"?k1=v1&k2=v2", _httpImpl.removeProtocol("http://?k1=v1&k2=v2"));
+		Assert.assertEquals(
+			"?k1=v1&k2=v2", _httpImpl.removeProtocol("?k1=v1&k2=v2"));
+		Assert.assertEquals(
+			"#page1", _httpImpl.removeProtocol("http://#page1"));
+		Assert.assertEquals("#page1", _httpImpl.removeProtocol("#page1"));
+	}
+
+	@Test
+	public void testShortenURL() {
+
+		// No change
+
+		Assert.assertSame(
+			"www.liferay.com", _httpImpl.shortenURL("www.liferay.com"));
+		Assert.assertSame(
+			"www.liferay.com?", _httpImpl.shortenURL("www.liferay.com?"));
+		Assert.assertSame(
+			"www.liferay.com?key1=value1",
+			_httpImpl.shortenURL("www.liferay.com?key1=value1"));
+		Assert.assertSame(
+			"www.liferay.com?key1=value1&redirect=test",
+			_httpImpl.shortenURL("www.liferay.com?key1=value1&redirect=test"));
+
+		String paramValue = RandomTestUtil.randomString(
+			Http.URL_MAXIMUM_LENGTH, NumericStringRandomizerBumper.INSTANCE);
+
+		// Cannot safely remove anything
+
+		Assert.assertSame(paramValue, _httpImpl.shortenURL(paramValue));
+
+		String url = "www.liferay.com?key=" + paramValue;
+
+		Assert.assertEquals(url, _httpImpl.shortenURL(url));
+
+		// Bad parameter format
+
+		url = "www.liferay.com?redirectX" + paramValue;
+
+		Assert.assertEquals(url, _httpImpl.shortenURL(url));
+
+		// Remove redirect one deep
+
+		Assert.assertEquals(
+			"www.liferay.com",
+			_httpImpl.shortenURL("www.liferay.com?_backURL=" + paramValue));
+		Assert.assertEquals(
+			"www.liferay.com?key1=value1",
+			_httpImpl.shortenURL(
+				"www.liferay.com?key1=value1&_redirect=" + paramValue));
+		Assert.assertEquals(
+			"www.liferay.com?key1=value1",
+			_httpImpl.shortenURL(
+				"www.liferay.com?redirect=" + paramValue + "&key1=value1"));
+
+		// Remove redirect and keep _returnToFullPageURL
+
+		Assert.assertEquals(
+			"www.liferay.com?key1=value1&_returnToFullPageURL=test",
+			_httpImpl.shortenURL(
+				"www.liferay.com?_returnToFullPageURL=test&redirect=" +
+					paramValue + "&key1=value1"));
+
+		// Remove redirect two deep
+
+		String encodedURL = URLCodec.encodeURL(
+			"www.liferay.com?key1=value1&redirect=" + paramValue);
+
+		Assert.assertEquals(
+			"www.liferay.com?key1=value1&redirect=" +
+				URLCodec.encodeURL("www.liferay.com?key1=value1"),
+			_httpImpl.shortenURL(
+				"www.liferay.com?key1=value1&redirect=" + encodedURL));
+
+		// Remove redirect three deep
+
+		String encodedURL2 = URLCodec.encodeURL(
+			"www.liferay.com?key1=value1&redirect=" +
+				URLCodec.encodeURL("www.liferay.com?key1=value1"));
+
+		String encodedURL3 = URLCodec.encodeURL(
+			"www.liferay.com?key1=value1&redirect=" + encodedURL);
+
+		Assert.assertEquals(
+			"www.liferay.com?key1=value1&redirect=" + encodedURL2,
+			_httpImpl.shortenURL(
+				"www.liferay.com?redirect=" + encodedURL3 + "&key1=value1"));
+
+		// Remove redirect three deep and keep _returnToFullPageURL two deep
+
+		String encodedURL4 = URLCodec.encodeURL(
+			"www.liferay.com?key1=value1&_returnToFullPageURL=test&redirect=" +
+				URLCodec.encodeURL("www.liferay.com?key1=value1"));
+
+		String encodedURL5 = URLCodec.encodeURL(
+			"www.liferay.com?_returnToFullPageURL=test&key1=value1&redirect=" +
+				encodedURL);
+
+		Assert.assertEquals(
+			"www.liferay.com?key1=value1&redirect=" + encodedURL4,
+			_httpImpl.shortenURL(
+				"www.liferay.com?redirect=" + encodedURL5 + "&key1=value1"));
 	}
 
 	protected void testDecodeURLWithInvalidURLEncoding(String url) {
@@ -253,18 +555,8 @@ public class HttpImplTest extends PowerMockito {
 	private void _addParameter(
 		String url, String parameterName, String parameterValue) {
 
-		mockStatic(PortalUtil.class);
-
-		when(
-			PortalUtil.stripURLAnchor(url, StringPool.POUND)
-		).thenReturn(
-			new String[] {url, StringPool.BLANK}
-		);
-
 		String newURL = _httpImpl.addParameter(
 			url, parameterName, parameterValue);
-
-		verifyStatic();
 
 		StringBundler sb = new StringBundler(5);
 
@@ -288,13 +580,13 @@ public class HttpImplTest extends PowerMockito {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
 			String message = logRecord.getMessage();
 
-			Assert.assertTrue(message.contains(expectedMessage));
+			Assert.assertTrue(message, message.contains(expectedMessage));
 		}
 	}
 

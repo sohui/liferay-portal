@@ -31,32 +31,17 @@
 <!--NAVIGATION-->
 <tr>
 	<td>NAVIGATION_SPECIFIC_TAB</td>
-	<td>//ul[contains(@class,'navbar')]//span[contains(.,'${key_navTab}')]</td>
+	<td>//ul[contains(@class,'navbar')]/li/a[contains(.,'${key_navTab}')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>NAVIGATION_BLOG_IMAGES</td>
-	<td>//ul[contains(@class,'navbar')]//span[contains(.,'Blog Images')]</td>
+	<td>SITES_NAVIGATION</td>
+	<td>//a[contains(.,'sites')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>NAVIGATION_DOCUMENTS_AND_MEDIA</td>
-	<td>//ul[contains(@class,'navbar')]//span[contains(.,'Documents and Media')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>NAVIGATION_UPLOAD_IMAGE</td>
-	<td>//ul[contains(@class,'navbar')]//span[contains(.,'Upload Image')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>NAVIGATION_URL</td>
-	<td>//ul[contains(@class,'navbar')]//span[contains(.,'URL')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>NAVIGATION_BACK</td>
-	<td>//button[contains(@class,'close') and not(contains(@hidden,'hidden'))]//span[contains(@class,'glyphicon')]</td>
+	<td>SITE_SELECTOR</td>
+	<td>//div[contains(@class,'card-horizontal')]//a[contains(@title,'${key_siteName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -67,7 +52,7 @@
 <!--SELECT_FILE-->
 <tr>
 	<td>SELECT_FILE_IMAGE_PREVIEW</td>
-	<td>//div[contains(@class,'card')]//div[contains(@style,'${key_imageFileName}')]</td>
+	<td>//div[contains(@class,'card')]//span[contains(@title,'${key_imageFileName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -89,22 +74,6 @@
 <tr>
 	<td>FILE_INFO_ICON</td>
 	<td>//div[contains(@class,'image-viewer-focused')]//span[contains(@class,'item-viewer-icon-info')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--SIDEBAR-->
-<tr>
-	<td>SIDEBAR_HEADER</td>
-	<td>//div[@class='sidebar-header']//a[contains(.,'File Info')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>SIDEBAR_CONTENT</td>
-	<td>//div[@class='tab-content']//p[contains(.,'${key_fileDetail}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -157,7 +126,7 @@
 <!--SELECT_IMAGE_PREVIEW-->
 <tr>
 	<td>SELECT_IMAGE_PREVIEW</td>
-	<td>//div[@class='image-viewer-base-image-list']//img</td>
+	<td>//div[@class='image-viewer-base-image-list-inner']//img</td>
 	<td></td>
 </tr>
 <tr>

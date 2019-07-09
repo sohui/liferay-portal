@@ -16,21 +16,22 @@ package com.liferay.portal.kernel.upgrade.v6_2_0;
 
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.store.DLStoreUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 
 import java.sql.PreparedStatement;
@@ -107,11 +108,8 @@ public abstract class BaseUpgradeAttachments extends UpgradeProcess {
 			Map<String, Long> bitwiseValues = getBitwiseValues(
 				"com.liferay.portlet.documentlibrary.model.DLFileEntry");
 
-			List<String> actionIds = new ArrayList<>();
-
-			actionIds.add(ActionKeys.VIEW);
-
-			long bitwiseValue = getBitwiseValue(bitwiseValues, actionIds);
+			long bitwiseValue = getBitwiseValue(
+				bitwiseValues, ListUtil.toList(ActionKeys.VIEW));
 
 			addResourcePermission(
 				companyId,
@@ -254,12 +252,8 @@ public abstract class BaseUpgradeAttachments extends UpgradeProcess {
 			Map<String, Long> bitwiseValues = getBitwiseValues(
 				"com.liferay.portlet.documentlibrary.model.DLFolder");
 
-			List<String> guestActionIds = new ArrayList<>();
-
-			guestActionIds.add(ActionKeys.VIEW);
-
 			long guestBitwiseValue = getBitwiseValue(
-				bitwiseValues, guestActionIds);
+				bitwiseValues, ListUtil.toList(ActionKeys.VIEW));
 
 			addResourcePermission(
 				companyId, "com.liferay.portlet.documentlibrary.model.DLFolder",
@@ -442,8 +436,8 @@ public abstract class BaseUpgradeAttachments extends UpgradeProcess {
 
 		try {
 			ps = connection.prepareStatement(
-				"select actionId, bitwiseValue from ResourceAction " +
-					"where name = ?");
+				"select actionId, bitwiseValue from ResourceAction where " +
+					"name = ?");
 
 			ps.setString(1, name);
 
@@ -510,9 +504,7 @@ public abstract class BaseUpgradeAttachments extends UpgradeProcess {
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
-				long folderId = rs.getLong(1);
-
-				return folderId;
+				return rs.getLong(1);
 			}
 		}
 		finally {
@@ -546,9 +538,7 @@ public abstract class BaseUpgradeAttachments extends UpgradeProcess {
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
-				long repositoryId = rs.getLong(1);
-
-				return repositoryId;
+				return rs.getLong(1);
 			}
 		}
 		finally {

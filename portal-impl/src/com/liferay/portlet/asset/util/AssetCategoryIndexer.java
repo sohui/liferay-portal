@@ -16,7 +16,6 @@ package com.liferay.portlet.asset.util;
 
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
-import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -34,23 +33,24 @@ import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.asset.service.permission.AssetCategoryPermission;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 /**
- * @author Istvan Andras Dezsi
+ * @author     István András Dézsi
+ * @deprecated As of Judson (7.1.x), moved to {@link
+ *             com.liferay.asset.categories.internal.search.AssetCategoryIndexer}
  */
-@OSGiBeanProperties
+@Deprecated
 public class AssetCategoryIndexer extends BaseIndexer<AssetCategory> {
 
 	public static final String CLASS_NAME = AssetCategory.class.getName();
@@ -157,22 +157,31 @@ public class AssetCategoryIndexer extends BaseIndexer<AssetCategory> {
 		document.addKeyword(
 			Field.ASSET_CATEGORY_ID, assetCategory.getCategoryId());
 
-		List<AssetCategory> categories = new ArrayList<>(1);
-
-		categories.add(assetCategory);
-
 		addSearchAssetCategoryTitles(
-			document, Field.ASSET_CATEGORY_TITLE, categories);
+			document, Field.ASSET_CATEGORY_TITLE,
+			ListUtil.toList(assetCategory));
 
 		document.addKeyword(
 			Field.ASSET_PARENT_CATEGORY_ID,
 			assetCategory.getParentCategoryId());
 		document.addKeyword(
 			Field.ASSET_VOCABULARY_ID, assetCategory.getVocabularyId());
-		document.addLocalizedText(
-			Field.DESCRIPTION, assetCategory.getDescriptionMap());
+
+		Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(
+			assetCategory.getGroupId());
+
+		addLocalizedField(
+			document, Field.DESCRIPTION, siteDefaultLocale,
+			assetCategory.getDescriptionMap());
+
 		document.addText(Field.NAME, assetCategory.getName());
-		document.addLocalizedText(Field.TITLE, assetCategory.getTitleMap());
+
+		addLocalizedField(
+			document, Field.TITLE, siteDefaultLocale,
+			assetCategory.getTitleMap());
+
+		document.addKeyword(
+			"leftCategoryId", assetCategory.getLeftCategoryId());
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Document " + assetCategory + " indexed successfully");
@@ -221,28 +230,22 @@ public class AssetCategoryIndexer extends BaseIndexer<AssetCategory> {
 
 		indexableActionableDynamicQuery.setCompanyId(companyId);
 		indexableActionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<AssetCategory>() {
+			(AssetCategory category) -> {
+				try {
+					Document document = getDocument(category);
 
-				@Override
-				public void performAction(AssetCategory category) {
-					try {
-						Document document = getDocument(category);
-
-						if (document != null) {
-							indexableActionableDynamicQuery.addDocuments(
-								document);
-						}
-					}
-					catch (PortalException pe) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(
-								"Unable to index asset category " +
-									category.getCategoryId(),
-								pe);
-						}
+					if (document != null) {
+						indexableActionableDynamicQuery.addDocuments(document);
 					}
 				}
-
+				catch (PortalException pe) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Unable to index asset category " +
+								category.getCategoryId(),
+							pe);
+					}
+				}
 			});
 		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 

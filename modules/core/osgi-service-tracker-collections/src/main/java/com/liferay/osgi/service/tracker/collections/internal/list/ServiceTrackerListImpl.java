@@ -54,6 +54,8 @@ public class ServiceTrackerListImpl<S, T> implements ServiceTrackerList<S, T> {
 		_serviceTracker = ServiceTrackerUtil.createServiceTracker(
 			_bundleContext, clazz, filterString,
 			new ServiceReferenceServiceTrackerCustomizer());
+
+		_serviceTracker.open();
 	}
 
 	@Override
@@ -64,11 +66,6 @@ public class ServiceTrackerListImpl<S, T> implements ServiceTrackerList<S, T> {
 	@Override
 	public Iterator<T> iterator() {
 		return new ServiceTrackerListIterator<>(_services.iterator());
-	}
-
-	@Override
-	public void open() {
-		_serviceTracker.open();
 	}
 
 	@Override
@@ -163,7 +160,7 @@ public class ServiceTrackerListImpl<S, T> implements ServiceTrackerList<S, T> {
 			ServiceReferenceServiceTuple<S, T> serviceReferenceServiceTuple =
 				new ServiceReferenceServiceTuple<>(serviceReference, service);
 
-			synchronized(_services) {
+			synchronized (_services) {
 				int index = Collections.binarySearch(
 					_services, serviceReferenceServiceTuple, _comparator);
 
@@ -173,7 +170,7 @@ public class ServiceTrackerListImpl<S, T> implements ServiceTrackerList<S, T> {
 					}
 				}
 				else if (index < 0) {
-					_services.add(((-index) - 1), serviceReferenceServiceTuple);
+					_services.add(-index - 1, serviceReferenceServiceTuple);
 				}
 			}
 

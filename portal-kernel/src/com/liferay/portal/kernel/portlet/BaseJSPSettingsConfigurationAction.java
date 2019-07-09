@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.portlet;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -46,8 +45,9 @@ public class BaseJSPSettingsConfigurationAction
 	extends SettingsConfigurationAction
 	implements ConfigurationAction, ResourceServingConfigurationAction {
 
-	public String getJspPath(HttpServletRequest request) {
-		PortletConfig selPortletConfig = getSelPortletConfig(request);
+	public String getJspPath(HttpServletRequest httpServletRequest) {
+		PortletConfig selPortletConfig = getSelPortletConfig(
+			httpServletRequest);
 
 		String configTemplate = selPortletConfig.getInitParameter(
 			"config-template");
@@ -67,23 +67,24 @@ public class BaseJSPSettingsConfigurationAction
 
 	@Override
 	public void include(
-			PortletConfig portletConfig, HttpServletRequest request,
-			HttpServletResponse response)
+			PortletConfig portletConfig, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		ServletContext servletContext = getServletContext(request);
+		ServletContext servletContext = getServletContext(httpServletRequest);
 
 		RequestDispatcher requestDispatcher =
-			servletContext.getRequestDispatcher(getJspPath(request));
+			servletContext.getRequestDispatcher(getJspPath(httpServletRequest));
 
 		try {
-			requestDispatcher.include(request, response);
+			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
 		catch (ServletException se) {
-			_log.error("Unable to include JSP " + getJspPath(request), se);
+			_log.error(
+				"Unable to include JSP " + getJspPath(httpServletRequest), se);
 
 			throw new IOException(
-				"Unable to include " + getJspPath(request), se);
+				"Unable to include " + getJspPath(httpServletRequest), se);
 		}
 	}
 
@@ -91,16 +92,18 @@ public class BaseJSPSettingsConfigurationAction
 		_servletContext = servletContext;
 	}
 
-	protected ServletContext getServletContext(HttpServletRequest request) {
+	protected ServletContext getServletContext(
+		HttpServletRequest httpServletRequest) {
+
 		if (_servletContext != null) {
 			return _servletContext;
 		}
 
 		String portletResource = ParamUtil.getString(
-			request, "portletResource");
+			httpServletRequest, "portletResource");
 
 		if (Validator.isNotNull(portletResource)) {
-			String rootPortletId = PortletConstants.getRootPortletId(
+			String rootPortletId = PortletIdCodec.decodePortletName(
 				portletResource);
 
 			PortletBag portletBag = PortletBagPool.get(rootPortletId);
@@ -108,7 +111,7 @@ public class BaseJSPSettingsConfigurationAction
 			return portletBag.getServletContext();
 		}
 
-		return (ServletContext)request.getAttribute(WebKeys.CTX);
+		return (ServletContext)httpServletRequest.getAttribute(WebKeys.CTX);
 	}
 
 	protected void removeDefaultValue(

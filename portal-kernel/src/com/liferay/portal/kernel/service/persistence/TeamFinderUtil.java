@@ -14,10 +14,9 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -25,49 +24,57 @@ import com.liferay.portal.kernel.util.ReferenceRegistry;
  */
 @ProviderType
 public class TeamFinderUtil {
-	public static int countByG_N_D(long groupId, java.lang.String name,
-		java.lang.String description,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params) {
+
+	public static int countByG_N_D(
+		long groupId, String name, String description,
+		java.util.LinkedHashMap<String, Object> params) {
+
 		return getFinder().countByG_N_D(groupId, name, description, params);
 	}
 
-	public static int filterCountByG_N_D(long groupId, java.lang.String name,
-		java.lang.String description,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params) {
-		return getFinder().filterCountByG_N_D(groupId, name, description, params);
+	public static int filterCountByG_N_D(
+		long groupId, String name, String description,
+		java.util.LinkedHashMap<String, Object> params) {
+
+		return getFinder().filterCountByG_N_D(
+			groupId, name, description, params);
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.Team> filterFindByG_N_D(
-		long groupId, java.lang.String name, java.lang.String description,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
-		int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.Team> obc) {
-		return getFinder()
-				   .filterFindByG_N_D(groupId, name, description, params,
-			start, end, obc);
+	public static java.util.List<com.liferay.portal.kernel.model.Team>
+		filterFindByG_N_D(
+			long groupId, String name, String description,
+			java.util.LinkedHashMap<String, Object> params, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.Team> obc) {
+
+		return getFinder().filterFindByG_N_D(
+			groupId, name, description, params, start, end, obc);
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.Team> findByG_U(
-		long groupId, long userId, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.Team> obc) {
+	public static java.util.List<com.liferay.portal.kernel.model.Team>
+		findByG_U(
+			long groupId, long userId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.Team> obc) {
+
 		return getFinder().findByG_U(groupId, userId, start, end, obc);
 	}
 
-	public static java.util.List<com.liferay.portal.kernel.model.Team> findByG_N_D(
-		long groupId, java.lang.String name, java.lang.String description,
-		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
-		int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.Team> obc) {
-		return getFinder()
-				   .findByG_N_D(groupId, name, description, params, start, end,
-			obc);
+	public static java.util.List<com.liferay.portal.kernel.model.Team>
+		findByG_N_D(
+			long groupId, String name, String description,
+			java.util.LinkedHashMap<String, Object> params, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.Team> obc) {
+
+		return getFinder().findByG_N_D(
+			groupId, name, description, params, start, end, obc);
 	}
 
 	public static TeamFinder getFinder() {
 		if (_finder == null) {
-			_finder = (TeamFinder)PortalBeanLocatorUtil.locate(TeamFinder.class.getName());
-
-			ReferenceRegistry.registerReference(TeamFinderUtil.class, "_finder");
+			_finder = (TeamFinder)PortalBeanLocatorUtil.locate(
+				TeamFinder.class.getName());
 		}
 
 		return _finder;
@@ -75,9 +82,8 @@ public class TeamFinderUtil {
 
 	public void setFinder(TeamFinder finder) {
 		_finder = finder;
-
-		ReferenceRegistry.registerReference(TeamFinderUtil.class, "_finder");
 	}
 
 	private static TeamFinder _finder;
+
 }

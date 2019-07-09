@@ -18,11 +18,18 @@ import java.util.Stack;
 
 import javax.sql.DataSource;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public interface DynamicDataSourceTargetSource {
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public Stack<String> getMethodStack();
 
 	public Operation getOperation();
@@ -33,10 +40,26 @@ public interface DynamicDataSourceTargetSource {
 
 	public DataSource getWriteDataSource();
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public String popMethod();
 
+	public Operation popOperation();
+
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public void pushMethod(String method);
 
+	public void pushOperation(Operation operation);
+
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setOperation(Operation operation);
 
 	public void setReadDataSource(DataSource readDataSource);

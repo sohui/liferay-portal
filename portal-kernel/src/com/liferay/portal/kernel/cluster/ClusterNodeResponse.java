@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.cluster;
 
-import com.liferay.portal.kernel.util.ReflectionUtil;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 
 import java.io.Serializable;
 
@@ -60,9 +60,8 @@ public class ClusterNodeResponse implements Serializable {
 		if (_exception != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override

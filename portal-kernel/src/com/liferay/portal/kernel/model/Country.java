@@ -14,29 +14,30 @@
 
 package com.liferay.portal.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.annotation.ImplementationClassName;
 import com.liferay.portal.kernel.util.Accessor;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The extended model interface for the Country service. Represents a row in the &quot;Country&quot; database table, with each column mapped to a property of this class.
  *
  * @author Brian Wing Shun Chan
  * @see CountryModel
- * @see com.liferay.portal.model.impl.CountryImpl
- * @see com.liferay.portal.model.impl.CountryModelImpl
  * @generated
  */
 @ImplementationClassName("com.liferay.portal.model.impl.CountryImpl")
 @ProviderType
 public interface Country extends CountryModel {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portal.model.impl.CountryImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.CountryImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
-	public static final Accessor<Country, Long> COUNTRY_ID_ACCESSOR = new Accessor<Country, Long>() {
+	public static final Accessor<Country, Long> COUNTRY_ID_ACCESSOR =
+		new Accessor<Country, Long>() {
+
 			@Override
 			public Long get(Country country) {
 				return country.getCountryId();
@@ -51,14 +52,16 @@ public interface Country extends CountryModel {
 			public Class<Country> getTypeClass() {
 				return Country.class;
 			}
+
 		};
 
-	public java.lang.String getName(java.util.Locale locale);
+	public String getName(java.util.Locale locale);
 
-	public java.lang.String getNameCurrentLanguageId();
+	public String getNameCurrentLanguageId();
 
-	@com.liferay.portal.kernel.json.JSON()
-	public java.lang.String getNameCurrentValue();
+	@com.liferay.portal.kernel.json.JSON
+	public String getNameCurrentValue();
 
-	public void setNameCurrentLanguageId(java.lang.String languageId);
+	public void setNameCurrentLanguageId(String languageId);
+
 }

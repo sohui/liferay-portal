@@ -15,10 +15,7 @@
 package com.liferay.portal.kernel.security.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.ServiceTracker;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Preston Crary
@@ -26,26 +23,23 @@ import com.liferay.registry.ServiceTracker;
 public class UserBagFactoryUtil {
 
 	public static UserBag create(long userId) throws PortalException {
-		return getUserBagFactory().create(userId);
+		return _userBagFactory.create(userId);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public static UserBagFactory getUserBagFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(UserBagFactoryUtil.class);
-
-		return _instance._serviceTracker.getService();
+		return _userBagFactory;
 	}
 
 	private UserBagFactoryUtil() {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(UserBagFactory.class);
-
-		_serviceTracker.open();
 	}
 
-	private static final UserBagFactoryUtil _instance =
-		new UserBagFactoryUtil();
-
-	private final ServiceTracker<?, UserBagFactory> _serviceTracker;
+	private static volatile UserBagFactory _userBagFactory =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			UserBagFactory.class, UserBagFactoryUtil.class, "_userBagFactory",
+			true);
 
 }

@@ -17,8 +17,11 @@ package com.liferay.trash.kernel.exception;
 import com.liferay.portal.kernel.exception.PortalException;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.trash.exception.RestoreEntryException}
  */
+@Deprecated
 public class RestoreEntryException extends PortalException {
 
 	public static final int DUPLICATE = 1;

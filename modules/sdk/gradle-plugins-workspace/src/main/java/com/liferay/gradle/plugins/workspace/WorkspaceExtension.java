@@ -14,12 +14,15 @@
 
 package com.liferay.gradle.plugins.workspace;
 
+import com.liferay.gradle.plugins.workspace.configurators.ExtProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.ModulesProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.PluginsProjectConfigurator;
-import com.liferay.gradle.plugins.workspace.configurators.ProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.RootProjectConfigurator;
 import com.liferay.gradle.plugins.workspace.configurators.ThemesProjectConfigurator;
-import com.liferay.gradle.plugins.workspace.util.GradleUtil;
+import com.liferay.gradle.plugins.workspace.configurators.WarsProjectConfigurator;
+import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
+import com.liferay.gradle.util.Validator;
+import com.liferay.portal.tools.bundle.support.constants.BundleSupportConstants;
 
 import groovy.lang.MissingPropertyException;
 
@@ -29,6 +32,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.gradle.api.Plugin;
+import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
 import org.gradle.api.invocation.Gradle;
 
@@ -41,21 +46,67 @@ public class WorkspaceExtension {
 	public WorkspaceExtension(Settings settings) {
 		_gradle = settings.getGradle();
 
+		_projectConfigurators.add(new ExtProjectConfigurator(settings));
 		_projectConfigurators.add(new ModulesProjectConfigurator(settings));
 		_projectConfigurators.add(new PluginsProjectConfigurator(settings));
 		_projectConfigurators.add(new ThemesProjectConfigurator(settings));
+		_projectConfigurators.add(new WarsProjectConfigurator(settings));
 
-		_bundleUrl = GradleUtil.getProperty(
-			settings, WorkspacePlugin.PROPERTY_PREFIX + "bundle.url",
-			_BUNDLE_URL);
-		_configsDir = GradleUtil.getProperty(
-			settings, WorkspacePlugin.PROPERTY_PREFIX + "configs.dir",
-			_CONFIGS_DIR);
-		_environment = GradleUtil.getProperty(
-			settings, WorkspacePlugin.PROPERTY_PREFIX + "environment",
-			_ENVIRONMENT);
-		_homeDir = GradleUtil.getProperty(
-			settings, WorkspacePlugin.PROPERTY_PREFIX + "home.dir", _HOME_DIR);
+		_bundleCacheDir = _getProperty(
+			settings, "bundle.cache.dir", _BUNDLE_CACHE_DIR);
+		_bundleDistRootDirName = _getProperty(
+			settings, "bundle.dist.root.dir", _BUNDLE_DIST_ROOT_DIR_NAME);
+		_bundleTokenDownload = _getProperty(
+			settings, "bundle.token.download", _BUNDLE_TOKEN_DOWNLOAD);
+		_bundleTokenEmailAddress = _getProperty(
+			settings, "bundle.token.email.address",
+			_BUNDLE_TOKEN_EMAIL_ADDRESS);
+		_bundleTokenForce = _getProperty(
+			settings, "bundle.token.force", _BUNDLE_TOKEN_FORCE);
+		_bundleTokenPassword = _getProperty(
+			settings, "bundle.token.password", _BUNDLE_TOKEN_PASSWORD);
+		_bundleTokenPasswordFile = _getProperty(
+			settings, "bundle.token.password.file",
+			_BUNDLE_TOKEN_PASSWORD_FILE);
+		_bundleUrl = _getProperty(
+			settings, "bundle.url", BundleSupportConstants.DEFAULT_BUNDLE_URL);
+		_configsDir = _getProperty(
+			settings, "configs.dir",
+			BundleSupportConstants.DEFAULT_CONFIGS_DIR_NAME);
+		_dockerImageLiferay = _getProperty(
+			settings, "docker.image.liferay", _DOCKER_IMAGE_LIFERAY);
+		_dockerDir = _getProperty(settings, "docker.dir", _DOCKER_DIR);
+		_environment = _getProperty(
+			settings, "environment",
+			BundleSupportConstants.DEFAULT_ENVIRONMENT);
+		_homeDir = _getProperty(
+			settings, "home.dir",
+			BundleSupportConstants.DEFAULT_LIFERAY_HOME_DIR_NAME);
+		_targetPlatformVersion = _getProperty(
+			settings, "target.platform.version", (String)null);
+
+		_rootProjectConfigurator = new RootProjectConfigurator(settings);
+	}
+
+	public File getBundleCacheDir() {
+		return GradleUtil.toFile(_gradle.getRootProject(), _bundleCacheDir);
+	}
+
+	public String getBundleDistRootDirName() {
+		return GradleUtil.toString(_bundleDistRootDirName);
+	}
+
+	public String getBundleTokenEmailAddress() {
+		return GradleUtil.toString(_bundleTokenEmailAddress);
+	}
+
+	public String getBundleTokenPassword() {
+		return GradleUtil.toString(_bundleTokenPassword);
+	}
+
+	public File getBundleTokenPasswordFile() {
+		return GradleUtil.toFile(
+			_gradle.getRootProject(), _bundleTokenPasswordFile);
 	}
 
 	public String getBundleUrl() {
@@ -64,6 +115,14 @@ public class WorkspaceExtension {
 
 	public File getConfigsDir() {
 		return GradleUtil.toFile(_gradle.getRootProject(), _configsDir);
+	}
+
+	public File getDockerDir() {
+		return GradleUtil.toFile(_gradle.getRootProject(), _dockerDir);
+	}
+
+	public String getDockerImageLiferay() {
+		return GradleUtil.toString(_dockerImageLiferay);
 	}
 
 	public String getEnvironment() {
@@ -78,8 +137,20 @@ public class WorkspaceExtension {
 		return Collections.unmodifiableSet(_projectConfigurators);
 	}
 
-	public RootProjectConfigurator getRootProjectConfigurator() {
+	public Plugin<Project> getRootProjectConfigurator() {
 		return _rootProjectConfigurator;
+	}
+
+	public String getTargetPlatformVersion() {
+		return GradleUtil.toString(_targetPlatformVersion);
+	}
+
+	public boolean isBundleTokenDownload() {
+		return GradleUtil.toBoolean(_bundleTokenDownload);
+	}
+
+	public boolean isBundleTokenForce() {
+		return GradleUtil.toBoolean(_bundleTokenForce);
 	}
 
 	public ProjectConfigurator propertyMissing(String name) {
@@ -92,12 +163,48 @@ public class WorkspaceExtension {
 		throw new MissingPropertyException(name, ProjectConfigurator.class);
 	}
 
+	public void setBundleCacheDir(Object bundleCacheDir) {
+		_bundleCacheDir = bundleCacheDir;
+	}
+
+	public void setBundleDistRootDirName(Object bundleDistRootDirName) {
+		_bundleDistRootDirName = bundleDistRootDirName;
+	}
+
+	public void setBundleTokenDownload(Object bundleTokenDownload) {
+		_bundleTokenDownload = bundleTokenDownload;
+	}
+
+	public void setBundleTokenEmailAddress(Object bundleTokenEmailAddress) {
+		_bundleTokenEmailAddress = bundleTokenEmailAddress;
+	}
+
+	public void setBundleTokenForce(Object bundleTokenForce) {
+		_bundleTokenForce = bundleTokenForce;
+	}
+
+	public void setBundleTokenPassword(Object bundleTokenPassword) {
+		_bundleTokenPassword = bundleTokenPassword;
+	}
+
+	public void setBundleTokenPasswordFile(Object bundleTokenPasswordFile) {
+		_bundleTokenPasswordFile = bundleTokenPasswordFile;
+	}
+
 	public void setBundleUrl(Object bundleUrl) {
 		_bundleUrl = bundleUrl;
 	}
 
 	public void setConfigsDir(Object configsDir) {
 		_configsDir = configsDir;
+	}
+
+	public void setDockerDir(Object dockerDir) {
+		_dockerDir = dockerDir;
+	}
+
+	public void setDockerImageLiferay(Object dockerImageLiferay) {
+		_dockerImageLiferay = dockerImageLiferay;
 	}
 
 	public void setEnvironment(Object environment) {
@@ -108,24 +215,80 @@ public class WorkspaceExtension {
 		_homeDir = homeDir;
 	}
 
-	private static final String _BUNDLE_URL =
-		"https://sourceforge.net/projects/lportal/files/Liferay Portal/" +
-			"7.0.0 GA1/liferay-portal-tomcat-7.0-ce-ga1-20160331161017956.zip";
+	public void setTargetPlatformVersion(Object targetPlatformVersion) {
+		_targetPlatformVersion = targetPlatformVersion;
+	}
 
-	private static final String _CONFIGS_DIR = "configs";
+	private boolean _getProperty(
+		Object object, String keySuffix, boolean defaultValue) {
 
-	private static final String _ENVIRONMENT = "local";
+		return GradleUtil.getProperty(
+			object, WorkspacePlugin.PROPERTY_PREFIX + keySuffix, defaultValue);
+	}
 
-	private static final String _HOME_DIR = "bundles";
+	private Object _getProperty(
+		Object object, String keySuffix, File defaultValue) {
 
+		Object value = GradleUtil.getProperty(
+			object, WorkspacePlugin.PROPERTY_PREFIX + keySuffix);
+
+		if ((value instanceof String) && Validator.isNull((String)value)) {
+			value = null;
+		}
+
+		if (value == null) {
+			return defaultValue;
+		}
+
+		return value;
+	}
+
+	private String _getProperty(
+		Object object, String keySuffix, String defaultValue) {
+
+		return GradleUtil.getProperty(
+			object, WorkspacePlugin.PROPERTY_PREFIX + keySuffix, defaultValue);
+	}
+
+	private static final File _BUNDLE_CACHE_DIR = new File(
+		System.getProperty("user.home"),
+		BundleSupportConstants.DEFAULT_BUNDLE_CACHE_DIR_NAME);
+
+	private static final String _BUNDLE_DIST_ROOT_DIR_NAME = null;
+
+	private static final boolean _BUNDLE_TOKEN_DOWNLOAD = false;
+
+	private static final String _BUNDLE_TOKEN_EMAIL_ADDRESS = null;
+
+	private static final boolean _BUNDLE_TOKEN_FORCE = false;
+
+	private static final String _BUNDLE_TOKEN_PASSWORD = null;
+
+	private static final String _BUNDLE_TOKEN_PASSWORD_FILE = null;
+
+	private static final File _DOCKER_DIR = new File(
+		Project.DEFAULT_BUILD_DIR_NAME + File.separator + "docker");
+
+	private static final String _DOCKER_IMAGE_LIFERAY =
+		"liferay/portal:7.1.1-ga2";
+
+	private Object _bundleCacheDir;
+	private Object _bundleDistRootDirName;
+	private Object _bundleTokenDownload;
+	private Object _bundleTokenEmailAddress;
+	private Object _bundleTokenForce;
+	private Object _bundleTokenPassword;
+	private Object _bundleTokenPasswordFile;
 	private Object _bundleUrl;
 	private Object _configsDir;
+	private Object _dockerDir;
+	private Object _dockerImageLiferay;
 	private Object _environment;
 	private final Gradle _gradle;
 	private Object _homeDir;
 	private final Set<ProjectConfigurator> _projectConfigurators =
 		new HashSet<>();
-	private final RootProjectConfigurator _rootProjectConfigurator =
-		new RootProjectConfigurator();
+	private final Plugin<Project> _rootProjectConfigurator;
+	private Object _targetPlatformVersion;
 
 }

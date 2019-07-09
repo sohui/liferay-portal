@@ -15,13 +15,11 @@
 package com.liferay.knowledge.base.service.persistence.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-
 import com.liferay.knowledge.base.exception.NoSuchCommentException;
 import com.liferay.knowledge.base.model.KBComment;
 import com.liferay.knowledge.base.service.KBCommentLocalServiceUtil;
 import com.liferay.knowledge.base.service.persistence.KBCommentPersistence;
 import com.liferay.knowledge.base.service.persistence.KBCommentUtil;
-
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
@@ -30,25 +28,15 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.TransactionalTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.junit.runner.RunWith;
+import com.liferay.portal.test.rule.TransactionalTestRule;
 
 import java.io.Serializable;
 
@@ -60,16 +48,27 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 /**
  * @generated
  */
 @RunWith(Arquillian.class)
 public class KBCommentPersistenceTest {
+
 	@ClassRule
 	@Rule
-	public static final AggregateTestRule aggregateTestRule = new AggregateTestRule(new LiferayIntegrationTestRule(),
-			PersistenceTestRule.INSTANCE,
-			new TransactionalTestRule(Propagation.REQUIRED));
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(), PersistenceTestRule.INSTANCE,
+			new TransactionalTestRule(
+				Propagation.REQUIRED, "com.liferay.knowledge.base.service"));
 
 	@Before
 	public void setUp() {
@@ -108,7 +107,8 @@ public class KBCommentPersistenceTest {
 
 		_persistence.remove(newKBComment);
 
-		KBComment existingKBComment = _persistence.fetchByPrimaryKey(newKBComment.getPrimaryKey());
+		KBComment existingKBComment = _persistence.fetchByPrimaryKey(
+			newKBComment.getPrimaryKey());
 
 		Assert.assertNull(existingKBComment);
 	}
@@ -152,63 +152,65 @@ public class KBCommentPersistenceTest {
 
 		_kbComments.add(_persistence.update(newKBComment));
 
-		KBComment existingKBComment = _persistence.findByPrimaryKey(newKBComment.getPrimaryKey());
+		KBComment existingKBComment = _persistence.findByPrimaryKey(
+			newKBComment.getPrimaryKey());
 
-		Assert.assertEquals(existingKBComment.getUuid(), newKBComment.getUuid());
-		Assert.assertEquals(existingKBComment.getKbCommentId(),
-			newKBComment.getKbCommentId());
-		Assert.assertEquals(existingKBComment.getGroupId(),
-			newKBComment.getGroupId());
-		Assert.assertEquals(existingKBComment.getCompanyId(),
-			newKBComment.getCompanyId());
-		Assert.assertEquals(existingKBComment.getUserId(),
-			newKBComment.getUserId());
-		Assert.assertEquals(existingKBComment.getUserName(),
-			newKBComment.getUserName());
-		Assert.assertEquals(Time.getShortTimestamp(
-				existingKBComment.getCreateDate()),
+		Assert.assertEquals(
+			existingKBComment.getUuid(), newKBComment.getUuid());
+		Assert.assertEquals(
+			existingKBComment.getKbCommentId(), newKBComment.getKbCommentId());
+		Assert.assertEquals(
+			existingKBComment.getGroupId(), newKBComment.getGroupId());
+		Assert.assertEquals(
+			existingKBComment.getCompanyId(), newKBComment.getCompanyId());
+		Assert.assertEquals(
+			existingKBComment.getUserId(), newKBComment.getUserId());
+		Assert.assertEquals(
+			existingKBComment.getUserName(), newKBComment.getUserName());
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingKBComment.getCreateDate()),
 			Time.getShortTimestamp(newKBComment.getCreateDate()));
-		Assert.assertEquals(Time.getShortTimestamp(
-				existingKBComment.getModifiedDate()),
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingKBComment.getModifiedDate()),
 			Time.getShortTimestamp(newKBComment.getModifiedDate()));
-		Assert.assertEquals(existingKBComment.getClassNameId(),
-			newKBComment.getClassNameId());
-		Assert.assertEquals(existingKBComment.getClassPK(),
-			newKBComment.getClassPK());
-		Assert.assertEquals(existingKBComment.getContent(),
-			newKBComment.getContent());
-		Assert.assertEquals(existingKBComment.getUserRating(),
-			newKBComment.getUserRating());
-		Assert.assertEquals(Time.getShortTimestamp(
-				existingKBComment.getLastPublishDate()),
+		Assert.assertEquals(
+			existingKBComment.getClassNameId(), newKBComment.getClassNameId());
+		Assert.assertEquals(
+			existingKBComment.getClassPK(), newKBComment.getClassPK());
+		Assert.assertEquals(
+			existingKBComment.getContent(), newKBComment.getContent());
+		Assert.assertEquals(
+			existingKBComment.getUserRating(), newKBComment.getUserRating());
+		Assert.assertEquals(
+			Time.getShortTimestamp(existingKBComment.getLastPublishDate()),
 			Time.getShortTimestamp(newKBComment.getLastPublishDate()));
-		Assert.assertEquals(existingKBComment.getStatus(),
-			newKBComment.getStatus());
+		Assert.assertEquals(
+			existingKBComment.getStatus(), newKBComment.getStatus());
 	}
 
 	@Test
 	public void testCountByUuid() throws Exception {
-		_persistence.countByUuid(StringPool.BLANK);
+		_persistence.countByUuid("");
 
-		_persistence.countByUuid(StringPool.NULL);
+		_persistence.countByUuid("null");
 
 		_persistence.countByUuid((String)null);
 	}
 
 	@Test
 	public void testCountByUUID_G() throws Exception {
-		_persistence.countByUUID_G(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUUID_G("", RandomTestUtil.nextLong());
 
-		_persistence.countByUUID_G(StringPool.NULL, 0L);
+		_persistence.countByUUID_G("null", 0L);
 
 		_persistence.countByUUID_G((String)null, 0L);
 	}
 
 	@Test
 	public void testCountByUuid_C() throws Exception {
-		_persistence.countByUuid_C(StringPool.BLANK, RandomTestUtil.nextLong());
+		_persistence.countByUuid_C("", RandomTestUtil.nextLong());
 
-		_persistence.countByUuid_C(StringPool.NULL, 0L);
+		_persistence.countByUuid_C("null", 0L);
 
 		_persistence.countByUuid_C((String)null, 0L);
 	}
@@ -222,55 +224,59 @@ public class KBCommentPersistenceTest {
 
 	@Test
 	public void testCountByG_C() throws Exception {
-		_persistence.countByG_C(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong());
+		_persistence.countByG_C(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
 		_persistence.countByG_C(0L, 0L);
 	}
 
 	@Test
 	public void testCountByG_S() throws Exception {
-		_persistence.countByG_S(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextInt());
+		_persistence.countByG_S(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
 
 		_persistence.countByG_S(0L, 0);
 	}
 
 	@Test
 	public void testCountByC_C() throws Exception {
-		_persistence.countByC_C(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong());
+		_persistence.countByC_C(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
 
 		_persistence.countByC_C(0L, 0L);
 	}
 
 	@Test
 	public void testCountByU_C_C() throws Exception {
-		_persistence.countByU_C_C(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong(), RandomTestUtil.nextLong());
+		_persistence.countByU_C_C(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
 
 		_persistence.countByU_C_C(0L, 0L, 0L);
 	}
 
 	@Test
 	public void testCountByC_C_S() throws Exception {
-		_persistence.countByC_C_S(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
+		_persistence.countByC_C_S(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextInt());
 
 		_persistence.countByC_C_S(0L, 0L, 0);
 	}
 
 	@Test
 	public void testCountByC_C_SArrayable() throws Exception {
-		_persistence.countByC_C_S(RandomTestUtil.nextLong(),
-			RandomTestUtil.nextLong(), new int[] { RandomTestUtil.nextInt(), 0 });
+		_persistence.countByC_C_S(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			new int[] {RandomTestUtil.nextInt(), 0});
 	}
 
 	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		KBComment newKBComment = addKBComment();
 
-		KBComment existingKBComment = _persistence.findByPrimaryKey(newKBComment.getPrimaryKey());
+		KBComment existingKBComment = _persistence.findByPrimaryKey(
+			newKBComment.getPrimaryKey());
 
 		Assert.assertEquals(existingKBComment, newKBComment);
 	}
@@ -284,23 +290,25 @@ public class KBCommentPersistenceTest {
 
 	@Test
 	public void testFindAll() throws Exception {
-		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-			getOrderByComparator());
+		_persistence.findAll(
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
 	protected OrderByComparator<KBComment> getOrderByComparator() {
-		return OrderByComparatorFactoryUtil.create("KBComment", "uuid", true,
-			"kbCommentId", true, "groupId", true, "companyId", true, "userId",
-			true, "userName", true, "createDate", true, "modifiedDate", true,
-			"classNameId", true, "classPK", true, "content", true,
-			"userRating", true, "lastPublishDate", true, "status", true);
+		return OrderByComparatorFactoryUtil.create(
+			"KBComment", "uuid", true, "kbCommentId", true, "groupId", true,
+			"companyId", true, "userId", true, "userName", true, "createDate",
+			true, "modifiedDate", true, "classNameId", true, "classPK", true,
+			"content", true, "userRating", true, "lastPublishDate", true,
+			"status", true);
 	}
 
 	@Test
 	public void testFetchByPrimaryKeyExisting() throws Exception {
 		KBComment newKBComment = addKBComment();
 
-		KBComment existingKBComment = _persistence.fetchByPrimaryKey(newKBComment.getPrimaryKey());
+		KBComment existingKBComment = _persistence.fetchByPrimaryKey(
+			newKBComment.getPrimaryKey());
 
 		Assert.assertEquals(existingKBComment, newKBComment);
 	}
@@ -317,6 +325,7 @@ public class KBCommentPersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereAllPrimaryKeysExist()
 		throws Exception {
+
 		KBComment newKBComment1 = addKBComment();
 		KBComment newKBComment2 = addKBComment();
 
@@ -325,18 +334,20 @@ public class KBCommentPersistenceTest {
 		primaryKeys.add(newKBComment1.getPrimaryKey());
 		primaryKeys.add(newKBComment2.getPrimaryKey());
 
-		Map<Serializable, KBComment> kbComments = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBComment> kbComments =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(2, kbComments.size());
-		Assert.assertEquals(newKBComment1,
-			kbComments.get(newKBComment1.getPrimaryKey()));
-		Assert.assertEquals(newKBComment2,
-			kbComments.get(newKBComment2.getPrimaryKey()));
+		Assert.assertEquals(
+			newKBComment1, kbComments.get(newKBComment1.getPrimaryKey()));
+		Assert.assertEquals(
+			newKBComment2, kbComments.get(newKBComment2.getPrimaryKey()));
 	}
 
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereNoPrimaryKeysExist()
 		throws Exception {
+
 		long pk1 = RandomTestUtil.nextLong();
 
 		long pk2 = RandomTestUtil.nextLong();
@@ -346,7 +357,8 @@ public class KBCommentPersistenceTest {
 		primaryKeys.add(pk1);
 		primaryKeys.add(pk2);
 
-		Map<Serializable, KBComment> kbComments = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBComment> kbComments =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertTrue(kbComments.isEmpty());
 	}
@@ -354,6 +366,7 @@ public class KBCommentPersistenceTest {
 	@Test
 	public void testFetchByPrimaryKeysWithMultiplePrimaryKeysWhereSomePrimaryKeysExist()
 		throws Exception {
+
 		KBComment newKBComment = addKBComment();
 
 		long pk = RandomTestUtil.nextLong();
@@ -363,52 +376,57 @@ public class KBCommentPersistenceTest {
 		primaryKeys.add(newKBComment.getPrimaryKey());
 		primaryKeys.add(pk);
 
-		Map<Serializable, KBComment> kbComments = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBComment> kbComments =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(1, kbComments.size());
-		Assert.assertEquals(newKBComment,
-			kbComments.get(newKBComment.getPrimaryKey()));
+		Assert.assertEquals(
+			newKBComment, kbComments.get(newKBComment.getPrimaryKey()));
 	}
 
 	@Test
-	public void testFetchByPrimaryKeysWithNoPrimaryKeys()
-		throws Exception {
+	public void testFetchByPrimaryKeysWithNoPrimaryKeys() throws Exception {
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
-		Map<Serializable, KBComment> kbComments = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBComment> kbComments =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertTrue(kbComments.isEmpty());
 	}
 
 	@Test
-	public void testFetchByPrimaryKeysWithOnePrimaryKey()
-		throws Exception {
+	public void testFetchByPrimaryKeysWithOnePrimaryKey() throws Exception {
 		KBComment newKBComment = addKBComment();
 
 		Set<Serializable> primaryKeys = new HashSet<Serializable>();
 
 		primaryKeys.add(newKBComment.getPrimaryKey());
 
-		Map<Serializable, KBComment> kbComments = _persistence.fetchByPrimaryKeys(primaryKeys);
+		Map<Serializable, KBComment> kbComments =
+			_persistence.fetchByPrimaryKeys(primaryKeys);
 
 		Assert.assertEquals(1, kbComments.size());
-		Assert.assertEquals(newKBComment,
-			kbComments.get(newKBComment.getPrimaryKey()));
+		Assert.assertEquals(
+			newKBComment, kbComments.get(newKBComment.getPrimaryKey()));
 	}
 
 	@Test
 	public void testActionableDynamicQuery() throws Exception {
 		final IntegerWrapper count = new IntegerWrapper();
 
-		ActionableDynamicQuery actionableDynamicQuery = KBCommentLocalServiceUtil.getActionableDynamicQuery();
+		ActionableDynamicQuery actionableDynamicQuery =
+			KBCommentLocalServiceUtil.getActionableDynamicQuery();
 
-		actionableDynamicQuery.setPerformActionMethod(new ActionableDynamicQuery.PerformActionMethod<KBComment>() {
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod<KBComment>() {
+
 				@Override
 				public void performAction(KBComment kbComment) {
 					Assert.assertNotNull(kbComment);
 
 					count.increment();
 				}
+
 			});
 
 		actionableDynamicQuery.performActions();
@@ -417,17 +435,18 @@ public class KBCommentPersistenceTest {
 	}
 
 	@Test
-	public void testDynamicQueryByPrimaryKeyExisting()
-		throws Exception {
+	public void testDynamicQueryByPrimaryKeyExisting() throws Exception {
 		KBComment newKBComment = addKBComment();
 
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(KBComment.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBComment.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.add(RestrictionsFactoryUtil.eq("kbCommentId",
-				newKBComment.getKbCommentId()));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"kbCommentId", newKBComment.getKbCommentId()));
 
-		List<KBComment> result = _persistence.findWithDynamicQuery(dynamicQuery);
+		List<KBComment> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
 
 		Assert.assertEquals(1, result.size());
 
@@ -438,31 +457,34 @@ public class KBCommentPersistenceTest {
 
 	@Test
 	public void testDynamicQueryByPrimaryKeyMissing() throws Exception {
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(KBComment.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBComment.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.add(RestrictionsFactoryUtil.eq("kbCommentId",
-				RandomTestUtil.nextLong()));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"kbCommentId", RandomTestUtil.nextLong()));
 
-		List<KBComment> result = _persistence.findWithDynamicQuery(dynamicQuery);
+		List<KBComment> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
 
 		Assert.assertEquals(0, result.size());
 	}
 
 	@Test
-	public void testDynamicQueryByProjectionExisting()
-		throws Exception {
+	public void testDynamicQueryByProjectionExisting() throws Exception {
 		KBComment newKBComment = addKBComment();
 
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(KBComment.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBComment.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.setProjection(ProjectionFactoryUtil.property("kbCommentId"));
+		dynamicQuery.setProjection(
+			ProjectionFactoryUtil.property("kbCommentId"));
 
 		Object newKbCommentId = newKBComment.getKbCommentId();
 
-		dynamicQuery.add(RestrictionsFactoryUtil.in("kbCommentId",
-				new Object[] { newKbCommentId }));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.in(
+				"kbCommentId", new Object[] {newKbCommentId}));
 
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -475,13 +497,15 @@ public class KBCommentPersistenceTest {
 
 	@Test
 	public void testDynamicQueryByProjectionMissing() throws Exception {
-		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(KBComment.class,
-				_dynamicQueryClassLoader);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			KBComment.class, _dynamicQueryClassLoader);
 
-		dynamicQuery.setProjection(ProjectionFactoryUtil.property("kbCommentId"));
+		dynamicQuery.setProjection(
+			ProjectionFactoryUtil.property("kbCommentId"));
 
-		dynamicQuery.add(RestrictionsFactoryUtil.in("kbCommentId",
-				new Object[] { RandomTestUtil.nextLong() }));
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.in(
+				"kbCommentId", new Object[] {RandomTestUtil.nextLong()}));
 
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
@@ -494,14 +518,18 @@ public class KBCommentPersistenceTest {
 
 		_persistence.clearCache();
 
-		KBComment existingKBComment = _persistence.findByPrimaryKey(newKBComment.getPrimaryKey());
+		KBComment existingKBComment = _persistence.findByPrimaryKey(
+			newKBComment.getPrimaryKey());
 
-		Assert.assertTrue(Objects.equals(existingKBComment.getUuid(),
-				ReflectionTestUtil.invoke(existingKBComment, "getOriginalUuid",
-					new Class<?>[0])));
-		Assert.assertEquals(Long.valueOf(existingKBComment.getGroupId()),
-			ReflectionTestUtil.<Long>invoke(existingKBComment,
-				"getOriginalGroupId", new Class<?>[0]));
+		Assert.assertTrue(
+			Objects.equals(
+				existingKBComment.getUuid(),
+				ReflectionTestUtil.invoke(
+					existingKBComment, "getOriginalUuid", new Class<?>[0])));
+		Assert.assertEquals(
+			Long.valueOf(existingKBComment.getGroupId()),
+			ReflectionTestUtil.<Long>invoke(
+				existingKBComment, "getOriginalGroupId", new Class<?>[0]));
 	}
 
 	protected KBComment addKBComment() throws Exception {
@@ -543,4 +571,5 @@ public class KBCommentPersistenceTest {
 	private List<KBComment> _kbComments = new ArrayList<KBComment>();
 	private KBCommentPersistence _persistence;
 	private ClassLoader _dynamicQueryClassLoader;
+
 }

@@ -14,22 +14,25 @@
 
 package com.liferay.exportimport.kernel.configuration;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.Serializable;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.portlet.PortletRequest;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Levente Hudák
@@ -65,6 +68,37 @@ public class ExportImportConfigurationHelper {
 		return addExportImportConfiguration(
 			portletRequest,
 			ExportImportConfigurationConstants.TYPE_PUBLISH_LAYOUT_REMOTE);
+	}
+
+	public static String[] getExportImportConfigurationParameter(
+			BackgroundTask backgroundTask, String parameterName)
+		throws PortalException {
+
+		Map<String, Serializable> taskContextMap =
+			backgroundTask.getTaskContextMap();
+
+		ExportImportConfiguration exportImportConfiguration =
+			ExportImportConfigurationLocalServiceUtil.
+				getExportImportConfiguration(
+					GetterUtil.getLong(
+						taskContextMap.get("exportImportConfigurationId")));
+
+		return getExportImportConfigurationParameter(
+			exportImportConfiguration, parameterName);
+	}
+
+	public static String[] getExportImportConfigurationParameter(
+			ExportImportConfiguration exportImportConfiguration,
+			String parameterName)
+		throws PortalException {
+
+		Map<String, Serializable> settingsMap =
+			exportImportConfiguration.getSettingsMap();
+
+		Map<String, String[]> parameterMap =
+			(HashMap<String, String[]>)settingsMap.get("parameterMap");
+
+		return parameterMap.get(parameterName);
 	}
 
 	public static ExportImportConfiguration
@@ -114,7 +148,7 @@ public class ExportImportConfigurationHelper {
 		String description = ParamUtil.getString(portletRequest, "description");
 
 		Map<String, Serializable> settingsMap =
-			ExportImportConfigurationSettingsMapFactory.buildSettingsMap(
+			ExportImportConfigurationSettingsMapFactoryUtil.buildSettingsMap(
 				portletRequest, groupId, type);
 
 		Map<String, String[]> parameterMap =
@@ -150,7 +184,7 @@ public class ExportImportConfigurationHelper {
 		String description = ParamUtil.getString(portletRequest, "description");
 
 		Map<String, Serializable> settingsMap =
-			ExportImportConfigurationSettingsMapFactory.buildSettingsMap(
+			ExportImportConfigurationSettingsMapFactoryUtil.buildSettingsMap(
 				portletRequest, groupId, type);
 
 		return ExportImportConfigurationLocalServiceUtil.

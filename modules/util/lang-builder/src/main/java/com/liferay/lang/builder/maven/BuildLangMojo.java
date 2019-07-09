@@ -26,7 +26,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Builds language property files.
  *
  * @author Andrea Di Giorgi
- * @goal build-lang
+ * @goal build
  */
 public class BuildLangMojo extends AbstractMojo {
 
@@ -38,6 +38,13 @@ public class BuildLangMojo extends AbstractMojo {
 		catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * @parameter
+	 */
+	public void setExcludedLanguageIds(String[] excludedLanguageIds) {
+		_langBuilderArgs.setExcludedLanguageIds(excludedLanguageIds);
 	}
 
 	/**
@@ -57,18 +64,8 @@ public class BuildLangMojo extends AbstractMojo {
 	/**
 	 * @parameter
 	 */
-	public void setPlugin(boolean plugin) {
-		_langBuilderArgs.setPlugin(plugin);
-	}
-
-	/**
-	 * @parameter
-	 */
-	public void setPortalLanguagePropertiesFileName(
-		String portalLanguagePropertiesFileName) {
-
-		_langBuilderArgs.setPortalLanguagePropertiesFileName(
-			portalLanguagePropertiesFileName);
+	public void setTitleCapitalization(boolean titleCapitalization) {
+		_langBuilderArgs.setTitleCapitalization(titleCapitalization);
 	}
 
 	/**
@@ -81,15 +78,8 @@ public class BuildLangMojo extends AbstractMojo {
 	/**
 	 * @parameter
 	 */
-	public void setTranslateClientId(String translateClientId) {
-		_langBuilderArgs.setTranslateClientId(translateClientId);
-	}
-
-	/**
-	 * @parameter
-	 */
-	public void setTranslateClientSecret(String translateClientSecret) {
-		_langBuilderArgs.setTranslateClientSecret(translateClientSecret);
+	public void setTranslateSubscriptionKey(String translateSubscriptionKey) {
+		_langBuilderArgs.setTranslateSubscriptionKey(translateSubscriptionKey);
 	}
 
 	/**

@@ -20,7 +20,7 @@ import org.hibernate.Query;
 
 /**
  * @author     Brian Wing Shun Chan
- * @deprecated As of 6.2.0, moved to {@link
+ * @deprecated As of Bunyan (6.0.x), moved to {@link
  *             com.liferay.portal.kernel.dao.orm.QueryPos}
  */
 @Deprecated
@@ -117,9 +117,9 @@ public class QueryPos {
 	}
 
 	public void add(String[] values, int count) {
-		for (int i = 0; i < values.length; i++) {
+		for (String value : values) {
 			for (int j = 0; j < count; j++) {
-				add(values[i]);
+				add(value);
 			}
 		}
 	}

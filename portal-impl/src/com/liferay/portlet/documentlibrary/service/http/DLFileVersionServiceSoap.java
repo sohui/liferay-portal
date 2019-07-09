@@ -14,30 +14,30 @@
 
 package com.liferay.portlet.documentlibrary.service.http;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.document.library.kernel.service.DLFileVersionServiceUtil;
-
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.rmi.RemoteException;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * Provides the SOAP utility for the
- * {@link DLFileVersionServiceUtil} service utility. The
- * static methods of this class calls the same methods of the service utility.
- * However, the signatures are different because it is difficult for SOAP to
- * support certain types.
+ * <code>DLFileVersionServiceUtil</code> service
+ * utility. The static methods of this class call the same methods of the
+ * service utility. However, the signatures are different because it is
+ * difficult for SOAP to support certain types.
  *
  * <p>
  * ServiceBuilder follows certain rules in translating the methods. For example,
- * if the method in the service utility returns a {@link java.util.List}, that
- * is translated to an array of {@link com.liferay.document.library.kernel.model.DLFileVersionSoap}.
- * If the method in the service utility returns a
- * {@link com.liferay.document.library.kernel.model.DLFileVersion}, that is translated to a
- * {@link com.liferay.document.library.kernel.model.DLFileVersionSoap}. Methods that SOAP cannot
- * safely wire are skipped.
+ * if the method in the service utility returns a <code>java.util.List</code>,
+ * that is translated to an array of
+ * <code>com.liferay.document.library.kernel.model.DLFileVersionSoap</code>. If the method in the
+ * service utility returns a
+ * <code>com.liferay.document.library.kernel.model.DLFileVersion</code>, that is translated to a
+ * <code>com.liferay.document.library.kernel.model.DLFileVersionSoap</code>. Methods that SOAP
+ * cannot safely wire are skipped.
  * </p>
  *
  * <p>
@@ -59,18 +59,22 @@ import java.rmi.RemoteException;
  *
  * @author Brian Wing Shun Chan
  * @see DLFileVersionServiceHttp
- * @see com.liferay.document.library.kernel.model.DLFileVersionSoap
- * @see DLFileVersionServiceUtil
  * @generated
  */
 @ProviderType
 public class DLFileVersionServiceSoap {
-	public static com.liferay.document.library.kernel.model.DLFileVersionSoap getFileVersion(
-		long fileVersionId) throws RemoteException {
-		try {
-			com.liferay.document.library.kernel.model.DLFileVersion returnValue = DLFileVersionServiceUtil.getFileVersion(fileVersionId);
 
-			return com.liferay.document.library.kernel.model.DLFileVersionSoap.toSoapModel(returnValue);
+	public static com.liferay.document.library.kernel.model.DLFileVersionSoap
+			getFileVersion(long fileVersionId)
+		throws RemoteException {
+
+		try {
+			com.liferay.document.library.kernel.model.DLFileVersion
+				returnValue = DLFileVersionServiceUtil.getFileVersion(
+					fileVersionId);
+
+			return com.liferay.document.library.kernel.model.DLFileVersionSoap.
+				toSoapModel(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -79,13 +83,18 @@ public class DLFileVersionServiceSoap {
 		}
 	}
 
-	public static com.liferay.document.library.kernel.model.DLFileVersionSoap[] getFileVersions(
-		long fileEntryId, int status) throws RemoteException {
-		try {
-			java.util.List<com.liferay.document.library.kernel.model.DLFileVersion> returnValue =
-				DLFileVersionServiceUtil.getFileVersions(fileEntryId, status);
+	public static com.liferay.document.library.kernel.model.DLFileVersionSoap[]
+			getFileVersions(long fileEntryId, int status)
+		throws RemoteException {
 
-			return com.liferay.document.library.kernel.model.DLFileVersionSoap.toSoapModels(returnValue);
+		try {
+			java.util.List
+				<com.liferay.document.library.kernel.model.DLFileVersion>
+					returnValue = DLFileVersionServiceUtil.getFileVersions(
+						fileEntryId, status);
+
+			return com.liferay.document.library.kernel.model.DLFileVersionSoap.
+				toSoapModels(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -96,9 +105,10 @@ public class DLFileVersionServiceSoap {
 
 	public static int getFileVersionsCount(long fileEntryId, int status)
 		throws RemoteException {
+
 		try {
-			int returnValue = DLFileVersionServiceUtil.getFileVersionsCount(fileEntryId,
-					status);
+			int returnValue = DLFileVersionServiceUtil.getFileVersionsCount(
+				fileEntryId, status);
 
 			return returnValue;
 		}
@@ -109,12 +119,17 @@ public class DLFileVersionServiceSoap {
 		}
 	}
 
-	public static com.liferay.document.library.kernel.model.DLFileVersionSoap getLatestFileVersion(
-		long fileEntryId) throws RemoteException {
-		try {
-			com.liferay.document.library.kernel.model.DLFileVersion returnValue = DLFileVersionServiceUtil.getLatestFileVersion(fileEntryId);
+	public static com.liferay.document.library.kernel.model.DLFileVersionSoap
+			getLatestFileVersion(long fileEntryId)
+		throws RemoteException {
 
-			return com.liferay.document.library.kernel.model.DLFileVersionSoap.toSoapModel(returnValue);
+		try {
+			com.liferay.document.library.kernel.model.DLFileVersion
+				returnValue = DLFileVersionServiceUtil.getLatestFileVersion(
+					fileEntryId);
+
+			return com.liferay.document.library.kernel.model.DLFileVersionSoap.
+				toSoapModel(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -123,13 +138,17 @@ public class DLFileVersionServiceSoap {
 		}
 	}
 
-	public static com.liferay.document.library.kernel.model.DLFileVersionSoap getLatestFileVersion(
-		long fileEntryId, boolean excludeWorkingCopy) throws RemoteException {
-		try {
-			com.liferay.document.library.kernel.model.DLFileVersion returnValue = DLFileVersionServiceUtil.getLatestFileVersion(fileEntryId,
-					excludeWorkingCopy);
+	public static com.liferay.document.library.kernel.model.DLFileVersionSoap
+			getLatestFileVersion(long fileEntryId, boolean excludeWorkingCopy)
+		throws RemoteException {
 
-			return com.liferay.document.library.kernel.model.DLFileVersionSoap.toSoapModel(returnValue);
+		try {
+			com.liferay.document.library.kernel.model.DLFileVersion
+				returnValue = DLFileVersionServiceUtil.getLatestFileVersion(
+					fileEntryId, excludeWorkingCopy);
+
+			return com.liferay.document.library.kernel.model.DLFileVersionSoap.
+				toSoapModel(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -138,5 +157,7 @@ public class DLFileVersionServiceSoap {
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(DLFileVersionServiceSoap.class);
+	private static Log _log = LogFactoryUtil.getLog(
+		DLFileVersionServiceSoap.class);
+
 }

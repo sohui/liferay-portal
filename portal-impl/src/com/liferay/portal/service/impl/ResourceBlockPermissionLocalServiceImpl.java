@@ -36,8 +36,10 @@ import java.util.Set;
  * local service.
  * </p>
  *
- * @author Connor McKay
+ * @author     Connor McKay
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class ResourceBlockPermissionLocalServiceImpl
 	extends ResourceBlockPermissionLocalServiceBaseImpl {
 
@@ -68,21 +70,6 @@ public class ResourceBlockPermissionLocalServiceImpl
 	public void deleteResourceBlockPermissions(long resourceBlockId) {
 		resourceBlockPermissionPersistence.removeByResourceBlockId(
 			resourceBlockId);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getAvailableResourceBlockPermissionActionIds(String, long,
-	 *             List)}
-	 */
-	@Deprecated
-	@Override
-	public Map<Long, Set<String>> getAvailableResourceBlockPermissionActionIds(
-			long[] roleIds, String name, long primKey, List<String> actionIds)
-		throws PortalException {
-
-		return getAvailableResourceBlockPermissionActionIds(
-			name, primKey, actionIds);
 	}
 
 	@Override
@@ -135,18 +122,18 @@ public class ResourceBlockPermissionLocalServiceImpl
 			resourceBlockPermissionPersistence.findByResourceBlockId(
 				resourceBlockId);
 
-		ResourceBlockPermissionsContainer resourceBlockPermissionContainer =
+		ResourceBlockPermissionsContainer resourceBlockPermissionsContainer =
 			new ResourceBlockPermissionsContainer();
 
 		for (ResourceBlockPermission resourceBlockPermission :
 				resourceBlockPermissions) {
 
-			resourceBlockPermissionContainer.setPermissions(
+			resourceBlockPermissionsContainer.setPermissions(
 				resourceBlockPermission.getRoleId(),
 				resourceBlockPermission.getActionIds());
 		}
 
-		return resourceBlockPermissionContainer;
+		return resourceBlockPermissionsContainer;
 	}
 
 	@Override
@@ -184,7 +171,7 @@ public class ResourceBlockPermissionLocalServiceImpl
 		}
 		else if (operator == ResourceBlockConstants.OPERATOR_REMOVE) {
 			actionIdsLong =
-				resourceBlockPermission.getActionIds() & (~actionIdsLong);
+				resourceBlockPermission.getActionIds() & ~actionIdsLong;
 		}
 
 		if (actionIdsLong == 0) {

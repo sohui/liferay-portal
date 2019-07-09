@@ -14,6 +14,7 @@
 
 package com.liferay.gradle.plugins.cache.task;
 
+import com.liferay.gradle.plugins.cache.util.StringUtil;
 import com.liferay.gradle.util.GradleUtil;
 
 import groovy.lang.Closure;
@@ -112,6 +113,18 @@ public class TaskCache implements PatternFilterable {
 		return _project;
 	}
 
+	public String getRefreshDigestTaskName() {
+		return "refresh" + StringUtil.capitalize(getName()) + "Digest";
+	}
+
+	public String getRestoreCacheTaskName() {
+		return "restore" + StringUtil.capitalize(getName()) + "Cache";
+	}
+
+	public String getSaveCacheTaskName() {
+		return "save" + StringUtil.capitalize(getName()) + "Cache";
+	}
+
 	public Set<Object> getSkippedTaskDependencies() {
 		return _skippedTaskDependencies;
 	}
@@ -158,6 +171,10 @@ public class TaskCache implements PatternFilterable {
 		return _disabled;
 	}
 
+	public boolean isExcludeIgnoredTestFiles() {
+		return _excludeIgnoredTestFiles;
+	}
+
 	public void setBaseDir(Object baseDir) {
 		_baseDir = baseDir;
 	}
@@ -168,6 +185,10 @@ public class TaskCache implements PatternFilterable {
 
 	public void setDisabled(boolean disabled) {
 		_disabled = disabled;
+	}
+
+	public void setExcludeIgnoredTestFiles(boolean excludeIgnoredTestFiles) {
+		_excludeIgnoredTestFiles = excludeIgnoredTestFiles;
 	}
 
 	@Override
@@ -229,9 +250,15 @@ public class TaskCache implements PatternFilterable {
 		return testFile(Arrays.asList(testFiles));
 	}
 
+	@Override
+	public String toString() {
+		return "task cache '" + _name + "'";
+	}
+
 	private Object _baseDir;
 	private Object _cacheDir;
 	private boolean _disabled;
+	private boolean _excludeIgnoredTestFiles = true;
 	private final String _name;
 	private final PatternFilterable _patternFilterable = new PatternSet();
 	private final Project _project;

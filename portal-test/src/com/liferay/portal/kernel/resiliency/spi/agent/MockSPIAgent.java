@@ -44,8 +44,8 @@ public class MockSPIAgent implements SPIAgent {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
-	public HttpServletRequest prepareRequest(HttpServletRequest request)
+	public HttpServletRequest prepareRequest(
+			HttpServletRequest httpServletRequest)
 		throws IOException {
 
 		throw new UnsupportedOperationException();
@@ -53,21 +53,24 @@ public class MockSPIAgent implements SPIAgent {
 
 	@Override
 	public HttpServletResponse prepareResponse(
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void service(
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
 
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void transferResponse(
-		HttpServletRequest request, HttpServletResponse response, Exception e) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, Exception e) {
 
 		throw new UnsupportedOperationException();
 	}

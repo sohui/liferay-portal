@@ -14,12 +14,10 @@
 
 package com.liferay.portal.upgrade.v7_0_0;
 
-import com.liferay.blogs.kernel.model.BlogsEntry;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFolder;
-import com.liferay.message.boards.kernel.model.MBCategory;
-import com.liferay.message.boards.kernel.model.MBThread;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -31,7 +29,6 @@ import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.sql.PreparedStatement;
@@ -41,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  * @author Roberto Díaz
  * @author Iván Zaera
  */
@@ -68,9 +65,11 @@ public class UpgradeSubscription extends UpgradeProcess {
 				PortletPreferences.class.getName());
 
 			runSQL(
-				"delete from Subscription where classNameId = " + classNameId +
-					" and classPK not in (select portletPreferencesId from " +
-						" PortletPreferences)");
+				StringBundler.concat(
+					"delete from Subscription where classNameId = ",
+					classNameId,
+					" and classPK not in (select portletPreferencesId from ",
+					"PortletPreferences)"));
 		}
 	}
 
@@ -117,9 +116,9 @@ public class UpgradeSubscription extends UpgradeProcess {
 			return 0;
 		}
 
-		String sql =
-			"select " + groupIdSQLParts[1] + " from " + groupIdSQLParts[0] +
-				" where " + groupIdSQLParts[2] + " = ?";
+		String sql = StringBundler.concat(
+			"select ", groupIdSQLParts[1], " from ", groupIdSQLParts[0],
+			" where ", groupIdSQLParts[2], " = ?");
 
 		try (PreparedStatement ps = connection.prepareStatement(sql)) {
 			ps.setLong(1, classPK);
@@ -171,7 +170,7 @@ public class UpgradeSubscription extends UpgradeProcess {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	protected void updateSubscriptionGroupId(
@@ -192,7 +191,6 @@ public class UpgradeSubscription extends UpgradeProcess {
 			ResultSet rs = ps1.executeQuery()) {
 
 			while (rs.next()) {
-				long subscriptionId = rs.getLong("subscriptionId");
 				long classNameId = rs.getLong("classNameId");
 				long classPK = rs.getLong("classPK");
 
@@ -204,6 +202,9 @@ public class UpgradeSubscription extends UpgradeProcess {
 
 				if (groupId != 0) {
 					ps2.setLong(1, groupId);
+
+					long subscriptionId = rs.getLong("subscriptionId");
+
 					ps2.setLong(2, subscriptionId);
 
 					ps2.addBatch();
@@ -218,44 +219,48 @@ public class UpgradeSubscription extends UpgradeProcess {
 		UpgradeSubscription.class);
 
 	private static final Map<String, String> _getGroupIdSQLPartsMap =
-		new HashMap<>();
-
-	static {
-		_getGroupIdSQLPartsMap.put(
-			BlogsEntry.class.getName(), "BlogsEntry,groupId,entryId");
-		_getGroupIdSQLPartsMap.put(
-			DLFileEntry.class.getName(), "DLFileEntry,groupId,fileEntryId");
-		_getGroupIdSQLPartsMap.put(
-			DLFileEntryType.class.getName(),
-			"DLFileEntryType,groupId,fileEntryTypeId");
-		_getGroupIdSQLPartsMap.put(
-			DLFolder.class.getName(), "DLFolder,groupId,folderId");
-		_getGroupIdSQLPartsMap.put(
-			Layout.class.getName(), "Layout,groupId,plid");
-		_getGroupIdSQLPartsMap.put(
-			MBCategory.class.getName(), "MBCategory,groupId,categoryId");
-		_getGroupIdSQLPartsMap.put(
-			MBThread.class.getName(), "MBThread,groupId,threadId");
-		_getGroupIdSQLPartsMap.put(
-			WorkflowInstanceLink.class.getName(),
-			"WorkflowInstanceLink,groupId,workflowInstanceId");
-		_getGroupIdSQLPartsMap.put(
-			"com.liferay.bookmarks.model.BookmarksEntry",
-			"BookmarksEntry,groupId,entryId");
-		_getGroupIdSQLPartsMap.put(
-			"com.liferay.bookmarks.model.BookmarksFolder",
-			"BookmarksFolder,groupId,folderId");
-		_getGroupIdSQLPartsMap.put(
-			"com.liferay.dynamic.data.mapping.kernel.DDMStructure",
-			"DDMStructure,groupId,structureId");
-		_getGroupIdSQLPartsMap.put(
-			"com.liferay.journal.model.JournalFolder",
-			"JournalFolder,groupId,folderId");
-		_getGroupIdSQLPartsMap.put(
-			"com.liferay.wiki.model.WikiNode", "WikiNode,groupId,nodeId");
-		_getGroupIdSQLPartsMap.put(
-			"com.liferay.wiki.model.WikiPage",
-			"WikiPage,groupId,resourcePrimKey");
-	}
+		new HashMap<String, String>() {
+			{
+				put(
+					DLFileEntry.class.getName(),
+					"DLFileEntry,groupId,fileEntryId");
+				put(
+					DLFileEntryType.class.getName(),
+					"DLFileEntryType,groupId,fileEntryTypeId");
+				put(DLFolder.class.getName(), "DLFolder,groupId,folderId");
+				put(Layout.class.getName(), "Layout,groupId,plid");
+				put(
+					"com.liferay.message.boards.kernel.model.MBCategory",
+					"MBCategory,groupId,categoryId");
+				put(
+					"com.liferay.message.boards.kernel.model.MBThread",
+					"MBThread,groupId,threadId");
+				put(
+					WorkflowInstanceLink.class.getName(),
+					"WorkflowInstanceLink,groupId,workflowInstanceId");
+				put(
+					"com.liferay.blogs.kernel.model.BlogsEntry",
+					"BlogsEntry,groupId,entryId");
+				put(
+					"com.liferay.portlet.bookmarks.model.BookmarksEntry",
+					"BookmarksEntry,groupId,entryId");
+				put(
+					"com.liferay.portlet.bookmarks.model.BookmarksFolder",
+					"BookmarksFolder,groupId,folderId");
+				put(
+					"com.liferay.portlet.dynamic.data.mapping.kernel." +
+						"DDMStructure",
+					"DDMStructure,groupId,structureId");
+				put(
+					"com.liferay.portlet.journal.model.JournalFolder",
+					"JournalFolder,groupId,folderId");
+				put(
+					"com.liferay.portlet.wiki.model.WikiNode",
+					"WikiNode,groupId,nodeId");
+				put(
+					"com.liferay.portlet.wiki.model.WikiPage",
+					"WikiPage,groupId,resourcePrimKey");
+			}
+		};
 
 }

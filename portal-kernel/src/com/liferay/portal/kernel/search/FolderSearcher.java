@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 public class FolderSearcher extends BaseSearcher {
 
@@ -49,8 +49,7 @@ public class FolderSearcher extends BaseSearcher {
 			}
 		}
 
-		_classNames = folderClassNames.toArray(
-			new String[folderClassNames.size()]);
+		_classNames = folderClassNames.toArray(new String[0]);
 	}
 
 	@Override

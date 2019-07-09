@@ -18,9 +18,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public interface ZipReaderFactory {
 
 	public ZipReader getZipReader(File file);

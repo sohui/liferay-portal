@@ -13,6 +13,11 @@
 	<td>//div[contains(@id,'cke')]/iframe[contains(@title,'adminEmailVerificationBody')]</td>
 	<td></td>
 </tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--EMAIL_NOTIFICATIONS_SENDER-->
 <tr>
 	<td>EMAIL_NOTIFICATIONS_SENDER_NAME_HEADER</td>
@@ -76,16 +81,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>EMAIL_NOTIFICATIONS_ACCOUNT_CREATED_NOTIFICATION_BODY_WITH_PASSWORD</td>
-	<td>//div[contains(@id,'cke')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -93,7 +88,7 @@
 <!--EMAIL_NOTIFICATIONS_PASSWORD_CHANGED_NOTIFICATION-->
 <tr>
 	<td>EMAIL_NOTIFICATIONS_PASSWORD_CHANGED_NOTIFICATION_SUBJECT_HEADER</td>
-	<td>//input[contains(@id,'adminEmailPasswordSentSubject')]/ancestor::span/preceding-sibling::span[contains(.,'Subject')]</td>
+	<td>//input[contains(@id,'adminEmailPasswordSentSubject')]/ancestor::div/preceding-sibling::span[contains(.,'Subject')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -103,7 +98,7 @@
 </tr>
 <tr>
 	<td>EMAIL_NOTIFICATIONS_PASSWORD_CHANGED_NOTIFICATION_BODY_HEADER</td>
-	<td>//iframe[contains(@title,'adminEmailPasswordSentBody')]/ancestor::span/preceding-sibling::span[contains(.,'Body')]</td>
+	<td>//iframe[contains(@title,'adminEmailPasswordSentBody')]/ancestor::div/preceding-sibling::span[contains(.,'Body')]</td>
 	<td></td>
 </tr>
 <tr>

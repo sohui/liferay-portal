@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -80,7 +81,10 @@ public class ClearThreadLocalUtil {
 				continue;
 			}
 
-			Object key = ((Reference<?>)tableEntry).get();
+			Reference<?> reference = (Reference<?>)tableEntry;
+
+			Object key = reference.get();
+
 			Object value = _valueField.get(tableEntry);
 
 			boolean remove = false;

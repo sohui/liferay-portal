@@ -8,36 +8,20 @@
 <tr><td rowspan="1" colspan="3">FormsAdmin</td></tr>
 </thead>
 <tbody>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--FORMS_TABLE-->
 <tr>
 	<td>FORMS_TABLE_NAME</td>
-	<td>//div[contains(@class,'searchcontainer')]//h4[contains(.,'${key_formName}')]/a</td>
+	<td>//div[contains(@class,'searchcontainer')]//h2[contains(.,'${key_formName}')]/a</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FORMS_TABLE_NAME_2</td>
+	<td>//div[contains(@class,'searchcontainer')]//li[2]//h2[contains(.,'${key_formName}')]/a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>FORMS_TABLE_DESCRIPTION</td>
-	<td>//div[contains(@class,'searchcontainer')]//h5[contains(.,'${key_formDescription}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--FORMS_DISPLAY-->
-<tr>
-	<td>FORM_ICON_DISPLAY_NAME</td>
-	<td>//div[@class='card-footer']//a/div[contains(.,'${key_formName}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FORM_ICON_DISPLAY_THUMBNAIL</td>
-	<td>//div[contains(@class,'card')]//span[contains(@class,'icon-vertical-card-image')]</td>
+	<td>//div[contains(@class,'searchcontainer')]//div[contains(@class,'form-instance-description') and contains(.,'${key_formDescription}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -54,38 +38,6 @@
 <tr>
 	<td>FORM_ENTRY_WORKFLOW_STATUS</td>
 	<td>//table[contains(.,'${key_fieldLabel}')]//tbody/tr/td[contains(.,'${key_fieldValue}')]//..//strong[contains(.,'${key_workflowStatus}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--FORM_CONFIGURATION-->
-<tr>
-	<td>ADD_DISPLAY_STYLE</td>
-	<td>//div/a[contains(@class,'add-button')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>EDIT_DISPLAY_STYLE</td>
-	<td>//div[contains(.,'Supported display view')]/div/input[@value='${key_displayStyle}']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>REMOVE_DISPLAY_STYLE</td>
-	<td>//div[div/input[contains(@value,'${key_displayStyle}')]]/following-sibling::div/a[contains(@class,'delete-button')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
-<!--DATA_PROVIDER-->
-<tr>
-	<td>DATA_PROVIDER_PLUS_BUTTON</td>
-	<td>//*[@data-qa-id='addButton' and contains(@id,'DDMDataProviderPortlet')]</td>
 	<td></td>
 </tr>
 </tbody>

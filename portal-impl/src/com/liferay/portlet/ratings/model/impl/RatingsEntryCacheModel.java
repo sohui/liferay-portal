@@ -14,13 +14,9 @@
 
 package com.liferay.portlet.ratings.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
-
 import com.liferay.ratings.kernel.model.RatingsEntry;
 
 import java.io.Externalizable;
@@ -30,16 +26,18 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing RatingsEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see RatingsEntry
  * @generated
  */
 @ProviderType
-public class RatingsEntryCacheModel implements CacheModel<RatingsEntry>,
-	Externalizable {
+public class RatingsEntryCacheModel
+	implements CacheModel<RatingsEntry>, Externalizable {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -50,7 +48,8 @@ public class RatingsEntryCacheModel implements CacheModel<RatingsEntry>,
 			return false;
 		}
 
-		RatingsEntryCacheModel ratingsEntryCacheModel = (RatingsEntryCacheModel)obj;
+		RatingsEntryCacheModel ratingsEntryCacheModel =
+			(RatingsEntryCacheModel)obj;
 
 		if (entryId == ratingsEntryCacheModel.entryId) {
 			return true;
@@ -98,7 +97,7 @@ public class RatingsEntryCacheModel implements CacheModel<RatingsEntry>,
 		RatingsEntryImpl ratingsEntryImpl = new RatingsEntryImpl();
 
 		if (uuid == null) {
-			ratingsEntryImpl.setUuid(StringPool.BLANK);
+			ratingsEntryImpl.setUuid("");
 		}
 		else {
 			ratingsEntryImpl.setUuid(uuid);
@@ -109,7 +108,7 @@ public class RatingsEntryCacheModel implements CacheModel<RatingsEntry>,
 		ratingsEntryImpl.setUserId(userId);
 
 		if (userName == null) {
-			ratingsEntryImpl.setUserName(StringPool.BLANK);
+			ratingsEntryImpl.setUserName("");
 		}
 		else {
 			ratingsEntryImpl.setUserName(userName);
@@ -159,10 +158,9 @@ public class RatingsEntryCacheModel implements CacheModel<RatingsEntry>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
@@ -175,7 +173,7 @@ public class RatingsEntryCacheModel implements CacheModel<RatingsEntry>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -201,4 +199,5 @@ public class RatingsEntryCacheModel implements CacheModel<RatingsEntry>,
 	public long classNameId;
 	public long classPK;
 	public double score;
+
 }

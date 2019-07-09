@@ -16,6 +16,8 @@ package com.liferay.portlet;
 
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
+import com.liferay.portal.kernel.portlet.LiferayRenderRequest;
+import com.liferay.portlet.internal.RenderRequestImpl;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletMode;
@@ -24,35 +26,37 @@ import javax.portlet.WindowState;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
+@ProviderType
 public class RenderRequestFactory {
 
-	public static RenderRequestImpl create(
-			HttpServletRequest request, Portlet portlet,
-			InvokerPortlet invokerPortlet, PortletContext portletContext,
-			WindowState windowState, PortletMode portletMode,
-			PortletPreferences preferences)
-		throws Exception {
+	public static LiferayRenderRequest create(
+		HttpServletRequest httpServletRequest, Portlet portlet,
+		InvokerPortlet invokerPortlet, PortletContext portletContext,
+		WindowState windowState, PortletMode portletMode,
+		PortletPreferences preferences) {
 
 		return create(
-			request, portlet, invokerPortlet, portletContext, windowState,
-			portletMode, preferences, 0);
+			httpServletRequest, portlet, invokerPortlet, portletContext,
+			windowState, portletMode, preferences, 0);
 	}
 
-	public static RenderRequestImpl create(
-			HttpServletRequest request, Portlet portlet,
-			InvokerPortlet invokerPortlet, PortletContext portletContext,
-			WindowState windowState, PortletMode portletMode,
-			PortletPreferences preferences, long plid)
-		throws Exception {
+	public static LiferayRenderRequest create(
+		HttpServletRequest httpServletRequest, Portlet portlet,
+		InvokerPortlet invokerPortlet, PortletContext portletContext,
+		WindowState windowState, PortletMode portletMode,
+		PortletPreferences preferences, long plid) {
 
 		RenderRequestImpl renderRequestImpl = new RenderRequestImpl();
 
 		renderRequestImpl.init(
-			request, portlet, invokerPortlet, portletContext, windowState,
-			portletMode, preferences, plid);
+			httpServletRequest, portlet, invokerPortlet, portletContext,
+			windowState, portletMode, preferences, plid);
 
 		return renderRequestImpl;
 	}

@@ -25,7 +25,8 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author     Mika Koivisto
- * @deprecated As of 7.0.0, replaced by {@link ExternalRepositoryFactoryUtil}
+ * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+ *             ExternalRepositoryFactoryUtil}
  */
 @Deprecated
 public class RepositoryFactoryUtil {
@@ -53,7 +54,7 @@ public class RepositoryFactoryUtil {
 	public static String[] getRepositoryClassNames() {
 		Set<String> classNames = _repositoryFactories.keySet();
 
-		return classNames.toArray(new String[classNames.size()]);
+		return classNames.toArray(new String[0]);
 	}
 
 	public static void registerRepositoryFactory(
@@ -67,17 +68,19 @@ public class RepositoryFactoryUtil {
 	}
 
 	private static final ConcurrentMap<String, RepositoryFactory>
-		_repositoryFactories = new ConcurrentHashMap<>();
+		_repositoryFactories =
+			new ConcurrentHashMap<String, RepositoryFactory>() {
+				{
+					ClassLoader classLoader =
+						PortalClassLoaderUtil.getClassLoader();
 
-	static {
-		ClassLoader classLoader = PortalClassLoaderUtil.getClassLoader();
+					for (String className : PropsValues.DL_REPOSITORY_IMPL) {
+						RepositoryFactory repositoryFactory =
+							new RepositoryFactoryImpl(className, classLoader);
 
-		for (String className : PropsValues.DL_REPOSITORY_IMPL) {
-			RepositoryFactory repositoryFactory = new RepositoryFactoryImpl(
-				className, classLoader);
-
-			_repositoryFactories.put(className, repositoryFactory);
-		}
-	}
+						put(className, repositoryFactory);
+					}
+				}
+			};
 
 }

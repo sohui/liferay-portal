@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.BasePortalLifecycle;
 import com.liferay.portal.kernel.util.InstanceFactory;
 
@@ -32,7 +33,7 @@ import javax.servlet.ServletResponse;
  * @author Brian Wing Shun Chan
  */
 public class SecureServlet
-	extends BasePortalLifecycle implements ServletConfig, Servlet {
+	extends BasePortalLifecycle implements Servlet, ServletConfig {
 
 	@Override
 	public void destroy() {
@@ -61,6 +62,10 @@ public class SecureServlet
 
 	@Override
 	public String getServletInfo() {
+		if (servlet == null) {
+			return StringPool.BLANK;
+		}
+
 		return servlet.getServletInfo();
 	}
 

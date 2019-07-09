@@ -14,29 +14,31 @@
 
 package com.liferay.portlet.asset.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.model.AssetTagStats;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The cache model class for representing AssetTagStats in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see AssetTagStats
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ com.liferay.asset.tag.stats.model.impl.AssetTagStatsImpl}
  * @generated
  */
+@Deprecated
 @ProviderType
-public class AssetTagStatsCacheModel implements CacheModel<AssetTagStats>,
-	Externalizable {
+public class AssetTagStatsCacheModel
+	implements CacheModel<AssetTagStats>, Externalizable {
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -47,7 +49,8 @@ public class AssetTagStatsCacheModel implements CacheModel<AssetTagStats>,
 			return false;
 		}
 
-		AssetTagStatsCacheModel assetTagStatsCacheModel = (AssetTagStatsCacheModel)obj;
+		AssetTagStatsCacheModel assetTagStatsCacheModel =
+			(AssetTagStatsCacheModel)obj;
 
 		if (tagStatsId == assetTagStatsCacheModel.tagStatsId) {
 			return true;
@@ -109,8 +112,7 @@ public class AssetTagStatsCacheModel implements CacheModel<AssetTagStats>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(tagStatsId);
 
 		objectOutput.writeLong(companyId);
@@ -127,4 +129,5 @@ public class AssetTagStatsCacheModel implements CacheModel<AssetTagStats>,
 	public long tagId;
 	public long classNameId;
 	public int assetCount;
+
 }

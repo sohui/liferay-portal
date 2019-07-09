@@ -14,8 +14,8 @@
 
 package com.liferay.gradle.plugins.extensions;
 
-import com.liferay.gradle.plugins.util.FileUtil;
-import com.liferay.gradle.util.GradleUtil;
+import com.liferay.gradle.plugins.internal.util.FileUtil;
+import com.liferay.gradle.plugins.internal.util.GradleUtil;
 
 import java.io.File;
 
@@ -23,7 +23,9 @@ import org.gradle.api.Project;
 
 /**
  * @author Manuel de la Peña
+ * @deprecated As of Mueller (7.2.x)
  */
+@Deprecated
 public class JOnASAppServer extends AppServer {
 
 	public JOnASAppServer(Project project) {
@@ -35,8 +37,7 @@ public class JOnASAppServer extends AppServer {
 		File dir = new File(getDir(), "lib/endorsed");
 
 		GradleUtil.addDependency(
-			project, configurationName,
-			FileUtil.getJarsFileTree(project, dir));
+			project, configurationName, FileUtil.getJarsFileTree(project, dir));
 	}
 
 }
